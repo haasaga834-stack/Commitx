@@ -16,7 +16,7 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "CommitX — Home" },
       {
         property: "og:description",
-        content: "Start a focused commitment. One promise at a time.",
+        content: "Start a focused commitment. One promise at a time, kept beautifully.",
       },
     ],
   }),

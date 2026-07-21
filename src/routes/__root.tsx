@@ -64,30 +64,31 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { name: "theme-color", content: "#F8F9F6" },
-      { title: "CommitX — Commit. Complete. Get It Back." },
+      { title: "CommitX — Home" },
       {
         name: "description",
         content:
-          "CommitX is an accountability app that helps you keep the promises you make to yourself. Commit your time, complete your session, get it back.",
+          "Start a focused commitment. One promise at a time, kept beautifully.",
       },
       { property: "og:type", content: "website" },
-      { property: "og:title", content: "CommitX — Commit. Complete. Get It Back." },
+      { property: "og:title", content: "CommitX — Home" },
       {
         property: "og:description",
         content:
-          "A calm, minimal accountability app built around a single hourglass. Make a promise, keep it.",
+          "Start a focused commitment. One promise at a time, kept beautifully.",
       },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "CommitX — Commit. Complete. Get It Back." },
+      { name: "twitter:title", content: "CommitX — Home" },
       {
         name: "twitter:description",
         content:
-          "A calm, minimal accountability app built around a single hourglass.",
+          "Start a focused commitment. One promise at a time, kept beautifully.",
       },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/cd137564-7ced-4ecf-9182-ce46fefd617d/id-preview-b57e91a0--1384a4d2-7b53-476d-badb-4dfc999cef26.lovable.app-1784650045741.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/cd137564-7ced-4ecf-9182-ce46fefd617d/id-preview-b57e91a0--1384a4d2-7b53-476d-badb-4dfc999cef26.lovable.app-1784650045741.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
