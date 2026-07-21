@@ -144,11 +144,11 @@ export function FoodCoins({
       <div className="rounded-3xl bg-card p-5 shadow-soft">
         <p className="text-sm font-semibold text-foreground">Community Impact</p>
         <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-          As the CommitX community grows, our goal is to convert collective Food Coins into
-          real-world food donations through verified charity partners.
+          Every hour you stay committed earns 1 Food Coin. As CommitX grows, Food Coins
+          will be transformed into real meals funded by CommitX.
         </p>
-        <p className="mt-2 text-[11px] uppercase tracking-wider text-muted-foreground">
-          Currently under development
+        <p className="mt-3 text-xs font-medium italic text-foreground">
+          Together, we’re turning discipline into impact.
         </p>
       </div>
     </div>
