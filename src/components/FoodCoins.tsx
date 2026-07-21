@@ -103,7 +103,7 @@ export function FoodCoins({
               {hydrated ? you.toLocaleString() : "0"}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Earn 1 Food Coin for every completed commitment session.
+              Earn 1 Food Coin for every 1 hour completed session.
             </p>
           </div>
           <CoinIcon />
