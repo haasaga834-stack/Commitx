@@ -5,7 +5,7 @@ import {
   formatINR,
   REFERRAL_BONUS,
 } from "@/lib/commitx-store";
-import { ArrowDownLeft, ArrowUpRight, Copy, Check, Gift, Info } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Copy, Check, Gift } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/wallet")({
