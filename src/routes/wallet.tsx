@@ -2,13 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { MobileShell } from "@/components/BottomNav";
 import {
   useAppState,
-  setState,
   formatINR,
-  MIN_DEPOSIT,
-  MAX_REAL_WALLET,
   REFERRAL_BONUS,
 } from "@/lib/commitx-store";
-import { ArrowDownLeft, ArrowUpRight, Plus, Copy, Check, Gift } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Copy, Check, Gift, Info } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/wallet")({
@@ -25,26 +22,12 @@ export const Route = createFileRoute("/wallet")({
 
 function Wallet() {
   const { state, hydrated } = useAppState();
-  const [showDeposit, setShowDeposit] = useState(false);
-  const [amount, setAmount] = useState<string>("100");
-  const [error, setError] = useState<string | null>(null);
+  const [showMoneyNotice, setShowMoneyNotice] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const real = state.balances.real;
   const demo = state.balances.demo;
   const referralCode = "COMMIT-" + (state.profile.name.split(" ")[0] || "YOU").toUpperCase().slice(0, 6);
-
-  function submitDeposit() {
-    const n = Math.floor(Number(amount));
-    if (!Number.isFinite(n)) return setError("Enter a valid amount.");
-    if (n < MIN_DEPOSIT) return setError(`Minimum deposit is ${formatINR(MIN_DEPOSIT)}.`);
-    if (real + n > MAX_REAL_WALLET)
-      return setError(`Real balance cannot exceed ${formatINR(MAX_REAL_WALLET)}.`);
-    setState((s) => ({ ...s, balances: { ...s.balances, real: s.balances.real + n } }));
-    setShowDeposit(false);
-    setAmount("100");
-    setError(null);
-  }
 
   function copyReferral() {
     try {
@@ -67,28 +50,30 @@ function Wallet() {
           <div className="flex items-center justify-between">
             <p className="text-xs uppercase tracking-widest opacity-80">💰 Real Balance</p>
             <span className="rounded-full bg-white/15 px-2.5 py-1 text-[10px] uppercase tracking-wider">
-              Withdrawable
+              Coming Soon
             </span>
           </div>
           <p className="mt-3 font-display text-4xl font-semibold tabular-nums">
             {hydrated ? formatINR(real) : "—"}
           </p>
-          <p className="mt-2 text-xs opacity-70">User-deposited funds</p>
+          <p className="mt-2 text-xs opacity-70">User-deposited funds · trial access paused</p>
           <div className="mt-5 flex gap-2">
             <button
-              onClick={() => setShowDeposit(true)}
+              onClick={() => setShowMoneyNotice(true)}
               className="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-medium text-primary"
             >
-              <Plus className="h-3.5 w-3.5" /> Deposit
+              Deposit
             </button>
             <button
-              disabled={real === 0}
-              className="rounded-full bg-white/15 px-4 py-2 text-xs font-medium text-white disabled:opacity-40"
+              onClick={() => setShowMoneyNotice(true)}
+              className="rounded-full bg-white/15 px-4 py-2 text-xs font-medium text-white"
             >
               Withdraw
             </button>
           </div>
         </div>
+
+        <ComingSoonCard className="mt-3" />
 
         {/* Demo Balance */}
         <div className="mt-3 rounded-3xl border border-hairline bg-card p-6 shadow-soft">
@@ -196,65 +181,50 @@ function Wallet() {
         )}
       </div>
 
-      {showDeposit && (
+      {showMoneyNotice && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/25 backdrop-blur-sm sm:items-center">
           <div className="w-full max-w-md rounded-t-3xl bg-card p-6 shadow-lift sm:rounded-3xl">
-            <p className="font-display text-xl font-semibold">Add to Real Balance</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Min {formatINR(MIN_DEPOSIT)} · Wallet cap {formatINR(MAX_REAL_WALLET)}.
-            </p>
-            <div className="mt-5 flex items-center rounded-2xl border border-hairline bg-background px-4 py-3">
-              <span className="text-muted-foreground">₹</span>
-              <input
-                type="number"
-                min={MIN_DEPOSIT}
-                value={amount}
-                onChange={(e) => {
-                  setAmount(e.target.value);
-                  setError(null);
-                }}
-                className="ml-2 w-full bg-transparent text-lg font-medium outline-none"
-              />
-            </div>
-            <div className="mt-3 flex gap-2">
-              {[50, 100, 250, 500].map((q) => (
-                <button
-                  key={q}
-                  onClick={() => {
-                    setAmount(String(q));
-                    setError(null);
-                  }}
-                  className="flex-1 rounded-full border border-hairline bg-background px-3 py-2 text-xs font-medium"
-                >
-                  {formatINR(q)}
-                </button>
-              ))}
-            </div>
-            {error && (
-              <p className="mt-3 rounded-2xl bg-destructive/10 px-4 py-2 text-xs text-destructive">
-                {error}
-              </p>
-            )}
-            <div className="mt-6 flex gap-3">
-              <button
-                onClick={() => {
-                  setShowDeposit(false);
-                  setError(null);
-                }}
-                className="flex-1 rounded-full border border-hairline bg-background px-5 py-3 text-sm font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={submitDeposit}
-                className="flex-1 rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground"
-              >
-                Deposit
-              </button>
-            </div>
+            <ComingSoonCard />
+            <button
+              onClick={() => setShowMoneyNotice(false)}
+              className="mt-5 w-full rounded-full bg-foreground px-5 py-3 text-sm font-medium text-background"
+            >
+              Continue with Demo Balance
+            </button>
           </div>
         </div>
       )}
     </MobileShell>
+  );
+}
+
+function ComingSoonCard({ className = "" }: { className?: string }) {
+  return (
+    <div className={`rounded-3xl border border-info/20 bg-info/8 p-5 shadow-soft ${className}`}>
+      <div className="flex items-start gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-info/12 text-info">
+          <Info className="h-5 w-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="font-display text-lg font-semibold text-foreground">
+              🚧 Real Money Deposits Coming Soon
+            </p>
+            <span className="rounded-full bg-info px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-info-foreground">
+              Coming Soon
+            </span>
+          </div>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            Real money deposits are currently disabled while CommitX is in its trial phase.
+          </p>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            You can explore all app features using Demo Balance.
+          </p>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            Real money deposits and withdrawals will be enabled after successful completion of the trial period.
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }

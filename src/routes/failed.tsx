@@ -25,8 +25,10 @@ export const Route = createFileRoute("/failed")({
 
 function reasonCopy(reason?: string) {
   switch (reason) {
+    case "app_switch":
+      return "You left CommitX while using Verified Mode.";
     case "background":
-      return "You left the app while using Verified Mode.";
+      return "You left CommitX while using Verified Mode.";
     case "killed":
       return "The app was closed during a Verified session.";
     case "quit":
@@ -38,7 +40,7 @@ function reasonCopy(reason?: string) {
 
 function Failed() {
   const { goal, value, reason } = Route.useSearch();
-  const isVerifiedBreak = reason === "background" || reason === "killed";
+  const isVerifiedBreak = reason === "app_switch" || reason === "background" || reason === "killed";
   return (
     <div className="fixed inset-0 z-50 flex min-h-screen flex-col items-center justify-center bg-background px-6">
       <Hourglass size={200} state="failed" />
