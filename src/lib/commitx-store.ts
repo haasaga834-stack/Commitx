@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 export type Mode = "standard" | "verified";
 export type Status = "completed" | "failed";
+export type Pool = "demo" | "real";
 
 export interface Session {
   id: string;
@@ -11,6 +12,9 @@ export interface Session {
   mode: Mode;
   status: Status;
   date: number;
+  /** How much of `value` was pulled from each pool at commit time. */
+  demoUsed?: number;
+  realUsed?: number;
 }
 
 export interface Profile {
@@ -20,16 +24,31 @@ export interface Profile {
   education: string;
 }
 
-export interface AppState {
-  balance: number;
-  sessions: Session[];
-  profile: Profile;
+export interface Balances {
+  real: number;
+  demo: number;
 }
 
-const KEY = "commitx-state-v1";
+export interface AppState {
+  balances: Balances;
+  sessions: Session[];
+  profile: Profile;
+  referralCredited?: boolean;
+}
+
+const KEY = "commitx-state-v2";
+const LEGACY_KEY = "commitx-state-v1";
+
+/** Deposit + wallet rules. */
+export const MIN_DEPOSIT = 50;
+export const MAX_REAL_WALLET = 1000;
+export const MIN_COMMIT = 50;
+export const MAX_COMMIT = 500;
+export const REFERRAL_BONUS = 50;
+export const WELCOME_DEMO = 500;
 
 const initial: AppState = {
-  balance: 500,
+  balances: { real: 0, demo: WELCOME_DEMO },
   sessions: [],
   profile: {
     name: "Arjun Mehta",
@@ -37,14 +56,34 @@ const initial: AppState = {
     sex: "Male",
     education: "B.Tech, Computer Science",
   },
+  referralCredited: false,
 };
+
+function migrate(raw: any): AppState {
+  if (!raw) return initial;
+  // v2 shape
+  if (raw.balances && typeof raw.balances.demo === "number") {
+    return { ...initial, ...raw, balances: { ...initial.balances, ...raw.balances } };
+  }
+  // v1 shape: single `balance` -> treat as demo
+  if (typeof raw.balance === "number") {
+    return {
+      ...initial,
+      ...raw,
+      balances: { real: 0, demo: raw.balance },
+    };
+  }
+  return { ...initial, ...raw };
+}
 
 function read(): AppState {
   if (typeof window === "undefined") return initial;
   try {
     const raw = localStorage.getItem(KEY);
-    if (!raw) return initial;
-    return { ...initial, ...JSON.parse(raw) };
+    if (raw) return migrate(JSON.parse(raw));
+    const legacy = localStorage.getItem(LEGACY_KEY);
+    if (legacy) return migrate(JSON.parse(legacy));
+    return initial;
   } catch {
     return initial;
   }
@@ -88,6 +127,31 @@ export function useAppState() {
   return { state: ensure(), hydrated };
 }
 
+/** Indian rupee formatting: ₹1,00,000 style grouping. */
+const inrFmt = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 });
+export function formatINR(n: number) {
+  return `₹${inrFmt.format(Math.max(0, Math.round(n)))}`;
+}
+
+/**
+ * Plan how to split a commitment amount across pools.
+ * Preference: demo first (unless preferReal), then real.
+ */
+export function planDeduction(
+  value: number,
+  balances: Balances,
+  preferReal = false,
+): { demoUsed: number; realUsed: number; ok: boolean } {
+  const total = balances.demo + balances.real;
+  if (value > total) return { demoUsed: 0, realUsed: 0, ok: false };
+  if (preferReal) {
+    const realUsed = Math.min(value, balances.real);
+    return { demoUsed: value - realUsed, realUsed, ok: true };
+  }
+  const demoUsed = Math.min(value, balances.demo);
+  return { demoUsed, realUsed: value - demoUsed, ok: true };
+}
+
 export function stats(sessions: Session[]) {
   const completed = sessions.filter((s) => s.status === "completed");
   const failed = sessions.filter((s) => s.status === "failed");
@@ -95,20 +159,15 @@ export function stats(sessions: Session[]) {
   const successRate =
     sessions.length === 0 ? 0 : Math.round((completed.length / sessions.length) * 100);
 
-  // streak: consecutive days with at least one completed session ending today or yesterday
-  const days = new Set(
-    completed.map((s) => new Date(s.date).toDateString()),
-  );
+  const days = new Set(completed.map((s) => new Date(s.date).toDateString()));
   let streak = 0;
   const d = new Date();
-  // allow starting from today or yesterday
   if (!days.has(d.toDateString())) d.setDate(d.getDate() - 1);
   while (days.has(d.toDateString())) {
     streak++;
     d.setDate(d.getDate() - 1);
   }
 
-  // longest streak
   const sortedDays = Array.from(days)
     .map((s) => new Date(s).getTime())
     .sort((a, b) => a - b);
@@ -126,6 +185,8 @@ export function stats(sessions: Session[]) {
     .filter((s) => new Date(s.date).toDateString() === new Date().toDateString())
     .reduce((sum, s) => sum + s.durationMinutes, 0);
 
+  const foodCoins = Math.floor(totalMinutes / 60);
+
   return {
     completed: completed.length,
     failed: failed.length,
@@ -134,5 +195,6 @@ export function stats(sessions: Session[]) {
     streak,
     longest,
     todayMinutes,
+    foodCoins,
   };
 }

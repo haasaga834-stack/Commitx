@@ -73,9 +73,9 @@ function Home() {
           style={{ animationDelay: "220ms" }}
         >
           <FoodCoins
-            userCoins={s.completed}
+            userCoins={s.foodCoins}
             milestone={1000}
-            communityCoins={1284650 + s.completed}
+            communityCoins={1284650 + s.foodCoins}
             hydrated={hydrated}
           />
         </div>

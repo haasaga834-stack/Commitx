@@ -1,7 +1,14 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ChevronLeft, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  useAppState,
+  formatINR,
+  planDeduction,
+  MIN_COMMIT,
+  MAX_COMMIT,
+} from "@/lib/commitx-store";
 
 export const Route = createFileRoute("/commit")({
   head: () => ({
@@ -26,16 +33,33 @@ function fmtDuration(min: number) {
 
 function Commit() {
   const navigate = useNavigate();
+  const { state, hydrated } = useAppState();
   const [goal, setGoal] = useState("Study");
   const [customGoal, setCustomGoal] = useState("");
   const [duration, setDuration] = useState(30);
-  const [value, setValue] = useState(20);
+  const [value, setValue] = useState(MIN_COMMIT);
   const [mode, setMode] = useState<"standard" | "verified">("standard");
   const [confirmVerified, setConfirmVerified] = useState(false);
+  const [preferReal, setPreferReal] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const finalGoal = goal === "Custom" ? customGoal.trim() || "Custom" : goal;
 
+  const plan = useMemo(
+    () => planDeduction(value, state.balances, preferReal),
+    [value, state.balances, preferReal],
+  );
+
   function begin() {
+    if (value < MIN_COMMIT || value > MAX_COMMIT) {
+      setError(`Commitment must be between ${formatINR(MIN_COMMIT)} and ${formatINR(MAX_COMMIT)}.`);
+      return;
+    }
+    if (!plan.ok) {
+      setError("Insufficient balance. Top up your wallet to commit.");
+      return;
+    }
+    setError(null);
     if (mode === "verified" && !confirmVerified) {
       setConfirmVerified(true);
       return;
@@ -45,8 +69,16 @@ function Commit() {
       duration: String(duration),
       value: String(value),
       mode,
+      preferReal: preferReal ? "1" : "0",
     });
     navigate({ to: "/session", search: Object.fromEntries(params) as Record<string, string> });
+  }
+
+  function clampValue(next: number) {
+    const n = Math.round(next);
+    if (Number.isNaN(n)) return;
+    setValue(Math.min(MAX_COMMIT, Math.max(MIN_COMMIT, n)));
+    setError(null);
   }
 
   return (
@@ -129,18 +161,61 @@ function Commit() {
 
         {/* Value */}
         <section className="mt-8">
-          <Label>Commitment value</Label>
+          <div className="flex items-baseline justify-between">
+            <Label>Commitment value</Label>
+            <span className="text-[11px] text-muted-foreground">
+              {formatINR(MIN_COMMIT)} – {formatINR(MAX_COMMIT)}
+            </span>
+          </div>
           <div className="mt-3 flex items-center rounded-2xl border border-hairline bg-card px-4 py-3">
-            <span className="text-muted-foreground">$</span>
+            <span className="text-muted-foreground">₹</span>
             <input
               type="number"
-              min={1}
+              min={MIN_COMMIT}
+              max={MAX_COMMIT}
               value={value}
-              onChange={(e) => setValue(Math.max(1, Number(e.target.value) || 0))}
+              onChange={(e) => clampValue(Number(e.target.value) || 0)}
               className="ml-2 w-full bg-transparent text-lg font-medium outline-none"
             />
-            <span className="text-xs text-muted-foreground">demo</span>
           </div>
+          <input
+            type="range"
+            min={MIN_COMMIT}
+            max={MAX_COMMIT}
+            step={10}
+            value={value}
+            onChange={(e) => clampValue(Number(e.target.value))}
+            className="mt-4 w-full accent-[color:var(--color-primary)]"
+          />
+
+          {/* Deduction preview */}
+          <div className="mt-4 rounded-2xl bg-card px-4 py-3 shadow-soft">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">Available</span>
+              <span className="tabular-nums">
+                Demo {formatINR(state.balances.demo)} · Real {formatINR(state.balances.real)}
+              </span>
+            </div>
+            <label className="mt-3 flex items-center gap-2 text-xs text-foreground">
+              <input
+                type="checkbox"
+                checked={preferReal}
+                onChange={(e) => setPreferReal(e.target.checked)}
+                className="h-4 w-4 accent-[color:var(--color-primary)]"
+              />
+              Use Real Balance first
+            </label>
+            {hydrated && plan.ok && (
+              <p className="mt-2 text-[11px] text-muted-foreground tabular-nums">
+                Will deduct: Demo {formatINR(plan.demoUsed)} + Real {formatINR(plan.realUsed)}
+              </p>
+            )}
+          </div>
+          {error && (
+            <p className="mt-3 rounded-2xl bg-destructive/10 px-4 py-2 text-xs text-destructive">
+              {error}
+            </p>
+          )}
         </section>
 
         {/* Mode */}

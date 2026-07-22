@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { Hourglass } from "@/components/Hourglass";
-import { setState, type Mode } from "@/lib/commitx-store";
+import { setState, formatINR, planDeduction, getState, type Mode } from "@/lib/commitx-store";
 import { X } from "lucide-react";
 import { z } from "zod";
 
@@ -10,6 +10,7 @@ const search = z.object({
   duration: z.coerce.number().min(1).default(30),
   value: z.coerce.number().min(0).default(10),
   mode: z.enum(["standard", "verified"]).default("standard"),
+  preferReal: z.string().optional(),
 });
 
 export const Route = createFileRoute("/session")({
@@ -42,9 +43,6 @@ const QUOTES = [
 ];
 
 const ACTIVE_KEY = "commitx-active-session-v1";
-
-// Threshold: hidden longer than this in verified mode = failure.
-// Shorter hidden windows (e.g. incoming call interstitial) auto-resume.
 const CALL_GRACE_MS = 8000;
 
 function log(evt: string, extra?: Record<string, unknown>) {
@@ -53,11 +51,11 @@ function log(evt: string, extra?: Record<string, unknown>) {
 }
 
 function Session() {
-  const { goal, duration, value, mode } = Route.useSearch();
+  const { goal, duration, value, mode, preferReal } = Route.useSearch();
   const navigate = useNavigate();
   const totalMs = duration * 60 * 1000;
+  const preferRealBool = preferReal === "1";
 
-  // Resume startedAt if this exact session was already in flight.
   const startedAt = useRef<number>(
     (() => {
       if (typeof window === "undefined") return Date.now();
@@ -82,7 +80,7 @@ function Session() {
       try {
         localStorage.setItem(
           ACTIVE_KEY,
-          JSON.stringify({ goal, duration, value, mode, startedAt: now }),
+          JSON.stringify({ goal, duration, value, mode, preferReal: preferRealBool, startedAt: now }),
         );
       } catch {}
       return now;
@@ -96,7 +94,6 @@ function Session() {
   const hiddenAtRef = useRef<number | null>(null);
   const pauseRef = useRef(false);
 
-  // rAF loop — real elapsed time from Date.now().
   useEffect(() => {
     let raf = 0;
     const tick = () => {
@@ -114,7 +111,6 @@ function Session() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Verified-mode lifecycle enforcement.
   useEffect(() => {
     if (mode !== "verified") return;
     log("App Active");
@@ -134,7 +130,6 @@ function Session() {
         log("App Background");
         hiddenAtRef.current = Date.now();
         pauseRef.current = true;
-        // Persist that we went hidden, so a kill/restart is detectable.
         try {
           const raw = localStorage.getItem(ACTIVE_KEY);
           const prev = raw ? JSON.parse(raw) : {};
@@ -143,7 +138,6 @@ function Session() {
             JSON.stringify({ ...prev, hiddenAt: hiddenAtRef.current }),
           );
         } catch {}
-        // Grace window for incoming calls / brief system interstitials.
         graceTimer = setTimeout(() => {
           if (document.visibilityState === "hidden") {
             failFromBackground();
@@ -173,7 +167,6 @@ function Session() {
     };
 
     const onPageHide = (e: PageTransitionEvent) => {
-      // Persistent (non-bfcache) unload while verified = failure on next open.
       if (!e.persisted && !doneRef.current) {
         try {
           const raw = localStorage.getItem(ACTIVE_KEY);
@@ -198,7 +191,6 @@ function Session() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
 
-  // On mount: if verified session was killed / left hidden past grace, fail now.
   useEffect(() => {
     if (mode !== "verified") return;
     try {
@@ -228,6 +220,10 @@ function Session() {
     try {
       localStorage.removeItem(ACTIVE_KEY);
     } catch {}
+    const current = getState();
+    const plan = planDeduction(value, current.balances, preferRealBool);
+    const demoUsed = plan.ok ? plan.demoUsed : 0;
+    const realUsed = plan.ok ? plan.realUsed : 0;
     const session = {
       id: `${Date.now()}`,
       goal,
@@ -236,12 +232,23 @@ function Session() {
       mode: mode as Mode,
       status,
       date: Date.now(),
+      demoUsed,
+      realUsed,
     };
-    setState((s) => ({
-      ...s,
-      sessions: [session, ...s.sessions],
-      balance: status === "completed" ? s.balance : s.balance - value,
-    }));
+    setState((s) => {
+      if (status === "completed") {
+        // No net change: value was earmarked and now returned.
+        return { ...s, sessions: [session, ...s.sessions] };
+      }
+      return {
+        ...s,
+        sessions: [session, ...s.sessions],
+        balances: {
+          demo: Math.max(0, s.balances.demo - demoUsed),
+          real: Math.max(0, s.balances.real - realUsed),
+        },
+      };
+    });
     if (status === "completed") {
       log("Session Completed");
       if (typeof navigator !== "undefined" && "vibrate" in navigator) {
@@ -287,7 +294,7 @@ function Session() {
         </p>
         <p className="mt-3 text-sm text-muted-foreground">{goal}</p>
         <p className="mt-1 text-xs text-muted-foreground">
-          ${value} committed · demo
+          {formatINR(value)} committed
         </p>
         {mode === "verified" && (
           <p className="mt-6 rounded-full bg-foreground/5 px-4 py-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">
@@ -303,7 +310,7 @@ function Session() {
             <p className="font-display text-xl font-semibold">End this session?</p>
             <p className="mt-2 text-sm text-muted-foreground">
               {mode === "verified"
-                ? "This will fail your commitment and deduct your demo value."
+                ? "This will fail your commitment and deduct your committed value."
                 : "You can restart anytime. Ending now marks this commitment as failed."}
             </p>
             <div className="mt-6 flex gap-3">
