@@ -118,10 +118,65 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+const ACTIVE_KEY = "commitx-active-session-v1";
+const CALL_GRACE_MS = 8000;
+
+function VerifiedRecovery() {
+  const router = useRouter();
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(ACTIVE_KEY);
+      if (!raw) return;
+      const prev = JSON.parse(raw);
+      if (prev?.mode !== "verified") return;
+      const hiddenTooLong =
+        typeof prev.hiddenAt === "number" && Date.now() - prev.hiddenAt > CALL_GRACE_MS;
+      if (!prev.pendingFail && !hiddenTooLong) return;
+
+      // Persist the failed session and clear active marker.
+      import("../lib/commitx-store").then(({ setState }) => {
+        setState((s) => ({
+          ...s,
+          sessions: [
+            {
+              id: `${Date.now()}`,
+              goal: prev.goal,
+              durationMinutes: prev.duration,
+              value: prev.value,
+              mode: "verified",
+              status: "failed",
+              date: Date.now(),
+            },
+            ...s.sessions,
+          ],
+          balance: s.balance - (prev.value || 0),
+        }));
+      });
+      localStorage.removeItem(ACTIVE_KEY);
+      const reason = prev.pendingFail ? prev.reason || "killed" : "background";
+      // eslint-disable-next-line no-console
+      console.log("[CommitX lifecycle] Session Failed", { reason, recovered: true });
+      if (router.state.location.pathname !== "/failed") {
+        router.navigate({
+          to: "/failed",
+          search: {
+            goal: String(prev.goal ?? "Focus"),
+            duration: String(prev.duration ?? 0),
+            value: String(prev.value ?? 0),
+            reason,
+          } as Record<string, string>,
+        });
+      }
+    } catch {}
+  }, [router]);
+  return null;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
+      <VerifiedRecovery />
       <Outlet />
     </QueryClientProvider>
   );
