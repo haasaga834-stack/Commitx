@@ -134,23 +134,33 @@ function VerifiedRecovery() {
       if (!prev.pendingFail && !hiddenTooLong) return;
 
       // Persist the failed session and clear active marker.
-      import("../lib/commitx-store").then(({ setState }) => {
-        setState((s) => ({
-          ...s,
-          sessions: [
-            {
-              id: `${Date.now()}`,
-              goal: prev.goal,
-              durationMinutes: prev.duration,
-              value: prev.value,
-              mode: "verified",
-              status: "failed",
-              date: Date.now(),
+      import("../lib/commitx-store").then(({ setState, planDeduction }) => {
+        setState((s) => {
+          const plan = planDeduction(prev.value || 0, s.balances, prev.preferReal === true || prev.preferReal === "1");
+          const demoUsed = plan.ok ? plan.demoUsed : 0;
+          const realUsed = plan.ok ? plan.realUsed : 0;
+          return {
+            ...s,
+            sessions: [
+              {
+                id: `${Date.now()}`,
+                goal: prev.goal,
+                durationMinutes: prev.duration,
+                value: prev.value,
+                mode: "verified",
+                status: "failed",
+                date: Date.now(),
+                demoUsed,
+                realUsed,
+              },
+              ...s.sessions,
+            ],
+            balances: {
+              demo: Math.max(0, s.balances.demo - demoUsed),
+              real: Math.max(0, s.balances.real - realUsed),
             },
-            ...s.sessions,
-          ],
-          balance: s.balance - (prev.value || 0),
-        }));
+          };
+        });
       });
       localStorage.removeItem(ACTIVE_KEY);
       const reason = prev.pendingFail ? prev.reason || "killed" : "background";
