@@ -5,7 +5,7 @@ import {
   formatINR,
   REFERRAL_BONUS,
 } from "@/lib/commitx-store";
-import { ArrowDownLeft, ArrowUpRight, Copy, Check, Gift, Info } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Copy, Check, Gift } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/wallet")({
@@ -200,31 +200,10 @@ function Wallet() {
 
 function ComingSoonCard({ className = "" }: { className?: string }) {
   return (
-    <div className={`rounded-3xl border border-info/20 bg-info/8 p-5 shadow-soft ${className}`}>
-      <div className="flex items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-info/12 text-info">
-          <Info className="h-5 w-5" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="font-display text-lg font-semibold text-foreground">
-              🚧 Real Money Deposits Coming Soon
-            </p>
-            <span className="rounded-full bg-info px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-info-foreground">
-              Coming Soon
-            </span>
-          </div>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            Real money deposits are currently disabled while CommitX is in its trial phase.
-          </p>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            You can explore all app features using Demo Balance.
-          </p>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            Real money deposits and withdrawals will be enabled after successful completion of the trial period.
-          </p>
-        </div>
-      </div>
+    <div className={`rounded-2xl border border-info/20 bg-info/8 p-4 text-center shadow-soft ${className}`}>
+      <p className="text-sm font-medium text-info">
+        Real money deposits coming soon
+      </p>
     </div>
   );
 }
