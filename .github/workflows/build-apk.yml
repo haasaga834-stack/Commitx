@@ -33,16 +33,19 @@ jobs:
       - name: Install Bubblewrap CLI
         run: npm install -g @bubblewrap/cli
 
-      - name: Generate TWA project
-        working-directory: android
+      - name: Configure Bubblewrap
         run: |
           mkdir -p ~/.bubblewrap
-          bubblewrap init --manifest twa-manifest.json --directory twa-app --non-interactive <<EOF
-          n
-          $JAVA_HOME
-          n
-          $ANDROID_HOME
+          cat > ~/.bubblewrap/config.json <<EOF
+          {
+            "jdkPath": "${JAVA_HOME}",
+            "androidSdkPath": "${ANDROID_HOME}"
+          }
           EOF
+
+      - name: Generate TWA project
+        working-directory: android
+        run: bubblewrap init --manifest twa-manifest.json --directory twa-app
 
       - name: Build APK
         working-directory: android/twa-app
