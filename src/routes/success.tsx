@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Hourglass } from "@/components/Hourglass";
 import { Check } from "lucide-react";
 import { z } from "zod";
-import { useAppState, stats } from "@/lib/commitx-store";
+import { useAppState, stats, formatINR } from "@/lib/commitx-store";
 
 const search = z.object({
   goal: z.string().default("Focus"),
@@ -49,7 +49,7 @@ function Success() {
         style={{ animationDelay: "140ms" }}
       >
         <Row label="Duration" value={`${duration} min`} />
-        <Row label="Demo value returned" value={`$${value}`} />
+        <Row label="Commitment returned" value={formatINR(value)} />
         <Row label="Streak" value={`${s.streak} ${s.streak === 1 ? "day" : "days"} (+1)`} />
       </div>
 

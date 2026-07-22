@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Hourglass } from "@/components/Hourglass";
 import { z } from "zod";
+import { formatINR } from "@/lib/commitx-store";
 
 const search = z.object({
   goal: z.string().default("Focus"),
@@ -72,7 +73,7 @@ function Failed() {
         className="mt-5 rounded-2xl bg-foreground/5 px-5 py-3 text-sm text-foreground animate-fade-up"
         style={{ animationDelay: "180ms" }}
       >
-        ${value} demo value deducted
+        {formatINR(value)} deducted from your wallet
       </p>
 
       <Link

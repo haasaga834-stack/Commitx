@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { MobileShell } from "@/components/BottomNav";
-import { useAppState } from "@/lib/commitx-store";
+import { useAppState, formatINR } from "@/lib/commitx-store";
 import { Hourglass } from "@/components/Hourglass";
 
 export const Route = createFileRoute("/history")({
@@ -75,7 +75,7 @@ function History() {
                 </div>
                 <div className="mt-4 flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Commitment value</span>
-                  <span className="font-medium">${s.value}</span>
+                  <span className="font-medium tabular-nums">{formatINR(s.value)}</span>
                 </div>
               </div>
             ))}
