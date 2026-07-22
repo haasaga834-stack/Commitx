@@ -43,6 +43,15 @@ const QUOTES = [
 
 const ACTIVE_KEY = "commitx-active-session-v1";
 
+// Threshold: hidden longer than this in verified mode = failure.
+// Shorter hidden windows (e.g. incoming call interstitial) auto-resume.
+const CALL_GRACE_MS = 8000;
+
+function log(evt: string, extra?: Record<string, unknown>) {
+  // eslint-disable-next-line no-console
+  console.log(`[CommitX lifecycle] ${evt}`, extra ?? "");
+}
+
 function Session() {
   const { goal, duration, value, mode } = Route.useSearch();
   const navigate = useNavigate();
@@ -84,14 +93,15 @@ function Session() {
   const [quote] = useState(() => QUOTES[Math.floor(Math.random() * QUOTES.length)]);
   const [confirmQuit, setConfirmQuit] = useState(false);
   const doneRef = useRef(false);
+  const hiddenAtRef = useRef<number | null>(null);
+  const pauseRef = useRef(false);
 
-  // rAF loop → smooth 60fps updates, but time source is Date.now()
-  // so backgrounding/closing/reopening stays accurate.
+  // rAF loop — real elapsed time from Date.now().
   useEffect(() => {
     let raf = 0;
     const tick = () => {
       const t = Date.now();
-      setNow(t);
+      if (!pauseRef.current) setNow(t);
       if (!doneRef.current && t - startedAt >= totalMs) {
         doneRef.current = true;
         complete("completed");
@@ -104,11 +114,117 @@ function Session() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Verified-mode lifecycle enforcement.
+  useEffect(() => {
+    if (mode !== "verified") return;
+    log("App Active");
+
+    let graceTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const failFromBackground = () => {
+      if (doneRef.current) return;
+      doneRef.current = true;
+      log("Session Failed", { reason: "background" });
+      complete("failed", "background");
+    };
+
+    const onVisibility = () => {
+      if (doneRef.current) return;
+      if (document.visibilityState === "hidden") {
+        log("App Background");
+        hiddenAtRef.current = Date.now();
+        pauseRef.current = true;
+        // Persist that we went hidden, so a kill/restart is detectable.
+        try {
+          const raw = localStorage.getItem(ACTIVE_KEY);
+          const prev = raw ? JSON.parse(raw) : {};
+          localStorage.setItem(
+            ACTIVE_KEY,
+            JSON.stringify({ ...prev, hiddenAt: hiddenAtRef.current }),
+          );
+        } catch {}
+        // Grace window for incoming calls / brief system interstitials.
+        graceTimer = setTimeout(() => {
+          if (document.visibilityState === "hidden") {
+            failFromBackground();
+          }
+        }, CALL_GRACE_MS);
+      } else {
+        log("App Active");
+        const hiddenFor = hiddenAtRef.current ? Date.now() - hiddenAtRef.current : 0;
+        hiddenAtRef.current = null;
+        if (graceTimer) {
+          clearTimeout(graceTimer);
+          graceTimer = null;
+        }
+        try {
+          const raw = localStorage.getItem(ACTIVE_KEY);
+          const prev = raw ? JSON.parse(raw) : {};
+          delete prev.hiddenAt;
+          localStorage.setItem(ACTIVE_KEY, JSON.stringify(prev));
+        } catch {}
+        if (hiddenFor > CALL_GRACE_MS) {
+          failFromBackground();
+        } else {
+          if (hiddenFor > 0) log("Phone Call Ended", { hiddenFor });
+          pauseRef.current = false;
+        }
+      }
+    };
+
+    const onPageHide = (e: PageTransitionEvent) => {
+      // Persistent (non-bfcache) unload while verified = failure on next open.
+      if (!e.persisted && !doneRef.current) {
+        try {
+          const raw = localStorage.getItem(ACTIVE_KEY);
+          const prev = raw ? JSON.parse(raw) : {};
+          localStorage.setItem(
+            ACTIVE_KEY,
+            JSON.stringify({ ...prev, pendingFail: true, reason: "killed" }),
+          );
+        } catch {}
+        log("App Inactive", { persisted: e.persisted });
+      }
+    };
+
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pagehide", onPageHide);
+
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pagehide", onPageHide);
+      if (graceTimer) clearTimeout(graceTimer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
+
+  // On mount: if verified session was killed / left hidden past grace, fail now.
+  useEffect(() => {
+    if (mode !== "verified") return;
+    try {
+      const raw = localStorage.getItem(ACTIVE_KEY);
+      if (!raw) return;
+      const prev = JSON.parse(raw);
+      if (prev?.pendingFail) {
+        doneRef.current = true;
+        log("Session Failed", { reason: prev.reason || "killed" });
+        complete("failed", "killed");
+        return;
+      }
+      if (typeof prev?.hiddenAt === "number" && Date.now() - prev.hiddenAt > CALL_GRACE_MS) {
+        doneRef.current = true;
+        log("Session Failed", { reason: "background" });
+        complete("failed", "background");
+      }
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const elapsedMs = Math.min(totalMs, now - startedAt);
   const progress = totalMs > 0 ? elapsedMs / totalMs : 0;
   const remaining = Math.max(0, Math.ceil((totalMs - elapsedMs) / 1000));
 
-  function complete(status: "completed" | "failed") {
+  function complete(status: "completed" | "failed", reason?: string) {
     try {
       localStorage.removeItem(ACTIVE_KEY);
     } catch {}
@@ -126,19 +242,27 @@ function Session() {
       sessions: [session, ...s.sessions],
       balance: status === "completed" ? s.balance : s.balance - value,
     }));
-    if (status === "completed" && typeof navigator !== "undefined" && "vibrate" in navigator) {
-      try {
-        navigator.vibrate?.(80);
-      } catch {}
+    if (status === "completed") {
+      log("Session Completed");
+      if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+        try {
+          navigator.vibrate?.(80);
+        } catch {}
+      }
     }
     navigate({
       to: status === "completed" ? "/success" : "/failed",
-      search: { goal, duration: String(duration), value: String(value) } as Record<string, string>,
+      search: {
+        goal,
+        duration: String(duration),
+        value: String(value),
+        ...(reason ? { reason } : {}),
+      } as Record<string, string>,
     });
   }
 
   function quit() {
-    complete("failed");
+    complete("failed", "quit");
   }
 
   return (
@@ -165,6 +289,11 @@ function Session() {
         <p className="mt-1 text-xs text-muted-foreground">
           ${value} committed · demo
         </p>
+        {mode === "verified" && (
+          <p className="mt-6 rounded-full bg-foreground/5 px-4 py-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">
+            Leave the app and this session fails
+          </p>
+        )}
         <p className="mt-10 text-xs italic text-muted-foreground">"{quote}"</p>
       </div>
 
