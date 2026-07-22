@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { MobileShell } from "@/components/BottomNav";
-import { useAppState, stats, setState } from "@/lib/commitx-store";
-import { useState, useEffect } from "react";
-import { Pencil, Check } from "lucide-react";
+import { useAppState, stats, setState, formatINR } from "@/lib/commitx-store";
+import { useState, useEffect, useMemo } from "react";
+import { Pencil, Check, Trophy, Flame } from "lucide-react";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -41,6 +41,8 @@ function Profile() {
     .map((n) => n[0])
     .slice(0, 2)
     .join("");
+
+  const leaderboard = useMemo(() => buildLeaderboard(state.profile.name, s.streak), [state.profile.name, s.streak]);
 
   return (
     <MobileShell>
@@ -102,19 +104,109 @@ function Profile() {
         </div>
 
         <p className="mt-8 text-xs uppercase tracking-widest text-muted-foreground">
-          Statistics
+          Dashboard
         </p>
         <div className="mt-4 grid grid-cols-2 gap-3">
           <Stat label="Current streak" value={`${s.streak}d`} />
           <Stat label="Longest streak" value={`${s.longest}d`} />
-          <Stat label="Completed" value={String(s.completed)} />
-          <Stat label="Failed" value={String(s.failed)} />
           <Stat label="Focus hours" value={totalHours} />
           <Stat label="Success rate" value={`${s.successRate}%`} />
+          <Stat label="Completed" value={String(s.completed)} />
+          <Stat label="Failed" value={String(s.failed)} />
+          <Stat label="Food Coins" value={`🪙 ${s.foodCoins.toLocaleString("en-IN")}`} />
+          <Stat label="Commitments" value={String(s.completed)} />
+        </div>
+
+        <div className="mt-8 flex items-center justify-between">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">
+            Top 10 · Streak Leaderboard
+          </p>
+          <Trophy className="h-4 w-4 text-primary" />
+        </div>
+        <div className="mt-4 space-y-2 pb-4">
+          {leaderboard.map((row, i) => (
+            <LeaderRow key={row.name + i} rank={i + 1} row={row} />
+          ))}
         </div>
       </div>
     </MobileShell>
   );
+}
+
+function LeaderRow({
+  rank,
+  row,
+}: {
+  rank: number;
+  row: { name: string; streak: number; avatar: string; you: boolean };
+}) {
+  const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : null;
+  return (
+    <div
+      className={`flex items-center gap-3 rounded-2xl px-4 py-3 shadow-soft transition-all animate-fade-up ${
+        row.you ? "bg-primary/8 ring-1 ring-primary/40" : "bg-card"
+      }`}
+      style={{ animationDelay: `${rank * 40}ms` }}
+    >
+      <div className="w-6 text-center text-sm font-semibold tabular-nums text-muted-foreground">
+        {medal ?? rank}
+      </div>
+      <div
+        className="flex h-10 w-10 items-center justify-center rounded-full text-lg shadow-inner"
+        style={{ background: row.avatar }}
+      >
+        <span className="font-display text-sm font-semibold text-white">
+          {row.name
+            .split(" ")
+            .map((p) => p[0])
+            .slice(0, 2)
+            .join("")}
+        </span>
+      </div>
+      <div className="flex-1">
+        <p className="text-sm font-medium text-foreground">
+          {row.name}
+          {row.you && (
+            <span className="ml-2 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] uppercase tracking-wider text-primary">
+              You
+            </span>
+          )}
+        </p>
+      </div>
+      <div className="inline-flex items-center gap-1 text-sm font-semibold tabular-nums text-foreground">
+        <Flame className="h-3.5 w-3.5 text-primary" />
+        {row.streak}d
+      </div>
+    </div>
+  );
+}
+
+const MOCK_LEADERS = [
+  { name: "Ananya Rao", streak: 42, avatar: "linear-gradient(135deg,#2E7D32,#66BB6A)" },
+  { name: "Vikram Iyer", streak: 38, avatar: "linear-gradient(135deg,#1565C0,#42A5F5)" },
+  { name: "Priya Shah", streak: 31, avatar: "linear-gradient(135deg,#AD1457,#EC407A)" },
+  { name: "Rohan Kapoor", streak: 27, avatar: "linear-gradient(135deg,#4527A0,#7E57C2)" },
+  { name: "Meera Nair", streak: 22, avatar: "linear-gradient(135deg,#EF6C00,#FFB74D)" },
+  { name: "Kabir Sen", streak: 18, avatar: "linear-gradient(135deg,#00695C,#4DB6AC)" },
+  { name: "Ishita Verma", streak: 15, avatar: "linear-gradient(135deg,#6A1B9A,#BA68C8)" },
+  { name: "Aditya Joshi", streak: 12, avatar: "linear-gradient(135deg,#37474F,#78909C)" },
+  { name: "Neha Gupta", streak: 9, avatar: "linear-gradient(135deg,#C62828,#EF5350)" },
+  { name: "Siddharth Rao", streak: 6, avatar: "linear-gradient(135deg,#2E7D32,#81C784)" },
+];
+
+function buildLeaderboard(userName: string, userStreak: number) {
+  const you = {
+    name: userName,
+    streak: userStreak,
+    avatar: "linear-gradient(135deg,#2E7D32,#4CAF50)",
+    you: true,
+  };
+  const combined = [
+    ...MOCK_LEADERS.map((m) => ({ ...m, you: false })),
+    you,
+  ];
+  combined.sort((a, b) => b.streak - a.streak);
+  return combined.slice(0, 10);
 }
 
 function Field({
@@ -160,3 +252,6 @@ function Stat({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+// Silence unused-import lint for formatINR (kept for future extension).
+void formatINR;
