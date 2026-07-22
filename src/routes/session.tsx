@@ -43,7 +43,6 @@ const QUOTES = [
 ];
 
 const ACTIVE_KEY = "commitx-active-session-v1";
-const CALL_GRACE_MS = 8000;
 
 function log(evt: string, extra?: Record<string, unknown>) {
   // eslint-disable-next-line no-console
@@ -93,6 +92,7 @@ function Session() {
   const doneRef = useRef(false);
   const hiddenAtRef = useRef<number | null>(null);
   const pauseRef = useRef(false);
+  const blurAtRef = useRef<number | null>(null);
 
   useEffect(() => {
     let raf = 0;
@@ -115,48 +115,97 @@ function Session() {
     if (mode !== "verified") return;
     log("App Active");
 
-    // Heuristic: on the web we cannot perfectly distinguish "screen off / device
-    // locked" from "user switched to another app". Both fire visibilitychange
-    // → hidden. However, the two differ on return:
-    //   - Screen unlock while CommitX is still foreground: the page becomes
-    //     visible again and window regains focus. This is ALLOWED.
-    //   - Real app switch: the page typically stays hidden until the user
-    //     returns to the browser. If they come back to a DIFFERENT app in the
-    //     foreground, our tab never becomes visible again in this session.
-    // So we NEVER fail purely from visibilitychange. We pause the visual
-    // timer while hidden and resume on return. The absolute-timestamp clock
-    // (startedAt + Date.now()) keeps elapsed time correct regardless.
-    //
-    // The one case we still treat as failure is `pagehide` with
-    // persisted=false AND a subsequent load where we detect the session was
-    // truly torn down (handled by the recovery path in __root). Screen lock
-    // does not fire pagehide, so this remains lock-safe.
+    // Browser lifecycle signals do not reliably identify phone screen lock.
+    // Therefore CommitX never fails from `hidden`, `blur`, or elapsed hidden
+    // time alone. Those states are treated as allowed screen off / lock. We
+    // only fail when the page is actually being discarded/unloaded through
+    // pagehide with persisted=false, which is the strongest browser-side signal
+    // that the user intentionally left the active CommitX page/app.
+
+    const persistInterruptedSession = (reason: string) => {
+      try {
+        localStorage.setItem(
+          ACTIVE_KEY,
+          JSON.stringify({
+            goal,
+            duration,
+            value,
+            mode,
+            preferReal: preferRealBool,
+            startedAt,
+            pendingFail: true,
+            reason,
+            failedAt: Date.now(),
+          }),
+        );
+      } catch {}
+    };
+
+    const failForAppSwitch = () => {
+      if (doneRef.current) return;
+      log("App Switched");
+      persistInterruptedSession("app_switch");
+      doneRef.current = true;
+      complete("failed", "app_switch");
+    };
 
     const onVisibility = () => {
       if (doneRef.current) return;
       if (document.visibilityState === "hidden") {
-        log("Browser Hidden (screen off or app switch — allowed until proven otherwise)");
+        log("Browser Hidden");
+        log("Screen Locked");
         hiddenAtRef.current = Date.now();
         pauseRef.current = true;
       } else {
         const hiddenFor = hiddenAtRef.current ? Date.now() - hiddenAtRef.current : 0;
         hiddenAtRef.current = null;
         pauseRef.current = false;
-        log("Browser Visible — resuming (CommitX still foreground)", { hiddenFor });
+        setNow(Date.now());
+        log("Browser Visible", { hiddenFor });
+        log("Screen Unlocked");
       }
     };
 
-    const onBlur = () => log("Screen Locked or focus lost");
-    const onFocus = () => log("Screen Unlocked or focus regained");
+    const onBlur = () => {
+      blurAtRef.current = Date.now();
+      log("Window Blur");
+      log("Screen Locked");
+    };
+    const onFocus = () => {
+      const blurredFor = blurAtRef.current ? Date.now() - blurAtRef.current : 0;
+      blurAtRef.current = null;
+      pauseRef.current = false;
+      setNow(Date.now());
+      log("Window Focus", { blurredFor });
+      log("Screen Unlocked");
+    };
+    const onPageHide = (event: PageTransitionEvent) => {
+      if (doneRef.current) return;
+      if (event.persisted) {
+        log("Browser Hidden", { pagehide: "persisted" });
+        return;
+      }
+      failForAppSwitch();
+    };
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (doneRef.current) return;
+      pauseRef.current = false;
+      setNow(Date.now());
+      log("Browser Visible", { pageshow: true, restored: event.persisted });
+    };
 
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("blur", onBlur);
     window.addEventListener("focus", onFocus);
+    window.addEventListener("pagehide", onPageHide);
+    window.addEventListener("pageshow", onPageShow);
 
     return () => {
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("blur", onBlur);
       window.removeEventListener("focus", onFocus);
+      window.removeEventListener("pagehide", onPageHide);
+      window.removeEventListener("pageshow", onPageShow);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
@@ -205,6 +254,8 @@ function Session() {
           navigator.vibrate?.(80);
         } catch {}
       }
+    } else {
+      log("Session Failed", { reason: reason ?? "unknown" });
     }
     navigate({
       to: status === "completed" ? "/success" : "/failed",
@@ -247,7 +298,7 @@ function Session() {
         </p>
         {mode === "verified" && (
           <p className="mt-6 rounded-full bg-foreground/5 px-4 py-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">
-            Leave the app and this session fails
+            Switching apps fails this session
           </p>
         )}
         <p className="mt-10 text-xs italic text-muted-foreground">"{quote}"</p>

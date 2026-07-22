@@ -56,7 +56,7 @@ function Commit() {
       return;
     }
     if (!plan.ok) {
-      setError("Insufficient balance. Top up your wallet to commit.");
+      setError("Insufficient Demo Balance. Real money deposits are coming soon during the trial phase.");
       return;
     }
     setError(null);
@@ -240,7 +240,8 @@ function Commit() {
               title="Verified"
               subtitle="Strict accountability"
               points={[
-                "Leave the session and it fails",
+                "Switch apps and it fails",
+                "Screen lock is allowed",
                 "For deep, uninterrupted focus",
               ]}
               selected={mode === "verified"}

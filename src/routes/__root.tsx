@@ -119,7 +119,6 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 const ACTIVE_KEY = "commitx-active-session-v1";
-const CALL_GRACE_MS = 8000;
 
 function VerifiedRecovery() {
   const router = useRouter();
@@ -164,7 +163,7 @@ function VerifiedRecovery() {
         });
       });
       localStorage.removeItem(ACTIVE_KEY);
-      const reason = prev.pendingFail ? prev.reason || "killed" : "background";
+      const reason = prev.pendingFail ? prev.reason || "app_switch" : "background";
       // eslint-disable-next-line no-console
       console.log("[CommitX lifecycle] Session Failed", { reason, recovered: true });
       if (router.state.location.pathname !== "/failed") {

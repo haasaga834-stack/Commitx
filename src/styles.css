@@ -37,6 +37,8 @@
   --color-ring: var(--ring);
   --color-hairline: var(--hairline);
   --color-sand: var(--sand);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
 
   --shadow-soft: 0 1px 2px 0 rgb(16 24 40 / 0.04), 0 8px 24px -12px rgb(16 24 40 / 0.06);
   --shadow-lift: 0 2px 4px 0 rgb(16 24 40 / 0.04), 0 24px 48px -20px rgb(16 24 40 / 0.10);
@@ -67,6 +69,8 @@
   --ring: oklch(0.68 0.16 145);
   --hairline: oklch(0.90 0.006 120);
   --sand: oklch(0.78 0.09 80);
+  --info: oklch(0.55 0.15 250);
+  --info-foreground: oklch(0.99 0.005 120);
 }
 
 @layer base {
