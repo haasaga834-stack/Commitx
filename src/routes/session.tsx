@@ -41,32 +41,77 @@ const QUOTES = [
   "Presence over pressure.",
 ];
 
+const ACTIVE_KEY = "commitx-active-session-v1";
+
 function Session() {
   const { goal, duration, value, mode } = Route.useSearch();
   const navigate = useNavigate();
-  const totalSec = duration * 60;
-  const [remaining, setRemaining] = useState(totalSec);
+  const totalMs = duration * 60 * 1000;
+
+  // Resume startedAt if this exact session was already in flight.
+  const startedAt = useRef<number>(
+    (() => {
+      if (typeof window === "undefined") return Date.now();
+      try {
+        const raw = localStorage.getItem(ACTIVE_KEY);
+        if (raw) {
+          const prev = JSON.parse(raw);
+          if (
+            prev &&
+            prev.goal === goal &&
+            prev.duration === duration &&
+            prev.value === value &&
+            prev.mode === mode &&
+            typeof prev.startedAt === "number" &&
+            Date.now() - prev.startedAt < totalMs + 5_000
+          ) {
+            return prev.startedAt;
+          }
+        }
+      } catch {}
+      const now = Date.now();
+      try {
+        localStorage.setItem(
+          ACTIVE_KEY,
+          JSON.stringify({ goal, duration, value, mode, startedAt: now }),
+        );
+      } catch {}
+      return now;
+    })(),
+  ).current;
+
+  const [now, setNow] = useState<number>(() => Date.now());
   const [quote] = useState(() => QUOTES[Math.floor(Math.random() * QUOTES.length)]);
   const [confirmQuit, setConfirmQuit] = useState(false);
   const doneRef = useRef(false);
 
+  // rAF loop → smooth 60fps updates, but time source is Date.now()
+  // so backgrounding/closing/reopening stays accurate.
   useEffect(() => {
-    const start = Date.now();
-    const id = setInterval(() => {
-      const elapsed = Math.floor((Date.now() - start) / 1000);
-      const left = totalSec - elapsed;
-      setRemaining(left);
-      if (left <= 0 && !doneRef.current) {
+    let raf = 0;
+    const tick = () => {
+      const t = Date.now();
+      setNow(t);
+      if (!doneRef.current && t - startedAt >= totalMs) {
         doneRef.current = true;
-        clearInterval(id);
         complete("completed");
+        return;
       }
-    }, 250);
-    return () => clearInterval(id);
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const elapsedMs = Math.min(totalMs, now - startedAt);
+  const progress = totalMs > 0 ? elapsedMs / totalMs : 0;
+  const remaining = Math.max(0, Math.ceil((totalMs - elapsedMs) / 1000));
+
   function complete(status: "completed" | "failed") {
+    try {
+      localStorage.removeItem(ACTIVE_KEY);
+    } catch {}
     const session = {
       id: `${Date.now()}`,
       goal,
@@ -93,12 +138,7 @@ function Session() {
   }
 
   function quit() {
-    if (mode === "verified") {
-      complete("failed");
-    } else {
-      // standard warning + return
-      complete("failed");
-    }
+    complete("failed");
   }
 
   return (
@@ -117,7 +157,7 @@ function Session() {
       </div>
 
       <div className="flex flex-1 flex-col items-center justify-center">
-        <Hourglass size={260} state="running" />
+        <Hourglass size={260} state="running" progress={progress} />
         <p className="mt-10 font-display text-6xl font-semibold tabular-nums tracking-tight">
           {fmt(remaining)}
         </p>
