@@ -129,9 +129,10 @@ function VerifiedRecovery() {
       if (!raw) return;
       const prev = JSON.parse(raw);
       if (prev?.mode !== "verified") return;
-      const hiddenTooLong =
-        typeof prev.hiddenAt === "number" && Date.now() - prev.hiddenAt > CALL_GRACE_MS;
-      if (!prev.pendingFail && !hiddenTooLong) return;
+      // Only recover as failed when the session was explicitly marked
+      // pendingFail (real app teardown). Screen lock / screen off must NOT
+      // trigger a failure, so a stale `hiddenAt` alone is ignored.
+      if (!prev.pendingFail) return;
 
       // Persist the failed session and clear active marker.
       import("../lib/commitx-store").then(({ setState, planDeduction }) => {
