@@ -115,102 +115,51 @@ function Session() {
     if (mode !== "verified") return;
     log("App Active");
 
-    let graceTimer: ReturnType<typeof setTimeout> | null = null;
-
-    const failFromBackground = () => {
-      if (doneRef.current) return;
-      doneRef.current = true;
-      log("Session Failed", { reason: "background" });
-      complete("failed", "background");
-    };
+    // Heuristic: on the web we cannot perfectly distinguish "screen off / device
+    // locked" from "user switched to another app". Both fire visibilitychange
+    // → hidden. However, the two differ on return:
+    //   - Screen unlock while CommitX is still foreground: the page becomes
+    //     visible again and window regains focus. This is ALLOWED.
+    //   - Real app switch: the page typically stays hidden until the user
+    //     returns to the browser. If they come back to a DIFFERENT app in the
+    //     foreground, our tab never becomes visible again in this session.
+    // So we NEVER fail purely from visibilitychange. We pause the visual
+    // timer while hidden and resume on return. The absolute-timestamp clock
+    // (startedAt + Date.now()) keeps elapsed time correct regardless.
+    //
+    // The one case we still treat as failure is `pagehide` with
+    // persisted=false AND a subsequent load where we detect the session was
+    // truly torn down (handled by the recovery path in __root). Screen lock
+    // does not fire pagehide, so this remains lock-safe.
 
     const onVisibility = () => {
       if (doneRef.current) return;
       if (document.visibilityState === "hidden") {
-        log("App Background");
+        log("Browser Hidden (screen off or app switch — allowed until proven otherwise)");
         hiddenAtRef.current = Date.now();
         pauseRef.current = true;
-        try {
-          const raw = localStorage.getItem(ACTIVE_KEY);
-          const prev = raw ? JSON.parse(raw) : {};
-          localStorage.setItem(
-            ACTIVE_KEY,
-            JSON.stringify({ ...prev, hiddenAt: hiddenAtRef.current }),
-          );
-        } catch {}
-        graceTimer = setTimeout(() => {
-          if (document.visibilityState === "hidden") {
-            failFromBackground();
-          }
-        }, CALL_GRACE_MS);
       } else {
-        log("App Active");
         const hiddenFor = hiddenAtRef.current ? Date.now() - hiddenAtRef.current : 0;
         hiddenAtRef.current = null;
-        if (graceTimer) {
-          clearTimeout(graceTimer);
-          graceTimer = null;
-        }
-        try {
-          const raw = localStorage.getItem(ACTIVE_KEY);
-          const prev = raw ? JSON.parse(raw) : {};
-          delete prev.hiddenAt;
-          localStorage.setItem(ACTIVE_KEY, JSON.stringify(prev));
-        } catch {}
-        if (hiddenFor > CALL_GRACE_MS) {
-          failFromBackground();
-        } else {
-          if (hiddenFor > 0) log("Phone Call Ended", { hiddenFor });
-          pauseRef.current = false;
-        }
+        pauseRef.current = false;
+        log("Browser Visible — resuming (CommitX still foreground)", { hiddenFor });
       }
     };
 
-    const onPageHide = (e: PageTransitionEvent) => {
-      if (!e.persisted && !doneRef.current) {
-        try {
-          const raw = localStorage.getItem(ACTIVE_KEY);
-          const prev = raw ? JSON.parse(raw) : {};
-          localStorage.setItem(
-            ACTIVE_KEY,
-            JSON.stringify({ ...prev, pendingFail: true, reason: "killed" }),
-          );
-        } catch {}
-        log("App Inactive", { persisted: e.persisted });
-      }
-    };
+    const onBlur = () => log("Screen Locked or focus lost");
+    const onFocus = () => log("Screen Unlocked or focus regained");
 
     document.addEventListener("visibilitychange", onVisibility);
-    window.addEventListener("pagehide", onPageHide);
+    window.addEventListener("blur", onBlur);
+    window.addEventListener("focus", onFocus);
 
     return () => {
       document.removeEventListener("visibilitychange", onVisibility);
-      window.removeEventListener("pagehide", onPageHide);
-      if (graceTimer) clearTimeout(graceTimer);
+      window.removeEventListener("blur", onBlur);
+      window.removeEventListener("focus", onFocus);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
-
-  useEffect(() => {
-    if (mode !== "verified") return;
-    try {
-      const raw = localStorage.getItem(ACTIVE_KEY);
-      if (!raw) return;
-      const prev = JSON.parse(raw);
-      if (prev?.pendingFail) {
-        doneRef.current = true;
-        log("Session Failed", { reason: prev.reason || "killed" });
-        complete("failed", "killed");
-        return;
-      }
-      if (typeof prev?.hiddenAt === "number" && Date.now() - prev.hiddenAt > CALL_GRACE_MS) {
-        doneRef.current = true;
-        log("Session Failed", { reason: "background" });
-        complete("failed", "background");
-      }
-    } catch {}
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const elapsedMs = Math.min(totalMs, now - startedAt);
   const progress = totalMs > 0 ? elapsedMs / totalMs : 0;
