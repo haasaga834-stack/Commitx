@@ -105,6 +105,12 @@ function Wallet() {
           <p className="mt-2 text-xs text-muted-foreground">
             Virtual · non-withdrawable · from bonuses and rewards.
           </p>
+          <button
+            onClick={() => setShowAddDemo(true)}
+            className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-foreground px-4 py-2 text-xs font-medium text-background"
+          >
+            Add demo money
+          </button>
         </div>
 
         {/* Referral */}
