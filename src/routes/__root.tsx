@@ -11,6 +11,10 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import {
+  finalizePendingVerifiedFailure,
+  readActiveVerifiedSession,
+} from "../lib/verified-mode";
 
 function NotFoundComponent() {
   return (
@@ -127,66 +131,46 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
-const ACTIVE_KEY = "commitx-active-session-v1";
-
 function VerifiedRecovery() {
   const router = useRouter();
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(ACTIVE_KEY);
-      if (!raw) return;
-      const prev = JSON.parse(raw);
-      if (prev?.mode !== "verified") return;
-      // Only recover as failed when the session was explicitly marked
-      // pendingFail (real app teardown). Screen lock / screen off must NOT
-      // trigger a failure, so a stale `hiddenAt` alone is ignored.
-      if (!prev.pendingFail) return;
-
-      // Persist the failed session and clear active marker.
-      import("../lib/commitx-store").then(({ setState, planDeduction }) => {
-        setState((s) => {
-          const plan = planDeduction(prev.value || 0, s.balances, prev.preferReal === true || prev.preferReal === "1");
-          const demoUsed = plan.ok ? plan.demoUsed : 0;
-          const realUsed = plan.ok ? plan.realUsed : 0;
-          return {
-            ...s,
-            sessions: [
-              {
-                id: `${Date.now()}`,
-                goal: prev.goal,
-                durationMinutes: prev.duration,
-                value: prev.value,
-                mode: "verified",
-                status: "failed",
-                date: Date.now(),
-                demoUsed,
-                realUsed,
-              },
-              ...s.sessions,
-            ],
-            balances: {
-              demo: Math.max(0, s.balances.demo - demoUsed),
-              real: Math.max(0, s.balances.real - realUsed),
-            },
-          };
-        });
-      });
-      localStorage.removeItem(ACTIVE_KEY);
-      const reason = prev.pendingFail ? prev.reason || "app_switch" : "background";
+    const recover = () => {
+      const active = readActiveVerifiedSession();
+      if (!active || active.mode !== "verified" || !active.pendingFail) return;
+      const failure = finalizePendingVerifiedFailure();
+      if (!failure) return;
       // eslint-disable-next-line no-console
-      console.log("[CommitX lifecycle] Session Failed", { reason, recovered: true });
+      console.log("[CommitX lifecycle] Session Failed", {
+        reason: failure.reason,
+        recovered: true,
+      });
       if (router.state.location.pathname !== "/failed") {
         router.navigate({
           to: "/failed",
           search: {
-            goal: String(prev.goal ?? "Focus"),
-            duration: String(prev.duration ?? 0),
-            value: String(prev.value ?? 0),
-            reason,
+            goal: String(failure.goal),
+            duration: String(failure.duration),
+            value: String(failure.value),
+            reason: failure.reason,
           } as Record<string, string>,
         });
       }
+    };
+
+    try {
+      recover();
     } catch {}
+
+    const onNativePendingFailure = () => {
+      try {
+        recover();
+      } catch {}
+    };
+
+    window.addEventListener("commitx:verified-pending-failure", onNativePendingFailure);
+    return () => {
+      window.removeEventListener("commitx:verified-pending-failure", onNativePendingFailure);
+    };
   }, [router]);
   return null;
 }
