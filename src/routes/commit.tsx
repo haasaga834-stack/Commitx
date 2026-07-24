@@ -240,9 +240,9 @@ function Commit() {
               title="Verified"
               subtitle="Strict accountability"
               points={[
-                "Switch apps and it fails",
-                "Screen lock is allowed",
-                "For deep, uninterrupted focus",
+                "Home, Recents, or app switch fails",
+                "Calls, screen lock, and notification shade allowed",
+                "Split-screen fails on Android",
               ]}
               selected={mode === "verified"}
               onClick={() => {

@@ -27,6 +27,17 @@ function reasonCopy(reason?: string) {
   switch (reason) {
     case "app_switch":
       return "You left CommitX while using Verified Mode.";
+    case "android_user_leave":
+      return "CommitX was sent to the background during Verified Mode.";
+    case "home":
+      return "The Home button was used during Verified Mode.";
+    case "recents":
+      return "Recent Apps was opened during Verified Mode.";
+    case "multi_window":
+    case "split_screen":
+      return "Split-screen or multi-window was opened during Verified Mode.";
+    case "browser_unload":
+      return "CommitX was closed during Verified Mode.";
     case "background":
       return "You left CommitX while using Verified Mode.";
     case "killed":
@@ -40,7 +51,7 @@ function reasonCopy(reason?: string) {
 
 function Failed() {
   const { goal, value, reason } = Route.useSearch();
-  const isVerifiedBreak = reason === "app_switch" || reason === "background" || reason === "killed";
+  const isVerifiedBreak = Boolean(reason && reason !== "quit");
   return (
     <div className="fixed inset-0 z-50 flex min-h-screen flex-col items-center justify-center bg-background px-6">
       <Hourglass size={200} state="failed" />

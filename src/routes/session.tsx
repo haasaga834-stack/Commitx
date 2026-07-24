@@ -2,8 +2,29 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { Hourglass } from "@/components/Hourglass";
 import { setState, formatINR, planDeduction, getState, type Mode } from "@/lib/commitx-store";
+import {
+  clearActiveVerifiedSession,
+  markActiveVerifiedSessionPendingFailure,
+  readActiveVerifiedSession,
+  writeActiveVerifiedSession,
+  type VerifiedFailureReason,
+} from "@/lib/verified-mode";
 import { X } from "lucide-react";
 import { z } from "zod";
+
+declare global {
+  interface Window {
+    CommitXVerifiedMode?: {
+      onAndroidUserLeaveHint?: (reason?: VerifiedFailureReason) => void;
+      onAndroidMultiWindow?: () => void;
+      fail?: (reason?: VerifiedFailureReason) => void;
+    };
+    CommitXAndroid?: {
+      setVerifiedModeActive?: (active: boolean) => void;
+      clearPendingFailure?: () => void;
+    };
+  }
+}
 
 const search = z.object({
   goal: z.string().default("Focus"),
@@ -42,11 +63,23 @@ const QUOTES = [
   "Presence over pressure.",
 ];
 
-const ACTIVE_KEY = "commitx-active-session-v1";
-
 function log(evt: string, extra?: Record<string, unknown>) {
   // eslint-disable-next-line no-console
   console.log(`[CommitX lifecycle] ${evt}`, extra ?? "");
+}
+
+function eventReason(event: Event, fallback: VerifiedFailureReason) {
+  if (event instanceof CustomEvent && event.detail && typeof event.detail.reason === "string") {
+    return event.detail.reason;
+  }
+  return fallback;
+}
+
+function setNativeVerifiedModeActive(active: boolean) {
+  try {
+    window.CommitXAndroid?.setVerifiedModeActive?.(active);
+    if (!active) window.CommitXAndroid?.clearPendingFailure?.();
+  } catch {}
 }
 
 function Session() {
@@ -59,29 +92,20 @@ function Session() {
     (() => {
       if (typeof window === "undefined") return Date.now();
       try {
-        const raw = localStorage.getItem(ACTIVE_KEY);
-        if (raw) {
-          const prev = JSON.parse(raw);
-          if (
-            prev &&
-            prev.goal === goal &&
-            prev.duration === duration &&
-            prev.value === value &&
-            prev.mode === mode &&
-            typeof prev.startedAt === "number" &&
-            Date.now() - prev.startedAt < totalMs + 5_000
-          ) {
-            return prev.startedAt;
-          }
+        const prev = readActiveVerifiedSession();
+        if (
+          prev &&
+          prev.goal === goal &&
+          prev.duration === duration &&
+          prev.value === value &&
+          prev.mode === mode &&
+          typeof prev.startedAt === "number"
+        ) {
+          return prev.startedAt;
         }
       } catch {}
       const now = Date.now();
-      try {
-        localStorage.setItem(
-          ACTIVE_KEY,
-          JSON.stringify({ goal, duration, value, mode, preferReal: preferRealBool, startedAt: now }),
-        );
-      } catch {}
+      writeActiveVerifiedSession({ goal, duration, value, mode, preferReal: preferRealBool, startedAt: now });
       return now;
     })(),
   ).current;
@@ -91,16 +115,14 @@ function Session() {
   const [confirmQuit, setConfirmQuit] = useState(false);
   const doneRef = useRef(false);
   const hiddenAtRef = useRef<number | null>(null);
-  const pauseRef = useRef(false);
   const blurAtRef = useRef<number | null>(null);
 
   useEffect(() => {
     let raf = 0;
     const tick = () => {
       const t = Date.now();
-      if (!pauseRef.current) setNow(t);
+      setNow(t);
       if (!doneRef.current && t - startedAt >= totalMs) {
-        doneRef.current = true;
         complete("completed");
         return;
       }
@@ -113,99 +135,111 @@ function Session() {
 
   useEffect(() => {
     if (mode !== "verified") return;
-    log("App Active");
+    log("Verified Mode Armed", { startedAt, totalMs });
+    setNativeVerifiedModeActive(true);
 
-    // Browser lifecycle signals do not reliably identify phone screen lock.
-    // Therefore CommitX never fails from `hidden`, `blur`, or elapsed hidden
-    // time alone. Those states are treated as allowed screen off / lock. We
-    // only fail when the page is actually being discarded/unloaded through
-    // pagehide with persisted=false, which is the strongest browser-side signal
-    // that the user intentionally left the active CommitX page/app.
-
-    const persistInterruptedSession = (reason: string) => {
-      try {
-        localStorage.setItem(
-          ACTIVE_KEY,
-          JSON.stringify({
-            goal,
-            duration,
-            value,
-            mode,
-            preferReal: preferRealBool,
-            startedAt,
-            pendingFail: true,
-            reason,
-            failedAt: Date.now(),
-          }),
-        );
-      } catch {}
+    const failForVerifiedExit = (reason: VerifiedFailureReason) => {
+      if (doneRef.current) return;
+      log("Android Foreground Exit", { reason });
+      markActiveVerifiedSessionPendingFailure(reason);
+      setNow(Date.now());
+      complete("failed", reason);
     };
 
-    const failForAppSwitch = () => {
+    const markPendingExit = (reason: VerifiedFailureReason) => {
       if (doneRef.current) return;
-      log("App Switched");
-      persistInterruptedSession("app_switch");
-      doneRef.current = true;
-      complete("failed", "app_switch");
+      log("Verified Exit Pending", { reason });
+      markActiveVerifiedSessionPendingFailure(reason);
     };
 
     const onVisibility = () => {
       if (doneRef.current) return;
       if (document.visibilityState === "hidden") {
-        log("Browser Hidden");
-        log("Screen Locked");
+        log("Visibility Hidden", { treatedAs: "allowed_lock_call_or_system_shade" });
         hiddenAtRef.current = Date.now();
-        pauseRef.current = true;
       } else {
         const hiddenFor = hiddenAtRef.current ? Date.now() - hiddenAtRef.current : 0;
         hiddenAtRef.current = null;
-        pauseRef.current = false;
         setNow(Date.now());
-        log("Browser Visible", { hiddenFor });
-        log("Screen Unlocked");
+        log("Visibility Visible", { hiddenFor });
       }
     };
 
     const onBlur = () => {
       blurAtRef.current = Date.now();
-      log("Window Blur");
-      log("Screen Locked");
+      log("Window Blur", { treatedAs: "allowed_overlay_keyboard_call_or_notification_shade" });
     };
     const onFocus = () => {
       const blurredFor = blurAtRef.current ? Date.now() - blurAtRef.current : 0;
       blurAtRef.current = null;
-      pauseRef.current = false;
       setNow(Date.now());
       log("Window Focus", { blurredFor });
-      log("Screen Unlocked");
     };
     const onPageHide = (event: PageTransitionEvent) => {
       if (doneRef.current) return;
       if (event.persisted) {
-        log("Browser Hidden", { pagehide: "persisted" });
+        log("Page Hidden", { pagehide: "persisted" });
         return;
       }
-      failForAppSwitch();
+      markPendingExit("browser_unload");
+      failForVerifiedExit("app_switch");
     };
     const onPageShow = (event: PageTransitionEvent) => {
       if (doneRef.current) return;
-      pauseRef.current = false;
       setNow(Date.now());
-      log("Browser Visible", { pageshow: true, restored: event.persisted });
+      log("Page Visible", { pageshow: true, restored: event.persisted });
+    };
+    const onBeforeUnload = () => {
+      markPendingExit("browser_unload");
+    };
+    const onFreeze = () => {
+      log("Page Frozen", { treatedAs: "allowed_until_native_user_leave_hint" });
+    };
+    const onResume = () => {
+      setNow(Date.now());
+      log("Page Resumed");
+    };
+    const onNativeUserLeaveHint = (event: Event) => {
+      failForVerifiedExit(eventReason(event, "android_user_leave"));
+    };
+    const onNativeMultiWindow = () => {
+      failForVerifiedExit("multi_window");
+    };
+
+    const previousBridge = window.CommitXVerifiedMode;
+    window.CommitXVerifiedMode = {
+      ...previousBridge,
+      onAndroidUserLeaveHint: (reason) => failForVerifiedExit(reason || "android_user_leave"),
+      onAndroidMultiWindow: () => failForVerifiedExit("multi_window"),
+      fail: (reason) => failForVerifiedExit(reason || "android_user_leave"),
     };
 
     document.addEventListener("visibilitychange", onVisibility);
+    document.addEventListener("freeze", onFreeze);
+    document.addEventListener("resume", onResume);
     window.addEventListener("blur", onBlur);
     window.addEventListener("focus", onFocus);
     window.addEventListener("pagehide", onPageHide);
     window.addEventListener("pageshow", onPageShow);
+    window.addEventListener("beforeunload", onBeforeUnload);
+    window.addEventListener("commitx:android-user-leave-hint", onNativeUserLeaveHint);
+    window.addEventListener("commitx:native-user-leave-hint", onNativeUserLeaveHint);
+    window.addEventListener("commitx:android-multi-window", onNativeMultiWindow);
 
     return () => {
+      setNativeVerifiedModeActive(false);
+      window.CommitXVerifiedMode = previousBridge;
       document.removeEventListener("visibilitychange", onVisibility);
+      document.removeEventListener("freeze", onFreeze);
+      document.removeEventListener("resume", onResume);
       window.removeEventListener("blur", onBlur);
       window.removeEventListener("focus", onFocus);
       window.removeEventListener("pagehide", onPageHide);
       window.removeEventListener("pageshow", onPageShow);
+      window.removeEventListener("beforeunload", onBeforeUnload);
+      window.removeEventListener("commitx:android-user-leave-hint", onNativeUserLeaveHint);
+      window.removeEventListener("commitx:native-user-leave-hint", onNativeUserLeaveHint);
+      window.removeEventListener("commitx:android-multi-window", onNativeMultiWindow);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
@@ -215,9 +249,10 @@ function Session() {
   const remaining = Math.max(0, Math.ceil((totalMs - elapsedMs) / 1000));
 
   function complete(status: "completed" | "failed", reason?: string) {
-    try {
-      localStorage.removeItem(ACTIVE_KEY);
-    } catch {}
+    if (doneRef.current) return;
+    doneRef.current = true;
+    setNativeVerifiedModeActive(false);
+    clearActiveVerifiedSession();
     const current = getState();
     const plan = planDeduction(value, current.balances, preferRealBool);
     const demoUsed = plan.ok ? plan.demoUsed : 0;
@@ -298,7 +333,7 @@ function Session() {
         </p>
         {mode === "verified" && (
           <p className="mt-6 rounded-full bg-foreground/5 px-4 py-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">
-            Switching apps fails this session
+            Leaving CommitX fails this session
           </p>
         )}
         <p className="mt-10 text-xs italic text-muted-foreground">"{quote}"</p>
