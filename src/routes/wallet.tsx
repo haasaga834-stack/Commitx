@@ -23,6 +23,8 @@ export const Route = createFileRoute("/wallet")({
 function Wallet() {
   const { state, hydrated } = useAppState();
   const [showMoneyNotice, setShowMoneyNotice] = useState(false);
+  const [showAddDemo, setShowAddDemo] = useState(false);
+  const [demoAmount, setDemoAmount] = useState("100");
   const [copied, setCopied] = useState(false);
 
   const real = state.balances.real;
@@ -35,6 +37,18 @@ function Wallet() {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {}
+  }
+
+  function addDemo(amount: number) {
+    if (!amount || amount <= 0) return;
+    import("@/lib/commitx-store").then(({ setState }) => {
+      setState((s) => ({
+        ...s,
+        balances: { ...s.balances, demo: s.balances.demo + amount },
+      }));
+    });
+    setShowAddDemo(false);
+    setDemoAmount("100");
   }
 
   return (
