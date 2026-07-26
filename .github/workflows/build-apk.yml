@@ -56,9 +56,12 @@ jobs:
               -dname "CN=CommitX, OU=Mobile, O=CommitX, L=NA, S=NA, C=IN"
           fi
 
-      - name: Build signed release APK
+      - name: Build signed release APK and AAB
         working-directory: android
-        run: gradle :app:assembleRelease --no-daemon --stacktrace < /dev/null
+        env:
+          COMMITX_VERSION_CODE: ${{ github.run_number }}
+          COMMITX_VERSION_NAME: 1.0.${{ github.run_number }}
+        run: gradle :app:assembleRelease :app:bundleRelease --no-daemon --stacktrace < /dev/null
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -66,3 +69,11 @@ jobs:
           name: commitx-apk
           path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
+
+      - name: Upload AAB (Play Store upload format)
+        uses: actions/upload-artifact@v4
+        with:
+          name: commitx-aab
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+

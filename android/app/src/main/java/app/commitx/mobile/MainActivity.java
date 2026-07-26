@@ -28,8 +28,10 @@ public class MainActivity extends Activity {
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
         preferences = getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+
 
         getWindow().setStatusBarColor(Color.parseColor("#F8F9F6"));
         getWindow().setNavigationBarColor(Color.parseColor("#F8F9F6"));
