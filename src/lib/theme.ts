@@ -27,3 +27,19 @@ export function setTheme(mode: ThemeMode) {
   applyTheme(mode);
   window.dispatchEvent(new CustomEvent("commitx:theme-change", { detail: mode }));
 }
+
+// eslint-disable-next-line import/first
+import { useEffect, useState } from "react";
+
+export function useTheme() {
+  const [mode, setMode] = useState<ThemeMode>("light");
+  useEffect(() => {
+    const current = readTheme();
+    setMode(current);
+    applyTheme(current);
+    const onChange = (e: Event) => setMode(((e as CustomEvent).detail as ThemeMode) ?? readTheme());
+    window.addEventListener("commitx:theme-change", onChange);
+    return () => window.removeEventListener("commitx:theme-change", onChange);
+  }, []);
+  return { mode, setMode: setTheme, isDark: mode === "dark" };
+}
