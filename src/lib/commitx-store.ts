@@ -44,7 +44,7 @@ export const MIN_DEPOSIT = 50;
 export const MAX_REAL_WALLET = 1000;
 export const MIN_COMMIT = 50;
 export const MAX_COMMIT = 500;
-export const REFERRAL_BONUS = 50;
+export const REFERRAL_BONUS = 100;
 export const WELCOME_DEMO = 500;
 
 const initial: AppState = {

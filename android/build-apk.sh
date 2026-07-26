@@ -40,8 +40,8 @@ if [ ! -f "$COMMITX_KEYSTORE_PATH" ]; then
 fi
 
 echo "Building signed release APK..."
-gradle :app:assembleRelease --no-daemon < /dev/null
+gradle :app:assembleRelease :app:bundleRelease --no-daemon < /dev/null
 
 echo ""
 echo "APK generated at:"
-find app/build/outputs/apk -name "*.apk" -type f
+find app/build/outputs -name "*.apk" -o -name "*.aab" -type f
