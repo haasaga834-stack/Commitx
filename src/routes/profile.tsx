@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { MobileShell } from "@/components/BottomNav";
 import { useAppState, stats, setState, formatINR } from "@/lib/commitx-store";
 import { useState, useEffect, useMemo } from "react";
-import { Pencil, Check, Trophy, Flame } from "lucide-react";
+import { Pencil, Check, Trophy, Flame, Settings as SettingsIcon } from "lucide-react";
+
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -51,14 +52,24 @@ function Profile() {
           <p className="text-xs uppercase tracking-widest text-muted-foreground">
             Profile
           </p>
-          <button
-            onClick={() => (editing ? save() : setEditing(true))}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-soft"
-            aria-label={editing ? "Save" : "Edit"}
-          >
-            {editing ? <Check className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/settings"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-soft"
+              aria-label="Settings"
+            >
+              <SettingsIcon className="h-4 w-4" />
+            </Link>
+            <button
+              onClick={() => (editing ? save() : setEditing(true))}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-soft"
+              aria-label={editing ? "Save" : "Edit"}
+            >
+              {editing ? <Check className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
+            </button>
+          </div>
         </div>
+
 
         <div className="mt-8 flex flex-col items-center">
           <div className="flex h-24 w-24 items-center justify-center rounded-full bg-primary font-display text-3xl font-semibold text-primary-foreground shadow-lift">
