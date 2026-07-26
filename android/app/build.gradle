@@ -2,6 +2,9 @@ plugins {
     id "com.android.application"
 }
 
+def keystorePath = System.getenv("COMMITX_KEYSTORE_PATH") ?: "commitx.keystore"
+def keystoreFile = file(keystorePath)
+
 android {
     namespace "app.commitx.mobile"
     compileSdk 35
@@ -12,5 +15,23 @@ android {
         targetSdk 35
         versionCode 1
         versionName "1.0.0"
+    }
+
+    signingConfigs {
+        release {
+            if (keystoreFile.exists()) {
+                storeFile keystoreFile
+                storePassword System.getenv("COMMITX_KEYSTORE_PASSWORD") ?: "commitx"
+                keyAlias System.getenv("COMMITX_KEY_ALIAS") ?: "commitx"
+                keyPassword System.getenv("COMMITX_KEY_PASSWORD") ?: "commitx"
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig keystoreFile.exists() ? signingConfigs.release : signingConfigs.debug
+        }
     }
 }
