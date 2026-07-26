@@ -9,6 +9,12 @@ permissions:
   contents: read
   actions: write
 
+env:
+  COMMITX_KEYSTORE_PATH: ${{ github.workspace }}/android/app/commitx.keystore
+  COMMITX_KEYSTORE_PASSWORD: commitx
+  COMMITX_KEY_ALIAS: commitx
+  COMMITX_KEY_PASSWORD: commitx
+
 jobs:
   build-apk:
     runs-on: ubuntu-latest
@@ -25,21 +31,38 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Android platform
-        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Accept SDK licenses and install platform
+        run: |
+          set -eux
+          yes | sdkmanager --licenses > /dev/null || true
+          sdkmanager --install "platforms;android-35" "build-tools;35.0.0" < /dev/null
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 8.10.2
 
-      - name: Build Android APK
+      - name: Generate signing keystore (non-interactive)
+        run: |
+          set -eux
+          mkdir -p android/app
+          if [ ! -f "$COMMITX_KEYSTORE_PATH" ]; then
+            keytool -genkeypair -noprompt \
+              -keystore "$COMMITX_KEYSTORE_PATH" \
+              -alias "$COMMITX_KEY_ALIAS" \
+              -storepass "$COMMITX_KEYSTORE_PASSWORD" \
+              -keypass "$COMMITX_KEY_PASSWORD" \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=CommitX, OU=Mobile, O=CommitX, L=NA, S=NA, C=IN"
+          fi
+
+      - name: Build signed release APK
         working-directory: android
-        run: gradle :app:assembleDebug
+        run: gradle :app:assembleRelease --no-daemon --stacktrace < /dev/null
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: commitx-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
