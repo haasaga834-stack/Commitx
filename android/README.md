@@ -33,14 +33,14 @@ From this `android/` folder:
 bash build-apk.sh
 ```
 
-This builds the native Android APK.
+This generates a signing keystore if missing and builds a signed release APK, fully non-interactively (no Bubblewrap, no prompts).
 
 ### 3. Find your APK
 
 After the build finishes, the APK path is printed. It usually looks like:
 
 ```
-android/app/build/outputs/apk/debug/app-debug.apk
+android/app/build/outputs/apk/release/app-release.apk
 ```
 
 Install it on your phone with:
