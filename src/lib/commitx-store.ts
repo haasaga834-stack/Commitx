@@ -198,3 +198,23 @@ export function stats(sessions: Session[]) {
     foodCoins,
   };
 }
+
+/** Subscribe to store changes (used by cloud sync). */
+export function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+/** Replace local state with server state without notifying sync listeners twice. */
+export function hydrateState(next: AppState) {
+  current = next;
+  write(next);
+  listeners.forEach((l) => l());
+}
+
+/** Reset to a clean slate (used after account deletion / sign-out). */
+export function resetState() {
+  hydrateState({ ...initial, balances: { real: 0, demo: 0 }, sessions: [] });
+}

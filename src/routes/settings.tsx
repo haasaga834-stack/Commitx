@@ -1,10 +1,14 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { MobileShell } from "@/components/BottomNav";
 import { useTheme } from "@/lib/theme";
-import { useAppState, setState, formatINR, REFERRAL_BONUS } from "@/lib/commitx-store";
+import { formatINR, REFERRAL_BONUS } from "@/lib/commitx-store";
 import { ACTIVE_VERIFIED_SESSION_KEY } from "@/lib/verified-mode";
-import { useState } from "react";
-import { ArrowLeft, Moon, Sun, Copy, Check, Trash2, ShieldAlert } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { claimReferral, deleteAccount as deleteAccountFn } from "@/lib/account.functions";
+import { getDeviceHash } from "@/lib/device";
+import { signOutEverywhere } from "@/lib/use-auth";
+import { useEffect, useState } from "react";
+import { ArrowLeft, Moon, Sun, Copy, Check, Trash2, ShieldAlert, LogOut } from "lucide-react";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -19,14 +23,35 @@ export const Route = createFileRoute("/settings")({
 });
 
 function Settings() {
+  const router = useRouter();
   const { isDark, setMode } = useTheme();
-  const { state, hydrated } = useAppState();
   const [copied, setCopied] = useState(false);
   const [confirming, setConfirming] = useState(false);
-  const [deleted, setDeleted] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [referralCode, setReferralCode] = useState("");
+  const [alreadyReferred, setAlreadyReferred] = useState(false);
+  const [codeInput, setCodeInput] = useState("");
+  const [claimMsg, setClaimMsg] = useState<string | null>(null);
+  const [claiming, setClaiming] = useState(false);
 
-  const referralCode =
-    "COMMIT-" + (state.profile.name.split(" ")[0] || "YOU").toUpperCase().slice(0, 6);
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user) return;
+      const { data } = await supabase
+        .from("profiles")
+        .select("referral_code, referred_by")
+        .eq("id", auth.user.id)
+        .maybeSingle();
+      if (!active || !data) return;
+      setReferralCode(data.referral_code);
+      setAlreadyReferred(Boolean(data.referred_by));
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   function copyReferral() {
     try {
@@ -36,21 +61,42 @@ function Settings() {
     } catch {}
   }
 
-  function deleteAccount() {
+  async function submitCode() {
+    setClaiming(true);
+    setClaimMsg(null);
     try {
-      localStorage.removeItem("commitx-state-v2");
-      localStorage.removeItem("commitx-state-v1");
-      localStorage.removeItem(ACTIVE_VERIFIED_SESSION_KEY);
-    } catch {}
-    setState(() => ({
-      balances: { real: 0, demo: 0 },
-      sessions: [],
-      profile: { name: "New User", age: "", sex: "", education: "" },
-      referralCredited: false,
-    }));
-    setConfirming(false);
-    setDeleted(true);
+      const res = await claimReferral({
+        data: { code: codeInput, deviceHash: getDeviceHash() },
+      });
+      setClaimMsg(res.message);
+      if (res.ok) {
+        setAlreadyReferred(true);
+        setCodeInput("");
+      }
+    } catch {
+      setClaimMsg("Could not apply that code. Please try again.");
+    } finally {
+      setClaiming(false);
+    }
   }
+
+  async function deleteAccount() {
+    setDeleting(true);
+    try {
+      await deleteAccountFn();
+      try {
+        localStorage.removeItem("commitx-state-v2");
+        localStorage.removeItem("commitx-state-v1");
+        localStorage.removeItem(ACTIVE_VERIFIED_SESSION_KEY);
+      } catch {}
+      await signOutEverywhere();
+      setConfirming(false);
+      router.navigate({ to: "/auth" });
+    } catch {
+      setDeleting(false);
+    }
+  }
+
 
   return (
     <MobileShell>
@@ -116,16 +162,41 @@ function Settings() {
             onClick={copyReferral}
             className="mt-4 flex w-full items-center justify-between rounded-2xl border border-dashed border-hairline px-4 py-3"
           >
-            <span className="font-mono text-sm text-foreground">
-              {hydrated ? referralCode : ""}
-            </span>
+            <span className="font-mono text-sm text-foreground">{referralCode || "…"}</span>
             {copied ? (
               <Check className="h-4 w-4 text-primary" />
             ) : (
               <Copy className="h-4 w-4 text-muted-foreground" />
             )}
           </button>
+
+          {!alreadyReferred ? (
+            <div className="mt-5 border-t border-hairline pt-5">
+              <p className="text-sm font-medium">Have a referral code?</p>
+              <div className="mt-3 flex gap-2">
+                <input
+                  value={codeInput}
+                  onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
+                  placeholder="CX123ABC"
+                  className="flex-1 rounded-2xl border border-hairline bg-background px-4 py-3 font-mono text-sm outline-none focus:border-primary"
+                />
+                <button
+                  onClick={submitCode}
+                  disabled={claiming || !codeInput}
+                  className="rounded-2xl bg-primary px-5 py-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
+                >
+                  Apply
+                </button>
+              </div>
+              {claimMsg && <p className="mt-3 text-xs text-muted-foreground">{claimMsg}</p>}
+            </div>
+          ) : (
+            <p className="mt-5 border-t border-hairline pt-5 text-xs text-muted-foreground">
+              A referral code has already been applied to this account.
+            </p>
+          )}
         </div>
+
 
         {/* Danger zone */}
         <p className="mt-9 text-xs uppercase tracking-widest text-muted-foreground">
@@ -151,13 +222,19 @@ function Settings() {
             <Trash2 className="h-4 w-4" />
             Delete my account
           </button>
-          {deleted && (
-            <p className="mt-3 text-center text-xs text-muted-foreground">
-              All data on this device has been deleted.
-            </p>
-          )}
+          <button
+            onClick={async () => {
+              await signOutEverywhere();
+              router.navigate({ to: "/auth" });
+            }}
+            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-secondary px-4 py-3 text-sm font-medium text-secondary-foreground"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign out
+          </button>
         </div>
       </div>
+
 
       {confirming && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 backdrop-blur-sm">
