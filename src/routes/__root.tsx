@@ -15,6 +15,7 @@ import {
   finalizePendingVerifiedFailure,
   readActiveVerifiedSession,
 } from "../lib/verified-mode";
+import { useAuth } from "../lib/use-auth";
 
 function NotFoundComponent() {
   return (
@@ -182,12 +183,41 @@ function VerifiedRecovery() {
   return null;
 }
 
+function AuthGate({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  const { user, loading } = useAuth();
+  const pathname = router.state.location.pathname;
+
+  useEffect(() => {
+    if (loading) return;
+    if (!user && pathname !== "/auth") {
+      router.navigate({ to: "/auth" });
+    }
+    if (user && pathname === "/auth") {
+      router.navigate({ to: "/" });
+    }
+  }, [user, loading, pathname, router]);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-hairline border-t-primary" />
+      </div>
+    );
+  }
+
+  if (!user && pathname !== "/auth") return null;
+  return <>{children}</>;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
       <VerifiedRecovery />
-      <Outlet />
+      <AuthGate>
+        <Outlet />
+      </AuthGate>
     </QueryClientProvider>
   );
 }
