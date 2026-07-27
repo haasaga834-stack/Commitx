@@ -254,10 +254,12 @@ function Settings() {
               </button>
               <button
                 onClick={deleteAccount}
-                className="rounded-2xl bg-destructive px-4 py-3 text-sm font-medium text-destructive-foreground"
+                disabled={deleting}
+                className="rounded-2xl bg-destructive px-4 py-3 text-sm font-medium text-destructive-foreground disabled:opacity-60"
               >
-                Delete forever
+                {deleting ? "Deleting…" : "Delete forever"}
               </button>
+
             </div>
           </div>
         </div>
