@@ -53,7 +53,7 @@ function Wallet() {
 
   return (
     <MobileShell>
-      <div className="px-6 pt-14">
+      <div className="px-6 pt-14 md:px-10 md:pt-20">
         <p className="text-xs uppercase tracking-widest text-muted-foreground">
           Wallet
         </p>
@@ -203,7 +203,7 @@ function Wallet() {
 
       {showMoneyNotice && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/25 backdrop-blur-sm sm:items-center">
-          <div className="w-full max-w-md rounded-t-3xl bg-card p-6 shadow-lift sm:rounded-3xl">
+          <div className="w-full max-w-md rounded-t-3xl md:max-w-lg bg-card p-6 shadow-lift sm:rounded-3xl">
             <ComingSoonCard />
             <button
               onClick={() => setShowMoneyNotice(false)}
@@ -217,7 +217,7 @@ function Wallet() {
 
       {showAddDemo && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/25 backdrop-blur-sm sm:items-center">
-          <div className="w-full max-w-md rounded-t-3xl bg-card p-6 shadow-lift sm:rounded-3xl">
+          <div className="w-full max-w-md rounded-t-3xl md:max-w-lg bg-card p-6 shadow-lift sm:rounded-3xl">
             <p className="text-xs uppercase tracking-widest text-muted-foreground">Add demo money</p>
             <h3 className="mt-1 text-xl font-semibold text-foreground">Top up your demo balance</h3>
             <p className="mt-1 text-xs text-muted-foreground">
