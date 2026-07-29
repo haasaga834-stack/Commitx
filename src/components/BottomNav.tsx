@@ -12,8 +12,8 @@ const items = [
 export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-background/85 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-md items-stretch justify-between px-6 pb-6 pt-2">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-background/85 backdrop-blur-xl md:inset-x-auto md:left-1/2 md:bottom-6 md:-translate-x-1/2 md:rounded-full md:border md:shadow-lift">
+      <div className="mx-auto flex max-w-md items-stretch justify-between px-6 pb-6 pt-2 md:w-[26rem] md:gap-2 md:px-4 md:pb-3 md:pt-3">
         {items.map(({ to, label, icon: Icon }) => {
           const active = pathname === to;
           return (
