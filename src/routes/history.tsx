@@ -50,7 +50,7 @@ function History() {
             </p>
           </div>
         ) : (
-          <div className="mt-6 space-y-3">
+          <div className="mt-6 space-y-3 md:grid md:grid-cols-2 md:gap-4 md:space-y-0 lg:grid-cols-3">
             {state.sessions.map((s) => (
               <div
                 key={s.id}
