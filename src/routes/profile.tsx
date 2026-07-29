@@ -47,7 +47,7 @@ function Profile() {
 
   return (
     <MobileShell>
-      <div className="px-6 pt-14">
+      <div className="px-6 pt-14 md:px-10 md:pt-20">
         <div className="flex items-center justify-between">
           <p className="text-xs uppercase tracking-widest text-muted-foreground">
             Profile

@@ -42,7 +42,7 @@ function Home() {
 
   return (
     <MobileShell>
-      <div className="px-6 pt-14">
+      <div className="px-6 pt-14 md:px-10 md:pt-20">
         <div className="animate-fade-up">
           <p className="text-sm text-muted-foreground">{greeting()},</p>
           <h1 className="mt-1 text-3xl font-semibold text-foreground">

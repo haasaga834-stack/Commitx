@@ -340,8 +340,8 @@ function Session() {
       </div>
 
       {confirmQuit && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/20 backdrop-blur-sm sm:items-center">
-          <div className="w-full max-w-md rounded-t-3xl bg-card p-6 shadow-lift sm:rounded-3xl">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/20 md:items-center backdrop-blur-sm sm:items-center">
+          <div className="w-full max-w-md rounded-t-3xl md:max-w-lg bg-card p-6 shadow-lift sm:rounded-3xl">
             <p className="font-display text-xl font-semibold">End this session?</p>
             <p className="mt-2 text-sm text-muted-foreground">
               {mode === "verified"

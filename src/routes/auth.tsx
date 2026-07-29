@@ -72,7 +72,7 @@ function Auth() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-14">
+      <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-14 md:max-w-lg md:px-0">
         <div className="flex flex-col items-center">
           <Hourglass size={120} state="idle" />
           <h1 className="mt-6 font-display text-3xl font-semibold">CommitX</h1>
