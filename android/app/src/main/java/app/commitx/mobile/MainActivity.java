@@ -44,13 +44,26 @@ public class MainActivity extends Activity {
         webView.getSettings().setDomStorageEnabled(true);
         webView.getSettings().setDatabaseEnabled(true);
         webView.getSettings().setMediaPlaybackRequiresUserGesture(false);
+        webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
+        webView.getSettings().setSupportMultipleWindows(false);
+        webView.getSettings().setUseWideViewPort(true);
+        webView.getSettings().setLoadWithOverviewMode(true);
+        // Google blocks sign-in from user agents that advertise "; wv" (WebView).
+        String ua = webView.getSettings().getUserAgentString();
+        if (ua != null) {
+            webView.getSettings().setUserAgentString(
+                    ua.replace("; wv", "").replace(" wv", "")
+            );
+        }
+        CookieManager.getInstance().setAcceptCookie(true);
+        CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
         webView.addJavascriptInterface(new CommitXAndroidBridge(), "CommitXAndroid");
         webView.setWebChromeClient(new WebChromeClient());
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
-                if (isCommitXUrl(uri)) {
+                if (isInAppUrl(uri)) {
                     return false;
                 }
                 if (uri != null) {
