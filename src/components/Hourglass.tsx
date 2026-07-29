@@ -51,7 +51,7 @@ export function Hourglass({ size = 200, state = "idle", progress, className }: H
       )}
       style={{ width: "100%", maxWidth: size }}
     >
-      <svg viewBox="0 0 200 300" width="100%" height="auto" fill="none" aria-hidden="true">
+      <svg viewBox="0 0 200 300" width="100%" fill="none" style={{ height: "auto", display: "block" }} aria-hidden="true">
         <defs>
           <linearGradient id={`${uid}-sand`} x1="0" y1="0" x2="0.35" y2="1">
             <stop offset="0%" stopColor={failed ? "oklch(0.74 0 0)" : "oklch(0.90 0.09 88)"} />
