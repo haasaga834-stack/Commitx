@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
@@ -126,6 +127,24 @@ public class MainActivity extends Activity {
         if (!verifiedModeActive) return;
         preferences.edit().putString(PENDING_REASON, reason).apply();
         injectVerifiedFailure(reason);
+    }
+
+    private boolean isInAppUrl(Uri uri) {
+        if (uri == null) return false;
+        String scheme = uri.getScheme();
+        if (scheme == null || !(scheme.equals("https") || scheme.equals("http"))) return false;
+        String host = uri.getHost();
+        if (host == null) return false;
+        if (isCommitXUrl(uri)) return true;
+        // Keep the full OAuth flow inside the app.
+        return host.equals("accounts.google.com")
+                || host.equals("accounts.youtube.com")
+                || host.endsWith(".googleusercontent.com")
+                || host.endsWith(".google.com")
+                || host.endsWith(".gstatic.com")
+                || host.endsWith(".supabase.co")
+                || host.endsWith(".lovable.app")
+                || host.endsWith(".lovable.dev");
     }
 
     private boolean isCommitXUrl(Uri uri) {
