@@ -74,7 +74,7 @@ function Auth() {
     <div className="min-h-screen bg-background">
       <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-14 md:max-w-lg md:px-0">
         <div className="flex flex-col items-center">
-          <Hourglass size={120} state="idle" />
+          <Hourglass size={220} state="running" progress={0.45} />
           <h1 className="mt-6 font-display text-3xl font-semibold">CommitX</h1>
           <p className="mt-2 text-sm text-muted-foreground">Commit. Complete. Get it back.</p>
         </div>
