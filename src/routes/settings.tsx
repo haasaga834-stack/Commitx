@@ -100,7 +100,7 @@ function Settings() {
 
   return (
     <MobileShell>
-      <div className="px-6 pt-14 md:px-10 md:pt-20">
+      <div className="px-6 pt-14">
         <div className="flex items-center gap-3">
           <Link
             to="/profile"
@@ -238,7 +238,7 @@ function Settings() {
 
       {confirming && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-t-4xl md:max-w-lg md:rounded-4xl bg-card p-6 pb-10 shadow-lift">
+          <div className="w-full max-w-md rounded-t-4xl bg-card p-6 pb-10 shadow-lift">
             <h2 className="font-display text-xl font-semibold">Delete account?</h2>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               This permanently removes your profile, wallet balances, session

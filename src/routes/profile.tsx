@@ -47,7 +47,7 @@ function Profile() {
 
   return (
     <MobileShell>
-      <div className="px-6 pt-14 md:px-10 md:pt-20">
+      <div className="px-6 pt-14">
         <div className="flex items-center justify-between">
           <p className="text-xs uppercase tracking-widest text-muted-foreground">
             Profile
@@ -117,7 +117,7 @@ function Profile() {
         <p className="mt-8 text-xs uppercase tracking-widest text-muted-foreground">
           Dashboard
         </p>
-        <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
+        <div className="mt-4 grid grid-cols-2 gap-3">
           <Stat label="Current streak" value={`${s.streak}d`} />
           <Stat label="Longest streak" value={`${s.longest}d`} />
           <Stat label="Focus hours" value={totalHours} />

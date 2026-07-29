@@ -308,47 +308,40 @@ function Session() {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-md flex-col bg-background px-6 pb-10 pt-14 md:max-w-3xl md:px-10 md:pt-16 lg:max-w-5xl">
+    <div className="flex min-h-screen flex-col bg-background px-6 pb-10 pt-14">
       <div className="flex items-center justify-between">
-        <p className="text-xs uppercase tracking-widest text-muted-foreground md:text-sm">
+        <p className="text-xs uppercase tracking-widest text-muted-foreground">
           {mode === "verified" ? "Verified session" : "Standard session"}
         </p>
         <button
           onClick={() => setConfirmQuit(true)}
-          className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-card shadow-soft md:h-12 md:w-12"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-soft"
           aria-label="End session"
         >
           <X className="h-5 w-5" />
         </button>
       </div>
 
-      <div className="flex flex-1 flex-col items-center justify-center gap-6 landscape:md:flex-row landscape:md:gap-14">
-        <Hourglass
-          size={260}
-          state="running"
-          progress={progress}
-          className="md:!max-w-[340px] lg:!max-w-[400px]"
-        />
-        <div className="flex flex-col items-center landscape:md:items-start">
-          <p className="mt-6 font-display text-6xl font-semibold tabular-nums tracking-tight md:mt-8 md:text-7xl lg:text-8xl landscape:md:mt-0">
-            {fmt(remaining)}
+      <div className="flex flex-1 flex-col items-center justify-center">
+        <Hourglass size={260} state="running" progress={progress} />
+        <p className="mt-10 font-display text-6xl font-semibold tabular-nums tracking-tight">
+          {fmt(remaining)}
+        </p>
+        <p className="mt-3 text-sm text-muted-foreground">{goal}</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {formatINR(value)} committed
+        </p>
+        {mode === "verified" && (
+          <p className="mt-6 rounded-full bg-foreground/5 px-4 py-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">
+            Leaving CommitX fails this session
           </p>
-          <p className="mt-3 text-sm text-muted-foreground md:text-base">{goal}</p>
-          <p className="mt-1 text-xs text-muted-foreground md:text-sm">
-            {formatINR(value)} committed
-          </p>
-          {mode === "verified" && (
-            <p className="mt-6 rounded-full bg-foreground/5 px-4 py-1.5 text-[11px] uppercase tracking-widest text-muted-foreground md:text-xs">
-              Leaving CommitX fails this session
-            </p>
-          )}
-          <p className="mt-10 text-xs italic text-muted-foreground md:text-sm">"{quote}"</p>
-        </div>
+        )}
+        <p className="mt-10 text-xs italic text-muted-foreground">"{quote}"</p>
       </div>
 
       {confirmQuit && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/20 md:items-center backdrop-blur-sm sm:items-center">
-          <div className="w-full max-w-md rounded-t-3xl md:max-w-lg bg-card p-6 shadow-lift sm:rounded-3xl">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/20 backdrop-blur-sm sm:items-center">
+          <div className="w-full max-w-md rounded-t-3xl bg-card p-6 shadow-lift sm:rounded-3xl">
             <p className="font-display text-xl font-semibold">End this session?</p>
             <p className="mt-2 text-sm text-muted-foreground">
               {mode === "verified"

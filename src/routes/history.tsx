@@ -36,7 +36,7 @@ function History() {
 
   return (
     <MobileShell>
-      <div className="px-6 pt-14 md:px-10 md:pt-20">
+      <div className="px-6 pt-14">
         <p className="text-xs uppercase tracking-widest text-muted-foreground">
           History
         </p>
@@ -50,7 +50,7 @@ function History() {
             </p>
           </div>
         ) : (
-          <div className="mt-6 space-y-3 md:grid md:grid-cols-2 md:gap-4 md:space-y-0 lg:grid-cols-3">
+          <div className="mt-6 space-y-3">
             {state.sessions.map((s) => (
               <div
                 key={s.id}
