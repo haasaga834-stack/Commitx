@@ -16,6 +16,7 @@ import {
   readActiveVerifiedSession,
 } from "../lib/verified-mode";
 import { useAuth } from "../lib/use-auth";
+import { useStudyReminders } from "../lib/planner";
 
 function NotFoundComponent() {
   return (
@@ -210,11 +211,17 @@ function AuthGate({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+function StudyReminders() {
+  useStudyReminders();
+  return null;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
       <VerifiedRecovery />
+      <StudyReminders />
       <AuthGate>
         <Outlet />
       </AuthGate>
