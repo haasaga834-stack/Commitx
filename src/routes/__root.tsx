@@ -16,6 +16,7 @@ import {
   readActiveVerifiedSession,
 } from "../lib/verified-mode";
 import { useAuth } from "../lib/use-auth";
+import { useStudyReminders } from "../lib/planner";
 
 function NotFoundComponent() {
   return (
@@ -94,7 +95,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
       { rel: "apple-touch-icon", href: "/icons/icon-192x192.png" },
       { rel: "manifest", href: "/manifest.json" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -210,11 +211,17 @@ function AuthGate({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+function StudyReminders() {
+  useStudyReminders();
+  return null;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
       <VerifiedRecovery />
+      <StudyReminders />
       <AuthGate>
         <Outlet />
       </AuthGate>
