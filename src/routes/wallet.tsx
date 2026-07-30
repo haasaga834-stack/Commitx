@@ -1,11 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { MobileShell } from "@/components/BottomNav";
-import {
-  useAppState,
-  formatINR,
-  REFERRAL_BONUS,
-} from "@/lib/commitx-store";
-import { ArrowDownLeft, ArrowUpRight, Copy, Check, Gift } from "lucide-react";
+import { useAppState, formatINR } from "@/lib/commitx-store";
+import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/wallet")({
@@ -25,19 +21,9 @@ function Wallet() {
   const [showMoneyNotice, setShowMoneyNotice] = useState(false);
   const [showAddDemo, setShowAddDemo] = useState(false);
   const [demoAmount, setDemoAmount] = useState("100");
-  const [copied, setCopied] = useState(false);
 
   const real = state.balances.real;
   const demo = state.balances.demo;
-  const referralCode = "COMMIT-" + (state.profile.name.split(" ")[0] || "YOU").toUpperCase().slice(0, 6);
-
-  function copyReferral() {
-    try {
-      navigator.clipboard?.writeText(referralCode);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch {}
-  }
 
   function addDemo(amount: number) {
     if (!amount || amount <= 0) return;
@@ -110,31 +96,6 @@ function Wallet() {
             className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-foreground px-4 py-2 text-xs font-medium text-background"
           >
             Add demo money
-          </button>
-        </div>
-
-        {/* Referral */}
-        <div className="mt-3 rounded-3xl bg-card p-6 shadow-soft">
-          <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/15 text-primary">
-              <Gift className="h-5 w-5" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-foreground">Refer & earn</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Every referred friend gets {formatINR(REFERRAL_BONUS)} demo balance on sign-up.
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={copyReferral}
-            className="mt-4 flex w-full items-center justify-between rounded-2xl border border-dashed border-hairline bg-background px-4 py-3"
-          >
-            <span className="font-mono text-sm text-foreground">{referralCode}</span>
-            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-              {copied ? "Copied" : "Copy"}
-            </span>
           </button>
         </div>
 
