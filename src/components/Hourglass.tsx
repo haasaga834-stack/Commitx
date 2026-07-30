@@ -45,7 +45,7 @@ export function Hourglass({
       className={cn(
         "relative inline-flex items-center justify-center",
         state === "success" && "animate-soft-glow",
-        state === "idle" && "animate-gentle-float",
+        (state === "idle" || state === "running") && "animate-gentle-float",
         className,
       )}
       style={{ width: size, height: size }}
