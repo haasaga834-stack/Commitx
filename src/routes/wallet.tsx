@@ -176,56 +176,6 @@ function Wallet() {
         </div>
       )}
 
-      {showAddDemo && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/25 backdrop-blur-sm sm:items-center">
-          <div className="w-full max-w-md rounded-t-3xl bg-card p-6 shadow-lift sm:rounded-3xl">
-            <p className="text-xs uppercase tracking-widest text-muted-foreground">Add demo money</p>
-            <h3 className="mt-1 text-xl font-semibold text-foreground">Top up your demo balance</h3>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Virtual balance for practice sessions. Not withdrawable.
-            </p>
-
-            <div className="mt-5 flex items-center gap-2 rounded-2xl border border-hairline bg-background px-4 py-3">
-              <span className="text-lg font-semibold text-foreground">₹</span>
-              <input
-                type="number"
-                inputMode="numeric"
-                value={demoAmount}
-                onChange={(e) => setDemoAmount(e.target.value)}
-                className="flex-1 bg-transparent text-lg font-semibold text-foreground outline-none"
-                placeholder="Amount"
-              />
-            </div>
-
-            <div className="mt-3 flex flex-wrap gap-2">
-              {[100, 250, 500, 1000].map((n) => (
-                <button
-                  key={n}
-                  onClick={() => setDemoAmount(String(n))}
-                  className="rounded-full border border-hairline bg-background px-4 py-1.5 text-xs font-medium text-foreground"
-                >
-                  +{formatINR(n)}
-                </button>
-              ))}
-            </div>
-
-            <div className="mt-5 flex gap-2">
-              <button
-                onClick={() => setShowAddDemo(false)}
-                className="flex-1 rounded-full border border-hairline bg-background px-5 py-3 text-sm font-medium text-foreground"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => addDemo(parseInt(demoAmount, 10) || 0)}
-                className="flex-1 rounded-full bg-foreground px-5 py-3 text-sm font-medium text-background"
-              >
-                Add {formatINR(parseInt(demoAmount, 10) || 0)}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </MobileShell>
   );
 }
