@@ -4,6 +4,8 @@ import { useAppState, stats, setState, formatINR } from "@/lib/commitx-store";
 import { useState, useEffect, useMemo } from "react";
 import { Pencil, Check, Trophy, Clock, Settings as SettingsIcon } from "lucide-react";
 import { formatHours } from "@/lib/analytics-data";
+import { FoodCoinInfoCard } from "@/components/FoodCoinInfoCard";
+
 
 
 export const Route = createFileRoute("/profile")({
