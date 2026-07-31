@@ -9,6 +9,12 @@ permissions:
   contents: read
   actions: write
 
+# Always build the newest commit; cancel superseded builds so the artifact
+# always matches the latest Lovable changes pushed to GitHub.
+concurrency:
+  group: build-apk-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   COMMITX_KEYSTORE_PATH: ${{ github.workspace }}/android/app/commitx.keystore
   COMMITX_KEYSTORE_PASSWORD: commitx
@@ -19,8 +25,14 @@ jobs:
   build-apk:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout latest commit
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Show commit being built
+        run: git log -1 --pretty='%H %ci %s'
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -59,6 +71,7 @@ jobs:
       - name: Build signed release APK and AAB
         working-directory: android
         env:
+          GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
           COMMITX_VERSION_CODE: ${{ github.run_number }}
           COMMITX_VERSION_NAME: 1.0.${{ github.run_number }}
         run: gradle :app:assembleRelease :app:bundleRelease --no-daemon --stacktrace < /dev/null
