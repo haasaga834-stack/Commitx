@@ -89,14 +89,13 @@ function Wallet() {
             {hydrated ? formatINR(demo) : "—"}
           </p>
           <p className="mt-2 text-xs text-muted-foreground">
-            Virtual · non-withdrawable · from bonuses and rewards.
+            Virtual · non-withdrawable · one-time welcome credit of ₹500.
           </p>
-          <button
-            onClick={() => setShowAddDemo(true)}
-            className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-foreground px-4 py-2 text-xs font-medium text-background"
-          >
-            Add demo money
-          </button>
+          <p className="mt-4 rounded-2xl border border-hairline bg-background px-4 py-3 text-xs text-muted-foreground">
+            Demo money is granted once and cannot be topped up. Complete your commitments to
+            keep it.
+          </p>
+
         </div>
 
         {/* Transactions */}
