@@ -138,11 +138,14 @@ function Profile() {
           </p>
           <Trophy className="h-4 w-4 text-primary" />
         </div>
-        <div className="mt-4 space-y-2 pb-4">
+        <div className="mt-4 space-y-2">
           {leaderboard.map((row, i) => (
             <LeaderRow key={row.name + i} rank={i + 1} row={row} />
           ))}
         </div>
+
+        <FoodCoinInfoCard className="mt-6 mb-4" />
+
       </div>
     </MobileShell>
   );
