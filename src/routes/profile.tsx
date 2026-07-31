@@ -4,6 +4,8 @@ import { useAppState, stats, setState, formatINR } from "@/lib/commitx-store";
 import { useState, useEffect, useMemo } from "react";
 import { Pencil, Check, Trophy, Clock, Settings as SettingsIcon } from "lucide-react";
 import { formatHours } from "@/lib/analytics-data";
+import { FoodCoinInfoCard } from "@/components/FoodCoinInfoCard";
+
 
 
 export const Route = createFileRoute("/profile")({
@@ -138,11 +140,14 @@ function Profile() {
           </p>
           <Trophy className="h-4 w-4 text-primary" />
         </div>
-        <div className="mt-4 space-y-2 pb-4">
+        <div className="mt-4 space-y-2">
           {leaderboard.map((row, i) => (
             <LeaderRow key={row.name + i} rank={i + 1} row={row} />
           ))}
         </div>
+
+        <FoodCoinInfoCard className="mt-6 mb-4" />
+
       </div>
     </MobileShell>
   );

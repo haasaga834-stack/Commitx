@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Hourglass } from "@/components/Hourglass";
 import { Loader2 } from "lucide-react";
+import { hasNativeGoogleSignIn, nativeGoogleSignIn } from "@/lib/native-auth";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -59,6 +60,20 @@ function Auth() {
 
   async function google() {
     setError(null);
+    // Android shell: native Google Sign-In (Credential Manager) — never a browser.
+    if (hasNativeGoogleSignIn()) {
+      setBusy(true);
+      try {
+        await nativeGoogleSignIn();
+        router.navigate({ to: "/" });
+        return;
+      } catch {
+        setError("Google sign-in failed. Please try again.");
+        return;
+      } finally {
+        setBusy(false);
+      }
+    }
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });

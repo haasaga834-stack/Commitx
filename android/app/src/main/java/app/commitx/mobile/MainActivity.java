@@ -24,6 +24,18 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 
+import androidx.credentials.ClearCredentialStateRequest;
+import androidx.credentials.CredentialManager;
+import androidx.credentials.CredentialManagerCallback;
+import androidx.credentials.GetCredentialRequest;
+import androidx.credentials.GetCredentialResponse;
+import androidx.credentials.exceptions.GetCredentialException;
+
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption;
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
+
+import java.util.concurrent.Executors;
+
 public class MainActivity extends Activity {
     private static final String START_URL = "https://commitx.lovable.app/";
     private static final String PREFS = "commitx_verified_mode";
@@ -279,10 +291,102 @@ public class MainActivity extends Activity {
         return "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
     }
 
+
+    /**
+     * Native Google Sign-In through Credential Manager (Google Identity Services).
+     * No external browser is opened. Requires a Web OAuth client ID supplied at build
+     * time via the GOOGLE_WEB_CLIENT_ID environment variable, plus an Android OAuth
+     * client registered with this app's package name and signing SHA-1.
+     */
+    private void startNativeGoogleSignIn() {
+        final String clientId = getString(R.string.google_web_client_id);
+        if (clientId == null || clientId.trim().isEmpty()) {
+            notifyGoogleSignInError("native_unavailable");
+            return;
+        }
+        try {
+            GetSignInWithGoogleOption option =
+                    new GetSignInWithGoogleOption.Builder(clientId).build();
+            GetCredentialRequest request = new GetCredentialRequest.Builder()
+                    .addCredentialOption(option)
+                    .build();
+            CredentialManager credentialManager = CredentialManager.create(this);
+            credentialManager.getCredentialAsync(
+                    MainActivity.this,
+                    request,
+                    null,
+                    Executors.newSingleThreadExecutor(),
+                    new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
+                        @Override
+                        public void onResult(GetCredentialResponse response) {
+                            try {
+                                GoogleIdTokenCredential credential =
+                                        GoogleIdTokenCredential.createFrom(
+                                                response.getCredential().getData());
+                                notifyGoogleIdToken(credential.getIdToken());
+                            } catch (Throwable t) {
+                                notifyGoogleSignInError("token_parse_failed");
+                            }
+                        }
+
+                        @Override
+                        public void onError(GetCredentialException e) {
+                            notifyGoogleSignInError(e.getClass().getSimpleName());
+                        }
+                    });
+        } catch (Throwable t) {
+            notifyGoogleSignInError("native_unavailable");
+        }
+    }
+
+    private void notifyGoogleIdToken(final String idToken) {
+        evalOnWeb("window.CommitXNativeAuth&&window.CommitXNativeAuth.onGoogleIdToken("
+                + JSONObjectQuote(idToken) + ")");
+    }
+
+    private void notifyGoogleSignInError(final String reason) {
+        evalOnWeb("window.CommitXNativeAuth&&window.CommitXNativeAuth.onGoogleSignInError("
+                + JSONObjectQuote(reason) + ")");
+    }
+
+    private void evalOnWeb(final String js) {
+        if (webView == null) return;
+        runOnUiThread(() -> webView.evaluateJavascript("(function(){try{" + js + "}catch(e){}})();", null));
+    }
+
     public class CommitXAndroidBridge {
         @JavascriptInterface
         public void setVerifiedModeActive(boolean active) {
             verifiedModeActive = active;
+        }
+
+        /** Called by the web app; true when native Google Sign-In can be used. */
+        @JavascriptInterface
+        public boolean hasNativeGoogleSignIn() {
+            String id = getString(R.string.google_web_client_id);
+            return id != null && !id.trim().isEmpty();
+        }
+
+        @JavascriptInterface
+        public void googleSignIn() {
+            runOnUiThread(MainActivity.this::startNativeGoogleSignIn);
+        }
+
+        @JavascriptInterface
+        public void googleSignOut() {
+            try {
+                CredentialManager.create(MainActivity.this).clearCredentialStateAsync(
+                        new ClearCredentialStateRequest(),
+                        null,
+                        Executors.newSingleThreadExecutor(),
+                        new CredentialManagerCallback<Void, androidx.credentials.exceptions.ClearCredentialException>() {
+                            @Override
+                            public void onResult(Void unused) {}
+
+                            @Override
+                            public void onError(androidx.credentials.exceptions.ClearCredentialException e) {}
+                        });
+            } catch (Throwable ignored) {}
         }
 
         @JavascriptInterface

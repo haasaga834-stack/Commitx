@@ -42,6 +42,9 @@ export function useAuth() {
 
 export async function signOutEverywhere() {
   stopCloudSync();
+  const { nativeGoogleSignOut } = await import("@/lib/native-auth");
+  nativeGoogleSignOut();
   await supabase.auth.signOut();
   resetState();
 }
+
