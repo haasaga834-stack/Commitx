@@ -81,6 +81,38 @@ function Planner() {
           </button>
         </div>
 
+        <div className="mt-5 rounded-2xl border border-hairline bg-card p-4 shadow-soft">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/15 text-primary">
+              <Target className="h-5 w-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-foreground">Daily study goal</p>
+              <p className="text-xs text-muted-foreground">
+                Syncs with your daily progress tracker on Home.
+              </p>
+            </div>
+            <span className="shrink-0 text-sm font-semibold text-primary">
+              {goalHydrated ? formatGoalHours(goalHours) : "—"}
+            </span>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {[1, 2, 3, 4, 5, 6, 8].map((h) => (
+              <button
+                key={h}
+                onClick={() => setGoalHours(h)}
+                className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
+                  Math.round(goalHours) === h
+                    ? "bg-primary text-primary-foreground"
+                    : "border border-hairline bg-background text-foreground"
+                }`}
+              >
+                {h}h
+              </button>
+            ))}
+          </div>
+        </div>
+
         <button
           onClick={async () => {
             const ok = await requestNotificationPermission();
