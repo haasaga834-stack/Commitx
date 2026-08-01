@@ -9,10 +9,12 @@ import {
   repeatLabel,
   nextOccurrence,
   requestNotificationPermission,
+  useDailyGoal,
+  formatGoalHours,
   WEEKDAYS,
   type Repeat,
 } from "@/lib/planner";
-import { BookOpen, Bell, Plus, Trash2, Clock } from "lucide-react";
+import { BookOpen, Bell, Plus, Trash2, Clock, Target } from "lucide-react";
 
 export const Route = createFileRoute("/planner")({
   head: () => ({
