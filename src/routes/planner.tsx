@@ -36,6 +36,7 @@ export const Route = createFileRoute("/planner")({
 
 function Planner() {
   const { plans, hydrated } = usePlans();
+  const { goalHours, setGoalHours, hydrated: goalHydrated } = useDailyGoal();
   const [open, setOpen] = useState(false);
   const [subject, setSubject] = useState("");
   const [time, setTime] = useState("18:00");
