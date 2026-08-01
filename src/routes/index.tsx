@@ -74,20 +74,8 @@ function Home() {
         </div>
 
         <div
-          className="mt-6 animate-fade-up"
+          className="mt-8 animate-fade-up"
           style={{ animationDelay: "260ms" }}
-        >
-          <Link
-            to="/commit"
-            className="block w-full rounded-full bg-primary px-8 py-5 text-center text-base font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.98]"
-          >
-            Commit Now
-          </Link>
-        </div>
-
-        <div
-          className="mt-8 mb-4 animate-fade-up"
-          style={{ animationDelay: "320ms" }}
         >
           <FoodCoins
             userCoins={s.foodCoins}
@@ -95,6 +83,18 @@ function Home() {
             communityCoins={1284650 + s.foodCoins}
             hydrated={hydrated}
           />
+        </div>
+
+        <div
+          className="mt-6 mb-8 animate-fade-up"
+          style={{ animationDelay: "320ms" }}
+        >
+          <Link
+            to="/commit"
+            className="block w-full rounded-full bg-primary px-8 py-5 text-center text-base font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.98]"
+          >
+            Commit Now
+          </Link>
         </div>
       </div>
     </MobileShell>
