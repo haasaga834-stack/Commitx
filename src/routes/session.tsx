@@ -21,6 +21,7 @@ declare global {
     };
     CommitXAndroid?: {
       setVerifiedModeActive?: (active: boolean) => void;
+      setSessionLockActive?: (active: boolean) => void;
       clearPendingFailure?: () => void;
     };
   }
@@ -73,6 +74,12 @@ function eventReason(event: Event, fallback: VerifiedFailureReason) {
     return event.detail.reason;
   }
   return fallback;
+}
+
+function setNativeSessionLock(active: boolean) {
+  try {
+    window.CommitXAndroid?.setSessionLockActive?.(active);
+  } catch {}
 }
 
 function setNativeVerifiedModeActive(active: boolean) {
@@ -131,6 +138,33 @@ function Session() {
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Block every system back action (Android hardware back, gesture back,
+  // swipe-back) while a session is active — both Standard and Verified.
+  useEffect(() => {
+    setNativeSessionLock(true);
+
+    const pushLock = () => {
+      try {
+        window.history.pushState({ commitxSessionLock: Date.now() }, "");
+      } catch {}
+    };
+
+    pushLock();
+
+    const onPopState = () => {
+      if (doneRef.current) return;
+      // Re-arm the guard so the back action becomes a no-op.
+      pushLock();
+      log("Back Navigation Blocked");
+    };
+
+    window.addEventListener("popstate", onPopState);
+    return () => {
+      setNativeSessionLock(false);
+      window.removeEventListener("popstate", onPopState);
+    };
   }, []);
 
   useEffect(() => {
@@ -251,6 +285,7 @@ function Session() {
   function complete(status: "completed" | "failed", reason?: string) {
     if (doneRef.current) return;
     doneRef.current = true;
+    setNativeSessionLock(false);
     setNativeVerifiedModeActive(false);
     clearActiveVerifiedSession();
     const current = getState();
