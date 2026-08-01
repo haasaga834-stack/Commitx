@@ -141,10 +141,8 @@ function Session() {
   }, []);
 
   // Block every system back action (Android hardware back, gesture back,
-  // swipe-back) while a Verified session is active. Standard sessions keep
-  // normal navigation.
+  // swipe-back) while a session is active — both Standard and Verified.
   useEffect(() => {
-    if (mode !== "verified") return;
     setNativeSessionLock(true);
 
     const pushLock = () => {
@@ -167,8 +165,7 @@ function Session() {
       setNativeSessionLock(false);
       window.removeEventListener("popstate", onPopState);
     };
-  }, [mode]);
-
+  }, []);
 
   useEffect(() => {
     if (mode !== "verified") return;
