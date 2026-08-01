@@ -46,6 +46,7 @@ public class MainActivity extends Activity {
     private WebView authWebView;
     private SharedPreferences preferences;
     private volatile boolean verifiedModeActive = false;
+    private volatile boolean sessionLockActive = false;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -220,6 +221,11 @@ public class MainActivity extends Activity {
             }
             return;
         }
+        // A commitment session is running: no system back action may leave the
+        // session screen. Only the in-app End Session button can finish it.
+        if (sessionLockActive) {
+            return;
+        }
         if (webView != null && webView.canGoBack()) {
             webView.goBack();
             return;
@@ -358,6 +364,12 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void setVerifiedModeActive(boolean active) {
             verifiedModeActive = active;
+        }
+
+        /** Locks out hardware/gesture back navigation while a session is active. */
+        @JavascriptInterface
+        public void setSessionLockActive(boolean active) {
+            sessionLockActive = active;
         }
 
         /** Called by the web app; true when native Google Sign-In can be used. */

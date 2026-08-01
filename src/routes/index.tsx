@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Hourglass } from "@/components/Hourglass";
 import { MobileShell } from "@/components/BottomNav";
 import { FoodCoins } from "@/components/FoodCoins";
+import { DailyGoalProgress } from "@/components/DailyGoalProgress";
 import { useAppState, stats } from "@/lib/commitx-store";
 
 export const Route = createFileRoute("/")({
@@ -68,21 +69,13 @@ function Home() {
           </p>
         </div>
 
-        <div
-          className="mt-10 animate-fade-up"
-          style={{ animationDelay: "220ms" }}
-        >
-          <FoodCoins
-            userCoins={s.foodCoins}
-            milestone={1000}
-            communityCoins={1284650 + s.foodCoins}
-            hydrated={hydrated}
-          />
+        <div className="mt-8 animate-fade-up" style={{ animationDelay: "200ms" }}>
+          <DailyGoalProgress todayMinutes={s.todayMinutes} hydrated={hydrated} />
         </div>
 
         <div
-          className="mt-6 mb-4 animate-fade-up"
-          style={{ animationDelay: "320ms" }}
+          className="mt-6 animate-fade-up"
+          style={{ animationDelay: "260ms" }}
         >
           <Link
             to="/commit"
@@ -90,6 +83,18 @@ function Home() {
           >
             Commit Now
           </Link>
+        </div>
+
+        <div
+          className="mt-8 mb-4 animate-fade-up"
+          style={{ animationDelay: "320ms" }}
+        >
+          <FoodCoins
+            userCoins={s.foodCoins}
+            milestone={1000}
+            communityCoins={1284650 + s.foodCoins}
+            hydrated={hydrated}
+          />
         </div>
       </div>
     </MobileShell>

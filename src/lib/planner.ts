@@ -198,3 +198,59 @@ export function useStudyReminders() {
     return () => clearInterval(id);
   }, []);
 }
+
+/* ---------------------------------------------------------------------------
+ * Daily study goal (separate from schedules)
+ * ------------------------------------------------------------------------ */
+
+const GOAL_KEY = "commitx-daily-goal-v1";
+export const DEFAULT_DAILY_GOAL_HOURS = 2;
+
+const goalListeners = new Set<() => void>();
+let goalCache: number | null = null;
+
+function readGoal(): number {
+  if (typeof window === "undefined") return DEFAULT_DAILY_GOAL_HOURS;
+  try {
+    const raw = localStorage.getItem(GOAL_KEY);
+    const n = raw ? parseFloat(raw) : NaN;
+    return Number.isFinite(n) && n > 0 ? n : DEFAULT_DAILY_GOAL_HOURS;
+  } catch {
+    return DEFAULT_DAILY_GOAL_HOURS;
+  }
+}
+
+export function getDailyGoalHours(): number {
+  if (goalCache === null) goalCache = readGoal();
+  return goalCache;
+}
+
+export function setDailyGoalHours(hours: number) {
+  const clamped = Math.min(16, Math.max(0.5, hours));
+  goalCache = clamped;
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem(GOAL_KEY, String(clamped));
+    } catch {}
+  }
+  goalListeners.forEach((l) => l());
+}
+
+export function useDailyGoal() {
+  const [, tick] = useState(0);
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+    goalCache = readGoal();
+    setHydrated(true);
+    const l = () => tick((t) => t + 1);
+    goalListeners.add(l);
+    return () => {
+      goalListeners.delete(l);
+    };
+  }, []);
+  return { goalHours: getDailyGoalHours(), setGoalHours: setDailyGoalHours, hydrated };
+}
+
+export function formatGoalHours(h: number) {
+  return h % 1 === 0 ? `${h}h` : `${Math.floor(h)}h ${Math.round((h % 1) * 60)}m`;
+}
