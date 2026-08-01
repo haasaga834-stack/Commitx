@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Hourglass } from "@/components/Hourglass";
 import { MobileShell } from "@/components/BottomNav";
 import { FoodCoins } from "@/components/FoodCoins";
+import { DailyGoalProgress } from "@/components/DailyGoalProgress";
 import { useAppState, stats } from "@/lib/commitx-store";
 
 export const Route = createFileRoute("/")({
