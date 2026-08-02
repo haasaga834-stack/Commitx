@@ -9,6 +9,7 @@ import {
   MIN_COMMIT,
   MAX_COMMIT,
 } from "@/lib/commitx-store";
+import { canCheckDnd, isDndEnabled, openDndSettings } from "@/lib/native-session";
 
 export const Route = createFileRoute("/commit")({
   head: () => ({
@@ -42,6 +43,7 @@ function Commit() {
   const [confirmVerified, setConfirmVerified] = useState(false);
   const [preferReal, setPreferReal] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dndRequired, setDndRequired] = useState(false);
 
   const finalGoal = goal === "Custom" ? customGoal.trim() || "Custom" : goal;
 
@@ -62,6 +64,11 @@ function Commit() {
     setError(null);
     if (mode === "verified" && !confirmVerified) {
       setConfirmVerified(true);
+      return;
+    }
+    // Verified sessions require Do Not Disturb before they may start.
+    if (mode === "verified" && canCheckDnd() && isDndEnabled() === false) {
+      setDndRequired(true);
       return;
     }
     const params = new URLSearchParams({
@@ -258,6 +265,29 @@ function Commit() {
             </p>
           )}
         </section>
+
+        {dndRequired && (
+          <div className="mt-6 rounded-3xl bg-card p-5 shadow-soft">
+            <p className="font-display text-base font-semibold">Turn on Do Not Disturb</p>
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              Verified sessions can't start while Do Not Disturb is off.
+            </p>
+            <div className="mt-4 flex gap-3">
+              <button
+                onClick={openDndSettings}
+                className="flex-1 rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground"
+              >
+                Open settings
+              </button>
+              <button
+                onClick={() => setDndRequired(false)}
+                className="flex-1 rounded-full border border-hairline bg-background px-5 py-3 text-sm font-medium"
+              >
+                I've enabled it
+              </button>
+            </div>
+          </div>
+        )}
 
         <button
           onClick={begin}
