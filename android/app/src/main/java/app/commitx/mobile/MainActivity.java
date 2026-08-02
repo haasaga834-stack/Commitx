@@ -375,6 +375,43 @@ public class MainActivity extends Activity {
             sessionLockActive = active;
         }
 
+        /** Do Not Disturb state can be read on Android M and newer. */
+        @JavascriptInterface
+        public boolean canCheckDnd() {
+            return android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M;
+        }
+
+        /** True when any Do Not Disturb / priority-only filter is active. */
+        @JavascriptInterface
+        public boolean isDndEnabled() {
+            try {
+                NotificationManager nm =
+                        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                if (nm == null) return false;
+                int filter = nm.getCurrentInterruptionFilter();
+                return filter == NotificationManager.INTERRUPTION_FILTER_PRIORITY
+                        || filter == NotificationManager.INTERRUPTION_FILTER_NONE
+                        || filter == NotificationManager.INTERRUPTION_FILTER_ALARMS;
+            } catch (Throwable t) {
+                return false;
+            }
+        }
+
+        @JavascriptInterface
+        public void openDndSettings() {
+            runOnUiThread(() -> {
+                try {
+                    startActivity(new Intent(Settings.ACTION_ZEN_MODE_PRIORITY_SETTINGS));
+                } catch (Throwable t) {
+                    try {
+                        startActivity(new Intent(Settings.ACTION_SOUND_SETTINGS));
+                    } catch (Throwable ignored) {}
+                }
+            });
+        }
+
+
+
         /** Called by the web app; true when native Google Sign-In can be used. */
         @JavascriptInterface
         public boolean hasNativeGoogleSignIn() {
