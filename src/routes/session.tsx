@@ -272,7 +272,7 @@ function Session() {
 
   // Verified mode: foreground-only, with a 60s emergency grace window.
   useEffect(() => {
-    if (!isVerified) return;
+    if (!isVerified || dndBlocked) return;
     log("Verified Mode Armed", { startedAt, totalMs });
     setNativeVerifiedModeActive(true);
 
@@ -348,7 +348,7 @@ function Session() {
       window.removeEventListener("commitx:android-multi-window", onNativeMultiWindow);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVerified]);
+  }, [isVerified, dndBlocked]);
 
   const elapsedMs = Math.min(totalMs, accumulatedRef.current + (runningSinceRef.current ? now - runningSinceRef.current : 0));
   const progress = totalMs > 0 ? elapsedMs / totalMs : 0;
