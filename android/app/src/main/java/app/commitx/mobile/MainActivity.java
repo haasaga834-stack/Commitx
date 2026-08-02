@@ -3,6 +3,7 @@ package app.commitx.mobile;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -12,6 +13,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Message;
+import android.provider.Settings;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -222,10 +224,13 @@ public class MainActivity extends Activity {
             return;
         }
         // A commitment session is running: no system back action may leave the
-        // session screen. Only the in-app End Session button can finish it.
+        // session screen. The web layer shows the "Leave Session?" / "Warning"
+        // dialog instead, and only its End Session button can finish it.
         if (sessionLockActive) {
+            evalOnWeb("window.CommitXSession&&window.CommitXSession.onAndroidBack&&window.CommitXSession.onAndroidBack()");
             return;
         }
+
         if (webView != null && webView.canGoBack()) {
             webView.goBack();
             return;
@@ -371,6 +376,43 @@ public class MainActivity extends Activity {
         public void setSessionLockActive(boolean active) {
             sessionLockActive = active;
         }
+
+        /** Do Not Disturb state can be read on Android M and newer. */
+        @JavascriptInterface
+        public boolean canCheckDnd() {
+            return android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M;
+        }
+
+        /** True when any Do Not Disturb / priority-only filter is active. */
+        @JavascriptInterface
+        public boolean isDndEnabled() {
+            try {
+                NotificationManager nm =
+                        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                if (nm == null) return false;
+                int filter = nm.getCurrentInterruptionFilter();
+                return filter == NotificationManager.INTERRUPTION_FILTER_PRIORITY
+                        || filter == NotificationManager.INTERRUPTION_FILTER_NONE
+                        || filter == NotificationManager.INTERRUPTION_FILTER_ALARMS;
+            } catch (Throwable t) {
+                return false;
+            }
+        }
+
+        @JavascriptInterface
+        public void openDndSettings() {
+            runOnUiThread(() -> {
+                try {
+                    startActivity(new Intent(Settings.ACTION_ZEN_MODE_PRIORITY_SETTINGS));
+                } catch (Throwable t) {
+                    try {
+                        startActivity(new Intent(Settings.ACTION_SOUND_SETTINGS));
+                    } catch (Throwable ignored) {}
+                }
+            });
+        }
+
+
 
         /** Called by the web app; true when native Google Sign-In can be used. */
         @JavascriptInterface
