@@ -222,10 +222,13 @@ public class MainActivity extends Activity {
             return;
         }
         // A commitment session is running: no system back action may leave the
-        // session screen. Only the in-app End Session button can finish it.
+        // session screen. The web layer shows the "Leave Session?" / "Warning"
+        // dialog instead, and only its End Session button can finish it.
         if (sessionLockActive) {
+            evalOnWeb("window.CommitXSession&&window.CommitXSession.onAndroidBack&&window.CommitXSession.onAndroidBack()");
             return;
         }
+
         if (webView != null && webView.canGoBack()) {
             webView.goBack();
             return;
