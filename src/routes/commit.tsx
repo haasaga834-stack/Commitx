@@ -235,7 +235,7 @@ function Commit() {
               points={[
                 "App switching allowed with a warning",
                 "Incoming calls allowed",
-                "Timer continues in background",
+                "Timer pauses in background and resumes on return",
               ]}
               selected={mode === "standard"}
               onClick={() => {
@@ -248,7 +248,7 @@ function Commit() {
               subtitle="Strict accountability"
               points={[
                 "Home, Recents, or app switch fails",
-                "Calls, screen lock, and notification shade allowed",
+                "Do Not Disturb required; 60s emergency call grace",
                 "Split-screen fails on Android",
               ]}
               selected={mode === "verified"}
