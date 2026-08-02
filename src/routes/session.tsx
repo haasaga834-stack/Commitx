@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Hourglass } from "@/components/Hourglass";
 import { setState, formatINR, planDeduction, getState, type Mode } from "@/lib/commitx-store";
 import {
@@ -9,7 +9,14 @@ import {
   writeActiveVerifiedSession,
   type VerifiedFailureReason,
 } from "@/lib/verified-mode";
-import { X } from "lucide-react";
+import {
+  canCheckDnd,
+  isDndEnabled,
+  openDndSettings,
+  setNativeSessionLock,
+  setNativeVerifiedModeActive,
+} from "@/lib/native-session";
+import { BellOff, PauseCircle, X } from "lucide-react";
 import { z } from "zod";
 
 declare global {
@@ -18,11 +25,6 @@ declare global {
       onAndroidUserLeaveHint?: (reason?: VerifiedFailureReason) => void;
       onAndroidMultiWindow?: () => void;
       fail?: (reason?: VerifiedFailureReason) => void;
-    };
-    CommitXAndroid?: {
-      setVerifiedModeActive?: (active: boolean) => void;
-      setSessionLockActive?: (active: boolean) => void;
-      clearPendingFailure?: () => void;
     };
   }
 }
@@ -47,6 +49,9 @@ export const Route = createFileRoute("/session")({
   }),
   component: Session,
 });
+
+/** Emergency call / brief absence allowance for Verified sessions. */
+const VERIFIED_GRACE_MS = 60_000;
 
 function fmt(sec: number) {
   const s = Math.max(0, Math.floor(sec));
@@ -76,60 +81,123 @@ function eventReason(event: Event, fallback: VerifiedFailureReason) {
   return fallback;
 }
 
-function setNativeSessionLock(active: boolean) {
-  try {
-    window.CommitXAndroid?.setSessionLockActive?.(active);
-  } catch {}
-}
-
-function setNativeVerifiedModeActive(active: boolean) {
-  try {
-    window.CommitXAndroid?.setVerifiedModeActive?.(active);
-    if (!active) window.CommitXAndroid?.clearPendingFailure?.();
-  } catch {}
-}
-
 function Session() {
   const { goal, duration, value, mode, preferReal } = Route.useSearch();
   const navigate = useNavigate();
   const totalMs = duration * 60 * 1000;
   const preferRealBool = preferReal === "1";
+  const isVerified = mode === "verified";
 
-  const startedAt = useRef<number>(
-    (() => {
-      if (typeof window === "undefined") return Date.now();
-      try {
-        const prev = readActiveVerifiedSession();
-        if (
-          prev &&
-          prev.goal === goal &&
-          prev.duration === duration &&
-          prev.value === value &&
-          prev.mode === mode &&
-          typeof prev.startedAt === "number"
-        ) {
-          return prev.startedAt;
-        }
-      } catch {}
-      const now = Date.now();
-      writeActiveVerifiedSession({ goal, duration, value, mode, preferReal: preferRealBool, startedAt: now });
-      return now;
-    })(),
+  // Verified sessions require Do Not Disturb before the timer may start.
+  const [dndBlocked, setDndBlocked] = useState<boolean>(() => {
+    if (typeof window === "undefined" || !isVerified) return false;
+    return canCheckDnd() && isDndEnabled() === false;
+  });
+
+  const restored = useRef(
+    typeof window === "undefined"
+      ? null
+      : (() => {
+          const prev = readActiveVerifiedSession();
+          if (
+            prev &&
+            prev.goal === goal &&
+            prev.duration === duration &&
+            prev.value === value &&
+            prev.mode === mode
+          ) {
+            return prev;
+          }
+          return null;
+        })(),
   ).current;
 
+  const startedAt = useRef<number>(restored?.startedAt ?? Date.now()).current;
+  const accumulatedRef = useRef<number>(restored?.accumulatedMs ?? 0);
+  const runningSinceRef = useRef<number | null>(
+    restored ? (restored.runningSince ?? null) : Date.now(),
+  );
+
   const [now, setNow] = useState<number>(() => Date.now());
+  const [paused, setPaused] = useState<boolean>(() => runningSinceRef.current === null);
   const [quote] = useState(() => QUOTES[Math.floor(Math.random() * QUOTES.length)]);
   const [confirmQuit, setConfirmQuit] = useState(false);
   const doneRef = useRef(false);
+  const graceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hiddenAtRef = useRef<number | null>(null);
-  const blurAtRef = useRef<number | null>(null);
 
+  const persist = useCallback(() => {
+    writeActiveVerifiedSession({
+      goal,
+      duration,
+      value,
+      mode,
+      preferReal: preferRealBool,
+      startedAt,
+      accumulatedMs: accumulatedRef.current,
+      runningSince: runningSinceRef.current,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [goal, duration, value, mode, preferRealBool, startedAt]);
+
+  const elapsedNow = useCallback(() => {
+    const running = runningSinceRef.current;
+    return accumulatedRef.current + (running ? Date.now() - running : 0);
+  }, []);
+
+  const pauseTimer = useCallback(
+    (reason: string) => {
+      if (doneRef.current || runningSinceRef.current === null) return;
+      accumulatedRef.current = elapsedNow();
+      runningSinceRef.current = null;
+      persist();
+      setPaused(true);
+      setNow(Date.now());
+      log("Timer Paused", { reason });
+    },
+    [elapsedNow, persist],
+  );
+
+  const resumeTimer = useCallback(
+    (reason: string) => {
+      if (doneRef.current || runningSinceRef.current !== null) return;
+      runningSinceRef.current = Date.now();
+      persist();
+      setPaused(false);
+      setNow(Date.now());
+      log("Timer Resumed", { reason });
+    },
+    [persist],
+  );
+
+  // Keep the stored session in sync from the very first render.
+  useEffect(() => {
+    if (dndBlocked) {
+      pauseTimer("dnd_required");
+      return;
+    }
+    persist();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Poll DND while blocked so returning from settings unblocks automatically.
+  useEffect(() => {
+    if (!dndBlocked) return;
+    const id = setInterval(() => {
+      if (isDndEnabled() !== false) {
+        setDndBlocked(false);
+        resumeTimer("dnd_enabled");
+      }
+    }, 1200);
+    return () => clearInterval(id);
+  }, [dndBlocked, resumeTimer]);
+
+  // Single animation loop — guards against duplicate timers via doneRef.
   useEffect(() => {
     let raf = 0;
     const tick = () => {
-      const t = Date.now();
-      setNow(t);
-      if (!doneRef.current && t - startedAt >= totalMs) {
+      setNow(Date.now());
+      if (!doneRef.current && !dndBlocked && elapsedNow() >= totalMs) {
         complete("completed");
         return;
       }
@@ -138,10 +206,10 @@ function Session() {
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [dndBlocked]);
 
-  // Block every system back action (Android hardware back, gesture back,
-  // swipe-back) while a session is active — both Standard and Verified.
+  // Sessions may only be ended through the in-session End Session flow:
+  // every system back action opens the confirmation dialog instead.
   useEffect(() => {
     setNativeSessionLock(true);
 
@@ -150,141 +218,149 @@ function Session() {
         window.history.pushState({ commitxSessionLock: Date.now() }, "");
       } catch {}
     };
-
     pushLock();
+
+    const askToLeave = () => {
+      if (doneRef.current) return;
+      setConfirmQuit(true);
+      log("Back Intercepted");
+    };
 
     const onPopState = () => {
       if (doneRef.current) return;
-      // Re-arm the guard so the back action becomes a no-op.
       pushLock();
-      log("Back Navigation Blocked");
+      askToLeave();
     };
+
+    const previousSessionBridge = window.CommitXSession;
+    window.CommitXSession = { ...previousSessionBridge, onAndroidBack: askToLeave };
 
     window.addEventListener("popstate", onPopState);
     return () => {
       setNativeSessionLock(false);
+      window.CommitXSession = previousSessionBridge;
       window.removeEventListener("popstate", onPopState);
     };
   }, []);
 
+  // Standard mode: pause in background, resume on return.
   useEffect(() => {
-    if (mode !== "verified") return;
+    if (isVerified) return;
+
+    const onHidden = () => pauseTimer("background");
+    const onVisible = () => resumeTimer("foreground");
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") onHidden();
+      else onVisible();
+    };
+    const onPageHide = () => onHidden();
+    const onPageShow = () => onVisible();
+
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("blur", onHidden);
+    window.addEventListener("focus", onVisible);
+    window.addEventListener("pagehide", onPageHide);
+    window.addEventListener("pageshow", onPageShow);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("blur", onHidden);
+      window.removeEventListener("focus", onVisible);
+      window.removeEventListener("pagehide", onPageHide);
+      window.removeEventListener("pageshow", onPageShow);
+    };
+  }, [isVerified, pauseTimer, resumeTimer]);
+
+  // Verified mode: foreground-only, with a 60s emergency grace window.
+  useEffect(() => {
+    if (!isVerified) return;
     log("Verified Mode Armed", { startedAt, totalMs });
     setNativeVerifiedModeActive(true);
 
-    const failForVerifiedExit = (reason: VerifiedFailureReason) => {
+    const clearGrace = () => {
+      if (graceTimerRef.current) clearTimeout(graceTimerRef.current);
+      graceTimerRef.current = null;
+    };
+
+    const failNow = (reason: VerifiedFailureReason) => {
       if (doneRef.current) return;
-      log("Android Foreground Exit", { reason });
+      clearGrace();
+      log("Verified Failure", { reason });
       markActiveVerifiedSessionPendingFailure(reason);
-      setNow(Date.now());
       complete("failed", reason);
     };
 
-    const markPendingExit = (reason: VerifiedFailureReason) => {
-      if (doneRef.current) return;
-      log("Verified Exit Pending", { reason });
-      markActiveVerifiedSessionPendingFailure(reason);
+    const startGrace = (reason: VerifiedFailureReason) => {
+      if (doneRef.current || graceTimerRef.current) return;
+      hiddenAtRef.current = Date.now();
+      log("Verified Grace Started", { reason, ms: VERIFIED_GRACE_MS });
+      graceTimerRef.current = setTimeout(() => {
+        graceTimerRef.current = null;
+        failNow("grace_expired");
+      }, VERIFIED_GRACE_MS);
     };
 
     const onVisibility = () => {
       if (doneRef.current) return;
       if (document.visibilityState === "hidden") {
-        log("Visibility Hidden", { treatedAs: "allowed_lock_call_or_system_shade" });
-        hiddenAtRef.current = Date.now();
+        startGrace("hidden");
       } else {
-        const hiddenFor = hiddenAtRef.current ? Date.now() - hiddenAtRef.current : 0;
+        const away = hiddenAtRef.current ? Date.now() - hiddenAtRef.current : 0;
         hiddenAtRef.current = null;
+        clearGrace();
         setNow(Date.now());
-        log("Visibility Visible", { hiddenFor });
+        log("Verified Returned", { away });
       }
-    };
-
-    const onBlur = () => {
-      blurAtRef.current = Date.now();
-      log("Window Blur", { treatedAs: "allowed_overlay_keyboard_call_or_notification_shade" });
-    };
-    const onFocus = () => {
-      const blurredFor = blurAtRef.current ? Date.now() - blurAtRef.current : 0;
-      blurAtRef.current = null;
-      setNow(Date.now());
-      log("Window Focus", { blurredFor });
     };
     const onPageHide = (event: PageTransitionEvent) => {
       if (doneRef.current) return;
-      if (event.persisted) {
-        log("Page Hidden", { pagehide: "persisted" });
-        return;
-      }
-      markPendingExit("browser_unload");
-      failForVerifiedExit("app_switch");
+      if (event.persisted) return;
+      markActiveVerifiedSessionPendingFailure("browser_unload");
     };
-    const onPageShow = (event: PageTransitionEvent) => {
-      if (doneRef.current) return;
-      setNow(Date.now());
-      log("Page Visible", { pageshow: true, restored: event.persisted });
-    };
-    const onBeforeUnload = () => {
-      markPendingExit("browser_unload");
-    };
-    const onFreeze = () => {
-      log("Page Frozen", { treatedAs: "allowed_until_native_user_leave_hint" });
-    };
-    const onResume = () => {
-      setNow(Date.now());
-      log("Page Resumed");
-    };
-    const onNativeUserLeaveHint = (event: Event) => {
-      failForVerifiedExit(eventReason(event, "android_user_leave"));
-    };
-    const onNativeMultiWindow = () => {
-      failForVerifiedExit("multi_window");
-    };
+    const onBeforeUnload = () => markActiveVerifiedSessionPendingFailure("browser_unload");
+    const onNativeUserLeaveHint = (event: Event) =>
+      failNow(eventReason(event, "android_user_leave"));
+    const onNativeMultiWindow = () => failNow("multi_window");
 
     const previousBridge = window.CommitXVerifiedMode;
     window.CommitXVerifiedMode = {
       ...previousBridge,
-      onAndroidUserLeaveHint: (reason) => failForVerifiedExit(reason || "android_user_leave"),
-      onAndroidMultiWindow: () => failForVerifiedExit("multi_window"),
-      fail: (reason) => failForVerifiedExit(reason || "android_user_leave"),
+      onAndroidUserLeaveHint: (reason) => failNow(reason || "android_user_leave"),
+      onAndroidMultiWindow: () => failNow("multi_window"),
+      fail: (reason) => failNow(reason || "android_user_leave"),
     };
 
     document.addEventListener("visibilitychange", onVisibility);
-    document.addEventListener("freeze", onFreeze);
-    document.addEventListener("resume", onResume);
-    window.addEventListener("blur", onBlur);
-    window.addEventListener("focus", onFocus);
     window.addEventListener("pagehide", onPageHide);
-    window.addEventListener("pageshow", onPageShow);
     window.addEventListener("beforeunload", onBeforeUnload);
     window.addEventListener("commitx:android-user-leave-hint", onNativeUserLeaveHint);
     window.addEventListener("commitx:native-user-leave-hint", onNativeUserLeaveHint);
     window.addEventListener("commitx:android-multi-window", onNativeMultiWindow);
 
     return () => {
+      clearGrace();
       setNativeVerifiedModeActive(false);
       window.CommitXVerifiedMode = previousBridge;
       document.removeEventListener("visibilitychange", onVisibility);
-      document.removeEventListener("freeze", onFreeze);
-      document.removeEventListener("resume", onResume);
-      window.removeEventListener("blur", onBlur);
-      window.removeEventListener("focus", onFocus);
       window.removeEventListener("pagehide", onPageHide);
-      window.removeEventListener("pageshow", onPageShow);
       window.removeEventListener("beforeunload", onBeforeUnload);
       window.removeEventListener("commitx:android-user-leave-hint", onNativeUserLeaveHint);
       window.removeEventListener("commitx:native-user-leave-hint", onNativeUserLeaveHint);
       window.removeEventListener("commitx:android-multi-window", onNativeMultiWindow);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode]);
+  }, [isVerified]);
 
-  const elapsedMs = Math.min(totalMs, now - startedAt);
+  const elapsedMs = Math.min(totalMs, accumulatedRef.current + (runningSinceRef.current ? now - runningSinceRef.current : 0));
   const progress = totalMs > 0 ? elapsedMs / totalMs : 0;
   const remaining = Math.max(0, Math.ceil((totalMs - elapsedMs) / 1000));
 
   function complete(status: "completed" | "failed", reason?: string) {
+    // Idempotent: prevents duplicate deductions and duplicate session rows.
     if (doneRef.current) return;
     doneRef.current = true;
+    if (graceTimerRef.current) clearTimeout(graceTimerRef.current);
+    graceTimerRef.current = null;
+    runningSinceRef.current = null;
     setNativeSessionLock(false);
     setNativeVerifiedModeActive(false);
     clearActiveVerifiedSession();
@@ -346,7 +422,7 @@ function Session() {
     <div className="flex min-h-screen flex-col bg-background px-6 pb-10 pt-14">
       <div className="flex items-center justify-between">
         <p className="text-xs uppercase tracking-widest text-muted-foreground">
-          {mode === "verified" ? "Verified session" : "Standard session"}
+          {isVerified ? "Verified session" : "Standard session"}
         </p>
         <button
           onClick={() => setConfirmQuit(true)}
@@ -363,10 +439,13 @@ function Session() {
           {fmt(remaining)}
         </p>
         <p className="mt-3 text-sm text-muted-foreground">{goal}</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          {formatINR(value)} committed
-        </p>
-        {mode === "verified" && (
+        <p className="mt-1 text-xs text-muted-foreground">{formatINR(value)} committed</p>
+        {!isVerified && paused && !dndBlocked && (
+          <p className="mt-6 inline-flex items-center gap-2 rounded-full bg-foreground/5 px-4 py-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">
+            <PauseCircle className="h-3.5 w-3.5" /> Paused — background time isn't counted
+          </p>
+        )}
+        {isVerified && (
           <p className="mt-6 rounded-full bg-foreground/5 px-4 py-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">
             Leaving CommitX fails this session
           </p>
@@ -374,27 +453,53 @@ function Session() {
         <p className="mt-10 text-xs italic text-muted-foreground">"{quote}"</p>
       </div>
 
+      {dndBlocked && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-background/95 px-6 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl bg-card p-6 text-center shadow-lift">
+            <BellOff className="mx-auto h-8 w-8 text-primary" />
+            <p className="mt-4 font-display text-xl font-semibold">Turn on Do Not Disturb</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Verified sessions can only start with Do Not Disturb enabled.
+            </p>
+            <button
+              onClick={openDndSettings}
+              className="mt-6 w-full rounded-full bg-primary px-6 py-4 text-sm font-medium text-primary-foreground"
+            >
+              Open Do Not Disturb settings
+            </button>
+            <button
+              onClick={() => navigate({ to: "/commit" })}
+              className="mt-3 w-full rounded-full border border-hairline bg-background px-6 py-3 text-sm font-medium"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       {confirmQuit && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/20 backdrop-blur-sm sm:items-center">
           <div className="w-full max-w-md rounded-t-3xl bg-card p-6 shadow-lift sm:rounded-3xl">
-            <p className="font-display text-xl font-semibold">End this session?</p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {mode === "verified"
-                ? "This will fail your commitment and deduct your committed value."
-                : "You can restart anytime. Ending now marks this commitment as failed."}
+            <p className="font-display text-xl font-semibold">
+              {isVerified ? "Warning" : "Leave Session?"}
             </p>
-            <div className="mt-6 flex gap-3">
+            <p className="mt-2 text-sm text-muted-foreground">
+              {isVerified
+                ? "Ending this session will immediately forfeit your committed amount."
+                : "Ending this session will forfeit your committed amount."}
+            </p>
+            <div className="mt-6 flex flex-col gap-3">
               <button
                 onClick={() => setConfirmQuit(false)}
-                className="flex-1 rounded-full border border-hairline bg-background px-5 py-3 text-sm font-medium"
+                className="w-full rounded-full border border-hairline bg-background px-5 py-3.5 text-sm font-medium"
               >
-                Stay
+                {isVerified ? "Stay Focused" : "Stay & Continue"}
               </button>
               <button
                 onClick={quit}
-                className="flex-1 rounded-full bg-destructive px-5 py-3 text-sm font-medium text-destructive-foreground"
+                className="w-full rounded-full bg-destructive px-5 py-3.5 text-sm font-medium text-destructive-foreground"
               >
-                End session
+                End Session &amp; Lose Commitment
               </button>
             </div>
           </div>
