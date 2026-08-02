@@ -26,7 +26,12 @@ export interface ActiveVerifiedSession {
   reason?: VerifiedFailureReason;
   failedAt?: number;
   lastLifecycleAt?: number;
+  /** Study time already banked (excludes paused/background time). */
+  accumulatedMs?: number;
+  /** Timestamp the timer last started running, or null while paused. */
+  runningSince?: number | null;
 }
+
 
 export interface VerifiedFailureOutcome {
   goal: string;
