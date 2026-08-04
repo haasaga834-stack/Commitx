@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { MobileShell } from "@/components/BottomNav";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   usePlans,
   addPlan,
@@ -11,10 +11,13 @@ import {
   requestNotificationPermission,
   useDailyGoal,
   formatGoalHours,
+  clampDuration,
   WEEKDAYS,
   type Repeat,
 } from "@/lib/planner";
-import { BookOpen, Bell, Plus, Trash2, Clock, Target } from "lucide-react";
+import { BookOpen, Bell, Plus, Trash2, Clock, Target, ListChecks, CalendarClock } from "lucide-react";
+import { DurationWheel } from "@/components/DurationWheel";
+import { TodoList } from "@/components/TodoList";
 
 export const Route = createFileRoute("/planner")({
   head: () => ({
@@ -38,9 +41,11 @@ function Planner() {
   const { plans, hydrated } = usePlans();
   const { goalHours, setGoalHours, hydrated: goalHydrated } = useDailyGoal();
   const [open, setOpen] = useState(false);
+  const [chooser, setChooser] = useState(false);
   const [subject, setSubject] = useState("");
   const [time, setTime] = useState("18:00");
   const [durationMinutes, setDuration] = useState(60);
+  const todoRef = useRef<HTMLDivElement | null>(null);
   const [repeat, setRepeat] = useState<Repeat>("daily");
   const [weekday, setWeekday] = useState(1);
   const [monthday, setMonthday] = useState(1);
@@ -56,7 +61,7 @@ function Planner() {
     addPlan({
       subject: subject.trim(),
       time,
-      durationMinutes,
+      durationMinutes: clampDuration(durationMinutes),
       repeat,
       weekday: repeat === "weekly" ? weekday : undefined,
       monthday: repeat === "monthly" ? monthday : undefined,
@@ -76,7 +81,7 @@ function Planner() {
             <h1 className="mt-2 truncate text-3xl font-semibold">Study schedule</h1>
           </div>
           <button
-            onClick={() => setOpen(true)}
+            onClick={() => setChooser(true)}
             className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-soft"
             aria-label="Add study plan"
           >
@@ -114,6 +119,10 @@ function Planner() {
               </button>
             ))}
           </div>
+        </div>
+
+        <div ref={todoRef} className="mt-5">
+          <TodoList />
         </div>
 
         <button
@@ -194,6 +203,62 @@ function Planner() {
         )}
       </div>
 
+      {chooser && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/25 backdrop-blur-sm sm:items-center">
+          <div className="w-full max-w-md rounded-t-3xl bg-card p-6 shadow-lift sm:rounded-3xl">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">Add</p>
+            <h3 className="mt-1 text-xl font-semibold text-foreground">What do you want to add?</h3>
+
+            <button
+              onClick={() => {
+                setChooser(false);
+                setOpen(true);
+              }}
+              className="mt-5 flex w-full items-center gap-3 rounded-2xl border border-hairline bg-background p-4 text-left"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/15 text-primary">
+                <CalendarClock className="h-5 w-5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-medium text-foreground">
+                  Create study plan session
+                </span>
+                <span className="block text-xs text-muted-foreground">
+                  Subject, time, duration and repeat.
+                </span>
+              </span>
+            </button>
+
+            <button
+              onClick={() => {
+                setChooser(false);
+                requestAnimationFrame(() =>
+                  todoRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }),
+                );
+              }}
+              className="mt-3 flex w-full items-center gap-3 rounded-2xl border border-hairline bg-background p-4 text-left"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/15 text-primary">
+                <ListChecks className="h-5 w-5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-medium text-foreground">Make a to-do list</span>
+                <span className="block text-xs text-muted-foreground">
+                  Just write what you want to do today.
+                </span>
+              </span>
+            </button>
+
+            <button
+              onClick={() => setChooser(false)}
+              className="mt-6 w-full rounded-full border border-hairline bg-background px-5 py-3 text-sm font-medium text-foreground"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       {open && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/25 backdrop-blur-sm sm:items-center">
           <div className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-card p-6 shadow-lift sm:rounded-3xl">
@@ -226,16 +291,9 @@ function Planner() {
               </div>
               <div>
                 <label className="block text-xs uppercase tracking-wider text-muted-foreground">
-                  Duration (min)
+                  Duration
                 </label>
-                <input
-                  type="number"
-                  min={5}
-                  step={5}
-                  value={durationMinutes}
-                  onChange={(e) => setDuration(Math.max(5, parseInt(e.target.value, 10) || 5))}
-                  className="mt-2 w-full rounded-2xl border border-hairline bg-background px-4 py-3 text-sm outline-none focus:border-primary"
-                />
+                <DurationWheel value={durationMinutes} onChange={setDuration} />
               </div>
             </div>
 

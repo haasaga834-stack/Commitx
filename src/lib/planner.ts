@@ -254,3 +254,123 @@ export function useDailyGoal() {
 export function formatGoalHours(h: number) {
   return h % 1 === 0 ? `${h}h` : `${Math.floor(h)}h ${Math.round((h % 1) * 60)}m`;
 }
+
+/* ---------------------------------------------------------------------------
+ * Duration options (10 minutes .. 6 hours, 5 minute steps)
+ * ------------------------------------------------------------------------ */
+
+export const MIN_DURATION_MINUTES = 10;
+export const MAX_DURATION_MINUTES = 360;
+
+export const DURATION_OPTIONS: number[] = (() => {
+  const out: number[] = [];
+  for (let m = MIN_DURATION_MINUTES; m <= MAX_DURATION_MINUTES; m += 5) out.push(m);
+  return out;
+})();
+
+export function clampDuration(m: number) {
+  const n = Math.round(m / 5) * 5;
+  return Math.min(MAX_DURATION_MINUTES, Math.max(MIN_DURATION_MINUTES, n));
+}
+
+export function formatDuration(minutes: number) {
+  if (minutes < 60) return `${minutes} min`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m === 0 ? `${h}h` : `${h}h ${m}m`;
+}
+
+/* ---------------------------------------------------------------------------
+ * Today's to-do list
+ * ------------------------------------------------------------------------ */
+
+export interface TodoItem {
+  id: string;
+  text: string;
+  done: boolean;
+  /** YYYY-MM-DD local day the item belongs to */
+  day: string;
+}
+
+const TODO_KEY = "commitx-todos-v1";
+
+export function todayKey(d = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+    d.getDate(),
+  ).padStart(2, "0")}`;
+}
+
+const todoListeners = new Set<() => void>();
+let todoCache: TodoItem[] | null = null;
+
+function readTodos(): TodoItem[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(TODO_KEY);
+    const all = raw ? (JSON.parse(raw) as TodoItem[]) : [];
+    const today = todayKey();
+    return all.filter((t) => t.day === today);
+  } catch {
+    return [];
+  }
+}
+
+function writeTodos(items: TodoItem[]) {
+  todoCache = items;
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem(TODO_KEY, JSON.stringify(items));
+    } catch {}
+  }
+  todoListeners.forEach((l) => l());
+}
+
+export function getTodos(): TodoItem[] {
+  if (!todoCache) todoCache = readTodos();
+  return todoCache;
+}
+
+export function addTodo(text: string) {
+  const t = text.trim();
+  if (!t) return;
+  writeTodos([
+    ...getTodos(),
+    {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      text: t,
+      done: false,
+      day: todayKey(),
+    },
+  ]);
+}
+
+export function toggleTodo(id: string) {
+  writeTodos(getTodos().map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+}
+
+export function removeTodo(id: string) {
+  writeTodos(getTodos().filter((t) => t.id !== id));
+}
+
+export function useTodos() {
+  const [, tick] = useState(0);
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+    todoCache = readTodos();
+    setHydrated(true);
+    const l = () => tick((t) => t + 1);
+    todoListeners.add(l);
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === TODO_KEY) {
+        todoCache = readTodos();
+        tick((t) => t + 1);
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => {
+      todoListeners.delete(l);
+      window.removeEventListener("storage", onStorage);
+    };
+  }, []);
+  return { todos: getTodos(), hydrated };
+}

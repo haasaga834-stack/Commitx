@@ -16,7 +16,8 @@ import {
   setNativeSessionLock,
   setNativeVerifiedModeActive,
 } from "@/lib/native-session";
-import { BellOff, PauseCircle, X } from "lucide-react";
+import { BellOff, X } from "lucide-react";
+import { TodoList } from "@/components/TodoList";
 import { z } from "zod";
 
 declare global {
@@ -119,7 +120,7 @@ function Session() {
   );
 
   const [now, setNow] = useState<number>(() => Date.now());
-  const [paused, setPaused] = useState<boolean>(() => runningSinceRef.current === null);
+  const [, setPaused] = useState<boolean>(() => runningSinceRef.current === null);
   const [quote] = useState(() => QUOTES[Math.floor(Math.random() * QUOTES.length)]);
   const [confirmQuit, setConfirmQuit] = useState(false);
   const doneRef = useRef(false);
@@ -243,32 +244,9 @@ function Session() {
     };
   }, []);
 
-  // Standard mode: pause in background, resume on return.
-  useEffect(() => {
-    if (isVerified) return;
+  // Standard mode: the timer keeps running in real time (absolute timestamps),
+  // so screen-off, app switching and app restarts never pause it.
 
-    const onHidden = () => pauseTimer("background");
-    const onVisible = () => resumeTimer("foreground");
-    const onVisibility = () => {
-      if (document.visibilityState === "hidden") onHidden();
-      else onVisible();
-    };
-    const onPageHide = () => onHidden();
-    const onPageShow = () => onVisible();
-
-    document.addEventListener("visibilitychange", onVisibility);
-    window.addEventListener("blur", onHidden);
-    window.addEventListener("focus", onVisible);
-    window.addEventListener("pagehide", onPageHide);
-    window.addEventListener("pageshow", onPageShow);
-    return () => {
-      document.removeEventListener("visibilitychange", onVisibility);
-      window.removeEventListener("blur", onHidden);
-      window.removeEventListener("focus", onVisible);
-      window.removeEventListener("pagehide", onPageHide);
-      window.removeEventListener("pageshow", onPageShow);
-    };
-  }, [isVerified, pauseTimer, resumeTimer]);
 
   // Verified mode: foreground-only, with a 60s emergency grace window.
   useEffect(() => {
@@ -440,18 +418,17 @@ function Session() {
         </p>
         <p className="mt-3 text-sm text-muted-foreground">{goal}</p>
         <p className="mt-1 text-xs text-muted-foreground">{formatINR(value)} committed</p>
-        {!isVerified && paused && !dndBlocked && (
-          <p className="mt-6 inline-flex items-center gap-2 rounded-full bg-foreground/5 px-4 py-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">
-            <PauseCircle className="h-3.5 w-3.5" /> Paused — background time isn't counted
-          </p>
-        )}
         {isVerified && (
           <p className="mt-6 rounded-full bg-foreground/5 px-4 py-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">
             Leaving CommitX fails this session
           </p>
         )}
         <p className="mt-10 text-xs italic text-muted-foreground">"{quote}"</p>
+        <div className="mt-8 w-full max-w-md">
+          <TodoList compact />
+        </div>
       </div>
+
 
       {dndBlocked && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-background/95 px-6 backdrop-blur-sm">
