@@ -243,32 +243,9 @@ function Session() {
     };
   }, []);
 
-  // Standard mode: pause in background, resume on return.
-  useEffect(() => {
-    if (isVerified) return;
+  // Standard mode: the timer keeps running in real time (absolute timestamps),
+  // so screen-off, app switching and app restarts never pause it.
 
-    const onHidden = () => pauseTimer("background");
-    const onVisible = () => resumeTimer("foreground");
-    const onVisibility = () => {
-      if (document.visibilityState === "hidden") onHidden();
-      else onVisible();
-    };
-    const onPageHide = () => onHidden();
-    const onPageShow = () => onVisible();
-
-    document.addEventListener("visibilitychange", onVisibility);
-    window.addEventListener("blur", onHidden);
-    window.addEventListener("focus", onVisible);
-    window.addEventListener("pagehide", onPageHide);
-    window.addEventListener("pageshow", onPageShow);
-    return () => {
-      document.removeEventListener("visibilitychange", onVisibility);
-      window.removeEventListener("blur", onHidden);
-      window.removeEventListener("focus", onVisible);
-      window.removeEventListener("pagehide", onPageHide);
-      window.removeEventListener("pageshow", onPageShow);
-    };
-  }, [isVerified, pauseTimer, resumeTimer]);
 
   // Verified mode: foreground-only, with a 60s emergency grace window.
   useEffect(() => {
