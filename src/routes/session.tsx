@@ -16,7 +16,8 @@ import {
   setNativeSessionLock,
   setNativeVerifiedModeActive,
 } from "@/lib/native-session";
-import { BellOff, PauseCircle, X } from "lucide-react";
+import { BellOff, X } from "lucide-react";
+import { TodoList } from "@/components/TodoList";
 import { z } from "zod";
 
 declare global {
@@ -119,7 +120,7 @@ function Session() {
   );
 
   const [now, setNow] = useState<number>(() => Date.now());
-  const [paused, setPaused] = useState<boolean>(() => runningSinceRef.current === null);
+  const [, setPaused] = useState<boolean>(() => runningSinceRef.current === null);
   const [quote] = useState(() => QUOTES[Math.floor(Math.random() * QUOTES.length)]);
   const [confirmQuit, setConfirmQuit] = useState(false);
   const doneRef = useRef(false);
