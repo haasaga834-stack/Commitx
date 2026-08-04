@@ -11,6 +11,7 @@ import {
   requestNotificationPermission,
   useDailyGoal,
   formatGoalHours,
+  clampDuration,
   WEEKDAYS,
   type Repeat,
 } from "@/lib/planner";
@@ -60,7 +61,7 @@ function Planner() {
     addPlan({
       subject: subject.trim(),
       time,
-      durationMinutes,
+      durationMinutes: clampDuration(durationMinutes),
       repeat,
       weekday: repeat === "weekly" ? weekday : undefined,
       monthday: repeat === "monthly" ? monthday : undefined,
