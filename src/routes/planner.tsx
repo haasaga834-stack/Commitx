@@ -15,7 +15,7 @@ import {
   WEEKDAYS,
   type Repeat,
 } from "@/lib/planner";
-import { BookOpen, Bell, Plus, Trash2, Clock, Target, ListChecks, CalendarClock } from "lucide-react";
+import { BookOpen, Bell, Plus, Trash2, Clock, Target } from "lucide-react";
 import { DurationWheel } from "@/components/DurationWheel";
 import { TodoList } from "@/components/TodoList";
 
@@ -41,7 +41,6 @@ function Planner() {
   const { plans, hydrated } = usePlans();
   const { goalHours, setGoalHours, hydrated: goalHydrated } = useDailyGoal();
   const [open, setOpen] = useState(false);
-  const [chooser, setChooser] = useState(false);
   const [subject, setSubject] = useState("");
   const [time, setTime] = useState("18:00");
   const [durationMinutes, setDuration] = useState(60);
@@ -81,7 +80,7 @@ function Planner() {
             <h1 className="mt-2 truncate text-3xl font-semibold">Study schedule</h1>
           </div>
           <button
-            onClick={() => setChooser(true)}
+            onClick={() => setOpen(true)}
             className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-soft"
             aria-label="Add study plan"
           >
