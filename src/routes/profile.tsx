@@ -46,9 +46,10 @@ function Profile() {
     .slice(0, 2)
     .join("");
 
+  const { rows: cloudLeaders } = useLeaderboard(10);
   const leaderboard = useMemo(
-    () => buildLeaderboard(state.profile.name, s.totalMinutes),
-    [state.profile.name, s.totalMinutes],
+    () => buildLeaderboard(cloudLeaders, state.profile.name, s.totalMinutes),
+    [cloudLeaders, state.profile.name, s.totalMinutes],
   );
 
   return (
