@@ -10,7 +10,6 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
 import {
   finalizePendingVerifiedFailure,
   readActiveVerifiedSession,
@@ -40,7 +39,7 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    console.error(error);
   }, [error]);
 
   return (
@@ -90,8 +89,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Start a focused commitment. One promise at a time, kept beautifully.",
       },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/cd137564-7ced-4ecf-9182-ce46fefd617d/id-preview-b57e91a0--1384a4d2-7b53-476d-badb-4dfc999cef26.lovable.app-1784650045741.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/cd137564-7ced-4ecf-9182-ce46fefd617d/id-preview-b57e91a0--1384a4d2-7b53-476d-badb-4dfc999cef26.lovable.app-1784650045741.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
