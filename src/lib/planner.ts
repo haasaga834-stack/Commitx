@@ -259,17 +259,19 @@ export function formatGoalHours(h: number) {
  * Duration options (10 minutes .. 6 hours, 5 minute steps)
  * ------------------------------------------------------------------------ */
 
-export const MIN_DURATION_MINUTES = 10;
+export const MIN_DURATION_MINUTES = 30;
 export const MAX_DURATION_MINUTES = 360;
+export const DURATION_STEP_MINUTES = 30;
 
 export const DURATION_OPTIONS: number[] = (() => {
   const out: number[] = [];
-  for (let m = MIN_DURATION_MINUTES; m <= MAX_DURATION_MINUTES; m += 5) out.push(m);
+  for (let m = MIN_DURATION_MINUTES; m <= MAX_DURATION_MINUTES; m += DURATION_STEP_MINUTES)
+    out.push(m);
   return out;
 })();
 
 export function clampDuration(m: number) {
-  const n = Math.round(m / 5) * 5;
+  const n = Math.round(m / DURATION_STEP_MINUTES) * DURATION_STEP_MINUTES;
   return Math.min(MAX_DURATION_MINUTES, Math.max(MIN_DURATION_MINUTES, n));
 }
 
