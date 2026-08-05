@@ -4,6 +4,7 @@ import { MobileShell } from "@/components/BottomNav";
 import { FoodCoins } from "@/components/FoodCoins";
 import { DailyGoalProgress } from "@/components/DailyGoalProgress";
 import { useAppState, stats } from "@/lib/commitx-store";
+import { useCommunityFoodCoins } from "@/lib/community";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -34,6 +35,7 @@ function greeting() {
 function Home() {
   const { state, hydrated } = useAppState();
   const s = stats(state.sessions);
+  const community = useCommunityFoodCoins();
   const firstName = state.profile.name.split(" ")[0];
 
   const focusToday =
