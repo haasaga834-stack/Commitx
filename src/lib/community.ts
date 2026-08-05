@@ -28,18 +28,10 @@ export function useLeaderboard(limit = 10) {
     };
     void load();
 
-    const channel = supabase
-      .channel("leaderboard-sessions")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "focus_sessions" },
-        () => void load(),
-      )
-      .subscribe();
-
+    const id = setInterval(load, 60_000);
     return () => {
       alive = false;
-      supabase.removeChannel(channel);
+      clearInterval(id);
     };
   }, [limit]);
 
