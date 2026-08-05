@@ -119,6 +119,102 @@ export type Database = {
         }
         Relationships: []
       }
+      study_plans: {
+        Row: {
+          created_at: string
+          duration_minutes: number
+          id: string
+          monthday: number | null
+          repeat: string
+          subject: string
+          time: string
+          updated_at: string
+          user_id: string
+          weekday: number | null
+        }
+        Insert: {
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          monthday?: number | null
+          repeat?: string
+          subject?: string
+          time?: string
+          updated_at?: string
+          user_id: string
+          weekday?: number | null
+        }
+        Update: {
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          monthday?: number | null
+          repeat?: string
+          subject?: string
+          time?: string
+          updated_at?: string
+          user_id?: string
+          weekday?: number | null
+        }
+        Relationships: []
+      }
+      todos: {
+        Row: {
+          created_at: string
+          day: string
+          done: boolean
+          id: string
+          text: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          day?: string
+          done?: boolean
+          id?: string
+          text: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          day?: string
+          done?: boolean
+          id?: string
+          text?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          created_at: string
+          daily_goal_hours: number
+          reminders_enabled: boolean
+          theme: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          daily_goal_hours?: number
+          reminders_enabled?: boolean
+          theme?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          daily_goal_hours?: number
+          reminders_enabled?: boolean
+          theme?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       wallets: {
         Row: {
           demo_balance: number
@@ -145,7 +241,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      community_food_coins: { Args: never; Returns: number }
       generate_referral_code: { Args: never; Returns: string }
+      leaderboard_top: {
+        Args: { _limit?: number }
+        Returns: {
+          display_name: string
+          total_minutes: number
+          user_id: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
