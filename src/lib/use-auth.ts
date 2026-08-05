@@ -3,6 +3,7 @@ import type { Session as SupabaseSession, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { pullFromCloud, startCloudSync, stopCloudSync } from "./cloud-sync";
 import { resetState } from "./commitx-store";
+import { clearPlannerLocal, setPlannerUser } from "./planner";
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -17,9 +18,11 @@ export function useAuth() {
       setLoading(false);
       if (session?.user) {
         startCloudSync(session.user.id);
+        setPlannerUser(session.user.id);
         void pullFromCloud(session.user.id).catch(() => {});
       } else {
         stopCloudSync();
+        setPlannerUser(null);
       }
     };
 
@@ -46,5 +49,6 @@ export async function signOutEverywhere() {
   nativeGoogleSignOut();
   await supabase.auth.signOut();
   resetState();
+  clearPlannerLocal();
 }
 

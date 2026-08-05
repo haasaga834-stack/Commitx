@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Pencil, Check, Trophy, Clock, Settings as SettingsIcon } from "lucide-react";
 import { formatHours } from "@/lib/analytics-data";
 import { FoodCoinInfoCard } from "@/components/FoodCoinInfoCard";
+import { useLeaderboard } from "@/lib/community";
 
 
 
@@ -46,9 +47,10 @@ function Profile() {
     .slice(0, 2)
     .join("");
 
+  const { rows: cloudLeaders } = useLeaderboard(10);
   const leaderboard = useMemo(
-    () => buildLeaderboard(state.profile.name, s.totalMinutes),
-    [state.profile.name, s.totalMinutes],
+    () => buildLeaderboard(cloudLeaders, state.profile.name, s.totalMinutes),
+    [cloudLeaders, state.profile.name, s.totalMinutes],
   );
 
   return (
@@ -201,30 +203,41 @@ function LeaderRow({
   );
 }
 
-const MOCK_LEADERS = [
-  { name: "Ananya Rao", minutes: 5220, avatar: "linear-gradient(135deg,#2E7D32,#66BB6A)" },
-  { name: "Vikram Iyer", minutes: 4680, avatar: "linear-gradient(135deg,#1565C0,#42A5F5)" },
-  { name: "Priya Shah", minutes: 4110, avatar: "linear-gradient(135deg,#AD1457,#EC407A)" },
-  { name: "Rohan Kapoor", minutes: 3450, avatar: "linear-gradient(135deg,#4527A0,#7E57C2)" },
-  { name: "Meera Nair", minutes: 2880, avatar: "linear-gradient(135deg,#EF6C00,#FFB74D)" },
-  { name: "Kabir Sen", minutes: 2310, avatar: "linear-gradient(135deg,#00695C,#4DB6AC)" },
-  { name: "Ishita Verma", minutes: 1860, avatar: "linear-gradient(135deg,#6A1B9A,#BA68C8)" },
-  { name: "Aditya Joshi", minutes: 1380, avatar: "linear-gradient(135deg,#37474F,#78909C)" },
-  { name: "Neha Gupta", minutes: 900, avatar: "linear-gradient(135deg,#C62828,#EF5350)" },
-  { name: "Siddharth Rao", minutes: 480, avatar: "linear-gradient(135deg,#2E7D32,#81C784)" },
+const AVATARS = [
+  "linear-gradient(135deg,#2E7D32,#66BB6A)",
+  "linear-gradient(135deg,#1565C0,#42A5F5)",
+  "linear-gradient(135deg,#AD1457,#EC407A)",
+  "linear-gradient(135deg,#4527A0,#7E57C2)",
+  "linear-gradient(135deg,#EF6C00,#FFB74D)",
+  "linear-gradient(135deg,#00695C,#4DB6AC)",
+  "linear-gradient(135deg,#6A1B9A,#BA68C8)",
+  "linear-gradient(135deg,#37474F,#78909C)",
+  "linear-gradient(135deg,#C62828,#EF5350)",
+  "linear-gradient(135deg,#2E7D32,#81C784)",
 ];
 
-/** Ranked by total study hours; recomputed whenever a session completes. */
-function buildLeaderboard(userName: string, userMinutes: number) {
-  const you = {
-    name: userName,
-    minutes: userMinutes,
-    avatar: "linear-gradient(135deg,#2E7D32,#4CAF50)",
-    you: true,
-  };
-  const combined = [...MOCK_LEADERS.map((m) => ({ ...m, you: false })), you];
-  combined.sort((a, b) => b.minutes - a.minutes);
-  return combined.slice(0, 10);
+/** Ranked by total study hours, live from the cloud. */
+function buildLeaderboard(
+  cloudLeaders: { userId: string; name: string; minutes: number }[],
+  userName: string,
+  userMinutes: number,
+) {
+  const rows = cloudLeaders.map((r, i) => ({
+    name: r.name,
+    minutes: r.minutes,
+    avatar: AVATARS[i % AVATARS.length],
+    you: r.name === userName && r.minutes === userMinutes,
+  }));
+  if (!rows.some((r) => r.you)) {
+    rows.push({
+      name: userName,
+      minutes: userMinutes,
+      avatar: "linear-gradient(135deg,#2E7D32,#4CAF50)",
+      you: true,
+    });
+  }
+  rows.sort((a, b) => b.minutes - a.minutes);
+  return rows.slice(0, 10);
 }
 
 function Field({

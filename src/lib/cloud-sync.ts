@@ -111,6 +111,8 @@ async function push(userId: string) {
   }
 }
 
+let channel: ReturnType<typeof supabase.channel> | null = null;
+
 /** Start mirroring local store changes to the cloud for this user. */
 export function startCloudSync(userId: string) {
   stopCloudSync();
@@ -122,6 +124,25 @@ export function startCloudSync(userId: string) {
       void push(currentUserId!).catch(() => {});
     }, 400);
   });
+
+  // Keep other devices in step: any cloud change to this user's rows re-pulls.
+  channel = supabase
+    .channel(`commitx-user-${userId}`)
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "wallets", filter: `user_id=eq.${userId}` },
+      () => {
+        if (currentUserId) void pullFromCloud(currentUserId).catch(() => {});
+      },
+    )
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "focus_sessions", filter: `user_id=eq.${userId}` },
+      () => {
+        if (currentUserId) void pullFromCloud(currentUserId).catch(() => {});
+      },
+    )
+    .subscribe();
 }
 
 export function stopCloudSync() {
@@ -131,4 +152,8 @@ export function stopCloudSync() {
   if (pushTimer) clearTimeout(pushTimer);
   pushTimer = null;
   syncedSessionIds = new Set();
+  if (channel) {
+    supabase.removeChannel(channel);
+    channel = null;
+  }
 }

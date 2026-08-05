@@ -25,6 +25,8 @@ export function setTheme(mode: ThemeMode) {
     window.localStorage.setItem(THEME_KEY, mode);
   } catch {}
   applyTheme(mode);
+  // Persist the choice with the user's cloud settings so it follows the account.
+  void import("./planner").then((m) => m.syncThemeToCloud(mode));
   window.dispatchEvent(new CustomEvent("commitx:theme-change", { detail: mode }));
 }
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export type Repeat = "daily" | "weekly" | "monthly";
 
@@ -18,6 +19,18 @@ export interface StudyPlan {
 
 const KEY = "commitx-planner-v1";
 const NOTIFIED_KEY = "commitx-planner-notified-v1";
+
+/* ---------------------------------------------------------------------------
+ * Cloud identity — set by useAuth when a session is available.
+ * localStorage is only an offline mirror of what lives in the cloud.
+ * ------------------------------------------------------------------------ */
+
+let cloudUserId: string | null = null;
+
+function newId() {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
 
 const listeners = new Set<() => void>();
 let cache: StudyPlan[] | null = null;
@@ -48,14 +61,30 @@ export function getPlans(): StudyPlan[] {
 }
 
 export function addPlan(plan: Omit<StudyPlan, "id" | "createdAt">) {
-  write([
-    ...getPlans(),
-    { ...plan, id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, createdAt: Date.now() },
-  ]);
+  const row: StudyPlan = { ...plan, id: newId(), createdAt: Date.now() };
+  write([...getPlans(), row]);
+  if (cloudUserId) {
+    void supabase
+      .from("study_plans")
+      .insert({
+        id: row.id,
+        user_id: cloudUserId,
+        subject: row.subject,
+        time: row.time,
+        duration_minutes: row.durationMinutes,
+        repeat: row.repeat,
+        weekday: row.weekday ?? null,
+        monthday: row.monthday ?? null,
+      })
+      .then(() => {});
+  }
 }
 
 export function removePlan(id: string) {
   write(getPlans().filter((p) => p.id !== id));
+  if (cloudUserId) {
+    void supabase.from("study_plans").delete().eq("id", id).then(() => {});
+  }
 }
 
 export function usePlans() {
@@ -129,11 +158,19 @@ export function repeatLabel(plan: StudyPlan) {
 
 export async function requestNotificationPermission(): Promise<boolean> {
   if (typeof window === "undefined" || !("Notification" in window)) return false;
-  if (Notification.permission === "granted") return true;
-  if (Notification.permission === "denied") return false;
+  if (Notification.permission === "granted") {
+    setRemindersEnabled(true);
+    return true;
+  }
+  if (Notification.permission === "denied") {
+    setRemindersEnabled(false);
+    return false;
+  }
   try {
     const res = await Notification.requestPermission();
-    return res === "granted";
+    const ok = res === "granted";
+    setRemindersEnabled(ok);
+    return ok;
   } catch {
     return false;
   }
@@ -200,7 +237,7 @@ export function useStudyReminders() {
 }
 
 /* ---------------------------------------------------------------------------
- * Daily study goal (separate from schedules)
+ * Daily study goal + reminder preference (cloud-backed user settings)
  * ------------------------------------------------------------------------ */
 
 const GOAL_KEY = "commitx-daily-goal-v1";
@@ -208,6 +245,7 @@ export const DEFAULT_DAILY_GOAL_HOURS = 2;
 
 const goalListeners = new Set<() => void>();
 let goalCache: number | null = null;
+let remindersEnabled = true;
 
 function readGoal(): number {
   if (typeof window === "undefined") return DEFAULT_DAILY_GOAL_HOURS;
@@ -225,15 +263,43 @@ export function getDailyGoalHours(): number {
   return goalCache;
 }
 
-export function setDailyGoalHours(hours: number) {
-  const clamped = Math.min(16, Math.max(0.5, hours));
-  goalCache = clamped;
+function writeGoalLocal(hours: number) {
+  goalCache = hours;
   if (typeof window !== "undefined") {
     try {
-      localStorage.setItem(GOAL_KEY, String(clamped));
+      localStorage.setItem(GOAL_KEY, String(hours));
     } catch {}
   }
   goalListeners.forEach((l) => l());
+}
+
+export function setDailyGoalHours(hours: number) {
+  const clamped = Math.min(16, Math.max(0.5, hours));
+  writeGoalLocal(clamped);
+  void upsertSettings({ daily_goal_hours: clamped });
+}
+
+export function setRemindersEnabled(enabled: boolean) {
+  remindersEnabled = enabled;
+  void upsertSettings({ reminders_enabled: enabled });
+}
+
+export function getRemindersEnabled() {
+  return remindersEnabled;
+}
+
+async function upsertSettings(patch: Record<string, unknown>) {
+  if (!cloudUserId) return;
+  try {
+    await supabase
+      .from("user_settings")
+      .upsert({ user_id: cloudUserId, ...patch }, { onConflict: "user_id" });
+  } catch {}
+}
+
+/** Persist the theme choice with the rest of the user's cloud settings. */
+export function syncThemeToCloud(theme: "light" | "dark") {
+  void upsertSettings({ theme });
 }
 
 export function useDailyGoal() {
@@ -256,7 +322,7 @@ export function formatGoalHours(h: number) {
 }
 
 /* ---------------------------------------------------------------------------
- * Duration options (10 minutes .. 6 hours, 5 minute steps)
+ * Duration options (30 minutes .. 6 hours, 30 minute steps)
  * ------------------------------------------------------------------------ */
 
 export const MIN_DURATION_MINUTES = 30;
@@ -283,7 +349,7 @@ export function formatDuration(minutes: number) {
 }
 
 /* ---------------------------------------------------------------------------
- * Today's to-do list
+ * Today's to-do list (cloud-backed)
  * ------------------------------------------------------------------------ */
 
 export interface TodoItem {
@@ -335,23 +401,36 @@ export function getTodos(): TodoItem[] {
 export function addTodo(text: string) {
   const t = text.trim();
   if (!t) return;
-  writeTodos([
-    ...getTodos(),
-    {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      text: t,
-      done: false,
-      day: todayKey(),
-    },
-  ]);
+  const item: TodoItem = { id: newId(), text: t, done: false, day: todayKey() };
+  writeTodos([...getTodos(), item]);
+  if (cloudUserId) {
+    void supabase
+      .from("todos")
+      .insert({
+        id: item.id,
+        user_id: cloudUserId,
+        text: item.text,
+        done: false,
+        day: item.day,
+      })
+      .then(() => {});
+  }
 }
 
 export function toggleTodo(id: string) {
-  writeTodos(getTodos().map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+  const next = getTodos().map((t) => (t.id === id ? { ...t, done: !t.done } : t));
+  writeTodos(next);
+  const updated = next.find((t) => t.id === id);
+  if (cloudUserId && updated) {
+    void supabase.from("todos").update({ done: updated.done }).eq("id", id).then(() => {});
+  }
 }
 
 export function removeTodo(id: string) {
   writeTodos(getTodos().filter((t) => t.id !== id));
+  if (cloudUserId) {
+    void supabase.from("todos").delete().eq("id", id).then(() => {});
+  }
 }
 
 export function useTodos() {
@@ -375,4 +454,78 @@ export function useTodos() {
     };
   }, []);
   return { todos: getTodos(), hydrated };
+}
+
+/* ---------------------------------------------------------------------------
+ * Cloud hydration
+ * ------------------------------------------------------------------------ */
+
+/** Pull plans, today's to-dos and settings from the cloud. */
+export async function pullPlannerFromCloud(userId: string) {
+  const today = todayKey();
+  const [{ data: plans }, { data: todos }, { data: settings }] = await Promise.all([
+    supabase
+      .from("study_plans")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: true }),
+    supabase.from("todos").select("*").eq("user_id", userId).eq("day", today),
+    supabase.from("user_settings").select("*").eq("user_id", userId).maybeSingle(),
+  ]);
+
+  write(
+    (plans ?? []).map((r) => ({
+      id: r.id,
+      subject: r.subject,
+      time: r.time,
+      durationMinutes: r.duration_minutes,
+      repeat: r.repeat as Repeat,
+      weekday: r.weekday ?? undefined,
+      monthday: r.monthday ?? undefined,
+      createdAt: new Date(r.created_at).getTime(),
+    })),
+  );
+
+  writeTodos(
+    (todos ?? []).map((r) => ({
+      id: r.id,
+      text: r.text,
+      done: r.done,
+      day: r.day,
+    })),
+  );
+
+  if (settings) {
+    remindersEnabled = settings.reminders_enabled;
+    writeGoalLocal(Number(settings.daily_goal_hours) || DEFAULT_DAILY_GOAL_HOURS);
+  } else {
+    await supabase
+      .from("user_settings")
+      .upsert(
+        { user_id: userId, daily_goal_hours: getDailyGoalHours() },
+        { onConflict: "user_id" },
+      );
+  }
+
+  return settings;
+}
+
+/** Attach/detach the signed-in user. Called from useAuth. */
+export function setPlannerUser(userId: string | null) {
+  cloudUserId = userId;
+  if (!userId) return;
+  void pullPlannerFromCloud(userId).catch(() => {});
+}
+
+/** Clear local mirrors (sign-out / account deletion). */
+export function clearPlannerLocal() {
+  cloudUserId = null;
+  write([]);
+  writeTodos([]);
+  writeGoalLocal(DEFAULT_DAILY_GOAL_HOURS);
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.removeItem(NOTIFIED_KEY);
+    } catch {}
+  }
 }
