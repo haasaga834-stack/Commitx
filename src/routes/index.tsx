@@ -92,8 +92,8 @@ function Home() {
           <FoodCoins
             userCoins={s.foodCoins}
             milestone={1000}
-            communityCoins={1284650 + s.foodCoins}
-            hydrated={hydrated}
+            communityCoins={community.coins}
+            hydrated={hydrated && community.loaded}
           />
         </div>
       </div>
