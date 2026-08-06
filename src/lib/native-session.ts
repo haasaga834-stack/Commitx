@@ -14,9 +14,24 @@ declare global {
       isDndEnabled?: () => boolean;
       openDndSettings?: () => void;
       canCheckDnd?: () => boolean;
+      /* Notifications */
+      syncTodos?: (itemsJson: string) => void;
+      clearTodoNotification?: () => void;
+      showSessionProgress?: (title: string, text: string, progress: number) => void;
+      hideSessionProgress?: () => void;
+      /* Screen time */
+      screenTimeSupported?: () => boolean;
+      hasUsageAccess?: () => boolean;
+      openUsageAccessSettings?: () => void;
+      screenTimeToday?: () => string;
+      screenTimeLimit?: () => number;
+      setScreenTimeLimit?: (minutes: number) => void;
     };
     CommitXSession?: {
       onAndroidBack?: () => void;
+    };
+    CommitXTodos?: {
+      toggleFromNative?: (id: string) => void;
     };
   }
 }
