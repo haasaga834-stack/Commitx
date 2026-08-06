@@ -18,6 +18,7 @@ import {
 } from "@/lib/native-session";
 import { BellOff, X } from "lucide-react";
 import { TodoList } from "@/components/TodoList";
+import { showSessionProgress, hideSessionProgress } from "@/lib/native-notifications";
 import { z } from "zod";
 
 declare global {
@@ -331,6 +332,19 @@ function Session() {
   const elapsedMs = Math.min(totalMs, accumulatedRef.current + (runningSinceRef.current ? now - runningSinceRef.current : 0));
   const progress = totalMs > 0 ? elapsedMs / totalMs : 0;
   const remaining = Math.max(0, Math.ceil((totalMs - elapsedMs) / 1000));
+
+  // Live study-progress notification (Android): timer + progress bar.
+  useEffect(() => {
+    if (doneRef.current) return;
+    const label = mode === "verified" ? "Verified session" : "Standard session";
+    showSessionProgress(
+      `${label} \u00B7 ${fmt(remaining)} left`,
+      `${goal} \u00B7 ${Math.round(progress * 100)}% of ${duration} min complete`,
+      progress * 100,
+    );
+  }, [remaining, progress, goal, duration, mode]);
+
+  useEffect(() => () => hideSessionProgress(), []);
 
   function complete(status: "completed" | "failed", reason?: string) {
     // Idempotent: prevents duplicate deductions and duplicate session rows.

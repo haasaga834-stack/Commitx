@@ -42,6 +42,10 @@ public class MainActivity extends Activity {
     private static final String START_URL = "https://commitx.lovable.app/";
     private static final String PREFS = "commitx_verified_mode";
     private static final String PENDING_REASON = "pending_failure_reason";
+    static final String EXTRA_ROUTE = "commitx_route";
+
+    /** Live instance used by notification actions to reach the web layer. */
+    private static volatile MainActivity current;
 
     private WebView webView;
     private Dialog authDialog;
@@ -55,7 +59,12 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
+        current = this;
         preferences = getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        CommitXNotifications.ensureChannels(this);
+        requestNotificationPermissionIfNeeded();
+        ScreenTimeTracker.scheduleChecks(this);
+
 
 
         getWindow().setStatusBarColor(Color.parseColor("#F8F9F6"));
@@ -110,13 +119,65 @@ public class MainActivity extends Activity {
                 super.onPageFinished(view, url);
                 if (isCommitXUrl(Uri.parse(url))) {
                     injectPendingFailureIfNeeded();
+                    flushPendingTodoToggles();
                 }
             }
         });
 
         setContentView(webView);
-        webView.loadUrl(START_URL);
+        webView.loadUrl(startUrlFor(getIntent()));
     }
+
+    private String startUrlFor(Intent intent) {
+        String route = intent == null ? null : intent.getStringExtra(EXTRA_ROUTE);
+        if (route == null || route.trim().isEmpty()) return START_URL;
+        return START_URL + route.replaceFirst("^/", "");
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        String route = intent == null ? null : intent.getStringExtra(EXTRA_ROUTE);
+        if (route != null && !route.trim().isEmpty() && webView != null) {
+            webView.loadUrl(startUrlFor(intent));
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (current == this) current = null;
+        super.onDestroy();
+    }
+
+    private void requestNotificationPermissionIfNeeded() {
+        if (android.os.Build.VERSION.SDK_INT < 33) return;
+        try {
+            if (checkSelfPermission("android.permission.POST_NOTIFICATIONS")
+                    != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[] { "android.permission.POST_NOTIFICATIONS" }, 42);
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    /** Pushes a notification-initiated toggle into the web layer. */
+    static boolean notifyTodoToggled(String id) {
+        MainActivity activity = current;
+        if (activity == null || activity.webView == null) return false;
+        activity.evalOnWeb("window.CommitXTodos&&window.CommitXTodos.toggleFromNative&&"
+                + "window.CommitXTodos.toggleFromNative(" + activity.JSONObjectQuote(id) + ")");
+        return true;
+    }
+
+    private void flushPendingTodoToggles() {
+        String[] ids = TodoStore.drainPending(this);
+        for (String id : ids) {
+            if (id == null || id.isEmpty()) continue;
+            evalOnWeb("window.CommitXTodos&&window.CommitXTodos.toggleFromNative&&"
+                    + "window.CommitXTodos.toggleFromNative(" + JSONObjectQuote(id) + ")");
+        }
+    }
+
 
     private String browserUserAgent(String current) {
         if (current == null) return null;
@@ -447,5 +508,75 @@ public class MainActivity extends Activity {
         public void clearPendingFailure() {
             preferences.edit().remove(PENDING_REASON).apply();
         }
+
+        /* ------------------------- To-do notification ------------------------ */
+
+        /** items = JSON array of { id, text, done } for today. */
+        @JavascriptInterface
+        public void syncTodos(String itemsJson) {
+            TodoStore.save(MainActivity.this, itemsJson);
+            CommitXNotifications.showTodos(MainActivity.this);
+        }
+
+        @JavascriptInterface
+        public void clearTodoNotification() {
+            TodoStore.clear(MainActivity.this);
+            CommitXNotifications.cancelTodos(MainActivity.this);
+        }
+
+        /* ----------------------- Study progress notification ----------------- */
+
+        @JavascriptInterface
+        public void showSessionProgress(String title, String text, int progress) {
+            CommitXNotifications.showSession(MainActivity.this, title, text, progress);
+        }
+
+        @JavascriptInterface
+        public void hideSessionProgress() {
+            CommitXNotifications.cancelSession(MainActivity.this);
+        }
+
+        /* ----------------------------- Screen time --------------------------- */
+
+        @JavascriptInterface
+        public boolean screenTimeSupported() {
+            return ScreenTimeTracker.supported();
+        }
+
+        @JavascriptInterface
+        public boolean hasUsageAccess() {
+            return ScreenTimeTracker.hasPermission(MainActivity.this);
+        }
+
+        @JavascriptInterface
+        public void openUsageAccessSettings() {
+            runOnUiThread(() -> {
+                try {
+                    startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                } catch (Throwable t) {
+                    try {
+                        startActivity(new Intent(Settings.ACTION_SETTINGS));
+                    } catch (Throwable ignored) {}
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public String screenTimeToday() {
+            return ScreenTimeTracker.toJson(MainActivity.this);
+        }
+
+        @JavascriptInterface
+        public int screenTimeLimit() {
+            return ScreenTimeTracker.limitMinutes(MainActivity.this);
+        }
+
+        @JavascriptInterface
+        public void setScreenTimeLimit(int minutes) {
+            ScreenTimeTracker.setLimitMinutes(MainActivity.this, minutes);
+            ScreenTimeTracker.checkLimit(MainActivity.this);
+        }
     }
 }
+

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { syncTodoNotification } from "@/lib/native-notifications";
 
 export type Repeat = "daily" | "weekly" | "monthly";
 
@@ -391,6 +392,8 @@ function writeTodos(items: TodoItem[]) {
     } catch {}
   }
   todoListeners.forEach((l) => l());
+  // Keep the persistent Android notification in step with the list.
+  syncTodoNotification(items);
 }
 
 export function getTodos(): TodoItem[] {
@@ -448,6 +451,9 @@ export function useTodos() {
       }
     };
     window.addEventListener("storage", onStorage);
+    syncTodoNotification(getTodos());
+    // Lets the notification's "Done" action flip the task inside the app.
+    window.CommitXTodos = { toggleFromNative: (id: string) => toggleTodo(id) };
     return () => {
       todoListeners.delete(l);
       window.removeEventListener("storage", onStorage);
