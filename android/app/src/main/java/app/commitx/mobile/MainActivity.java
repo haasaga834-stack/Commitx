@@ -119,13 +119,65 @@ public class MainActivity extends Activity {
                 super.onPageFinished(view, url);
                 if (isCommitXUrl(Uri.parse(url))) {
                     injectPendingFailureIfNeeded();
+                    flushPendingTodoToggles();
                 }
             }
         });
 
         setContentView(webView);
-        webView.loadUrl(START_URL);
+        webView.loadUrl(startUrlFor(getIntent()));
     }
+
+    private String startUrlFor(Intent intent) {
+        String route = intent == null ? null : intent.getStringExtra(EXTRA_ROUTE);
+        if (route == null || route.trim().isEmpty()) return START_URL;
+        return START_URL + route.replaceFirst("^/", "");
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        String route = intent == null ? null : intent.getStringExtra(EXTRA_ROUTE);
+        if (route != null && !route.trim().isEmpty() && webView != null) {
+            webView.loadUrl(startUrlFor(intent));
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (current == this) current = null;
+        super.onDestroy();
+    }
+
+    private void requestNotificationPermissionIfNeeded() {
+        if (android.os.Build.VERSION.SDK_INT < 33) return;
+        try {
+            if (checkSelfPermission("android.permission.POST_NOTIFICATIONS")
+                    != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[] { "android.permission.POST_NOTIFICATIONS" }, 42);
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    /** Pushes a notification-initiated toggle into the web layer. */
+    static boolean notifyTodoToggled(String id) {
+        MainActivity activity = current;
+        if (activity == null || activity.webView == null) return false;
+        activity.evalOnWeb("window.CommitXTodos&&window.CommitXTodos.toggleFromNative&&"
+                + "window.CommitXTodos.toggleFromNative(" + activity.JSONObjectQuote(id) + ")");
+        return true;
+    }
+
+    private void flushPendingTodoToggles() {
+        String[] ids = TodoStore.drainPending(this);
+        for (String id : ids) {
+            if (id == null || id.isEmpty()) continue;
+            evalOnWeb("window.CommitXTodos&&window.CommitXTodos.toggleFromNative&&"
+                    + "window.CommitXTodos.toggleFromNative(" + JSONObjectQuote(id) + ")");
+        }
+    }
+
 
     private String browserUserAgent(String current) {
         if (current == null) return null;
