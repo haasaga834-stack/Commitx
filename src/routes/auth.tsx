@@ -86,7 +86,7 @@ function Auth() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-14">
         <div className="flex flex-col items-center">
           <Hourglass size={120} state="idle" />
