@@ -23,8 +23,8 @@ export function Hourglass({
   const p = Math.min(1, Math.max(0, progress ?? (state === "success" ? 1 : 0)));
 
   const isFailed = state === "failed";
-  const frame = isFailed ? "var(--color-muted-foreground)" : "var(--color-foreground)";
-  const sandTop = isFailed ? "var(--color-muted-foreground)" : "oklch(0.90 0.07 92)";
+  const frame = isFailed ? "var(--color-muted-foreground)" : "var(--color-frame)";
+  const sandTop = isFailed ? "var(--color-muted-foreground)" : "oklch(0.88 0.085 90)";
   const sandBottom = isFailed ? "var(--color-muted-foreground)" : "var(--color-sand)";
 
   const streaming = state === "running" && p > 0.0005 && p < 0.9995;
@@ -72,17 +72,17 @@ export function Hourglass({
         </defs>
 
         {/* Ground shadow */}
-        <ellipse cx="60" cy="166" rx="32" ry="5" fill="rgba(16,24,40,0.16)" />
+        <ellipse cx="60" cy="166" rx="32" ry="5" fill="rgba(96,72,44,0.16)" />
 
         {/* Heavy squared caps */}
-        <rect x="14" y="10" width="92" height="6" rx="3" fill={frame} />
-        <rect x="14" y="152" width="92" height="6" rx="3" fill={frame} />
+        <rect x="13" y="9" width="94" height="8" rx="4" fill={frame} />
+        <rect x="13" y="151" width="94" height="8" rx="4" fill={frame} />
 
         {/* Glass silhouettes */}
         <path
           d="M22 18 L98 18 Q98 48 62 76 L62 92 Q98 120 98 150 L22 150 Q22 120 58 92 L58 76 Q22 48 22 18 Z"
           stroke={frame}
-          strokeWidth="2.6"
+          strokeWidth="3.2"
         />
 
         {/* Top sand — real level */}

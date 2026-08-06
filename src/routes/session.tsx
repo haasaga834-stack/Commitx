@@ -397,14 +397,14 @@ function Session() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background px-6 pb-10 pt-14">
-      <div className="flex items-center justify-between">
+    <div className="flex min-h-screen flex-col px-6 pb-10 pt-14">
+      <div className="relative flex items-center justify-center">
         <p className="text-xs uppercase tracking-widest text-muted-foreground">
           {isVerified ? "Verified session" : "Standard session"}
         </p>
         <button
           onClick={() => setConfirmQuit(true)}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-soft"
+          className="absolute right-0 inline-flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-soft"
           aria-label="End session"
         >
           <X className="h-5 w-5" />
