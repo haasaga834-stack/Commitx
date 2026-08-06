@@ -16,6 +16,7 @@ import {
 } from "../lib/verified-mode";
 import { useAuth } from "../lib/use-auth";
 import { useStudyReminders } from "../lib/planner";
+import { AmbientNature } from "../components/AmbientNature";
 
 function NotFoundComponent() {
   return (
@@ -68,7 +69,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { name: "theme-color", content: "#F8F9F6" },
+      { name: "theme-color", content: "#F5F1E6" },
       { title: "CommitX — Home" },
       {
         name: "description",
@@ -217,6 +218,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
+      <AmbientNature />
       <VerifiedRecovery />
       <StudyReminders />
       <AuthGate>
