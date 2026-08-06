@@ -42,6 +42,10 @@ public class MainActivity extends Activity {
     private static final String START_URL = "https://commitx.lovable.app/";
     private static final String PREFS = "commitx_verified_mode";
     private static final String PENDING_REASON = "pending_failure_reason";
+    static final String EXTRA_ROUTE = "commitx_route";
+
+    /** Live instance used by notification actions to reach the web layer. */
+    private static volatile MainActivity current;
 
     private WebView webView;
     private Dialog authDialog;
@@ -55,7 +59,12 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
+        current = this;
         preferences = getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        CommitXNotifications.ensureChannels(this);
+        requestNotificationPermissionIfNeeded();
+        ScreenTimeTracker.scheduleChecks(this);
+
 
 
         getWindow().setStatusBarColor(Color.parseColor("#F8F9F6"));
