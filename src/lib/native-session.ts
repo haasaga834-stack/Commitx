@@ -38,6 +38,10 @@ declare global {
     CommitXTodos?: {
       toggleFromNative?: (id: string) => void;
     };
+    CommitXNotifications?: {
+      onPermissionResult?: (granted: boolean) => void;
+    };
+
   }
 }
 

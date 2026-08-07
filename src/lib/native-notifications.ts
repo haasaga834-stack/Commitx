@@ -9,7 +9,71 @@ function bridge() {
   return typeof window === "undefined" ? undefined : window.CommitXAndroid;
 }
 
+/* --------------------------- Permission handling ------------------------- */
+
+export function notificationsSupported() {
+  return !!bridge();
+}
+
+export function notificationsEnabled(): boolean | null {
+  const b = bridge();
+  if (!b?.notificationsEnabled) return null;
+  try {
+    return Boolean(b.notificationsEnabled());
+  } catch {
+    return null;
+  }
+}
+
+export function requestNotificationPermission() {
+  try {
+    bridge()?.requestNotificationPermission?.();
+  } catch {}
+}
+
+export function openNotificationSettings() {
+  try {
+    bridge()?.openNotificationSettings?.();
+  } catch {}
+}
+
+/** Live notification-permission state; refreshes when the app regains focus. */
+export function useNotificationPermission() {
+  const [enabled, setEnabled] = useState<boolean | null>(null);
+
+  const refresh = useCallback(() => setEnabled(notificationsEnabled()), []);
+
+  useEffect(() => {
+    refresh();
+    const onVisible = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", refresh);
+    window.CommitXNotifications = {
+      ...(window.CommitXNotifications ?? {}),
+      onPermissionResult: (granted: boolean) => setEnabled(granted),
+    };
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", refresh);
+    };
+  }, [refresh]);
+
+  return {
+    supported: notificationsSupported(),
+    enabled,
+    request: () => {
+      requestNotificationPermission();
+      setTimeout(refresh, 800);
+    },
+    openSettings: openNotificationSettings,
+    refresh,
+  };
+}
+
 /* ------------------------------ To-do notification ----------------------- */
+
 
 export function syncTodoNotification(todos: TodoItem[]) {
   try {
