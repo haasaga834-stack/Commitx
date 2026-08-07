@@ -190,6 +190,23 @@ public class MainActivity extends Activity {
         }
     }
 
+    /** Opens this app's notification settings page (or app details as fallback). */
+    private void openAppNotificationSettings() {
+        try {
+            Intent intent = new Intent("android.settings.APP_NOTIFICATION_SETTINGS")
+                    .putExtra("android.provider.extra.APP_PACKAGE", getPackageName())
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        } catch (Throwable t) {
+            try {
+                startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        Uri.parse("package:" + getPackageName()))
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            } catch (Throwable ignored) {}
+        }
+    }
+
+
 
     /** Pushes a notification-initiated toggle into the web layer. */
     static boolean notifyTodoToggled(String id) {
@@ -540,7 +557,34 @@ public class MainActivity extends Activity {
             preferences.edit().remove(PENDING_REASON).apply();
         }
 
+        /* --------------------- Notification permission ----------------------- */
+
+        @JavascriptInterface
+        public boolean notificationsEnabled() {
+            return areNotificationsEnabled();
+        }
+
+        @JavascriptInterface
+        public void requestNotificationPermission() {
+            runOnUiThread(() -> {
+                CommitXNotifications.ensureChannels(MainActivity.this);
+                if (android.os.Build.VERSION.SDK_INT >= 33
+                        && checkSelfPermission("android.permission.POST_NOTIFICATIONS")
+                        != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    requestPermissions(new String[] { "android.permission.POST_NOTIFICATIONS" }, 42);
+                } else if (!areNotificationsEnabled()) {
+                    openAppNotificationSettings();
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void openNotificationSettings() {
+            runOnUiThread(MainActivity.this::openAppNotificationSettings);
+        }
+
         /* ------------------------- To-do notification ------------------------ */
+
 
         /** items = JSON array of { id, text, done } for today. */
         @JavascriptInterface
