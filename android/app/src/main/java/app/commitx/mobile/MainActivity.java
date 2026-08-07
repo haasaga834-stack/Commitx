@@ -160,6 +160,37 @@ public class MainActivity extends Activity {
         } catch (Throwable ignored) {}
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
+        super.onRequestPermissionsResult(requestCode, permissions, results);
+        if (requestCode != 42) return;
+        boolean granted = results != null && results.length > 0
+                && results[0] == android.content.pm.PackageManager.PERMISSION_GRANTED;
+        if (granted) {
+            CommitXNotifications.ensureChannels(this);
+            CommitXNotifications.showTodos(this);
+        }
+        evalOnWeb("window.CommitXNotifications&&window.CommitXNotifications.onPermissionResult&&"
+                + "window.CommitXNotifications.onPermissionResult(" + granted + ")");
+    }
+
+    private boolean areNotificationsEnabled() {
+        try {
+            NotificationManager nm =
+                    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm == null) return false;
+            if (android.os.Build.VERSION.SDK_INT >= 24 && !nm.areNotificationsEnabled()) return false;
+            if (android.os.Build.VERSION.SDK_INT >= 33) {
+                return checkSelfPermission("android.permission.POST_NOTIFICATIONS")
+                        == android.content.pm.PackageManager.PERMISSION_GRANTED;
+            }
+            return true;
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+
     /** Pushes a notification-initiated toggle into the web layer. */
     static boolean notifyTodoToggled(String id) {
         MainActivity activity = current;
