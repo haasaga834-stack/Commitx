@@ -1,5 +1,8 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { MobileShell } from "@/components/BottomNav";
+import { NotificationsCard } from "@/components/NotificationsCard";
+import { ScreenTimeCard } from "@/components/ScreenTimeCard";
+
 import { useTheme } from "@/lib/theme";
 import { formatINR, REFERRAL_BONUS } from "@/lib/commitx-store";
 import { ACTIVE_VERIFIED_SESSION_KEY } from "@/lib/verified-mode";
@@ -147,10 +150,20 @@ function Settings() {
           </div>
         </div>
 
+        {/* Notifications & screen time */}
+        <p className="mt-9 text-xs uppercase tracking-widest text-muted-foreground">
+          Notifications
+        </p>
+        <div className="mt-4 grid gap-4">
+          <NotificationsCard />
+          <ScreenTimeCard />
+        </div>
+
         {/* Referral */}
         <p className="mt-9 text-xs uppercase tracking-widest text-muted-foreground">
           Referrals
         </p>
+
         <div className="mt-4 rounded-3xl bg-card p-5 shadow-soft">
           <p className="text-sm font-medium">Invite friends</p>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">

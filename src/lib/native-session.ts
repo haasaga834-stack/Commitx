@@ -14,9 +14,14 @@ declare global {
       isDndEnabled?: () => boolean;
       openDndSettings?: () => void;
       canCheckDnd?: () => boolean;
+      /* Notification permission */
+      notificationsEnabled?: () => boolean;
+      requestNotificationPermission?: () => void;
+      openNotificationSettings?: () => void;
       /* Notifications */
       syncTodos?: (itemsJson: string) => void;
       clearTodoNotification?: () => void;
+
       showSessionProgress?: (title: string, text: string, progress: number) => void;
       hideSessionProgress?: () => void;
       /* Screen time */
@@ -33,6 +38,10 @@ declare global {
     CommitXTodos?: {
       toggleFromNative?: (id: string) => void;
     };
+    CommitXNotifications?: {
+      onPermissionResult?: (granted: boolean) => void;
+    };
+
   }
 }
 

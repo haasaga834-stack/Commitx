@@ -3,6 +3,8 @@ import { Hourglass } from "@/components/Hourglass";
 import { MobileShell } from "@/components/BottomNav";
 import { FoodCoins } from "@/components/FoodCoins";
 import { DailyGoalProgress } from "@/components/DailyGoalProgress";
+import { ScreenTimeCard } from "@/components/ScreenTimeCard";
+
 import { useAppState, stats } from "@/lib/commitx-store";
 import { useCommunityFoodCoins } from "@/lib/community";
 
@@ -87,6 +89,10 @@ function Home() {
           </Link>
         </div>
 
+        <div className="mt-8 animate-fade-up" style={{ animationDelay: "300ms" }}>
+          <ScreenTimeCard />
+        </div>
+
         <div
           className="mt-8 mb-4 animate-fade-up"
           style={{ animationDelay: "320ms" }}
@@ -98,6 +104,7 @@ function Home() {
             hydrated={hydrated && community.loaded}
           />
         </div>
+
       </div>
     </MobileShell>
   );
