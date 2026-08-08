@@ -64,6 +64,9 @@ public class MainActivity extends Activity {
         CommitXNotifications.ensureChannels(this);
         requestNotificationPermissionIfNeeded();
         ScreenTimeTracker.scheduleChecks(this);
+        PlanStore.scheduleAll(this);
+        CommitXNotifications.showTodos(this);
+
 
 
 
