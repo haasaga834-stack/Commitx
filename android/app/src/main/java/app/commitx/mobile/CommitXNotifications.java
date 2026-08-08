@@ -118,7 +118,11 @@ final class CommitXNotifications {
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
                 .setShowWhen(false)
-                .setContentIntent(openApp(ctx, "planner", 10));
+                .setContentIntent(openApp(ctx, "planner", 10))
+                // If the user swipes it away, put it straight back: the checklist
+                // stays visible until every task for the day is done.
+                .setDeleteIntent(repostTodos(ctx));
+
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             b.setVisibility(Notification.VISIBILITY_PUBLIC);
