@@ -264,4 +264,47 @@ final class CommitXNotifications {
 
         nm.notify(ID_SCREEN_TIME, b.build());
     }
+
+    /* --------------------------- Study plan reminder ------------------------ */
+
+    static void showPlanReminder(Context ctx, String subject, String time,
+                                 int durationMinutes, String id) {
+        NotificationManager nm = manager(ctx);
+        if (nm == null) return;
+        ensureChannels(ctx);
+
+        Notification.Builder b = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                ? new Notification.Builder(ctx, CHANNEL_PLANS)
+                : new Notification.Builder(ctx);
+
+        String text = subject + " \u00B7 " + prettyTime(time)
+                + " \u00B7 " + durationMinutes + " min";
+
+        b.setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("Study session in 10 minutes")
+                .setContentText(text)
+                .setStyle(new Notification.BigTextStyle().bigText(text))
+                .setAutoCancel(true)
+                .setContentIntent(openApp(ctx, "planner", 13));
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            b.setPriority(Notification.PRIORITY_HIGH);
+        }
+
+        int slot = id == null ? 0 : Math.abs(id.hashCode() % 100);
+        nm.notify(ID_PLAN_BASE + slot, b.build());
+    }
+
+    private static String prettyTime(String time) {
+        try {
+            String[] parts = time.split(":");
+            int h = Integer.parseInt(parts[0].trim());
+            int m = parts.length > 1 ? Integer.parseInt(parts[1].trim()) : 0;
+            String period = h >= 12 ? "PM" : "AM";
+            int hh = h % 12 == 0 ? 12 : h % 12;
+            return hh + ":" + (m < 10 ? "0" + m : String.valueOf(m)) + " " + period;
+        } catch (Throwable t) {
+            return time == null ? "" : time;
+        }
+    }
 }
