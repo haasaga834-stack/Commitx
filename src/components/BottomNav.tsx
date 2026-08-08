@@ -41,8 +41,8 @@ export function BottomNav() {
 
 export function MobileShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto min-h-screen w-full max-w-md pb-28 sm:max-w-2xl">{children}</div>
+    <div className="min-h-screen overflow-x-hidden bg-background">
+      <div className="mx-auto min-h-screen w-full max-w-md overflow-x-hidden pb-28 sm:max-w-2xl">{children}</div>
       <BottomNav />
     </div>
   );

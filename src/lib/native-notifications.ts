@@ -89,6 +89,26 @@ export function clearTodoNotification() {
   } catch {}
 }
 
+/* --------------------------- Study plan reminders ------------------------ */
+
+/** Hands the plan list to Android so alarms fire 10 min before each session. */
+export function syncStudyPlanReminders(
+  plans: {
+    id: string;
+    subject: string;
+    time: string;
+    durationMinutes: number;
+    repeat: string;
+    weekday?: number;
+    monthday?: number;
+  }[],
+) {
+  try {
+    bridge()?.syncStudyPlans?.(JSON.stringify(plans));
+  } catch {}
+}
+
+
 /* --------------------------- Session progress ---------------------------- */
 
 export function showSessionProgress(title: string, text: string, progress: number) {

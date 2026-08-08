@@ -39,6 +39,17 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="app.commitx.mobile.TOGGLE_TODO" />
+                <action android:name="app.commitx.mobile.REPOST_TODOS" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".PlanReminderReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="app.commitx.mobile.PLAN_REMINDER" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
 
@@ -50,5 +61,6 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+
     </application>
 </manifest>

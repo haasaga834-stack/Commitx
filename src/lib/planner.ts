@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { syncTodoNotification } from "@/lib/native-notifications";
+import { syncTodoNotification, syncStudyPlanReminders } from "@/lib/native-notifications";
 
 export type Repeat = "daily" | "weekly" | "monthly";
 
@@ -53,6 +53,19 @@ function write(plans: StudyPlan[]) {
       localStorage.setItem(KEY, JSON.stringify(plans));
     } catch {}
   }
+  // Hand the schedule to Android so a reminder fires 10 minutes before each
+  // session even when the app is closed.
+  syncStudyPlanReminders(
+    plans.map((p) => ({
+      id: p.id,
+      subject: p.subject,
+      time: p.time,
+      durationMinutes: p.durationMinutes,
+      repeat: p.repeat,
+      weekday: p.weekday,
+      monthday: p.monthday,
+    })),
+  );
   listeners.forEach((l) => l());
 }
 
@@ -94,6 +107,7 @@ export function usePlans() {
   useEffect(() => {
     cache = read();
     setHydrated(true);
+    write(cache);
     const l = () => tick((t) => t + 1);
     listeners.add(l);
     return () => {

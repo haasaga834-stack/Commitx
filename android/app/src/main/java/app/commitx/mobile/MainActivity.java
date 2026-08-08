@@ -64,6 +64,9 @@ public class MainActivity extends Activity {
         CommitXNotifications.ensureChannels(this);
         requestNotificationPermissionIfNeeded();
         ScreenTimeTracker.scheduleChecks(this);
+        PlanStore.scheduleAll(this);
+        CommitXNotifications.showTodos(this);
+
 
 
 
@@ -598,6 +601,15 @@ public class MainActivity extends Activity {
             TodoStore.clear(MainActivity.this);
             CommitXNotifications.cancelTodos(MainActivity.this);
         }
+
+        /* ----------------------- Study plan reminders ------------------------ */
+
+        /** plans = JSON array of { id, subject, time, durationMinutes, repeat, weekday, monthday }. */
+        @JavascriptInterface
+        public void syncStudyPlans(String plansJson) {
+            PlanStore.save(MainActivity.this, plansJson);
+        }
+
 
         /* ----------------------- Study progress notification ----------------- */
 

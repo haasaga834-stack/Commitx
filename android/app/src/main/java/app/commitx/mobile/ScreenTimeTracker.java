@@ -69,26 +69,67 @@ final class ScreenTimeTracker {
             if (usm == null) return null;
             long start = startOfToday();
             long end = System.currentTimeMillis();
-            Map<String, UsageStats> stats = usm.queryAndAggregateUsageStats(start, end);
-            if (stats == null || stats.isEmpty()) return null;
+            String self = ctx.getPackageName();
 
+            // Event-based accounting: only foreground time that actually happened
+            // between local midnight and now is counted, so the day starts at 0:00
+            // and grows strictly with real usage.
             long own = 0L;
             long other = 0L;
-            String self = ctx.getPackageName();
-            for (Map.Entry<String, UsageStats> e : stats.entrySet()) {
-                UsageStats s = e.getValue();
-                if (s == null) continue;
-                long ms = s.getTotalTimeInForeground();
-                if (ms <= 0) continue;
-                if (self.equals(e.getKey())) own += ms;
-                else other += ms;
+            boolean sawEvents = false;
+            android.app.usage.UsageEvents events = usm.queryEvents(start, end);
+            if (events != null) {
+                java.util.HashMap<String, Long> open = new java.util.HashMap<>();
+                android.app.usage.UsageEvents.Event e = new android.app.usage.UsageEvents.Event();
+                while (events.hasNextEvent()) {
+                    events.getNextEvent(e);
+                    String pkg = e.getPackageName();
+                    if (pkg == null) continue;
+                    int type = e.getEventType();
+                    if (type == android.app.usage.UsageEvents.Event.MOVE_TO_FOREGROUND) {
+                        sawEvents = true;
+                        open.put(pkg, Math.max(start, e.getTimeStamp()));
+                    } else if (type == android.app.usage.UsageEvents.Event.MOVE_TO_BACKGROUND) {
+                        sawEvents = true;
+                        Long from = open.remove(pkg);
+                        long fromMs = from == null ? start : from;
+                        long ms = Math.max(0L, Math.min(end, e.getTimeStamp()) - fromMs);
+                        if (self.equals(pkg)) own += ms; else other += ms;
+                    }
+                }
+                // Whatever is still in the foreground counts up to "now".
+                for (Map.Entry<String, Long> en : open.entrySet()) {
+                    long ms = Math.max(0L, end - Math.max(start, en.getValue()));
+                    if (self.equals(en.getKey())) own += ms; else other += ms;
+                }
             }
+
+            if (!sawEvents) {
+                Map<String, UsageStats> stats = usm.queryAndAggregateUsageStats(start, end);
+                if (stats == null || stats.isEmpty()) return null;
+                own = 0L;
+                other = 0L;
+                for (Map.Entry<String, UsageStats> en : stats.entrySet()) {
+                    UsageStats s = en.getValue();
+                    if (s == null) continue;
+                    long ms = s.getTotalTimeInForeground();
+                    if (ms <= 0) continue;
+                    if (self.equals(en.getKey())) own += ms;
+                    else other += ms;
+                }
+            }
+
+            // Never report more than the wall-clock time elapsed since midnight.
+            long elapsed = Math.max(0L, end - start);
+            own = Math.min(own, elapsed);
+            other = Math.min(other, elapsed);
             return new int[] { (int) (own / 60000L), (int) (other / 60000L) };
         } catch (Throwable t) {
             if (!quiet) t.printStackTrace();
             return null;
         }
     }
+
 
     static int limitMinutes(Context ctx) {
         return prefs(ctx).getInt(KEY_LIMIT, 0);

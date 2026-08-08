@@ -15,7 +15,7 @@ import {
   WEEKDAYS,
   type Repeat,
 } from "@/lib/planner";
-import { BookOpen, Bell, Plus, Trash2, Clock, Target } from "lucide-react";
+import { BookOpen, Plus, Trash2, Clock, Target } from "lucide-react";
 import { DurationWheel } from "@/components/DurationWheel";
 import { TodoList } from "@/components/TodoList";
 
@@ -48,7 +48,6 @@ function Planner() {
   const [repeat, setRepeat] = useState<Repeat>("daily");
   const [weekday, setWeekday] = useState(1);
   const [monthday, setMonthday] = useState(1);
-  const [permission, setPermission] = useState<"unknown" | "granted" | "denied">("unknown");
 
   const sorted = useMemo(
     () => [...plans].sort((a, b) => nextOccurrence(a) - nextOccurrence(b)),
@@ -65,8 +64,7 @@ function Planner() {
       weekday: repeat === "weekly" ? weekday : undefined,
       monthday: repeat === "monthly" ? monthday : undefined,
     });
-    const ok = await requestNotificationPermission();
-    setPermission(ok ? "granted" : "denied");
+    await requestNotificationPermission();
     setSubject("");
     setOpen(false);
   }
@@ -124,29 +122,6 @@ function Planner() {
           <TodoList />
         </div>
 
-        <button
-          onClick={async () => {
-            const ok = await requestNotificationPermission();
-            setPermission(ok ? "granted" : "denied");
-          }}
-          className="mt-5 flex w-full items-center gap-3 rounded-2xl border border-hairline bg-card p-4 text-left shadow-soft"
-        >
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/15 text-primary">
-            <Bell className="h-5 w-5" />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-sm font-medium text-foreground">
-              Reminders 10 minutes before
-            </span>
-            <span className="block text-xs text-muted-foreground">
-              {permission === "granted"
-                ? "Notifications enabled."
-                : permission === "denied"
-                  ? "Blocked — enable notifications in system settings."
-                  : "Tap to allow notifications."}
-            </span>
-          </span>
-        </button>
 
         {hydrated && sorted.length === 0 ? (
           <div className="mt-6 rounded-3xl bg-card p-8 text-center shadow-soft">

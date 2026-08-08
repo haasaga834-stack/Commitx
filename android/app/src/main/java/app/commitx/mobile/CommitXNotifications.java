@@ -16,10 +16,13 @@ final class CommitXNotifications {
     static final String CHANNEL_TODOS = "commitx_todos";
     static final String CHANNEL_SESSION = "commitx_session";
     static final String CHANNEL_SCREEN_TIME = "commitx_screen_time";
+    static final String CHANNEL_PLANS = "commitx_plans";
 
     static final int ID_TODOS = 1001;
     static final int ID_SESSION = 1002;
     static final int ID_SCREEN_TIME = 1003;
+    static final int ID_PLAN_BASE = 1100;
+
 
     private CommitXNotifications() {}
 
@@ -46,10 +49,16 @@ final class CommitXNotifications {
                 CHANNEL_SCREEN_TIME, "Screen time limit", NotificationManager.IMPORTANCE_DEFAULT);
         limit.setDescription("Alerts you when your daily screen time limit is reached.");
 
+        NotificationChannel plans = new NotificationChannel(
+                CHANNEL_PLANS, "Study reminders", NotificationManager.IMPORTANCE_HIGH);
+        plans.setDescription("Reminds you 10 minutes before a planned study session.");
+
         nm.createNotificationChannel(todos);
         nm.createNotificationChannel(session);
         nm.createNotificationChannel(limit);
+        nm.createNotificationChannel(plans);
     }
+
 
     private static int flags(int extra) {
         int base = PendingIntent.FLAG_UPDATE_CURRENT | extra;
@@ -109,7 +118,11 @@ final class CommitXNotifications {
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
                 .setShowWhen(false)
-                .setContentIntent(openApp(ctx, "planner", 10));
+                .setContentIntent(openApp(ctx, "planner", 10))
+                // If the user swipes it away, put it straight back: the checklist
+                // stays visible until every task for the day is done.
+                .setDeleteIntent(repostTodos(ctx));
+
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             b.setVisibility(Notification.VISIBILITY_PUBLIC);
@@ -134,6 +147,43 @@ final class CommitXNotifications {
         }
 
         nm.notify(ID_TODOS, b.build());
+        scheduleTodoKeepAlive(ctx);
+    }
+
+    /** Broadcast that re-posts the checklist after a swipe-away. */
+    private static PendingIntent repostTodos(Context ctx) {
+        Intent intent = new Intent(ctx, TodoActionReceiver.class)
+                .setAction(TodoActionReceiver.ACTION_REPOST);
+        return PendingIntent.getBroadcast(ctx, 150, intent, flags(0));
+    }
+
+    /** Safety net: re-checks every 15 minutes that the checklist is still shown. */
+    static void scheduleTodoKeepAlive(Context ctx) {
+        try {
+            android.app.AlarmManager am =
+                    (android.app.AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+            if (am == null) return;
+            Intent intent = new Intent(ctx, TodoActionReceiver.class)
+                    .setAction(TodoActionReceiver.ACTION_REPOST);
+            PendingIntent pi = PendingIntent.getBroadcast(ctx, 151, intent, flags(0));
+            long interval = 15 * 60 * 1000L;
+            am.setInexactRepeating(
+                    android.app.AlarmManager.ELAPSED_REALTIME,
+                    android.os.SystemClock.elapsedRealtime() + interval,
+                    interval,
+                    pi);
+        } catch (Throwable ignored) {}
+    }
+
+    static void cancelTodoKeepAlive(Context ctx) {
+        try {
+            android.app.AlarmManager am =
+                    (android.app.AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+            if (am == null) return;
+            Intent intent = new Intent(ctx, TodoActionReceiver.class)
+                    .setAction(TodoActionReceiver.ACTION_REPOST);
+            am.cancel(PendingIntent.getBroadcast(ctx, 151, intent, flags(0)));
+        } catch (Throwable ignored) {}
     }
 
     private static String firstOpenTask(JSONArray items) {
@@ -153,7 +203,9 @@ final class CommitXNotifications {
     static void cancelTodos(Context ctx) {
         NotificationManager nm = manager(ctx);
         if (nm != null) nm.cancel(ID_TODOS);
+        cancelTodoKeepAlive(ctx);
     }
+
 
     /* ------------------------- Live study progress -------------------------- */
 
@@ -211,5 +263,48 @@ final class CommitXNotifications {
                 .setContentIntent(openApp(ctx, "", 12));
 
         nm.notify(ID_SCREEN_TIME, b.build());
+    }
+
+    /* --------------------------- Study plan reminder ------------------------ */
+
+    static void showPlanReminder(Context ctx, String subject, String time,
+                                 int durationMinutes, String id) {
+        NotificationManager nm = manager(ctx);
+        if (nm == null) return;
+        ensureChannels(ctx);
+
+        Notification.Builder b = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                ? new Notification.Builder(ctx, CHANNEL_PLANS)
+                : new Notification.Builder(ctx);
+
+        String text = subject + " \u00B7 " + prettyTime(time)
+                + " \u00B7 " + durationMinutes + " min";
+
+        b.setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("Study session in 10 minutes")
+                .setContentText(text)
+                .setStyle(new Notification.BigTextStyle().bigText(text))
+                .setAutoCancel(true)
+                .setContentIntent(openApp(ctx, "planner", 13));
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            b.setPriority(Notification.PRIORITY_HIGH);
+        }
+
+        int slot = id == null ? 0 : Math.abs(id.hashCode() % 100);
+        nm.notify(ID_PLAN_BASE + slot, b.build());
+    }
+
+    private static String prettyTime(String time) {
+        try {
+            String[] parts = time.split(":");
+            int h = Integer.parseInt(parts[0].trim());
+            int m = parts.length > 1 ? Integer.parseInt(parts[1].trim()) : 0;
+            String period = h >= 12 ? "PM" : "AM";
+            int hh = h % 12 == 0 ? 12 : h % 12;
+            return hh + ":" + (m < 10 ? "0" + m : String.valueOf(m)) + " " + period;
+        } catch (Throwable t) {
+            return time == null ? "" : time;
+        }
     }
 }
