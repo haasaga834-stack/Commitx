@@ -147,6 +147,43 @@ final class CommitXNotifications {
         }
 
         nm.notify(ID_TODOS, b.build());
+        scheduleTodoKeepAlive(ctx);
+    }
+
+    /** Broadcast that re-posts the checklist after a swipe-away. */
+    private static PendingIntent repostTodos(Context ctx) {
+        Intent intent = new Intent(ctx, TodoActionReceiver.class)
+                .setAction(TodoActionReceiver.ACTION_REPOST);
+        return PendingIntent.getBroadcast(ctx, 150, intent, flags(0));
+    }
+
+    /** Safety net: re-checks every 15 minutes that the checklist is still shown. */
+    static void scheduleTodoKeepAlive(Context ctx) {
+        try {
+            android.app.AlarmManager am =
+                    (android.app.AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+            if (am == null) return;
+            Intent intent = new Intent(ctx, TodoActionReceiver.class)
+                    .setAction(TodoActionReceiver.ACTION_REPOST);
+            PendingIntent pi = PendingIntent.getBroadcast(ctx, 151, intent, flags(0));
+            long interval = 15 * 60 * 1000L;
+            am.setInexactRepeating(
+                    android.app.AlarmManager.ELAPSED_REALTIME,
+                    android.os.SystemClock.elapsedRealtime() + interval,
+                    interval,
+                    pi);
+        } catch (Throwable ignored) {}
+    }
+
+    static void cancelTodoKeepAlive(Context ctx) {
+        try {
+            android.app.AlarmManager am =
+                    (android.app.AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+            if (am == null) return;
+            Intent intent = new Intent(ctx, TodoActionReceiver.class)
+                    .setAction(TodoActionReceiver.ACTION_REPOST);
+            am.cancel(PendingIntent.getBroadcast(ctx, 151, intent, flags(0)));
+        } catch (Throwable ignored) {}
     }
 
     private static String firstOpenTask(JSONArray items) {
@@ -166,7 +203,9 @@ final class CommitXNotifications {
     static void cancelTodos(Context ctx) {
         NotificationManager nm = manager(ctx);
         if (nm != null) nm.cancel(ID_TODOS);
+        cancelTodoKeepAlive(ctx);
     }
+
 
     /* ------------------------- Live study progress -------------------------- */
 
