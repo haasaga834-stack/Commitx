@@ -49,10 +49,16 @@ final class CommitXNotifications {
                 CHANNEL_SCREEN_TIME, "Screen time limit", NotificationManager.IMPORTANCE_DEFAULT);
         limit.setDescription("Alerts you when your daily screen time limit is reached.");
 
+        NotificationChannel plans = new NotificationChannel(
+                CHANNEL_PLANS, "Study reminders", NotificationManager.IMPORTANCE_HIGH);
+        plans.setDescription("Reminds you 10 minutes before a planned study session.");
+
         nm.createNotificationChannel(todos);
         nm.createNotificationChannel(session);
         nm.createNotificationChannel(limit);
+        nm.createNotificationChannel(plans);
     }
+
 
     private static int flags(int extra) {
         int base = PendingIntent.FLAG_UPDATE_CURRENT | extra;
