@@ -16,10 +16,13 @@ final class CommitXNotifications {
     static final String CHANNEL_TODOS = "commitx_todos";
     static final String CHANNEL_SESSION = "commitx_session";
     static final String CHANNEL_SCREEN_TIME = "commitx_screen_time";
+    static final String CHANNEL_PLANS = "commitx_plans";
 
     static final int ID_TODOS = 1001;
     static final int ID_SESSION = 1002;
     static final int ID_SCREEN_TIME = 1003;
+    static final int ID_PLAN_BASE = 1100;
+
 
     private CommitXNotifications() {}
 
