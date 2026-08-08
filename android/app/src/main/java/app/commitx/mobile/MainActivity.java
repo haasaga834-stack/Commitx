@@ -599,6 +599,15 @@ public class MainActivity extends Activity {
             CommitXNotifications.cancelTodos(MainActivity.this);
         }
 
+        /* ----------------------- Study plan reminders ------------------------ */
+
+        /** plans = JSON array of { id, subject, time, durationMinutes, repeat, weekday, monthday }. */
+        @JavascriptInterface
+        public void syncStudyPlans(String plansJson) {
+            PlanStore.save(MainActivity.this, plansJson);
+        }
+
+
         /* ----------------------- Study progress notification ----------------- */
 
         @JavascriptInterface
