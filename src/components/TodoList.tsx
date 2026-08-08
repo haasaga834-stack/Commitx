@@ -25,7 +25,7 @@ export function TodoList({ compact = false, readOnly = false }: Props) {
 
   return (
     <div
-      className={`rounded-3xl border border-hairline bg-card shadow-soft ${
+      className={`overflow-hidden rounded-3xl border border-hairline bg-card shadow-soft ${
         compact ? "p-4" : "p-5"
       }`}
     >
@@ -88,12 +88,12 @@ export function TodoList({ compact = false, readOnly = false }: Props) {
       )}
 
       {!readOnly && (
-        <form onSubmit={submit} className="mt-4 flex gap-2">
+        <form onSubmit={submit} className="mt-4 flex w-full min-w-0 gap-2">
           <input
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="e.g. Finish physics chapter 4"
-            className="min-w-0 flex-1 rounded-2xl border border-hairline bg-background px-4 py-2.5 text-sm outline-none focus:border-primary"
+            className="w-0 min-w-0 flex-1 rounded-2xl border border-hairline bg-background px-4 py-2.5 text-sm outline-none focus:border-primary"
           />
           <button
             type="submit"
