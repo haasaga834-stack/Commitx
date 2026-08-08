@@ -15,7 +15,7 @@ import {
   WEEKDAYS,
   type Repeat,
 } from "@/lib/planner";
-import { BookOpen, Bell, Plus, Trash2, Clock, Target } from "lucide-react";
+import { BookOpen, Plus, Trash2, Clock, Target } from "lucide-react";
 import { DurationWheel } from "@/components/DurationWheel";
 import { TodoList } from "@/components/TodoList";
 
@@ -48,7 +48,6 @@ function Planner() {
   const [repeat, setRepeat] = useState<Repeat>("daily");
   const [weekday, setWeekday] = useState(1);
   const [monthday, setMonthday] = useState(1);
-  const [permission, setPermission] = useState<"unknown" | "granted" | "denied">("unknown");
 
   const sorted = useMemo(
     () => [...plans].sort((a, b) => nextOccurrence(a) - nextOccurrence(b)),
@@ -65,8 +64,7 @@ function Planner() {
       weekday: repeat === "weekly" ? weekday : undefined,
       monthday: repeat === "monthly" ? monthday : undefined,
     });
-    const ok = await requestNotificationPermission();
-    setPermission(ok ? "granted" : "denied");
+    await requestNotificationPermission();
     setSubject("");
     setOpen(false);
   }
