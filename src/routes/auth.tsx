@@ -5,6 +5,8 @@ import { lovable } from "@/integrations/lovable/index";
 import { Hourglass } from "@/components/Hourglass";
 import { Loader2 } from "lucide-react";
 import { hasNativeGoogleSignIn, nativeGoogleSignIn } from "@/lib/native-auth";
+import { setPendingReferral } from "@/lib/pending-referral";
+import { WELCOME_DEMO, REFERRAL_BONUS, formatINR } from "@/lib/commitx-store";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -24,6 +26,7 @@ function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [referral, setReferral] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -35,6 +38,7 @@ function Auth() {
     setNotice(null);
     try {
       if (mode === "signup") {
+        setPendingReferral(referral);
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -61,6 +65,7 @@ function Auth() {
   async function google() {
     setError(null);
     // Android shell: native Google Sign-In (Credential Manager) — never a browser.
+    if (mode === "signup") setPendingReferral(referral);
     if (hasNativeGoogleSignIn()) {
       setBusy(true);
       try {
@@ -102,6 +107,22 @@ function Auth() {
               placeholder="Your name"
               className="mb-3 w-full rounded-2xl border border-hairline bg-background px-4 py-3 text-sm outline-none focus:border-primary"
             />
+          )}
+
+          {mode === "signup" && (
+            <div className="mb-3">
+              <input
+                value={referral}
+                onChange={(e) => setReferral(e.target.value.toUpperCase())}
+                placeholder="Referral code (optional)"
+                autoCapitalize="characters"
+                className="w-full rounded-2xl border border-hairline bg-background px-4 py-3 font-mono text-sm tracking-widest outline-none focus:border-primary"
+              />
+              <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+                Start with {formatINR(WELCOME_DEMO)} demo balance — add a friend's code
+                and you both get {formatINR(REFERRAL_BONUS)} more.
+              </p>
+            </div>
           )}
           <input
             type="email"

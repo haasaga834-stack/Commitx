@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { pullFromCloud, startCloudSync, stopCloudSync } from "./cloud-sync";
 import { resetState } from "./commitx-store";
 import { clearPlannerLocal, setPlannerUser } from "./planner";
+import { claimPendingReferral } from "./pending-referral";
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -19,7 +20,10 @@ export function useAuth() {
       if (session?.user) {
         startCloudSync(session.user.id);
         setPlannerUser(session.user.id);
-        void pullFromCloud(session.user.id).catch(() => {});
+        const uid = session.user.id;
+        void claimPendingReferral()
+          .then(() => pullFromCloud(uid))
+          .catch(() => {});
       } else {
         stopCloudSync();
         setPlannerUser(null);
