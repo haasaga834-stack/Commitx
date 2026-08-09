@@ -1,0 +1,1 @@
+ALTER TABLE public.wallets ALTER COLUMN demo_balance SET DEFAULT 200;
