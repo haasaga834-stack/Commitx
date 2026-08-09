@@ -70,23 +70,27 @@ export const claimReferral = createServerFn({ method: "POST" })
       .update({ referred_by: referrer.id, device_hash: data.deviceHash || null })
       .eq("id", context.userId);
 
-    const { data: wallet } = await supabaseAdmin
+    // Both sides earn ₹100 demo balance, once.
+    const { data: wallets } = await supabaseAdmin
       .from("wallets")
-      .select("demo_balance")
-      .eq("user_id", referrer.id)
-      .maybeSingle();
+      .select("user_id, demo_balance")
+      .in("user_id", [referrer.id, context.userId]);
 
-    await supabaseAdmin
-      .from("wallets")
-      .upsert(
-        {
-          user_id: referrer.id,
-          demo_balance: (wallet?.demo_balance ?? 0) + REFERRAL_REWARD,
-        },
-        { onConflict: "user_id" },
-      );
+    const balanceOf = (id: string) =>
+      wallets?.find((w) => w.user_id === id)?.demo_balance ?? 0;
 
-    return { ok: true as const, message: "Referral applied. Your friend earned ₹100 demo balance." };
+    await supabaseAdmin.from("wallets").upsert(
+      [
+        { user_id: referrer.id, demo_balance: balanceOf(referrer.id) + REFERRAL_REWARD },
+        { user_id: context.userId, demo_balance: balanceOf(context.userId) + REFERRAL_REWARD },
+      ],
+      { onConflict: "user_id" },
+    );
+
+    return {
+      ok: true as const,
+      message: "Referral applied. You and your friend each earned ₹100 demo balance.",
+    };
   });
 
 /** Permanently delete the signed-in user and every record tied to them. */
