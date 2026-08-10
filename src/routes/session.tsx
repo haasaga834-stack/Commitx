@@ -17,7 +17,7 @@ import {
   setNativeVerifiedModeActive,
 } from "@/lib/native-session";
 import { BellOff, X } from "lucide-react";
-import { TodoList } from "@/components/TodoList";
+
 import { showSessionProgress, hideSessionProgress } from "@/lib/native-notifications";
 import { z } from "zod";
 
@@ -437,11 +437,18 @@ function Session() {
             Leaving CommitX fails this session
           </p>
         )}
-        <p className="mt-10 text-xs italic text-muted-foreground">"{quote}"</p>
-        <div className="mt-8 w-full max-w-md">
-          <TodoList compact />
-        </div>
       </div>
+
+      <div className="mx-auto w-full max-w-md pb-2 text-center">
+        <span className="mx-auto block h-px w-16 bg-hairline" />
+        <p className="mt-5 px-2 font-display text-base leading-relaxed text-foreground/80">
+          “{quote}”
+        </p>
+        <p className="mt-3 text-[11px] uppercase tracking-widest text-muted-foreground">
+          Stay with it · turning discipline into impact
+        </p>
+      </div>
+
 
 
       {dndBlocked && (

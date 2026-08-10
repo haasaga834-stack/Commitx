@@ -56,37 +56,8 @@ function Analytics() {
             <TrendingUp className="h-5 w-5 shrink-0 text-primary" />
           </div>
 
-          <div className="mt-6 flex h-44 items-end justify-between gap-2 sm:gap-4">
-            {a.week.map((d, i) => {
-              const pct = Math.min(100, (d.minutes / peak) * 100);
-              return (
-                <div key={d.label} className="flex min-w-0 flex-1 flex-col items-center gap-2">
-                  <span className="text-[10px] tabular-nums text-muted-foreground">
-                    {d.minutes > 0 ? formatHours(d.minutes) : ""}
-                  </span>
-                  <div className="flex h-full w-full items-end">
-                    <div
-                      className="w-full rounded-t-xl transition-[height] duration-700 ease-out"
-                      style={{
-                        height: `${Math.max(pct, d.minutes > 0 ? 6 : 2)}%`,
-                        background: d.minutes
-                          ? "linear-gradient(180deg, var(--color-accent), var(--color-primary))"
-                          : "var(--color-muted)",
-                        transitionDelay: `${i * 60}ms`,
-                      }}
-                    />
-                  </div>
-                  <span
-                    className={`text-[11px] font-medium ${
-                      d.isToday ? "text-primary" : "text-muted-foreground"
-                    }`}
-                  >
-                    {d.label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+          <WeekCurve week={a.week} peak={peak} />
+
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -127,6 +98,106 @@ function Analytics() {
     </MobileShell>
   );
 }
+
+/** Soft, hand-drawn style weekly curve — shape over numbers. */
+function WeekCurve({
+  week,
+  peak,
+}: {
+  week: { label: string; minutes: number; isToday: boolean }[];
+  peak: number;
+}) {
+  const W = 320;
+  const H = 132;
+  const pad = 14;
+  const step = (W - pad * 2) / (week.length - 1);
+  const pts = week.map((d, i) => ({
+    x: pad + i * step,
+    y: H - pad - (Math.min(1, d.minutes / peak) * (H - pad * 2)),
+    ...d,
+  }));
+
+  // Smooth Catmull-Rom style path through the points.
+  const line = pts
+    .map((p, i) => {
+      if (i === 0) return `M ${p.x} ${p.y}`;
+      const prev = pts[i - 1];
+      const cx = (prev.x + p.x) / 2;
+      return `C ${cx} ${prev.y}, ${cx} ${p.y}, ${p.x} ${p.y}`;
+    })
+    .join(" ");
+  const area = `${line} L ${pts[pts.length - 1].x} ${H - pad} L ${pts[0].x} ${H - pad} Z`;
+
+  return (
+    <div className="mt-6">
+      <svg viewBox={`0 0 ${W} ${H}`} className="h-40 w-full" role="img" aria-label="Weekly study curve">
+        <defs>
+          <linearGradient id="curveFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--color-accent)" stopOpacity="0.38" />
+            <stop offset="100%" stopColor="var(--color-accent)" stopOpacity="0" />
+          </linearGradient>
+          <linearGradient id="curveStroke" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="var(--color-accent)" />
+            <stop offset="100%" stopColor="var(--color-primary)" />
+          </linearGradient>
+        </defs>
+
+        {[0.25, 0.5, 0.75].map((g) => (
+          <line
+            key={g}
+            x1={pad}
+            x2={W - pad}
+            y1={pad + (H - pad * 2) * g}
+            y2={pad + (H - pad * 2) * g}
+            stroke="var(--color-muted)"
+            strokeWidth="1"
+            strokeDasharray="2 6"
+          />
+        ))}
+
+        <path d={area} fill="url(#curveFill)" />
+        <path
+          d={line}
+          fill="none"
+          stroke="url(#curveStroke)"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+
+        {pts.map((p) => (
+          <g key={p.label}>
+            {p.isToday && (
+              <circle cx={p.x} cy={p.y} r="8" fill="var(--color-primary)" opacity="0.16" />
+            )}
+            <circle
+              cx={p.x}
+              cy={p.y}
+              r={p.isToday ? 4.5 : 3}
+              fill={p.minutes > 0 ? "var(--color-primary)" : "var(--color-muted)"}
+              stroke="var(--color-card)"
+              strokeWidth="1.5"
+            />
+          </g>
+        ))}
+      </svg>
+
+      <div className="mt-2 flex justify-between px-1">
+        {week.map((d) => (
+          <span
+            key={d.label}
+            className={`text-[11px] font-medium ${
+              d.isToday ? "text-primary" : "text-muted-foreground"
+            }`}
+          >
+            {d.label}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 
 function Metric({
   icon,

@@ -54,6 +54,8 @@ export async function pullFromCloud(userId: string) {
       age: profile?.age ?? "",
       sex: profile?.sex ?? "",
       education: profile?.education ?? "",
+      photo: (profile as { avatar_url?: string | null } | null)?.avatar_url ?? "",
+
     },
     referralCredited: Boolean(profile?.referred_by),
   };
@@ -86,6 +88,8 @@ async function push(userId: string) {
       age: state.profile.age,
       sex: state.profile.sex,
       education: state.profile.education,
+      avatar_url: state.profile.photo || null,
+
     })
     .eq("id", userId);
 

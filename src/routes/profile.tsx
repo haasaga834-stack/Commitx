@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { MobileShell } from "@/components/BottomNav";
 import { useAppState, stats, setState, formatINR } from "@/lib/commitx-store";
-import { useState, useEffect, useMemo } from "react";
-import { Pencil, Check, Trophy, Clock, Settings as SettingsIcon } from "lucide-react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { Pencil, Check, Trophy, Clock, Camera, Settings as SettingsIcon } from "lucide-react";
+import { fileToProfilePhoto } from "@/lib/profile-photo";
+
 import { formatHours } from "@/lib/analytics-data";
 import { FoodCoinInfoCard } from "@/components/FoodCoinInfoCard";
 import { useLeaderboard } from "@/lib/community";
@@ -26,6 +28,23 @@ function Profile() {
   const s = stats(state.sessions);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(state.profile);
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  const [photoError, setPhotoError] = useState("");
+  const photo = state.profile.photo ?? "";
+
+  async function onPickPhoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setPhotoError("");
+    try {
+      const next = await fileToProfilePhoto(file);
+      setState((prev) => ({ ...prev, profile: { ...prev.profile, photo: next } }));
+    } catch {
+      setPhotoError("Couldn't use that image. Try another one.");
+    }
+  }
+
 
   useEffect(() => {
     setDraft(state.profile);
@@ -80,9 +99,49 @@ function Profile() {
 
 
         <div className="mt-8 flex flex-col items-center">
-          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-primary font-display text-3xl font-semibold text-primary-foreground shadow-lift">
-            {hydrated ? initials : ""}
+          <div className="relative">
+            <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-primary font-display text-3xl font-semibold text-primary-foreground shadow-lift">
+              {hydrated && photo ? (
+                <img
+                  src={photo}
+                  alt={`${state.profile.name}'s profile photo`}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <span>{hydrated ? initials : ""}</span>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="absolute -bottom-1 -right-1 inline-flex h-9 w-9 items-center justify-center rounded-full bg-card shadow-lift"
+              aria-label="Change profile photo"
+            >
+              <Camera className="h-4 w-4" />
+            </button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={onPickPhoto}
+            />
           </div>
+
+          {photo && (
+            <button
+              type="button"
+              onClick={() => setState((prev) => ({ ...prev, profile: { ...prev.profile, photo: "" } }))}
+              className="mt-3 text-[11px] uppercase tracking-widest text-muted-foreground"
+            >
+              Remove photo
+            </button>
+          )}
+
+          {photoError && (
+            <p className="mt-2 text-xs text-destructive">{photoError}</p>
+          )}
+
           {editing ? (
             <input
               value={draft.name}
@@ -95,6 +154,7 @@ function Profile() {
             </h1>
           )}
         </div>
+
 
         <div className="mt-8 rounded-3xl bg-card p-5 shadow-soft">
           <Field

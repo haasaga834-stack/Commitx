@@ -134,15 +134,36 @@ export interface ScreenTime {
   day: string;
 }
 
+/** Minutes elapsed since local midnight — a hard ceiling for any daily total. */
+function minutesSinceMidnight() {
+  const now = new Date();
+  return Math.max(
+    0,
+    Math.floor(
+      (now.getTime() - new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()) /
+        60000,
+    ),
+  );
+}
+
 export function readScreenTime(): ScreenTime | null {
   try {
     const raw = bridge()?.screenTimeToday?.();
     if (!raw) return null;
-    return JSON.parse(raw) as ScreenTime;
+    const data = JSON.parse(raw) as ScreenTime;
+    // Defensive clamp: nothing today can exceed the time since 12:00 AM.
+    const cap = minutesSinceMidnight();
+    const commitxMinutes = Math.min(Math.max(0, data.commitxMinutes ?? 0), cap);
+    const otherMinutes = Math.min(
+      Math.max(0, data.otherMinutes ?? 0),
+      Math.max(0, cap - commitxMinutes),
+    );
+    return { ...data, commitxMinutes, otherMinutes };
   } catch {
     return null;
   }
 }
+
 
 export function openUsageAccessSettings() {
   try {
