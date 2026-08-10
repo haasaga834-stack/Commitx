@@ -22,7 +22,10 @@ export interface Profile {
   age: string;
   sex: string;
   education: string;
+  /** Optional profile picture (downscaled data URL). */
+  photo?: string;
 }
+
 
 export interface Balances {
   real: number;
