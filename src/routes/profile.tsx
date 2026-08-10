@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { MobileShell } from "@/components/BottomNav";
 import { useAppState, stats, setState, formatINR } from "@/lib/commitx-store";
-import { useState, useEffect, useMemo } from "react";
-import { Pencil, Check, Trophy, Clock, Settings as SettingsIcon } from "lucide-react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { Pencil, Check, Trophy, Clock, Camera, Settings as SettingsIcon } from "lucide-react";
+import { fileToProfilePhoto } from "@/lib/profile-photo";
+
 import { formatHours } from "@/lib/analytics-data";
 import { FoodCoinInfoCard } from "@/components/FoodCoinInfoCard";
 import { useLeaderboard } from "@/lib/community";
@@ -26,6 +28,23 @@ function Profile() {
   const s = stats(state.sessions);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(state.profile);
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  const [photoError, setPhotoError] = useState("");
+  const photo = state.profile.photo ?? "";
+
+  async function onPickPhoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setPhotoError("");
+    try {
+      const next = await fileToProfilePhoto(file);
+      setState((prev) => ({ ...prev, profile: { ...prev.profile, photo: next } }));
+    } catch {
+      setPhotoError("Couldn't use that image. Try another one.");
+    }
+  }
+
 
   useEffect(() => {
     setDraft(state.profile);
