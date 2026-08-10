@@ -17,7 +17,7 @@ import {
   setNativeVerifiedModeActive,
 } from "@/lib/native-session";
 import { BellOff, X } from "lucide-react";
-import { TodoList } from "@/components/TodoList";
+
 import { showSessionProgress, hideSessionProgress } from "@/lib/native-notifications";
 import { z } from "zod";
 
