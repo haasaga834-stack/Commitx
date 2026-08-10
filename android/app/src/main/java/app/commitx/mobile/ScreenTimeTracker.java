@@ -161,11 +161,15 @@ final class ScreenTimeTracker {
                 }
             }
 
-            // Final safety net: never report more than today's wall clock.
+            // Final safety net: never report more than today's wall clock, and
+            // never let the pair combined beat the time elapsed since midnight.
+            if (own < 0) own = 0;
+            if (other < 0) other = 0;
             own = Math.min(own, elapsed);
             other = Math.min(other, Math.max(0L, elapsed - own));
 
             return new int[] { (int) (own / 60000L), (int) (other / 60000L) };
+
         } catch (Throwable t) {
             if (!quiet) t.printStackTrace();
             return null;
