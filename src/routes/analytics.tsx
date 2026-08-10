@@ -56,37 +56,8 @@ function Analytics() {
             <TrendingUp className="h-5 w-5 shrink-0 text-primary" />
           </div>
 
-          <div className="mt-6 flex h-44 items-end justify-between gap-2 sm:gap-4">
-            {a.week.map((d, i) => {
-              const pct = Math.min(100, (d.minutes / peak) * 100);
-              return (
-                <div key={d.label} className="flex min-w-0 flex-1 flex-col items-center gap-2">
-                  <span className="text-[10px] tabular-nums text-muted-foreground">
-                    {d.minutes > 0 ? formatHours(d.minutes) : ""}
-                  </span>
-                  <div className="flex h-full w-full items-end">
-                    <div
-                      className="w-full rounded-t-xl transition-[height] duration-700 ease-out"
-                      style={{
-                        height: `${Math.max(pct, d.minutes > 0 ? 6 : 2)}%`,
-                        background: d.minutes
-                          ? "linear-gradient(180deg, var(--color-accent), var(--color-primary))"
-                          : "var(--color-muted)",
-                        transitionDelay: `${i * 60}ms`,
-                      }}
-                    />
-                  </div>
-                  <span
-                    className={`text-[11px] font-medium ${
-                      d.isToday ? "text-primary" : "text-muted-foreground"
-                    }`}
-                  >
-                    {d.label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+          <WeekCurve week={a.week} peak={peak} />
+
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
