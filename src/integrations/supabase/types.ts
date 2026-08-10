@@ -56,6 +56,7 @@ export type Database = {
       profiles: {
         Row: {
           age: string
+          avatar_url: string | null
           created_at: string
           device_hash: string | null
           display_name: string
@@ -68,6 +69,7 @@ export type Database = {
         }
         Insert: {
           age?: string
+          avatar_url?: string | null
           created_at?: string
           device_hash?: string | null
           display_name?: string
@@ -80,6 +82,7 @@ export type Database = {
         }
         Update: {
           age?: string
+          avatar_url?: string | null
           created_at?: string
           device_hash?: string | null
           display_name?: string
