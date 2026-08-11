@@ -11,7 +11,7 @@ import { claimReferral, deleteAccount as deleteAccountFn } from "@/lib/account.f
 import { getDeviceHash } from "@/lib/device";
 import { signOutEverywhere } from "@/lib/use-auth";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Moon, Sun, Copy, Check, Trash2, ShieldAlert, LogOut } from "lucide-react";
+import { ArrowLeft, Moon, Sun, Copy, Check, Trash2, ShieldAlert, LogOut, BookOpen, ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -114,6 +114,25 @@ function Settings() {
           </Link>
           <h1 className="font-display text-2xl font-semibold">Settings</h1>
         </div>
+
+        <Link
+          to="/how-it-works"
+          className="mt-6 flex items-center gap-3 rounded-3xl bg-card p-5 shadow-soft"
+        >
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/15 text-primary">
+            <BookOpen className="h-4 w-4" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-medium text-foreground">
+              How CommitX works
+            </span>
+            <span className="block text-xs text-muted-foreground">
+              Commitments, modes, demo money and Food Coins
+            </span>
+          </span>
+          <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+        </Link>
+
 
         {/* Appearance */}
         <p className="mt-9 text-xs uppercase tracking-widest text-muted-foreground">

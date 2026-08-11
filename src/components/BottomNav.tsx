@@ -13,8 +13,14 @@ const items = [
 export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-background/85 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-md items-stretch justify-between px-3 pb-6 pt-2 sm:max-w-2xl sm:px-8">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-background/85 backdrop-blur-xl md:border-t-0 md:bg-transparent md:backdrop-blur-none md:pb-4">
+      <div
+        className={cn(
+          "mx-auto flex w-full max-w-md items-stretch justify-between px-3 pb-6 pt-2",
+          // Tablets: a centred floating pill instead of a stretched edge-to-edge bar.
+          "md:max-w-lg md:rounded-full md:border md:border-hairline md:bg-background/90 md:px-6 md:pb-2 md:shadow-lift md:backdrop-blur-xl",
+        )}
+      >
         {items.map(({ to, label, icon: Icon }) => {
           const active = pathname === to;
           return (
@@ -39,10 +45,16 @@ export function BottomNav() {
   );
 }
 
+/**
+ * App shell. Phone keeps the narrow single column; tablets get a wider,
+ * comfortably padded content measure instead of a stretched phone layout.
+ */
 export function MobileShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen overflow-x-hidden bg-background">
-      <div className="mx-auto min-h-screen w-full max-w-md overflow-x-hidden pb-28 sm:max-w-2xl">{children}</div>
+    <div className="min-h-dvh overflow-x-hidden bg-background">
+      <div className="mx-auto w-full max-w-md overflow-x-hidden pb-28 md:max-w-2xl md:px-4 md:pb-32 lg:max-w-3xl">
+        {children}
+      </div>
       <BottomNav />
     </div>
   );

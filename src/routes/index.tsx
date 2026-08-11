@@ -39,6 +39,12 @@ function Home() {
   const s = stats(state.sessions);
   const community = useCommunityFoodCoins();
   const firstName = state.profile.name.split(" ")[0];
+  const initials = state.profile.name
+    .split(" ")
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join("");
+
 
   const focusToday =
     s.todayMinutes >= 60
@@ -48,12 +54,30 @@ function Home() {
   return (
     <MobileShell>
       <div className="px-6 pt-14">
-        <div className="animate-fade-up">
-          <p className="text-sm text-muted-foreground">{greeting()},</p>
-          <h1 className="mt-1 text-3xl font-semibold text-foreground">
-            {hydrated ? firstName : "\u00A0"}
-          </h1>
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 animate-fade-up">
+          <div className="min-w-0">
+            <p className="text-sm text-muted-foreground">{greeting()},</p>
+            <h1 className="mt-1 truncate text-3xl font-semibold text-foreground">
+              {hydrated ? firstName : "\u00A0"}
+            </h1>
+          </div>
+          <Link
+            to="/profile"
+            aria-label="Your profile"
+            className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary font-display text-base font-semibold text-primary-foreground shadow-soft"
+          >
+            {hydrated && state.profile.photo ? (
+              <img
+                src={state.profile.photo}
+                alt="Your profile photo"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <span>{hydrated ? initials : ""}</span>
+            )}
+          </Link>
         </div>
+
 
         <div
           className="mt-6 flex gap-3 animate-fade-up"

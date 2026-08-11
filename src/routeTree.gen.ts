@@ -16,6 +16,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SessionRouteImport } from './routes/session'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PlannerRouteImport } from './routes/planner'
+import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as FailedRouteImport } from './routes/failed'
 import { Route as CommitRouteImport } from './routes/commit'
@@ -58,6 +59,11 @@ const PlannerRoute = PlannerRouteImport.update({
   path: '/planner',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HowItWorksRoute = HowItWorksRouteImport.update({
+  id: '/how-it-works',
+  path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HistoryRoute = HistoryRouteImport.update({
   id: '/history',
   path: '/history',
@@ -96,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/commit': typeof CommitRoute
   '/failed': typeof FailedRoute
   '/history': typeof HistoryRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/planner': typeof PlannerRoute
   '/profile': typeof ProfileRoute
   '/session': typeof SessionRoute
@@ -111,6 +118,7 @@ export interface FileRoutesByTo {
   '/commit': typeof CommitRoute
   '/failed': typeof FailedRoute
   '/history': typeof HistoryRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/planner': typeof PlannerRoute
   '/profile': typeof ProfileRoute
   '/session': typeof SessionRoute
@@ -127,6 +135,7 @@ export interface FileRoutesById {
   '/commit': typeof CommitRoute
   '/failed': typeof FailedRoute
   '/history': typeof HistoryRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/planner': typeof PlannerRoute
   '/profile': typeof ProfileRoute
   '/session': typeof SessionRoute
@@ -144,6 +153,7 @@ export interface FileRouteTypes {
     | '/commit'
     | '/failed'
     | '/history'
+    | '/how-it-works'
     | '/planner'
     | '/profile'
     | '/session'
@@ -159,6 +169,7 @@ export interface FileRouteTypes {
     | '/commit'
     | '/failed'
     | '/history'
+    | '/how-it-works'
     | '/planner'
     | '/profile'
     | '/session'
@@ -174,6 +185,7 @@ export interface FileRouteTypes {
     | '/commit'
     | '/failed'
     | '/history'
+    | '/how-it-works'
     | '/planner'
     | '/profile'
     | '/session'
@@ -190,6 +202,7 @@ export interface RootRouteChildren {
   CommitRoute: typeof CommitRoute
   FailedRoute: typeof FailedRoute
   HistoryRoute: typeof HistoryRoute
+  HowItWorksRoute: typeof HowItWorksRoute
   PlannerRoute: typeof PlannerRoute
   ProfileRoute: typeof ProfileRoute
   SessionRoute: typeof SessionRoute
@@ -250,6 +263,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlannerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/how-it-works': {
+      id: '/how-it-works'
+      path: '/how-it-works'
+      fullPath: '/how-it-works'
+      preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/history': {
       id: '/history'
       path: '/history'
@@ -302,6 +322,7 @@ const rootRouteChildren: RootRouteChildren = {
   CommitRoute: CommitRoute,
   FailedRoute: FailedRoute,
   HistoryRoute: HistoryRoute,
+  HowItWorksRoute: HowItWorksRoute,
   PlannerRoute: PlannerRoute,
   ProfileRoute: ProfileRoute,
   SessionRoute: SessionRoute,
@@ -313,13 +334,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
