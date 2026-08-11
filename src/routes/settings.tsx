@@ -11,7 +11,7 @@ import { claimReferral, deleteAccount as deleteAccountFn } from "@/lib/account.f
 import { getDeviceHash } from "@/lib/device";
 import { signOutEverywhere } from "@/lib/use-auth";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Moon, Sun, Copy, Check, Trash2, ShieldAlert, LogOut } from "lucide-react";
+import { ArrowLeft, Moon, Sun, Copy, Check, Trash2, ShieldAlert, LogOut, BookOpen, ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
