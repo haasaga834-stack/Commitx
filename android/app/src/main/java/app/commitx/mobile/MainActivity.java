@@ -103,7 +103,39 @@ public class MainActivity extends Activity {
             public void onCloseWindow(WebView window) {
                 closeAuthWindow();
             }
+
+            /** Enables <input type="file"> (profile photo) inside the WebView. */
+            @Override
+            public boolean onShowFileChooser(WebView view,
+                                             ValueCallback<Uri[]> callback,
+                                             FileChooserParams params) {
+                if (fileChooserCallback != null) {
+                    fileChooserCallback.onReceiveValue(null);
+                }
+                fileChooserCallback = callback;
+                try {
+                    Intent content = params.createIntent();
+                    Intent chooser = Intent.createChooser(content, "Select a photo");
+                    Intent capture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    if (capture.resolveActivity(getPackageManager()) != null) {
+                        pendingCameraUri = getContentResolver().insert(
+                                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                                new ContentValues());
+                        if (pendingCameraUri != null) {
+                            capture.putExtra(MediaStore.EXTRA_OUTPUT, pendingCameraUri);
+                            chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{capture});
+                        }
+                    }
+                    startActivityForResult(chooser, REQUEST_FILE_CHOOSER);
+                    return true;
+                } catch (Exception e) {
+                    fileChooserCallback = null;
+                    pendingCameraUri = null;
+                    return false;
+                }
+            }
         });
+
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
