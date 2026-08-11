@@ -39,6 +39,12 @@ function Home() {
   const s = stats(state.sessions);
   const community = useCommunityFoodCoins();
   const firstName = state.profile.name.split(" ")[0];
+  const initials = state.profile.name
+    .split(" ")
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join("");
+
 
   const focusToday =
     s.todayMinutes >= 60
