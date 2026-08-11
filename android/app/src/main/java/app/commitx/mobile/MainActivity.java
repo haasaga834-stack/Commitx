@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.NotificationManager;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -13,12 +14,14 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Message;
+import android.provider.MediaStore;
 import android.provider.Settings;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
@@ -53,6 +56,34 @@ public class MainActivity extends Activity {
     private SharedPreferences preferences;
     private volatile boolean verifiedModeActive = false;
     private volatile boolean sessionLockActive = false;
+
+    private static final int REQUEST_FILE_CHOOSER = 8021;
+    private ValueCallback<Uri[]> fileChooserCallback;
+    private Uri pendingCameraUri;
+
+    /** Delivers the picked/captured photo back to the WebView file input. */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode != REQUEST_FILE_CHOOSER) {
+            super.onActivityResult(requestCode, resultCode, data);
+            return;
+        }
+        Uri[] results = null;
+        if (resultCode == Activity.RESULT_OK) {
+            if (data != null && data.getData() != null) {
+                results = new Uri[]{data.getData()};
+            } else if (data != null && data.getClipData() != null && data.getClipData().getItemCount() > 0) {
+                results = new Uri[]{data.getClipData().getItemAt(0).getUri()};
+            } else if (pendingCameraUri != null) {
+                results = new Uri[]{pendingCameraUri};
+            }
+        }
+        if (fileChooserCallback != null) {
+            fileChooserCallback.onReceiveValue(results);
+            fileChooserCallback = null;
+        }
+        pendingCameraUri = null;
+    }
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
