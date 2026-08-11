@@ -246,7 +246,38 @@ function Session() {
   }, []);
 
   // Standard mode: the timer keeps running in real time (absolute timestamps),
-  // so screen-off, app switching and app restarts never pause it.
+  // so screen-off, app switching and app restarts never pause it. Returning to
+  // the foreground re-reads the clock and persists state, so the display picks
+  // up exactly where real time is — never a stale frame or a jump.
+  useEffect(() => {
+    if (isVerified) return;
+
+    const resync = () => {
+      if (doneRef.current) return;
+      setNow(Date.now());
+      persist();
+      if (elapsedNow() >= totalMs) complete("completed");
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") resync();
+      else persist();
+    };
+
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("focus", resync);
+    window.addEventListener("pageshow", resync);
+    window.addEventListener("pagehide", persist);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("focus", resync);
+      window.removeEventListener("pageshow", resync);
+      window.removeEventListener("pagehide", persist);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVerified, persist, elapsedNow, totalMs]);
+
+
 
 
   // Verified mode: foreground-only, with a 60s emergency grace window.
