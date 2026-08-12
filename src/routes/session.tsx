@@ -96,21 +96,34 @@ function Session() {
     return canCheckDnd() && isDndEnabled() === false;
   });
 
+  // Only a *live* session for the exact same commitment may be restored. A
+  // stale record (older than 6h of wall clock, already past its duration, or
+  // flagged as failed) is ignored so a new session can never inherit elapsed
+  // time and complete itself the moment it starts.
   const restored = useRef(
     typeof window === "undefined"
       ? null
       : (() => {
           const prev = readActiveVerifiedSession();
           if (
-            prev &&
-            prev.goal === goal &&
-            prev.duration === duration &&
-            prev.value === value &&
-            prev.mode === mode
+            !prev ||
+            prev.goal !== goal ||
+            prev.duration !== duration ||
+            prev.value !== value ||
+            prev.mode !== mode ||
+            prev.pendingFail
           ) {
-            return prev;
+            return null;
           }
-          return null;
+          const started = typeof prev.startedAt === "number" ? prev.startedAt : 0;
+          const sinceStart = Date.now() - started;
+          if (!started || sinceStart < 0 || sinceStart > 6 * 60 * 60 * 1000) return null;
+          const banked =
+            (prev.accumulatedMs ?? 0) +
+            (prev.runningSince ? Math.max(0, Date.now() - prev.runningSince) : 0);
+          // Never restore something that would instantly finish.
+          if (banked >= duration * 60 * 1000) return null;
+          return prev;
         })(),
   ).current;
 
@@ -119,6 +132,7 @@ function Session() {
   const runningSinceRef = useRef<number | null>(
     restored ? (restored.runningSince ?? null) : Date.now(),
   );
+
 
   const [now, setNow] = useState<number>(() => Date.now());
   const [, setPaused] = useState<boolean>(() => runningSinceRef.current === null);
@@ -144,8 +158,28 @@ function Session() {
 
   const elapsedNow = useCallback(() => {
     const running = runningSinceRef.current;
-    return accumulatedRef.current + (running ? Date.now() - running : 0);
-  }, []);
+    const banked = accumulatedRef.current + (running ? Date.now() - running : 0);
+    // Verified sessions are anchored to the wall clock: banked time can never
+    // exceed the real time passed since the session started, so re-renders,
+    // backgrounding or restored state can't shorten the commitment.
+    if (isVerified) return Math.max(0, Math.min(banked, Date.now() - startedAt));
+    return Math.max(0, banked);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVerified, startedAt]);
+
+  /**
+   * Authoritative completion gate. A session may only finish once the full
+   * committed duration has genuinely elapsed; Verified sessions additionally
+   * require the wall clock since start to have passed, which makes early or
+   * duplicate completion impossible.
+   */
+  const canCompleteNow = useCallback(() => {
+    if (elapsedNow() < totalMs) return false;
+    if (isVerified && Date.now() - startedAt < totalMs) return false;
+    return true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [elapsedNow, totalMs, isVerified, startedAt]);
+
 
   const pauseTimer = useCallback(
     (reason: string) => {
@@ -199,10 +233,11 @@ function Session() {
     let raf = 0;
     const tick = () => {
       setNow(Date.now());
-      if (!doneRef.current && !dndBlocked && elapsedNow() >= totalMs) {
+      if (!doneRef.current && !dndBlocked && canCompleteNow()) {
         complete("completed");
         return;
       }
+
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
@@ -256,7 +291,7 @@ function Session() {
       if (doneRef.current) return;
       setNow(Date.now());
       persist();
-      if (elapsedNow() >= totalMs) complete("completed");
+      if (canCompleteNow()) complete("completed");
     };
 
     const onVisibility = () => {
