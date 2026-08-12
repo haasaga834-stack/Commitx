@@ -220,10 +220,11 @@ function Session() {
     let raf = 0;
     const tick = () => {
       setNow(Date.now());
-      if (!doneRef.current && !dndBlocked && elapsedNow() >= totalMs) {
+      if (!doneRef.current && !dndBlocked && canCompleteNow()) {
         complete("completed");
         return;
       }
+
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
