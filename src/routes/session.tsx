@@ -158,8 +158,15 @@ function Session() {
 
   const elapsedNow = useCallback(() => {
     const running = runningSinceRef.current;
-    return accumulatedRef.current + (running ? Date.now() - running : 0);
-  }, []);
+    const banked = accumulatedRef.current + (running ? Date.now() - running : 0);
+    // Verified sessions are anchored to the wall clock: banked time can never
+    // exceed the real time passed since the session started, so re-renders,
+    // backgrounding or restored state can't shorten the commitment.
+    if (isVerified) return Math.max(0, Math.min(banked, Date.now() - startedAt));
+    return Math.max(0, banked);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVerified, startedAt]);
+
 
   const pauseTimer = useCallback(
     (reason: string) => {
