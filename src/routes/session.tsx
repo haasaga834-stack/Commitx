@@ -291,7 +291,7 @@ function Session() {
       if (doneRef.current) return;
       setNow(Date.now());
       persist();
-      if (elapsedNow() >= totalMs) complete("completed");
+      if (canCompleteNow()) complete("completed");
     };
 
     const onVisibility = () => {
