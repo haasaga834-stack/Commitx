@@ -167,6 +167,19 @@ function Session() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVerified, startedAt]);
 
+  /**
+   * Authoritative completion gate. A session may only finish once the full
+   * committed duration has genuinely elapsed; Verified sessions additionally
+   * require the wall clock since start to have passed, which makes early or
+   * duplicate completion impossible.
+   */
+  const canCompleteNow = useCallback(() => {
+    if (elapsedNow() < totalMs) return false;
+    if (isVerified && Date.now() - startedAt < totalMs) return false;
+    return true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [elapsedNow, totalMs, isVerified, startedAt]);
+
 
   const pauseTimer = useCallback(
     (reason: string) => {
