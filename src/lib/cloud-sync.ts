@@ -27,6 +27,25 @@ function toSession(row: any): Session {
   };
 }
 
+/**
+ * A freshly picked profile photo is "pinned" locally for a short while so a
+ * background pull that raced the write can't wipe it from the UI.
+ */
+let localPhoto: { value: string; at: number } | null = null;
+const PHOTO_PIN_MS = 60_000;
+
+/** Write a newly picked (or removed) photo straight to the account. */
+export async function saveProfilePhoto(photo: string) {
+  localPhoto = { value: photo, at: Date.now() };
+  const { data: auth } = await supabase.auth.getUser();
+  const userId = auth.user?.id;
+  if (!userId) return;
+  await supabase
+    .from("profiles")
+    .update({ avatar_url: photo || null })
+    .eq("id", userId);
+}
+
 /** Pull profile, wallet and sessions from the cloud into the local store. */
 export async function pullFromCloud(userId: string) {
   const [{ data: profile }, { data: wallet }, { data: sessions }] = await Promise.all([
