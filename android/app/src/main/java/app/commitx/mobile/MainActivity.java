@@ -540,6 +540,20 @@ public class MainActivity extends Activity {
         runOnUiThread(() -> webView.evaluateJavascript("(function(){try{" + js + "}catch(e){}})();", null));
     }
 
+    private void openPlayStoreListing() {
+        String pkg = getPackageName();
+        try {
+            Intent market = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + pkg));
+            market.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(market);
+        } catch (Throwable t) {
+            try {
+                startActivity(new Intent(Intent.ACTION_VIEW,
+                        Uri.parse("https://play.google.com/store/apps/details?id=" + pkg)));
+            } catch (Throwable ignored) {}
+        }
+    }
+
     public class CommitXAndroidBridge {
         @JavascriptInterface
         public void setVerifiedModeActive(boolean active) {
@@ -588,6 +602,28 @@ public class MainActivity extends Activity {
         }
 
 
+
+        /** In-app review flow, with a Play Store deep link as a fallback. */
+        @JavascriptInterface
+        public void rateApp() {
+            runOnUiThread(() -> {
+                try {
+                    com.google.android.play.core.review.ReviewManager manager =
+                            com.google.android.play.core.review.ReviewManagerFactory.create(MainActivity.this);
+                    manager.requestReviewFlow().addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            try {
+                                manager.launchReviewFlow(MainActivity.this, task.getResult());
+                                return;
+                            } catch (Throwable ignored) {}
+                        }
+                        openPlayStoreListing();
+                    });
+                } catch (Throwable t) {
+                    openPlayStoreListing();
+                }
+            });
+        }
 
         /** Called by the web app; true when native Google Sign-In can be used. */
         @JavascriptInterface
