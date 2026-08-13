@@ -185,22 +185,6 @@ export function formatMinutes(minutes: number) {
   return r === 0 ? `${h}h` : `${h}h ${r}m`;
 }
 
-const LIMIT_CHANGE_KEY = "commitx-screentime-limit-changed";
-
-function todayKey() {
-  const d = new Date();
-  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
-}
-
-/** The daily limit may be changed once per day; the allowance resets next day. */
-export function limitChangedToday() {
-  try {
-    return localStorage.getItem(LIMIT_CHANGE_KEY) === todayKey();
-  } catch {
-    return false;
-  }
-}
-
 /** Polls native screen time; resets naturally each day (native reads from midnight). */
 export function useScreenTime(intervalMs = 60_000) {
   const [data, setData] = useState<ScreenTime | null>(null);
@@ -220,22 +204,13 @@ export function useScreenTime(intervalMs = 60_000) {
     };
   }, [refresh, intervalMs]);
 
-  const [lockedToday, setLockedToday] = useState(false);
-  useEffect(() => setLockedToday(limitChangedToday()), []);
-
   const updateLimit = useCallback(
     (minutes: number) => {
-      if (limitChangedToday()) return false;
       setScreenTimeLimit(minutes);
-      try {
-        localStorage.setItem(LIMIT_CHANGE_KEY, todayKey());
-      } catch {}
-      setLockedToday(true);
       refresh();
-      return true;
     },
     [refresh],
   );
 
-  return { screenTime: data, refresh, updateLimit, limitLockedToday: lockedToday };
+  return { screenTime: data, refresh, updateLimit };
 }

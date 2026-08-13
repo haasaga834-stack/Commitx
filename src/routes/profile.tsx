@@ -4,9 +4,9 @@ import { useAppState, stats, setState, formatINR } from "@/lib/commitx-store";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Pencil, Check, Trophy, Clock, Camera, Settings as SettingsIcon } from "lucide-react";
 import { fileToProfilePhoto } from "@/lib/profile-photo";
-import { saveProfilePhoto } from "@/lib/cloud-sync";
 
 import { formatHours } from "@/lib/analytics-data";
+import { FoodCoinInfoCard } from "@/components/FoodCoinInfoCard";
 import { useLeaderboard } from "@/lib/community";
 
 
@@ -40,7 +40,6 @@ function Profile() {
     try {
       const next = await fileToProfilePhoto(file);
       setState((prev) => ({ ...prev, profile: { ...prev.profile, photo: next } }));
-      await saveProfilePhoto(next);
     } catch {
       setPhotoError("Couldn't use that image. Try another one.");
     }
@@ -132,10 +131,7 @@ function Profile() {
           {photo && (
             <button
               type="button"
-              onClick={() => {
-                setState((prev) => ({ ...prev, profile: { ...prev.profile, photo: "" } }));
-                void saveProfilePhoto("");
-              }}
+              onClick={() => setState((prev) => ({ ...prev, profile: { ...prev.profile, photo: "" } }))}
               className="mt-3 text-[11px] uppercase tracking-widest text-muted-foreground"
             >
               Remove photo
@@ -196,6 +192,8 @@ function Profile() {
           <Stat label="Success rate" value={`${s.successRate}%`} />
           <Stat label="Completed" value={String(s.completed)} />
           <Stat label="Failed" value={String(s.failed)} />
+          <Stat label="Food Coins" value={`🪙 ${s.foodCoins.toLocaleString("en-IN")}`} />
+          <Stat label="Commitments" value={String(s.completed)} />
         </div>
 
         <div className="mt-8 flex items-center justify-between">
@@ -209,6 +207,8 @@ function Profile() {
             <LeaderRow key={row.name + i} rank={i + 1} row={row} />
           ))}
         </div>
+
+        <FoodCoinInfoCard className="mt-6 mb-4" />
 
       </div>
     </MobileShell>

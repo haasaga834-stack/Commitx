@@ -13,7 +13,6 @@ declare global {
       googleSignOut?: () => void;
       isDndEnabled?: () => boolean;
       openDndSettings?: () => void;
-      rateApp?: () => void;
       canCheckDnd?: () => boolean;
       /* Notification permission */
       notificationsEnabled?: () => boolean;
@@ -86,12 +85,5 @@ export function isDndEnabled(): boolean | null {
 export function openDndSettings() {
   try {
     window.CommitXAndroid?.openDndSettings?.();
-  } catch {}
-}
-
-/** Launches the Play in-app review flow (Play Store fallback handled natively). */
-export function rateApp() {
-  try {
-    window.CommitXAndroid?.rateApp?.();
   } catch {}
 }

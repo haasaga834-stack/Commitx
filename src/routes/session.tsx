@@ -395,10 +395,7 @@ function Session() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVerified, dndBlocked]);
 
-  // Single source of truth for display: the same clamped helper the completion
-  // gate uses, so the visible timer can never disagree with the real elapsed time.
-  void now;
-  const elapsedMs = Math.min(totalMs, elapsedNow());
+  const elapsedMs = Math.min(totalMs, accumulatedRef.current + (runningSinceRef.current ? now - runningSinceRef.current : 0));
   const progress = totalMs > 0 ? elapsedMs / totalMs : 0;
   const remaining = Math.max(0, Math.ceil((totalMs - elapsedMs) / 1000));
 

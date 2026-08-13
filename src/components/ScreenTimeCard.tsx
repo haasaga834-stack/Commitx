@@ -9,7 +9,7 @@ const LIMITS = [0, 60, 120, 180, 240, 300, 360, 420, 480, 540, 600];
 
 /** Today's screen time for CommitX vs. other apps, with a daily limit picker. */
 export function ScreenTimeCard() {
-  const { screenTime, updateLimit, limitLockedToday } = useScreenTime();
+  const { screenTime, updateLimit } = useScreenTime();
 
   // Web build / no native bridge: nothing to show.
   if (!screenTime || !screenTime.supported) return null;
@@ -96,9 +96,8 @@ export function ScreenTimeCard() {
           <button
             key={m}
             onClick={() => updateLimit(m)}
-            disabled={limitLockedToday && limit !== m}
             className={
-              "rounded-full px-4 py-2 text-xs font-medium transition-colors disabled:opacity-40 " +
+              "rounded-full px-4 py-2 text-xs font-medium transition-colors " +
               (limit === m
                 ? "bg-primary text-primary-foreground"
                 : "bg-secondary text-secondary-foreground")
@@ -109,9 +108,8 @@ export function ScreenTimeCard() {
         ))}
       </div>
       <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-        {limitLockedToday
-          ? "You can change your daily limit once a day — this resets tomorrow."
-          : "You can change your daily limit once a day. Resets automatically at midnight; we notify you once when your limit for other apps is reached."}
+        Resets automatically at midnight. We notify you once when your limit for
+        other apps is reached.
       </p>
     </div>
   );
