@@ -62,6 +62,17 @@ export async function pullFromCloud(userId: string) {
   const rows = sessions ?? [];
   syncedSessionIds = new Set(rows.map((r: any) => r.id));
 
+  const remotePhoto =
+    (profile as { avatar_url?: string | null } | null)?.avatar_url ?? "";
+  let photo = remotePhoto;
+  if (localPhoto) {
+    if (localPhoto.value === remotePhoto || Date.now() - localPhoto.at > PHOTO_PIN_MS) {
+      localPhoto = null;
+    } else {
+      photo = localPhoto.value;
+    }
+  }
+
   const next: AppState = {
     balances: {
       real: wallet?.real_balance ?? 0,
@@ -73,8 +84,7 @@ export async function pullFromCloud(userId: string) {
       age: profile?.age ?? "",
       sex: profile?.sex ?? "",
       education: profile?.education ?? "",
-      photo: (profile as { avatar_url?: string | null } | null)?.avatar_url ?? "",
-
+      photo,
     },
     referralCredited: Boolean(profile?.referred_by),
   };
