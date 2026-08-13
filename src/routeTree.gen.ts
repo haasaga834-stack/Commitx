@@ -19,6 +19,7 @@ import { Route as PlannerRouteImport } from './routes/planner'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as FailedRouteImport } from './routes/failed'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CommitRouteImport } from './routes/commit'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
@@ -75,6 +76,11 @@ const FailedRoute = FailedRouteImport.update({
   path: '/failed',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CommitRoute = CommitRouteImport.update({
   id: '/commit',
   path: '/commit',
@@ -107,6 +113,7 @@ export interface FileRoutesByFullPath {
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
   '/commit': typeof CommitRoute
+  '/contact': typeof ContactRoute
   '/failed': typeof FailedRoute
   '/history': typeof HistoryRoute
   '/how-it-works': typeof HowItWorksRoute
@@ -124,6 +131,7 @@ export interface FileRoutesByTo {
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
   '/commit': typeof CommitRoute
+  '/contact': typeof ContactRoute
   '/failed': typeof FailedRoute
   '/history': typeof HistoryRoute
   '/how-it-works': typeof HowItWorksRoute
@@ -142,6 +150,7 @@ export interface FileRoutesById {
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
   '/commit': typeof CommitRoute
+  '/contact': typeof ContactRoute
   '/failed': typeof FailedRoute
   '/history': typeof HistoryRoute
   '/how-it-works': typeof HowItWorksRoute
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/auth'
     | '/commit'
+    | '/contact'
     | '/failed'
     | '/history'
     | '/how-it-works'
@@ -178,6 +188,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/auth'
     | '/commit'
+    | '/contact'
     | '/failed'
     | '/history'
     | '/how-it-works'
@@ -195,6 +206,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/auth'
     | '/commit'
+    | '/contact'
     | '/failed'
     | '/history'
     | '/how-it-works'
@@ -213,6 +225,7 @@ export interface RootRouteChildren {
   AnalyticsRoute: typeof AnalyticsRoute
   AuthRoute: typeof AuthRoute
   CommitRoute: typeof CommitRoute
+  ContactRoute: typeof ContactRoute
   FailedRoute: typeof FailedRoute
   HistoryRoute: typeof HistoryRoute
   HowItWorksRoute: typeof HowItWorksRoute
@@ -297,6 +310,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FailedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/commit': {
       id: '/commit'
       path: '/commit'
@@ -341,6 +361,7 @@ const rootRouteChildren: RootRouteChildren = {
   AnalyticsRoute: AnalyticsRoute,
   AuthRoute: AuthRoute,
   CommitRoute: CommitRoute,
+  ContactRoute: ContactRoute,
   FailedRoute: FailedRoute,
   HistoryRoute: HistoryRoute,
   HowItWorksRoute: HowItWorksRoute,
