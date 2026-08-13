@@ -27,6 +27,25 @@ function toSession(row: any): Session {
   };
 }
 
+/**
+ * A freshly picked profile photo is "pinned" locally for a short while so a
+ * background pull that raced the write can't wipe it from the UI.
+ */
+let localPhoto: { value: string; at: number } | null = null;
+const PHOTO_PIN_MS = 60_000;
+
+/** Write a newly picked (or removed) photo straight to the account. */
+export async function saveProfilePhoto(photo: string) {
+  localPhoto = { value: photo, at: Date.now() };
+  const { data: auth } = await supabase.auth.getUser();
+  const userId = auth.user?.id;
+  if (!userId) return;
+  await supabase
+    .from("profiles")
+    .update({ avatar_url: photo || null })
+    .eq("id", userId);
+}
+
 /** Pull profile, wallet and sessions from the cloud into the local store. */
 export async function pullFromCloud(userId: string) {
   const [{ data: profile }, { data: wallet }, { data: sessions }] = await Promise.all([
@@ -43,6 +62,17 @@ export async function pullFromCloud(userId: string) {
   const rows = sessions ?? [];
   syncedSessionIds = new Set(rows.map((r: any) => r.id));
 
+  const remotePhoto =
+    (profile as { avatar_url?: string | null } | null)?.avatar_url ?? "";
+  let photo = remotePhoto;
+  if (localPhoto) {
+    if (localPhoto.value === remotePhoto || Date.now() - localPhoto.at > PHOTO_PIN_MS) {
+      localPhoto = null;
+    } else {
+      photo = localPhoto.value;
+    }
+  }
+
   const next: AppState = {
     balances: {
       real: wallet?.real_balance ?? 0,
@@ -54,8 +84,7 @@ export async function pullFromCloud(userId: string) {
       age: profile?.age ?? "",
       sex: profile?.sex ?? "",
       education: profile?.education ?? "",
-      photo: (profile as { avatar_url?: string | null } | null)?.avatar_url ?? "",
-
+      photo,
     },
     referralCredited: Boolean(profile?.referred_by),
   };

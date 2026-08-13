@@ -65,11 +65,13 @@ function Analytics() {
             icon={<CalendarDays className="h-4 w-4" />}
             label="Weekly total"
             value={hydrated ? formatHours(a.weeklyMinutes) : "—"}
+            compact
           />
           <Metric
             icon={<CalendarDays className="h-4 w-4" />}
             label="Monthly total"
             value={hydrated ? formatHours(a.monthlyMinutes) : "—"}
+            compact
           />
           <Metric
             icon={<Clock className="h-4 w-4" />}
@@ -203,10 +205,12 @@ function Metric({
   icon,
   label,
   value,
+  compact = false,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
+  compact?: boolean;
 }) {
   return (
     <div className="rounded-2xl bg-card p-4 shadow-soft">
@@ -214,7 +218,14 @@ function Metric({
         {icon}
         <p className="min-w-0 truncate text-[11px] uppercase tracking-wider">{label}</p>
       </div>
-      <p className="mt-1 font-display text-2xl font-semibold tabular-nums">{value}</p>
+      <p
+        className={
+          "mt-1 font-display font-semibold tabular-nums " +
+          (compact ? "text-xl" : "text-2xl")
+        }
+      >
+        {value}
+      </p>
     </div>
   );
 }
