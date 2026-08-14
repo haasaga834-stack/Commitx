@@ -11,7 +11,8 @@ import { claimReferral, deleteAccount as deleteAccountFn } from "@/lib/account.f
 import { getDeviceHash } from "@/lib/device";
 import { signOutEverywhere } from "@/lib/use-auth";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Moon, Sun, Copy, Check, Trash2, ShieldAlert, LogOut, BookOpen, ChevronRight } from "lucide-react";
+import { ArrowLeft, Moon, Sun, Copy, Check, Trash2, ShieldAlert, LogOut, BookOpen, ChevronRight, Star, Info, Mail } from "lucide-react";
+import { isNativeApp, rateApp } from "@/lib/native-notifications";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -28,6 +29,7 @@ export const Route = createFileRoute("/settings")({
 function Settings() {
   const router = useRouter();
   const { isDark, setMode } = useTheme();
+  const [native, setNative] = useState(false);
   const [copied, setCopied] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [deleting, setDeleting] = useState(false);
