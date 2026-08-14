@@ -106,12 +106,14 @@ export function ScreenTimeCard() {
         {LIMITS.map((m) => (
           <button
             key={m}
-            onClick={() => updateLimit(m)}
+            onClick={() => changeLimit(m)}
+            disabled={locked}
             className={
               "rounded-full px-4 py-2 text-xs font-medium transition-colors " +
               (limit === m
                 ? "bg-primary text-primary-foreground"
-                : "bg-secondary text-secondary-foreground")
+                : "bg-secondary text-secondary-foreground") +
+              (locked && limit !== m ? " opacity-40" : "")
             }
           >
             {m === 0 ? "Off" : formatMinutes(m)}
@@ -119,8 +121,9 @@ export function ScreenTimeCard() {
         ))}
       </div>
       <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-        Resets automatically at midnight. We notify you once when your limit for
-        other apps is reached.
+        {locked
+          ? "You've already set your limit today — you can change it again tomorrow."
+          : "You can change this limit once per day. Resets automatically at midnight, and we notify you once your limit for other apps is reached."}
       </p>
     </div>
   );
