@@ -177,6 +177,39 @@ export function setScreenTimeLimit(minutes: number) {
   } catch {}
 }
 
+/** True inside the native Android shell (false on the web build). */
+export function isNativeApp() {
+  return Boolean(bridge());
+}
+
+/** Opens the Play in-app review flow (falls back to the Play Store listing). */
+export function rateApp() {
+  try {
+    bridge()?.rateApp?.();
+  } catch {}
+}
+
+const LIMIT_CHANGE_KEY = "commitx-screen-limit-changed-on";
+
+function today() {
+  return new Date().toDateString();
+}
+
+/** The screen-time limit may only be changed once per day. */
+export function canChangeScreenTimeLimit() {
+  try {
+    return localStorage.getItem(LIMIT_CHANGE_KEY) !== today();
+  } catch {
+    return true;
+  }
+}
+
+export function markScreenTimeLimitChanged() {
+  try {
+    localStorage.setItem(LIMIT_CHANGE_KEY, today());
+  } catch {}
+}
+
 export function formatMinutes(minutes: number) {
   const m = Math.max(0, Math.round(minutes));
   if (m < 60) return `${m}m`;

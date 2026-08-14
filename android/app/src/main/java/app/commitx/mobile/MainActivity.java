@@ -723,10 +723,45 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
+        public void rateApp() {
+            runOnUiThread(() -> {
+                try {
+                    com.google.android.play.core.review.ReviewManager manager =
+                            com.google.android.play.core.review.ReviewManagerFactory.create(MainActivity.this);
+                    manager.requestReviewFlow().addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            try {
+                                manager.launchReviewFlow(MainActivity.this, task.getResult());
+                                return;
+                            } catch (Throwable ignored) {}
+                        }
+                        openPlayStoreListing();
+                    });
+                } catch (Throwable t) {
+                    openPlayStoreListing();
+                }
+            });
+        }
+
+        @JavascriptInterface
         public void setScreenTimeLimit(int minutes) {
             ScreenTimeTracker.setLimitMinutes(MainActivity.this, minutes);
             ScreenTimeTracker.checkLimit(MainActivity.this);
         }
     }
-}
 
+    /** Play Store fallback when the in-app review flow is unavailable. */
+    private void openPlayStoreListing() {
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW,
+                    Uri.parse("market://details?id=" + getPackageName()))
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        } catch (Throwable t) {
+            try {
+                startActivity(new Intent(Intent.ACTION_VIEW,
+                        Uri.parse("https://play.google.com/store/apps/details?id=" + getPackageName()))
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            } catch (Throwable ignored) {}
+        }
+    }
+}

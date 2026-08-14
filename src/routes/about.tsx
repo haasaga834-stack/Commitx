@@ -1,0 +1,64 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { MobileShell } from "@/components/BottomNav";
+import { ArrowLeft } from "lucide-react";
+
+export const Route = createFileRoute("/about")({
+  head: () => ({
+    meta: [
+      { title: "About CommitX — Turning Discipline Into Impact" },
+      {
+        name: "description",
+        content:
+          "CommitX is an accountability app: commit money to a focus session, complete it, and get it back. Learn who we are and why we built it.",
+      },
+      { property: "og:title", content: "About CommitX" },
+      {
+        property: "og:description",
+        content: "Why we built CommitX — turning discipline into impact.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: About,
+});
+
+function About() {
+  return (
+    <MobileShell>
+      <div className="px-6 pt-14 pb-6">
+        <div className="flex items-center gap-3">
+          <Link
+            to="/settings"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-soft"
+            aria-label="Back"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+          <h1 className="font-display text-2xl font-semibold">About us</h1>
+        </div>
+
+        <div className="mt-6 space-y-4 rounded-3xl bg-card p-5 text-sm leading-relaxed text-muted-foreground shadow-soft">
+          <p>
+            CommitX is a calm accountability app built on one simple idea:
+            <span className="text-foreground"> Commit. Complete. Get it back.</span>
+          </p>
+          <p>
+            You commit a small amount to a focus session and choose Standard or
+            Verified mode. Finish the session and your commitment returns to your
+            wallet. Walk away, and it doesn't.
+          </p>
+          <p>
+            Every completed hour also earns a Food Coin. As CommitX grows, Food
+            Coins will be transformed into real meals funded by CommitX —
+            <span className="text-foreground"> turning discipline into impact.</span>
+          </p>
+          <p>
+            CommitX is currently in its trial phase. Real-money deposits and
+            withdrawals are disabled, and all balances are demo balances.
+          </p>
+        </div>
+      </div>
+    </MobileShell>
+  );
+}

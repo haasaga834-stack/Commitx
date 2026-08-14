@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { Smartphone, Timer } from "lucide-react";
 import {
+  canChangeScreenTimeLimit,
   formatMinutes,
+  markScreenTimeLimitChanged,
   openUsageAccessSettings,
   useScreenTime,
 } from "@/lib/native-notifications";
@@ -10,6 +13,14 @@ const LIMITS = [0, 60, 120, 180, 240, 300, 360, 420, 480, 540, 600];
 /** Today's screen time for CommitX vs. other apps, with a daily limit picker. */
 export function ScreenTimeCard() {
   const { screenTime, updateLimit } = useScreenTime();
+  const [locked, setLocked] = useState(() => !canChangeScreenTimeLimit());
+
+  function changeLimit(minutes: number) {
+    if (locked) return;
+    updateLimit(minutes);
+    markScreenTimeLimitChanged();
+    setLocked(true);
+  }
 
   // Web build / no native bridge: nothing to show.
   if (!screenTime || !screenTime.supported) return null;
@@ -95,12 +106,14 @@ export function ScreenTimeCard() {
         {LIMITS.map((m) => (
           <button
             key={m}
-            onClick={() => updateLimit(m)}
+            onClick={() => changeLimit(m)}
+            disabled={locked}
             className={
               "rounded-full px-4 py-2 text-xs font-medium transition-colors " +
               (limit === m
                 ? "bg-primary text-primary-foreground"
-                : "bg-secondary text-secondary-foreground")
+                : "bg-secondary text-secondary-foreground") +
+              (locked && limit !== m ? " opacity-40" : "")
             }
           >
             {m === 0 ? "Off" : formatMinutes(m)}
@@ -108,8 +121,9 @@ export function ScreenTimeCard() {
         ))}
       </div>
       <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-        Resets automatically at midnight. We notify you once when your limit for
-        other apps is reached.
+        {locked
+          ? "You've already set your limit today — you can change it again tomorrow."
+          : "You can change this limit once per day. Resets automatically at midnight, and we notify you once your limit for other apps is reached."}
       </p>
     </div>
   );

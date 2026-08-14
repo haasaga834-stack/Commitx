@@ -214,7 +214,7 @@ function Metric({
         {icon}
         <p className="min-w-0 truncate text-[11px] uppercase tracking-wider">{label}</p>
       </div>
-      <p className="mt-1 font-display text-2xl font-semibold tabular-nums">{value}</p>
+      <p className="mt-1 font-display text-xl font-semibold tabular-nums">{value}</p>
     </div>
   );
 }
