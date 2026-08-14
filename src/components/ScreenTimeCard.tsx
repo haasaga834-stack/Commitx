@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { Smartphone, Timer } from "lucide-react";
 import {
+  canChangeScreenTimeLimit,
   formatMinutes,
+  markScreenTimeLimitChanged,
   openUsageAccessSettings,
   useScreenTime,
 } from "@/lib/native-notifications";
@@ -10,6 +13,14 @@ const LIMITS = [0, 60, 120, 180, 240, 300, 360, 420, 480, 540, 600];
 /** Today's screen time for CommitX vs. other apps, with a daily limit picker. */
 export function ScreenTimeCard() {
   const { screenTime, updateLimit } = useScreenTime();
+  const [locked, setLocked] = useState(() => !canChangeScreenTimeLimit());
+
+  function changeLimit(minutes: number) {
+    if (locked) return;
+    updateLimit(minutes);
+    markScreenTimeLimitChanged();
+    setLocked(true);
+  }
 
   // Web build / no native bridge: nothing to show.
   if (!screenTime || !screenTime.supported) return null;
