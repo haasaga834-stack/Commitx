@@ -40,6 +40,10 @@ function Settings() {
   const [claiming, setClaiming] = useState(false);
 
   useEffect(() => {
+    setNative(isNativeApp());
+  }, []);
+
+  useEffect(() => {
     let active = true;
     (async () => {
       const { data: auth } = await supabase.auth.getUser();
