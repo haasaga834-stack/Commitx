@@ -192,8 +192,6 @@ function Profile() {
           <Stat label="Success rate" value={`${s.successRate}%`} />
           <Stat label="Completed" value={String(s.completed)} />
           <Stat label="Failed" value={String(s.failed)} />
-          <Stat label="Food Coins" value={`🪙 ${s.foodCoins.toLocaleString("en-IN")}`} />
-          <Stat label="Commitments" value={String(s.completed)} />
         </div>
 
         <div className="mt-8 flex items-center justify-between">
@@ -208,7 +206,8 @@ function Profile() {
           ))}
         </div>
 
-        <FoodCoinInfoCard className="mt-6 mb-4" />
+        <div className="h-4" />
+
 
       </div>
     </MobileShell>
