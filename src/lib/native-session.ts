@@ -32,6 +32,7 @@ declare global {
       screenTimeToday?: () => string;
       screenTimeLimit?: () => number;
       setScreenTimeLimit?: (minutes: number) => void;
+      rateApp?: () => void;
     };
     CommitXSession?: {
       onAndroidBack?: () => void;
