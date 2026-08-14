@@ -6,7 +6,7 @@ import { Pencil, Check, Trophy, Clock, Camera, Settings as SettingsIcon } from "
 import { fileToProfilePhoto } from "@/lib/profile-photo";
 
 import { formatHours } from "@/lib/analytics-data";
-import { FoodCoinInfoCard } from "@/components/FoodCoinInfoCard";
+
 import { useLeaderboard } from "@/lib/community";
 
 
