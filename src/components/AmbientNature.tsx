@@ -14,7 +14,11 @@ const PARTICLES = [
   { left: "36%", top: "62%", delay: "3.1s", size: 6 },
   { left: "84%", top: "70%", delay: "2.2s", size: 4 },
   { left: "56%", top: "40%", delay: "4.4s", size: 5 },
+  { left: "8%", top: "48%", delay: "5.6s", size: 3 },
+  { left: "64%", top: "84%", delay: "6.8s", size: 4 },
+  { left: "44%", top: "12%", delay: "2.9s", size: 3 },
 ];
+
 
 /**
  * Soft, hand-painted nature backdrop: gentle clouds, drifting leaves and
@@ -35,6 +39,36 @@ export function AmbientNature({ className }: { className?: string }) {
       />
       {/* Grounded green haze */}
       <div className="absolute -bottom-28 -left-16 h-80 w-80 rounded-full bg-primary/12 blur-3xl" />
+
+      {/* Warm hand-painted paper grain */}
+      <div
+        className="absolute inset-0 opacity-[0.05] mix-blend-multiply"
+        style={{
+          backgroundImage:
+            "radial-gradient(var(--color-clay) 0.5px, transparent 0.6px), radial-gradient(var(--color-primary) 0.5px, transparent 0.6px)",
+          backgroundSize: "7px 7px, 11px 11px",
+          backgroundPosition: "0 0, 3px 4px",
+        }}
+      />
+
+      {/* Distant painted hills */}
+      <svg
+        className="absolute inset-x-0 bottom-0 w-full opacity-[0.10]"
+        viewBox="0 0 400 120"
+        preserveAspectRatio="none"
+        fill="none"
+      >
+        <path
+          d="M0 78c48-26 84 6 132-10 46-15 74-30 118-12 40 16 78 6 150-14v78H0V78Z"
+          fill="var(--color-primary)"
+        />
+        <path
+          d="M0 98c56-18 96 8 156-6 54-13 96-16 144 4 34 14 68 10 100 2v22H0V98Z"
+          fill="var(--color-clay)"
+          opacity="0.7"
+        />
+      </svg>
+
 
       {/* Gentle clouds */}
       <svg

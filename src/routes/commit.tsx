@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { ChevronLeft, Check } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ChevronLeft, Check, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   useAppState,
@@ -43,7 +43,28 @@ function Commit() {
   const [confirmVerified, setConfirmVerified] = useState(false);
   const [preferReal, setPreferReal] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [dndRequired, setDndRequired] = useState(false);
+  const [verifiedWarn, setVerifiedWarn] = useState(false);
+  const [dndOn, setDndOn] = useState<boolean | null>(null);
+
+  const dndCheckable = canCheckDnd();
+
+  // Verify DND state whenever the warning is open (and after returning from settings).
+  useEffect(() => {
+    if (!verifiedWarn) return;
+    const check = () => setDndOn(isDndEnabled());
+    check();
+    const id = window.setInterval(check, 1000);
+    const onVis = () => check();
+    document.addEventListener("visibilitychange", onVis);
+    window.addEventListener("focus", onVis);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("focus", onVis);
+    };
+  }, [verifiedWarn]);
+
+  const dndReady = !dndCheckable || dndOn === true;
 
   const finalGoal = goal === "Custom" ? customGoal.trim() || "Custom" : goal;
 
@@ -62,13 +83,9 @@ function Commit() {
       return;
     }
     setError(null);
-    if (mode === "verified" && !confirmVerified) {
-      setConfirmVerified(true);
-      return;
-    }
-    // Verified sessions require Do Not Disturb before they may start.
-    if (mode === "verified" && canCheckDnd() && isDndEnabled() === false) {
-      setDndRequired(true);
+    // Verified sessions must be acknowledged and require Do Not Disturb.
+    if (mode === "verified" && (!confirmVerified || !dndReady)) {
+      setVerifiedWarn(true);
       return;
     }
     const params = new URLSearchParams({
@@ -80,6 +97,7 @@ function Commit() {
     });
     navigate({ to: "/session", search: Object.fromEntries(params) as Record<string, string> });
   }
+
 
   function clampValue(next: number) {
     const n = Math.round(next);
@@ -255,39 +273,17 @@ function Commit() {
               onClick={() => {
                 setMode("verified");
                 setConfirmVerified(false);
+                setVerifiedWarn(true);
               }}
             />
           </div>
-          {mode === "verified" && confirmVerified && (
+          {mode === "verified" && confirmVerified && dndReady && (
             <p className="mt-4 rounded-2xl bg-foreground/5 px-4 py-3 text-sm text-foreground">
-              Leaving this session before completion will fail your commitment.
-              Tap Commit Now again to accept.
+              Verified rules accepted{dndCheckable ? " · DND Enabled ✓" : ""}. Tap
+              Commit Now to begin.
             </p>
           )}
         </section>
-
-        {dndRequired && (
-          <div className="mt-6 rounded-3xl bg-card p-5 shadow-soft">
-            <p className="font-display text-base font-semibold">Turn on Do Not Disturb</p>
-            <p className="mt-1.5 text-sm text-muted-foreground">
-              Verified sessions can't start while Do Not Disturb is off.
-            </p>
-            <div className="mt-4 flex gap-3">
-              <button
-                onClick={openDndSettings}
-                className="flex-1 rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground"
-              >
-                Open settings
-              </button>
-              <button
-                onClick={() => setDndRequired(false)}
-                className="flex-1 rounded-full border border-hairline bg-background px-5 py-3 text-sm font-medium"
-              >
-                I've enabled it
-              </button>
-            </div>
-          </div>
-        )}
 
         <button
           onClick={begin}
@@ -296,7 +292,82 @@ function Commit() {
           {mode === "verified" && !confirmVerified ? "Continue" : "Commit Now"}
         </button>
       </div>
+
+      {/* Verified session warning + DND gate */}
+      {verifiedWarn && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-t-4xl bg-card p-6 pb-10 shadow-lift">
+            <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-accent/15 text-primary">
+              <ShieldCheck className="h-5 w-5" />
+            </span>
+            <h2 className="mt-4 font-display text-xl font-semibold">
+              Before you start a Verified session
+            </h2>
+            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+              {[
+                "You cannot leave the app — Home, Recents or switching apps fails the session immediately.",
+                "The Back button is disabled while the session is running.",
+                "Do Not Disturb must stay on; emergency calls have a 60 second grace window.",
+                "Your committed amount is returned only when you finish.",
+              ].map((t) => (
+                <li key={t} className="flex gap-2">
+                  <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-muted-foreground/60" />
+                  {t}
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-5 rounded-2xl border border-hairline bg-background p-4">
+              {dndReady ? (
+                <p className="flex items-center gap-2 text-sm font-medium text-primary">
+                  <Check className="h-4 w-4" strokeWidth={3} />
+                  DND Enabled ✓
+                </p>
+              ) : (
+                <>
+                  <p className="text-sm font-medium text-foreground">
+                    Do Not Disturb is off
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Turn it on, then come back — we'll verify it automatically.
+                  </p>
+                  <button
+                    onClick={openDndSettings}
+                    className="mt-3 w-full rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground"
+                  >
+                    Turn On Do Not Disturb
+                  </button>
+                </>
+              )}
+            </div>
+
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <button
+                onClick={() => {
+                  setVerifiedWarn(false);
+                  setMode("standard");
+                  setConfirmVerified(false);
+                }}
+                className="rounded-2xl bg-secondary px-4 py-3 text-sm font-medium text-secondary-foreground"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={!dndReady}
+                onClick={() => {
+                  setConfirmVerified(true);
+                  setVerifiedWarn(false);
+                }}
+                className="rounded-2xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
+              >
+                I understand
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+
   );
 }
 
