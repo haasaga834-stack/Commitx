@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { ChevronLeft, Check } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ChevronLeft, Check, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   useAppState,
