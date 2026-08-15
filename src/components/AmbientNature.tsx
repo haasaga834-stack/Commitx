@@ -14,7 +14,11 @@ const PARTICLES = [
   { left: "36%", top: "62%", delay: "3.1s", size: 6 },
   { left: "84%", top: "70%", delay: "2.2s", size: 4 },
   { left: "56%", top: "40%", delay: "4.4s", size: 5 },
+  { left: "8%", top: "48%", delay: "5.6s", size: 3 },
+  { left: "64%", top: "84%", delay: "6.8s", size: 4 },
+  { left: "44%", top: "12%", delay: "2.9s", size: 3 },
 ];
+
 
 /**
  * Soft, hand-painted nature backdrop: gentle clouds, drifting leaves and
