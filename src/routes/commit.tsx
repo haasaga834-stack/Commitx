@@ -43,7 +43,28 @@ function Commit() {
   const [confirmVerified, setConfirmVerified] = useState(false);
   const [preferReal, setPreferReal] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [dndRequired, setDndRequired] = useState(false);
+  const [verifiedWarn, setVerifiedWarn] = useState(false);
+  const [dndOn, setDndOn] = useState<boolean | null>(null);
+
+  const dndCheckable = canCheckDnd();
+
+  // Verify DND state whenever the warning is open (and after returning from settings).
+  useEffect(() => {
+    if (!verifiedWarn) return;
+    const check = () => setDndOn(isDndEnabled());
+    check();
+    const id = window.setInterval(check, 1000);
+    const onVis = () => check();
+    document.addEventListener("visibilitychange", onVis);
+    window.addEventListener("focus", onVis);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("focus", onVis);
+    };
+  }, [verifiedWarn]);
+
+  const dndReady = !dndCheckable || dndOn === true;
 
   const finalGoal = goal === "Custom" ? customGoal.trim() || "Custom" : goal;
 
@@ -62,13 +83,9 @@ function Commit() {
       return;
     }
     setError(null);
-    if (mode === "verified" && !confirmVerified) {
-      setConfirmVerified(true);
-      return;
-    }
-    // Verified sessions require Do Not Disturb before they may start.
-    if (mode === "verified" && canCheckDnd() && isDndEnabled() === false) {
-      setDndRequired(true);
+    // Verified sessions must be acknowledged and require Do Not Disturb.
+    if (mode === "verified" && (!confirmVerified || !dndReady)) {
+      setVerifiedWarn(true);
       return;
     }
     const params = new URLSearchParams({
@@ -80,6 +97,7 @@ function Commit() {
     });
     navigate({ to: "/session", search: Object.fromEntries(params) as Record<string, string> });
   }
+
 
   function clampValue(next: number) {
     const n = Math.round(next);
