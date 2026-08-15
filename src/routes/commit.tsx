@@ -366,9 +366,8 @@ function Commit() {
           </div>
         </div>
       )}
-
-      </div>
     </div>
+
   );
 }
 
