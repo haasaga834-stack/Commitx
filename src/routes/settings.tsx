@@ -121,74 +121,31 @@ function Settings() {
           <h1 className="font-display text-2xl font-semibold">Settings</h1>
         </div>
 
-        <Link
-          to="/how-it-works"
-          className="mt-6 flex items-center gap-3 rounded-3xl bg-card p-5 shadow-soft"
-        >
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/15 text-primary">
-            <BookOpen className="h-4 w-4" />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-sm font-medium text-foreground">
+        {/* Quick actions */}
+        <div className="mt-6 grid grid-cols-2 gap-3">
+          <Link
+            to="/how-it-works"
+            className="flex flex-col items-start gap-2 rounded-3xl bg-card p-4 shadow-soft"
+          >
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/15 text-primary">
+              <BookOpen className="h-4 w-4" />
+            </span>
+            <span className="text-xs font-medium leading-tight text-foreground">
               How CommitX works
             </span>
-            <span className="block text-xs text-muted-foreground">
-              Commitments, modes, demo money and Food Coins
-            </span>
-          </span>
-          <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-        </Link>
-
-        {native && (
+          </Link>
           <button
             onClick={rateApp}
-            className="mt-4 flex w-full items-center gap-3 rounded-3xl bg-card p-5 text-left shadow-soft"
+            className="flex flex-col items-start gap-2 rounded-3xl bg-card p-4 text-left shadow-soft"
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/15 text-primary">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/15 text-primary">
               <Star className="h-4 w-4" />
             </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-sm font-medium text-foreground">
-                Rate CommitX
-              </span>
-              <span className="block text-xs text-muted-foreground">
-                Share a quick rating on Google Play
-              </span>
+            <span className="text-xs font-medium leading-tight text-foreground">
+              Rate CommitX
             </span>
-            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
           </button>
-        )}
-
-        {!native && (
-          <div className="mt-4 grid gap-3">
-            <Link
-              to="/about"
-              className="flex items-center gap-3 rounded-3xl bg-card p-5 shadow-soft"
-            >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/15 text-primary">
-                <Info className="h-4 w-4" />
-              </span>
-              <span className="min-w-0 flex-1 text-sm font-medium text-foreground">
-                About us
-              </span>
-              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-            </Link>
-            <Link
-              to="/contact"
-              className="flex items-center gap-3 rounded-3xl bg-card p-5 shadow-soft"
-            >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/15 text-primary">
-                <Mail className="h-4 w-4" />
-              </span>
-              <span className="min-w-0 flex-1 text-sm font-medium text-foreground">
-                Contact us
-              </span>
-              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-            </Link>
-          </div>
-        )}
-
-
+        </div>
 
         {/* Appearance */}
         <p className="mt-9 text-xs uppercase tracking-widest text-muted-foreground">
@@ -224,6 +181,36 @@ function Settings() {
             </button>
           </div>
         </div>
+
+        {!native && (
+          <div className="mt-4 grid gap-3">
+            <Link
+              to="/about"
+              className="flex items-center gap-3 rounded-3xl bg-card p-5 shadow-soft"
+            >
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/15 text-primary">
+                <Info className="h-4 w-4" />
+              </span>
+              <span className="min-w-0 flex-1 text-sm font-medium text-foreground">
+                About us
+              </span>
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+            </Link>
+            <Link
+              to="/contact"
+              className="flex items-center gap-3 rounded-3xl bg-card p-5 shadow-soft"
+            >
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/15 text-primary">
+                <Mail className="h-4 w-4" />
+              </span>
+              <span className="min-w-0 flex-1 text-sm font-medium text-foreground">
+                Contact us
+              </span>
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+            </Link>
+          </div>
+        )}
+
 
         {/* Notifications & screen time */}
         <p className="mt-9 text-xs uppercase tracking-widest text-muted-foreground">
