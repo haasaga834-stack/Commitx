@@ -1,12 +1,9 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Bell, Flame } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Hourglass } from "@/components/Hourglass";
 import { MobileShell } from "@/components/BottomNav";
 import { FoodCoins } from "@/components/FoodCoins";
 import { DailyGoalProgress } from "@/components/DailyGoalProgress";
-import { NextUpCard } from "@/components/NextUpCard";
-import { TodaysPlan } from "@/components/TodaysPlan";
-import { StudyInsightsCard } from "@/components/StudyInsightsCard";
+
 
 import { useAppState, stats } from "@/lib/commitx-store";
 import { useCommunityFoodCoins } from "@/lib/community";
@@ -38,7 +35,6 @@ function greeting() {
 }
 
 function Home() {
-  const navigate = useNavigate();
   const { state, hydrated } = useAppState();
   const s = stats(state.sessions);
   const community = useCommunityFoodCoins();
@@ -49,6 +45,7 @@ function Home() {
     .slice(0, 2)
     .join("");
 
+
   const focusToday =
     s.todayMinutes >= 60
       ? `${Math.floor(s.todayMinutes / 60)}h ${s.todayMinutes % 60}m`
@@ -57,85 +54,57 @@ function Home() {
   return (
     <MobileShell>
       <div className="px-6 pt-14">
-        {/* Greeting + profile */}
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 animate-fade-up">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 animate-fade-up">
           <div className="min-w-0">
             <p className="text-sm text-muted-foreground">{greeting()},</p>
             <h1 className="mt-1 truncate text-3xl font-semibold text-foreground">
               {hydrated ? firstName : "\u00A0"}
             </h1>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <Link
-              to="/settings"
-              aria-label="Notifications and settings"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-hairline bg-card text-foreground shadow-soft"
-            >
-              <Bell className="h-4 w-4" />
-            </Link>
-            <Link
-              to="/profile"
-              aria-label="Your profile"
-              className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-primary font-display text-base font-semibold text-primary-foreground shadow-soft"
-            >
-              {hydrated && state.profile.photo ? (
-                <img
-                  src={state.profile.photo}
-                  alt="Your profile photo"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <span>{hydrated ? initials : ""}</span>
-              )}
-            </Link>
-          </div>
+          <Link
+            to="/profile"
+            aria-label="Your profile"
+            className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary font-display text-base font-semibold text-primary-foreground shadow-soft"
+          >
+            {hydrated && state.profile.photo ? (
+              <img
+                src={state.profile.photo}
+                alt="Your profile photo"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <span>{hydrated ? initials : ""}</span>
+            )}
+          </Link>
         </div>
 
-        {/* Streak · focus today · Food Coins */}
+
         <div
-          className="mt-5 flex gap-2 animate-fade-up"
+          className="mt-6 flex gap-3 animate-fade-up"
           style={{ animationDelay: "80ms" }}
         >
-          <StatChip
-            label="Day streak"
-            value={`${s.streak}`}
-            icon={<Flame className="h-3 w-3" />}
-          />
+          <StatChip label="Current streak" value={`${s.streak} ${s.streak === 1 ? "day" : "days"}`} />
           <StatChip label="Focus today" value={focusToday} />
-          <StatChip label="Food Coins" value={hydrated ? `${s.foodCoins}` : "—"} />
         </div>
 
-        {/* Primary focus */}
-        <div className="mt-6 animate-fade-up" style={{ animationDelay: "140ms" }}>
-          <NextUpCard onStart={() => navigate({ to: "/commit" })} />
-        </div>
-
-        {/* Today's plan */}
-        <div className="mt-4 animate-fade-up" style={{ animationDelay: "200ms" }}>
-          <TodaysPlan />
-        </div>
-
-        {/* Study insights */}
-        <div className="mt-4 animate-fade-up" style={{ animationDelay: "240ms" }}>
-          <StudyInsightsCard />
-        </div>
-
-        {/* Current commitment */}
         <div
-          className="mt-8 flex flex-col items-center animate-fade-up"
-          style={{ animationDelay: "300ms" }}
+          className="mt-10 flex flex-col items-center animate-fade-up"
+          style={{ animationDelay: "160ms" }}
         >
-          <Hourglass size={220} state="idle" />
+          <Hourglass size={240} state="idle" />
           <p className="mt-6 text-center text-sm text-muted-foreground">
             One promise at a time.
           </p>
         </div>
 
-        <div className="mt-6 animate-fade-up" style={{ animationDelay: "340ms" }}>
+        <div className="mt-8 animate-fade-up" style={{ animationDelay: "200ms" }}>
           <DailyGoalProgress todayMinutes={s.todayMinutes} hydrated={hydrated} />
         </div>
 
-        <div className="mt-4 animate-fade-up" style={{ animationDelay: "380ms" }}>
+        <div
+          className="mt-6 animate-fade-up"
+          style={{ animationDelay: "260ms" }}
+        >
           <Link
             to="/commit"
             className="block w-full rounded-full bg-primary px-8 py-5 text-center text-base font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.98]"
@@ -144,7 +113,11 @@ function Home() {
           </Link>
         </div>
 
-        <div className="mt-8 mb-4 animate-fade-up" style={{ animationDelay: "420ms" }}>
+
+        <div
+          className="mt-8 mb-4 animate-fade-up"
+          style={{ animationDelay: "320ms" }}
+        >
           <FoodCoins
             userCoins={s.foodCoins}
             milestone={1000}
@@ -152,27 +125,19 @@ function Home() {
             hydrated={hydrated && community.loaded}
           />
         </div>
+
       </div>
     </MobileShell>
   );
 }
 
-function StatChip({
-  label,
-  value,
-  icon,
-}: {
-  label: string;
-  value: string;
-  icon?: React.ReactNode;
-}) {
+function StatChip({ label, value }: { label: string; value: string }) {
   return (
-    <div className="min-w-0 flex-1 rounded-2xl bg-card px-3 py-3 shadow-soft">
-      <p className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground">
-        {icon}
-        <span className="truncate">{label}</span>
+    <div className="flex-1 rounded-2xl bg-card px-4 py-3 shadow-soft">
+      <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+        {label}
       </p>
-      <p className="mt-1 truncate text-base font-semibold text-foreground">{value}</p>
+      <p className="mt-1 text-lg font-semibold text-foreground">{value}</p>
     </div>
   );
 }
