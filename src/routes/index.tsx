@@ -1,12 +1,16 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Hourglass } from "@/components/Hourglass";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useMemo } from "react";
+import { Bell, CalendarDays, Clock, Flame, Hourglass as HourglassIcon, Leaf, Sparkles, TrendingUp, Trophy } from "lucide-react";
 import { MobileShell } from "@/components/BottomNav";
 import { FoodCoins } from "@/components/FoodCoins";
 import { DailyGoalProgress } from "@/components/DailyGoalProgress";
+import { SwipeToStart } from "@/components/SwipeToStart";
+import cozyStudy from "@/assets/cozy-study.jpg";
 
-
-import { useAppState, stats } from "@/lib/commitx-store";
+import { useAppState, stats, formatINR, MIN_COMMIT } from "@/lib/commitx-store";
 import { useCommunityFoodCoins } from "@/lib/community";
+import { analyze, formatHours } from "@/lib/analytics-data";
+import { usePlans, nextOccurrence, formatTime, formatDuration } from "@/lib/planner";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -35,88 +39,262 @@ function greeting() {
 }
 
 function Home() {
+  const navigate = useNavigate();
   const { state, hydrated } = useAppState();
   const s = stats(state.sessions);
+  const a = useMemo(() => analyze(state.sessions), [state.sessions]);
   const community = useCommunityFoodCoins();
+  const { plans, hydrated: plansHydrated } = usePlans();
   const firstName = state.profile.name.split(" ")[0];
-  const initials = state.profile.name
-    .split(" ")
-    .map((n) => n[0])
-    .slice(0, 2)
-    .join("");
 
+  // Today's scheduled sessions, soonest first (real planner data only).
+  const todays = useMemo(() => {
+    const today = new Date().toDateString();
+    return plans
+      .map((p) => ({ plan: p, at: nextOccurrence(p) }))
+      .filter((r) => new Date(r.at).toDateString() === today)
+      .sort((x, y) => x.at - y.at);
+  }, [plans]);
 
-  const focusToday =
-    s.todayMinutes >= 60
-      ? `${Math.floor(s.todayMinutes / 60)}h ${s.todayMinutes % 60}m`
-      : `${s.todayMinutes}m`;
+  const next = todays[0] ?? null;
+  const lastValue = state.sessions[0]?.value ?? MIN_COMMIT;
 
   return (
     <MobileShell>
-      <div className="px-6 pt-14">
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 animate-fade-up">
+      <div className="px-5 pt-12">
+        {/* Header */}
+        <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 animate-fade-up">
           <div className="min-w-0">
-            <p className="text-sm text-muted-foreground">{greeting()},</p>
-            <h1 className="mt-1 truncate text-3xl font-semibold text-foreground">
-              {hydrated ? firstName : "\u00A0"}
+            <p className="text-xs text-muted-foreground">{greeting()},</p>
+            <h1 className="mt-0.5 flex min-w-0 items-center gap-1.5 text-2xl font-semibold text-foreground">
+              <span className="truncate">{hydrated ? firstName : "\u00A0"}</span>
+              <Leaf className="h-4 w-4 shrink-0 text-primary" />
             </h1>
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              Discipline today, success tomorrow.
+            </p>
           </div>
-          <Link
-            to="/profile"
-            aria-label="Your profile"
-            className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary font-display text-base font-semibold text-primary-foreground shadow-soft"
-          >
-            {hydrated && state.profile.photo ? (
-              <img
-                src={state.profile.photo}
-                alt="Your profile photo"
-                className="h-full w-full object-cover"
+
+          <div className="flex shrink-0 items-center gap-2">
+            <TopChip
+              icon="🔥"
+              value={hydrated ? String(s.streak) : "—"}
+              label="Day streak"
+            />
+            <TopChip
+              icon="🪙"
+              value={hydrated ? String(s.foodCoins) : "—"}
+              label="Food Coins"
+            />
+            <Link
+              to="/settings"
+              aria-label="Notifications"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-card text-foreground shadow-soft"
+            >
+              <Bell className="h-4 w-4" />
+            </Link>
+          </div>
+        </header>
+
+        {/* What should I do next? */}
+        <section
+          className="mt-5 overflow-hidden rounded-3xl border border-hairline bg-card shadow-soft animate-fade-up"
+          style={{ animationDelay: "60ms" }}
+        >
+          <div className="relative">
+            <img
+              src={cozyStudy}
+              alt="Hand-painted study desk by a sunlit window"
+              width={1024}
+              height={768}
+              loading="lazy"
+              className="h-28 w-full object-cover opacity-95"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent" />
+            <h2 className="absolute bottom-2 left-4 flex items-center gap-1.5 font-display text-lg font-semibold text-foreground">
+              What should I do next?
+              <Sparkles className="h-4 w-4 text-accent" />
+            </h2>
+          </div>
+
+          <div className="p-4 pt-2">
+            <div className="rounded-2xl bg-background p-3.5">
+              {plansHydrated && next ? (
+                <>
+                  <p className="truncate text-base font-semibold text-foreground">
+                    {next.plan.subject}
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">
+                    Scheduled {formatTime(next.plan.time)}
+                  </p>
+
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <MiniFact
+                      icon={<Clock className="h-3.5 w-3.5" />}
+                      label="Target duration"
+                      value={formatDuration(next.plan.durationMinutes)}
+                    />
+                    <MiniFact
+                      icon={<span className="text-[12px] leading-none">₹</span>}
+                      label="Commitment"
+                      value={formatINR(lastValue)}
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-base font-semibold text-foreground">
+                    {plansHydrated ? "Nothing scheduled today" : "\u00A0"}
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">
+                    Add a study plan, or start a commitment right now.
+                  </p>
+                </>
+              )}
+            </div>
+
+            <div className="mt-3.5">
+              <SwipeToStart
+                label="Swipe to Start Commitment"
+                onStart={() => navigate({ to: "/commit" })}
               />
-            ) : (
-              <span>{hydrated ? initials : ""}</span>
-            )}
+            </div>
+          </div>
+        </section>
+
+        {/* Today's Plan */}
+        <section
+          className="mt-4 rounded-3xl border border-hairline bg-card p-4 shadow-soft animate-fade-up"
+          style={{ animationDelay: "120ms" }}
+        >
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-display text-base font-semibold text-foreground">
+              Today's Plan
+            </h2>
+            <Link to="/planner" className="text-[11px] font-medium text-primary">
+              View all
+            </Link>
+          </div>
+
+          {plansHydrated && todays.length > 0 ? (
+            <ul className="mt-3 divide-y divide-hairline">
+              {todays.slice(0, 3).map(({ plan, at }) => (
+                <li key={plan.id} className="flex items-center gap-3 py-2.5">
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium text-foreground">
+                      {plan.subject}
+                    </span>
+                    <span className="block text-[11px] text-muted-foreground">
+                      {formatDuration(plan.durationMinutes)}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-[11px] text-muted-foreground">
+                    Today, {formatTime(plan.time)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-3 text-xs text-muted-foreground">
+              {plansHydrated ? "No sessions planned for today yet." : "\u00A0"}
+            </p>
+          )}
+
+          <Link
+            to="/planner"
+            className="mt-3 flex items-center gap-2 rounded-2xl bg-background px-3.5 py-2.5"
+          >
+            <CalendarDays className="h-4 w-4 shrink-0 text-primary" />
+            <span className="min-w-0 flex-1 truncate text-xs text-foreground">
+              {plansHydrated
+                ? `${todays.length} ${todays.length === 1 ? "task" : "tasks"} planned`
+                : "\u00A0"}
+            </span>
+            <span className="shrink-0 text-[11px] text-muted-foreground">Open</span>
           </Link>
-        </div>
+        </section>
 
-
-        <div
-          className="mt-6 flex gap-3 animate-fade-up"
-          style={{ animationDelay: "80ms" }}
+        {/* Study Insights */}
+        <section
+          className="mt-4 rounded-3xl border border-hairline bg-card p-4 shadow-soft animate-fade-up"
+          style={{ animationDelay: "180ms" }}
         >
-          <StatChip label="Current streak" value={`${s.streak} ${s.streak === 1 ? "day" : "days"}`} />
-          <StatChip label="Focus today" value={focusToday} />
-        </div>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-display text-base font-semibold text-foreground">
+              Study Insights
+            </h2>
+            <Link to="/analytics" className="text-[11px] font-medium text-primary">
+              See all
+            </Link>
+          </div>
 
-        <div
-          className="mt-10 flex flex-col items-center animate-fade-up"
-          style={{ animationDelay: "160ms" }}
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <Insight
+              icon={<CalendarDays className="h-3.5 w-3.5" />}
+              label="This week"
+              value={hydrated ? formatHours(a.weeklyMinutes) : "—"}
+            />
+            <Insight
+              icon={<TrendingUp className="h-3.5 w-3.5" />}
+              label="Success rate"
+              value={hydrated ? `${s.successRate}%` : "—"}
+            />
+            <Insight
+              icon={<Clock className="h-3.5 w-3.5" />}
+              label="Avg daily"
+              value={hydrated ? formatHours(a.averageDailyMinutes) : "—"}
+            />
+            <Insight
+              icon={<Trophy className="h-3.5 w-3.5" />}
+              label="Longest streak"
+              value={hydrated ? `${s.longest}d` : "—"}
+            />
+          </div>
+        </section>
+
+        {/* Current Commit Now */}
+        <section
+          className="mt-4 animate-fade-up"
+          style={{ animationDelay: "240ms" }}
         >
-          <Hourglass size={240} state="idle" />
-          <p className="mt-6 text-center text-sm text-muted-foreground">
-            One promise at a time.
-          </p>
-        </div>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-display text-base font-semibold text-foreground">
+              Current Commit Now
+            </h2>
+            <Link to="/history" className="text-[11px] font-medium text-primary">
+              View all
+            </Link>
+          </div>
 
-        <div className="mt-8 animate-fade-up" style={{ animationDelay: "200ms" }}>
+          <div className="mt-2.5 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-3xl border border-hairline bg-card p-4 shadow-soft">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/15 text-primary">
+              <HourglassIcon className="h-4.5 w-4.5" />
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium text-foreground">
+                No active commitment
+              </p>
+              <p className="truncate text-[11px] text-muted-foreground">
+                Start a commitment and stay consistent!
+              </p>
+            </div>
+            <Link
+              to="/commit"
+              className="shrink-0 rounded-full bg-primary px-4 py-2 text-xs font-medium text-primary-foreground"
+            >
+              Start Now
+            </Link>
+          </div>
+        </section>
+
+        {/* Daily goal + community impact */}
+        <div className="mt-4 animate-fade-up" style={{ animationDelay: "300ms" }}>
           <DailyGoalProgress todayMinutes={s.todayMinutes} hydrated={hydrated} />
         </div>
 
         <div
-          className="mt-6 animate-fade-up"
-          style={{ animationDelay: "260ms" }}
-        >
-          <Link
-            to="/commit"
-            className="block w-full rounded-full bg-primary px-8 py-5 text-center text-base font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.98]"
-          >
-            Commit Now
-          </Link>
-        </div>
-
-
-        <div
-          className="mt-8 mb-4 animate-fade-up"
-          style={{ animationDelay: "320ms" }}
+          className="mt-4 mb-4 animate-fade-up"
+          style={{ animationDelay: "360ms" }}
         >
           <FoodCoins
             userCoins={s.foodCoins}
@@ -125,19 +303,71 @@ function Home() {
             hydrated={hydrated && community.loaded}
           />
         </div>
-
       </div>
     </MobileShell>
   );
 }
 
-function StatChip({ label, value }: { label: string; value: string }) {
+function TopChip({
+  icon,
+  value,
+  label,
+}: {
+  icon: string;
+  value: string;
+  label: string;
+}) {
   return (
-    <div className="flex-1 rounded-2xl bg-card px-4 py-3 shadow-soft">
-      <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-        {label}
+    <div className="rounded-2xl bg-card px-2.5 py-1.5 text-center shadow-soft">
+      <p className="text-xs font-semibold text-foreground tabular-nums">
+        <span className="mr-0.5">{icon}</span>
+        {value}
       </p>
-      <p className="mt-1 text-lg font-semibold text-foreground">{value}</p>
+      <p className="text-[9px] leading-tight text-muted-foreground">{label}</p>
+    </div>
+  );
+}
+
+function MiniFact({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center gap-2 rounded-xl bg-card px-2.5 py-2">
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent/15 text-primary">
+        {icon}
+      </span>
+      <span className="min-w-0">
+        <span className="block truncate text-sm font-semibold text-foreground tabular-nums">
+          {value}
+        </span>
+        <span className="block truncate text-[10px] text-muted-foreground">{label}</span>
+      </span>
+    </div>
+  );
+}
+
+function Insight({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-2xl bg-background px-3 py-2.5">
+      <div className="flex items-center gap-1.5 text-muted-foreground">
+        {icon}
+        <p className="min-w-0 truncate text-[10px] uppercase tracking-wider">{label}</p>
+      </div>
+      <p className="mt-0.5 text-sm font-semibold text-foreground tabular-nums">{value}</p>
     </div>
   );
 }
