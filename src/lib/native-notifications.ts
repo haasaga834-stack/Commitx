@@ -4,9 +4,27 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import type { TodoItem } from "@/lib/planner";
+import { getState, setState } from "@/lib/commitx-store";
 
 function bridge() {
   return typeof window === "undefined" ? undefined : window.CommitXAndroid;
+}
+
+/** The user's own notification preference (persisted per account). */
+export function notificationsAllowed() {
+  return getState().notificationsEnabled !== false;
+}
+
+/** Turn CommitX notifications on/off for this user; clears live ones when off. */
+export function setNotificationsAllowed(allowed: boolean) {
+  setState((s) => ({ ...s, notificationsEnabled: allowed }));
+  if (!allowed) {
+    clearTodoNotification();
+    hideSessionProgress();
+    try {
+      bridge()?.syncStudyPlans?.("[]");
+    } catch {}
+  }
 }
 
 /* --------------------------- Permission handling ------------------------- */
@@ -78,7 +96,8 @@ export function useNotificationPermission() {
 export function syncTodoNotification(todos: TodoItem[]) {
   try {
     const payload = todos.map((t) => ({ id: t.id, text: t.text, done: t.done }));
-    if (payload.length === 0) bridge()?.clearTodoNotification?.();
+    if (payload.length === 0 || !notificationsAllowed())
+      bridge()?.clearTodoNotification?.();
     else bridge()?.syncTodos?.(JSON.stringify(payload));
   } catch {}
 }
@@ -104,7 +123,7 @@ export function syncStudyPlanReminders(
   }[],
 ) {
   try {
-    bridge()?.syncStudyPlans?.(JSON.stringify(plans));
+    bridge()?.syncStudyPlans?.(JSON.stringify(notificationsAllowed() ? plans : []));
   } catch {}
 }
 
@@ -113,6 +132,7 @@ export function syncStudyPlanReminders(
 
 export function showSessionProgress(title: string, text: string, progress: number) {
   try {
+    if (!notificationsAllowed()) return bridge()?.hideSessionProgress?.();
     bridge()?.showSessionProgress?.(title, text, Math.round(progress));
   } catch {}
 }

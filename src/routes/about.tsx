@@ -49,9 +49,9 @@ function About() {
             wallet. Walk away, and it doesn't.
           </p>
           <p>
-            Every completed hour also earns a Food Coin. As CommitX grows, Food
-            Coins will be transformed into real meals funded by CommitX —
-            <span className="text-foreground"> turning discipline into impact.</span>
+            Every completed hour also earns a Cx Coin — a simple reward for
+            consistency, which will become redeemable for Cx Coupons as CommitX
+            grows.<span className="text-foreground"> Turning discipline into progress.</span>
           </p>
           <p>
             CommitX is currently in its trial phase. Real-money deposits and

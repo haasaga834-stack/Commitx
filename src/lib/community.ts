@@ -38,7 +38,7 @@ export function useLeaderboard(limit = 10) {
   return { rows, loading };
 }
 
-/** Total Food Coins earned by the whole community (1 per completed focus hour). */
+/** Total Cx Coins earned by the whole community (1 per completed focus hour). */
 export function useCommunityFoodCoins() {
   const [coins, setCoins] = useState(0);
   const [loaded, setLoaded] = useState(false);

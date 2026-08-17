@@ -11,21 +11,22 @@ import {
   FlaskConical,
 } from "lucide-react";
 import { formatINR, MIN_COMMIT, MAX_COMMIT } from "@/lib/commitx-store";
+import { CxCoin } from "@/components/CxCoin";
 
 export const Route = createFileRoute("/how-it-works")({
   head: () => ({
     meta: [
-      { title: "How CommitX Works — Commitments, Modes & Food Coins" },
+      { title: "How CommitX Works — Commitments, Modes & Cx Coins" },
       {
         name: "description",
         content:
-          "Understand CommitX commitments, Standard and Verified Mode, demo money, Food Coins, success and failure rules, and the beta phase.",
+          "Understand CommitX commitments, Standard and Verified Mode, demo money, Cx Coins & Cx Coupons, success and failure rules, and the beta phase.",
       },
       { property: "og:title", content: "How CommitX Works" },
       {
         property: "og:description",
         content:
-          "Commitments, Standard vs Verified Mode, demo money, Food Coins and what happens on success or failure.",
+          "Commitments, Standard vs Verified Mode, demo money, Cx Coins & Cx Coupons and what happens on success or failure.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -105,14 +106,14 @@ function HowItWorks() {
           />
 
           <Section
-            icon={<span className="text-sm">🪙</span>}
-            title="Food Coins"
+            icon={<CxCoin className="h-4 w-4" />}
+            title="Cx Coins & Cx Coupons"
             delay={240}
             points={[
-              "Every completed hour of focus earns 1 Food Coin.",
-              "Coins add to a community total shared by everyone using CommitX.",
-              "As CommitX grows, Food Coins will be turned into real meals funded by CommitX.",
-              "Together, we’re turning discipline into impact.",
+              "Every completed hour of focus earns 1 Cx Coin.",
+              "Cx Coins are a reward for consistency — they are never bought and never withdrawn.",
+              "Saved Cx Coins will be redeemable for Cx Coupons as CommitX grows.",
+              "Your Cx Coin balance appears in the Home top banner.",
             ]}
           />
 

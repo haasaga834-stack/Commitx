@@ -1,14 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, type ReactNode } from "react";
-import { Bell, CalendarDays, Clock, Coins, Flame, Hourglass as HourglassIcon, Leaf, Sparkles, TrendingUp, Trophy } from "lucide-react";
+import { Bell, CalendarDays, Clock, Flame, Hourglass as HourglassIcon, Leaf, Sparkles, TrendingUp, Trophy } from "lucide-react";
 import { MobileShell } from "@/components/BottomNav";
-import { FoodCoins } from "@/components/FoodCoins";
+import { CxCoin } from "@/components/CxCoin";
 import { DailyGoalProgress } from "@/components/DailyGoalProgress";
 import { SwipeToStart } from "@/components/SwipeToStart";
 import cozyStudy from "@/assets/cozy-study.jpg";
 
 import { useAppState, stats, formatINR, MIN_COMMIT } from "@/lib/commitx-store";
-import { useCommunityFoodCoins } from "@/lib/community";
 import { analyze, formatHours } from "@/lib/analytics-data";
 import { usePlans, nextOccurrence, formatTime, formatDuration } from "@/lib/planner";
 
@@ -43,7 +42,7 @@ function Home() {
   const { state, hydrated } = useAppState();
   const s = stats(state.sessions);
   const a = useMemo(() => analyze(state.sessions), [state.sessions]);
-  const community = useCommunityFoodCoins();
+  
   const { plans, hydrated: plansHydrated } = usePlans();
   const firstName = state.profile.name.split(" ")[0];
 
@@ -77,18 +76,19 @@ function Home() {
 
           <div className="flex shrink-0 items-center gap-2">
             <TopChip
-              icon={<Flame className="h-3.5 w-3.5 text-accent" />}
-              value={hydrated ? String(s.streak) : "—"}
-              label="Day streak"
+              icon={<CxCoin className="h-4 w-4" />}
+              value={hydrated ? String(s.foodCoins) : "—"}
+              srLabel="Cx Coins"
             />
             <TopChip
-              icon={<Coins className="h-3.5 w-3.5 text-primary" />}
-              value={hydrated ? String(s.foodCoins) : "—"}
-              label="Food Coins"
+              icon={<Flame className="h-4 w-4 text-accent" />}
+              value={hydrated ? String(s.streak) : "—"}
+              srLabel="Day streak"
             />
             <Link
               to="/settings"
-              aria-label="Notifications"
+              hash="notifications"
+              aria-label="Notification settings"
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-card text-foreground shadow-soft"
             >
               <Bell className="h-4 w-4" />
@@ -287,21 +287,9 @@ function Home() {
           </div>
         </section>
 
-        {/* Daily goal + community impact */}
-        <div className="mt-4 animate-fade-up" style={{ animationDelay: "300ms" }}>
+        {/* Daily goal */}
+        <div className="mt-4 mb-4 animate-fade-up" style={{ animationDelay: "300ms" }}>
           <DailyGoalProgress todayMinutes={s.todayMinutes} hydrated={hydrated} />
-        </div>
-
-        <div
-          className="mt-4 mb-4 animate-fade-up"
-          style={{ animationDelay: "360ms" }}
-        >
-          <FoodCoins
-            userCoins={s.foodCoins}
-            milestone={1000}
-            communityCoins={community.coins}
-            hydrated={hydrated && community.loaded}
-          />
         </div>
       </div>
     </MobileShell>
@@ -311,19 +299,21 @@ function Home() {
 function TopChip({
   icon,
   value,
-  label,
+  srLabel,
 }: {
   icon: ReactNode;
   value: string;
-  label: string;
+  srLabel: string;
 }) {
   return (
-    <div className="rounded-2xl bg-card px-2.5 py-1.5 text-center shadow-soft">
-      <p className="flex items-center justify-center gap-1 text-xs font-semibold text-foreground tabular-nums">
-        {icon}
+    <div
+      className="flex items-center gap-1.5 rounded-full bg-card px-3 py-2 shadow-soft"
+      aria-label={srLabel}
+    >
+      {icon}
+      <span className="text-xs font-semibold text-foreground tabular-nums">
         {value}
-      </p>
-      <p className="text-[9px] leading-tight text-muted-foreground">{label}</p>
+      </span>
     </div>
   );
 }

@@ -58,6 +58,9 @@ export async function pullFromCloud(userId: string) {
 
     },
     referralCredited: Boolean(profile?.referred_by),
+    notificationsEnabled:
+      (profile as { notifications_enabled?: boolean | null } | null)
+        ?.notifications_enabled ?? true,
   };
 
   applyingRemote = true;
@@ -89,7 +92,7 @@ async function push(userId: string) {
       sex: state.profile.sex,
       education: state.profile.education,
       avatar_url: state.profile.photo || null,
-
+      notifications_enabled: state.notificationsEnabled ?? true,
     })
     .eq("id", userId);
 

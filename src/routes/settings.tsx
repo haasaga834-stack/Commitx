@@ -317,7 +317,7 @@ function Settings() {
             <h2 className="font-display text-xl font-semibold">Delete account?</h2>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               This permanently removes your profile, wallet balances, session
-              history, streaks, Food Coins and referral records. It cannot be
+              history, streaks, Cx Coins and referral records. It cannot be
               undone.
             </p>
             <div className="mt-6 grid grid-cols-2 gap-3">
