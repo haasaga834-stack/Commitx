@@ -218,7 +218,14 @@ function AuthGate({ children }: { children: ReactNode }) {
   }
 
   if (!user && pathname !== "/auth") return null;
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      {user && pathname !== "/auth" && needsOnboarding ? (
+        <Onboarding onDone={() => void complete()} />
+      ) : null}
+    </>
+  );
 }
 
 function StudyReminders() {
