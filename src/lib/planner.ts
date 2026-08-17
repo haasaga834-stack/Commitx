@@ -541,13 +541,17 @@ export async function pullPlannerFromCloud(userId: string) {
     (plans ?? []).map((r) => ({
       id: r.id,
       subject: r.subject,
+      topic: r.topic ?? undefined,
       time: r.time,
       durationMinutes: r.duration_minutes,
       repeat: r.repeat as Repeat,
+      priority: (r.priority as Priority) ?? "medium",
+      commitValue: r.commit_value ?? undefined,
       weekday: r.weekday ?? undefined,
       monthday: r.monthday ?? undefined,
       createdAt: new Date(r.created_at).getTime(),
     })),
+
   );
 
   writeTodos(
