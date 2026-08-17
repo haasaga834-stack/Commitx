@@ -17,6 +17,8 @@ import {
 import { useAuth } from "../lib/use-auth";
 import { useStudyReminders } from "../lib/planner";
 import { AmbientNature } from "../components/AmbientNature";
+import { Onboarding } from "../components/Onboarding";
+import { useOnboarding } from "../lib/onboarding";
 
 function NotFoundComponent() {
   return (
@@ -194,6 +196,8 @@ function AuthGate({ children }: { children: ReactNode }) {
   const router = useRouter();
   const { user, loading } = useAuth();
   const pathname = router.state.location.pathname;
+  const { needsOnboarding, complete } = useOnboarding(user?.id ?? null);
+
 
   useEffect(() => {
     if (loading) return;
@@ -214,7 +218,14 @@ function AuthGate({ children }: { children: ReactNode }) {
   }
 
   if (!user && pathname !== "/auth") return null;
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      {user && pathname !== "/auth" && needsOnboarding ? (
+        <Onboarding onDone={() => void complete()} />
+      ) : null}
+    </>
+  );
 }
 
 function StudyReminders() {
