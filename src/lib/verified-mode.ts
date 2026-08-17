@@ -148,3 +148,69 @@ export function finalizePendingVerifiedFailure(): VerifiedFailureOutcome | null 
     reason,
   };
 }
+/* ------------------------------------------------------------------ */
+/* Ended-session marker                                                */
+/* ------------------------------------------------------------------ */
+
+export const ENDED_SESSION_KEY = "commitx-session-ended-v1";
+
+export interface EndedSessionMarker {
+  goal: string;
+  duration: number;
+  value: number;
+  mode: Mode;
+  status: "completed" | "failed";
+  reason?: VerifiedFailureReason;
+  endedAt: number;
+}
+
+/**
+ * Records that a session has definitively ended, so reopening the timer screen
+ * (back gesture, refresh, app restart) can never resurrect a dead timer.
+ */
+export function markSessionEnded(marker: Omit<EndedSessionMarker, "endedAt">) {
+  if (!canUseStorage()) return;
+  try {
+    window.localStorage.setItem(
+      ENDED_SESSION_KEY,
+      JSON.stringify({ ...marker, endedAt: Date.now() }),
+    );
+  } catch {}
+}
+
+export function readEndedSession(): EndedSessionMarker | null {
+  if (!canUseStorage()) return null;
+  try {
+    const raw = window.localStorage.getItem(ENDED_SESSION_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return null;
+    return parsed as EndedSessionMarker;
+  } catch {
+    return null;
+  }
+}
+
+export function clearEndedSession() {
+  if (!canUseStorage()) return;
+  try {
+    window.localStorage.removeItem(ENDED_SESSION_KEY);
+  } catch {}
+}
+
+/** True when this exact commitment was already ended. */
+export function isSessionEnded(input: {
+  goal: string;
+  duration: number;
+  value: number;
+  mode: Mode;
+}) {
+  const m = readEndedSession();
+  if (!m) return false;
+  return (
+    m.goal === input.goal &&
+    m.duration === input.duration &&
+    m.value === input.value &&
+    m.mode === input.mode
+  );
+}

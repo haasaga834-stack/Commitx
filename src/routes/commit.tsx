@@ -10,6 +10,8 @@ import {
   MAX_COMMIT,
 } from "@/lib/commitx-store";
 import { canCheckDnd, isDndEnabled, openDndSettings } from "@/lib/native-session";
+import { claimActiveDbSession, releaseActiveDbSession } from "@/lib/active-session";
+import { clearEndedSession, writeActiveVerifiedSession } from "@/lib/verified-mode";
 
 export const Route = createFileRoute("/commit")({
   head: () => ({
@@ -44,6 +46,7 @@ function Commit() {
   const [error, setError] = useState<string | null>(null);
   const [verifiedWarn, setVerifiedWarn] = useState(false);
   const [dndOn, setDndOn] = useState<boolean | null>(null);
+  const [starting, setStarting] = useState(false);
 
   const dndCheckable = canCheckDnd();
 
@@ -69,7 +72,9 @@ function Commit() {
 
   const plan = useMemo(() => planDeduction(value, state.balances), [value, state.balances]);
 
-  function begin() {
+  async function begin() {
+    // Double-tap / retry guard: only one start attempt may ever be in flight.
+    if (starting) return;
     if (value < MIN_COMMIT || value > MAX_COMMIT) {
       setError(`Commitment must be between ${formatINR(MIN_COMMIT)} and ${formatINR(MAX_COMMIT)}.`);
       return;
@@ -92,15 +97,69 @@ function Commit() {
         return;
       }
     }
-    const params = new URLSearchParams({
-      goal: finalGoal,
-      duration: String(duration),
-      value: String(value),
-      mode,
-      preferReal: "0",
-    });
-    navigate({ to: "/session", search: Object.fromEntries(params) as Record<string, string> });
+
+    setStarting(true);
+    try {
+      // Only one active session per user — the database is the source of truth.
+      const claim = await claimActiveDbSession({
+        goal: finalGoal,
+        duration,
+        value,
+        mode,
+      });
+      if (!claim.ok) {
+        setError(
+          "You already have an active session running. Finish or end it before starting a new one.",
+        );
+        return;
+      }
+
+      // Final DND check immediately before the timer starts.
+      if (mode === "verified") {
+        const liveDnd = isDndEnabled();
+        setDndOn(liveDnd);
+        if (dndCheckable && liveDnd !== true) {
+          await releaseActiveDbSession();
+          setConfirmVerified(false);
+          setVerifiedWarn(true);
+          return;
+        }
+      }
+
+      // Issue the session ticket. /session refuses to run without it, so a
+      // back gesture or refresh can never resurrect an ended timer.
+      clearEndedSession();
+      writeActiveVerifiedSession({
+        goal: finalGoal,
+        duration,
+        value,
+        mode,
+        preferReal: false,
+        startedAt: Date.now(),
+        accumulatedMs: 0,
+        runningSince: Date.now(),
+        phase: "focus",
+        breakStartedAt: null,
+        confirmSince: null,
+        breaksTaken: 0,
+        nonFocusMs: 0,
+      });
+
+      navigate({
+        to: "/session",
+        search: {
+          goal: finalGoal,
+          duration: String(duration),
+          value: String(value),
+          mode,
+          preferReal: "0",
+        } as Record<string, string>,
+      });
+    } finally {
+      setStarting(false);
+    }
   }
+
 
 
   function clampValue(next: number) {
@@ -277,9 +336,14 @@ function Commit() {
 
         <button
           onClick={begin}
-          className="mt-10 block w-full rounded-full bg-primary px-8 py-5 text-center text-base font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.98]"
+          disabled={starting}
+          className="mt-10 block w-full disabled:opacity-60 rounded-full bg-primary px-8 py-5 text-center text-base font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.98]"
         >
-          {mode === "verified" && !confirmVerified ? "Continue" : "Commit Now"}
+          {starting
+            ? "Starting…"
+            : mode === "verified" && !confirmVerified
+              ? "Continue"
+              : "Commit Now"}
         </button>
       </div>
 
@@ -322,16 +386,16 @@ function Commit() {
               ) : (
                 <>
                   <p className="text-sm font-medium text-foreground">
-                    Do Not Disturb is off
+                    DND is required for Verified Mode. Please enable it in Settings.
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Turn it on, then come back — we'll verify it automatically.
+                    Turn it on, then come back — we'll re-check it automatically.
                   </p>
                   <button
                     onClick={openDndSettings}
                     className="mt-3 w-full rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground"
                   >
-                    Turn On Do Not Disturb
+                    Open Settings
                   </button>
                 </>
               )}

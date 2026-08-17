@@ -47,6 +47,36 @@ export type Database = {
         }
         Relationships: []
       }
+      active_sessions: {
+        Row: {
+          created_at: string
+          duration_minutes: number
+          goal: string
+          mode: string
+          started_at: string
+          user_id: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          duration_minutes?: number
+          goal?: string
+          mode?: string
+          started_at?: string
+          user_id: string
+          value?: number
+        }
+        Update: {
+          created_at?: string
+          duration_minutes?: number
+          goal?: string
+          mode?: string
+          started_at?: string
+          user_id?: string
+          value?: number
+        }
+        Relationships: []
+      }
       focus_sessions: {
         Row: {
           created_at: string

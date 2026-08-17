@@ -169,7 +169,7 @@ function Screen({
       </div>
 
       {/* Fixed footer CTA */}
-      <div className="shrink-0 bg-background pt-3">
+      <div className="shrink-0 border-0 bg-transparent pt-3 pb-[env(safe-area-inset-bottom)]">
         <button
           type="button"
           onClick={onCta}
@@ -246,7 +246,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
 
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-background">
+    <div className="fixed inset-0 z-50 flex min-h-screen flex-col overflow-hidden border-0 bg-background">
       <WindScape fixed={false} />
       <div className="relative mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col px-6 pb-6 pt-10">
         <div className="flex items-center justify-between">

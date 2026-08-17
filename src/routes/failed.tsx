@@ -1,4 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { setNativeSessionLock, setNativeVerifiedModeActive } from "@/lib/native-session";
 import { Hourglass } from "@/components/Hourglass";
 import { z } from "zod";
 import { formatINR } from "@/lib/commitx-store";
@@ -54,7 +56,40 @@ function reasonCopy(reason?: string) {
 
 function Failed() {
   const { goal, value, reason } = Route.useSearch();
+  const navigate = useNavigate();
   const isVerifiedBreak = Boolean(reason && reason !== "quit");
+
+  // The session is over: back navigation is neutralised here so nothing can
+  // walk back into the timer. "Return Home" is the only way out.
+  useEffect(() => {
+    setNativeSessionLock(false);
+    setNativeVerifiedModeActive(false);
+
+    const pushGuard = () => {
+      try {
+        window.history.pushState({ commitxResult: Date.now() }, "");
+      } catch {}
+    };
+    pushGuard();
+
+    const onPopState = () => {
+      pushGuard();
+      navigate({ to: "/", replace: true });
+    };
+
+    const previousBridge = window.CommitXSession;
+    window.CommitXSession = {
+      ...previousBridge,
+      onAndroidBack: () => navigate({ to: "/", replace: true }),
+    };
+
+    window.addEventListener("popstate", onPopState);
+    return () => {
+      window.CommitXSession = previousBridge;
+      window.removeEventListener("popstate", onPopState);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
     <div className="fixed inset-0 z-50 flex min-h-screen flex-col items-center justify-center bg-background px-6">
       <Hourglass size={200} state="failed" />

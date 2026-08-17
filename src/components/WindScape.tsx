@@ -16,13 +16,13 @@ const LEAF_TINTS = [
   "oklch(0.80 0.100 78)", // pale sunlight
 ];
 
-const LEAVES = Array.from({ length: 8 }, (_, i) => ({
-  top: `${10 + i * 10}%`,
-  size: 8 + ((i * 3) % 7),
-  delay: `-${i * 6.5}s`,
-  duration: `${46 + i * 6}s`,
+const LEAVES = Array.from({ length: 12 }, (_, i) => ({
+  top: `${6 + i * 7.5}%`,
+  size: 13 + ((i * 5) % 10),
+  delay: `-${i * 3.4}s`,
+  duration: `${30 + i * 3}s`,
   fill: LEAF_TINTS[i % LEAF_TINTS.length],
-  opacity: 0.34 + ((i % 3) * 0.09),
+  opacity: 0.6 + ((i % 3) * 0.12),
 }));
 
 
@@ -64,16 +64,9 @@ export function WindScape({
       />
 
 
-      {/* Flowing wind mist bands */}
-      <div className="absolute inset-x-[-20%] top-[16%] h-24 animate-wind-mist rounded-full bg-clay/25 blur-2xl" />
-      <div
-        className="absolute inset-x-[-20%] top-[42%] h-20 animate-wind-mist rounded-full bg-primary/12 blur-2xl"
-        style={{ animationDelay: "-12s", animationDuration: "38s" }}
-      />
-
       {/* Layered painted hills */}
       <svg
-        className="absolute inset-x-0 bottom-0 w-full"
+        className="absolute inset-x-0 bottom-0 block w-full"
         viewBox="0 0 400 140"
         preserveAspectRatio="none"
         fill="none"
@@ -111,7 +104,7 @@ export function WindScape({
       {LEAVES.map((l, i) => (
         <svg
           key={i}
-          className="absolute left-0 animate-wind-glide"
+          className="absolute left-0 block animate-wind-glide"
           style={{
             top: l.top,
             width: l.size,
