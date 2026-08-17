@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Hourglass } from "@/components/Hourglass";
+import { WindScape } from "@/components/WindScape";
 import { setState, formatINR, planDeduction, getState, type Mode } from "@/lib/commitx-store";
 import {
   clearActiveVerifiedSession,
@@ -627,7 +628,9 @@ function Session() {
 
   return (
     <div className="flex min-h-screen flex-col px-6 pb-10 pt-14">
+      <WindScape />
       <div className="relative flex items-center justify-center">
+
         <p className="text-xs uppercase tracking-widest text-muted-foreground">
           {isVerified ? "Verified session" : "Standard session"}
         </p>

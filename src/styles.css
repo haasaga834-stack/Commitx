@@ -195,6 +195,45 @@
 @utility animate-cloud-drift {
   animation: cloud-drift 26s ease-in-out infinite alternate;
 }
+
+/* Peaceful flowing-wind scene (sessions + onboarding) */
+@keyframes wind-sway {
+  0%, 100% { transform: skewX(-3deg) translateX(-2px); }
+  50% { transform: skewX(5deg) translateX(3px); }
+}
+@keyframes wind-across {
+  0% { transform: translate3d(-12vw, 0, 0) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.55; }
+  50% { transform: translate3d(48vw, -22px, 0) rotate(140deg); }
+  90% { opacity: 0.4; }
+  100% { transform: translate3d(112vw, 14px, 0) rotate(320deg); opacity: 0; }
+}
+@keyframes wind-mist {
+  0% { transform: translateX(-8%) scaleY(1); opacity: 0.16; }
+  50% { transform: translateX(6%) scaleY(1.06); opacity: 0.3; }
+  100% { transform: translateX(-8%) scaleY(1); opacity: 0.16; }
+}
+@keyframes wind-mote {
+  0% { transform: translate3d(0, 0, 0); opacity: 0; }
+  20% { opacity: 0.5; }
+  100% { transform: translate3d(26vw, -34px, 0); opacity: 0; }
+}
+@utility animate-wind-sway {
+  animation: wind-sway 9s ease-in-out infinite;
+  transform-origin: bottom center;
+  will-change: transform;
+}
+@utility animate-wind-across {
+  animation: wind-across 34s linear infinite;
+  will-change: transform, opacity;
+}
+@utility animate-wind-mist {
+  animation: wind-mist 30s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+@utility animate-wind-mote {
+  animation: wind-mote 22s linear infinite;
+  will-change: transform, opacity;
 @utility bg-gradient-warm {
   background-image: var(--gradient-warm);
 }

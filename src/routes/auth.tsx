@@ -1,7 +1,6 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { Hourglass } from "@/components/Hourglass";
 import { Loader2 } from "lucide-react";
 import { hasNativeGoogleSignIn, nativeGoogleSignIn } from "@/lib/native-auth";
@@ -108,15 +107,21 @@ function Auth() {
         setBusy(false);
       }
     }
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+    // Web: go straight to Google via the project's own Google OAuth client so
+    // the consent screen is branded CommitX (never Lovable).
+    setBusy(true);
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin,
+        queryParams: { prompt: "select_account" },
+      },
     });
-    if (result.error) {
+    setBusy(false);
+    if (oauthError) {
       setError("Google sign-in failed. Please try again.");
-      return;
     }
-    if (result.redirected) return;
-    router.navigate({ to: "/" });
+
   }
 
   return (
