@@ -60,8 +60,6 @@ function Wallet() {
           </div>
         </div>
 
-        <ComingSoonCard className="mt-3" />
-
         {/* Demo Balance */}
         <div className="mt-3 rounded-3xl border border-hairline bg-card p-6 shadow-soft">
           <div className="flex items-center justify-between">
@@ -76,7 +74,7 @@ function Wallet() {
             {hydrated ? formatINR(demo) : "—"}
           </p>
           <p className="mt-2 text-xs text-muted-foreground">
-            Virtual · non-withdrawable · one-time welcome credit of ₹500.
+            Virtual · non-withdrawable · one-time welcome credit of ₹300.
           </p>
           <p className="mt-4 rounded-2xl border border-hairline bg-background px-4 py-3 text-xs text-muted-foreground">
             Demo money is granted once and cannot be topped up. Complete your commitments to
@@ -151,7 +149,12 @@ function Wallet() {
       {showMoneyNotice && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/25 backdrop-blur-sm sm:items-center">
           <div className="w-full max-w-md rounded-t-3xl bg-card p-6 shadow-lift sm:rounded-3xl">
-            <ComingSoonCard />
+            <p className="text-sm font-medium text-foreground">
+              Real money deposits are not available yet
+            </p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Use your demo balance to make commitments in the meantime.
+            </p>
             <button
               onClick={() => setShowMoneyNotice(false)}
               className="mt-5 w-full rounded-full bg-foreground px-5 py-3 text-sm font-medium text-background"
@@ -166,12 +169,3 @@ function Wallet() {
   );
 }
 
-function ComingSoonCard({ className = "" }: { className?: string }) {
-  return (
-    <div className={`rounded-2xl border border-info/20 bg-info/8 p-4 text-center shadow-soft ${className}`}>
-      <p className="text-sm font-medium text-info">
-        Real money deposits coming soon
-      </p>
-    </div>
-  );
-}

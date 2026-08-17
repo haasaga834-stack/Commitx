@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Bell, CalendarDays, Clock, Flame, Hourglass as HourglassIcon, Leaf, Sparkles, TrendingUp, Trophy } from "lucide-react";
 import { MobileShell } from "@/components/BottomNav";
 import { CxCoin } from "@/components/CxCoin";
@@ -9,9 +9,11 @@ import cozyStudy from "@/assets/cozy-study.jpg";
 
 import { useAppState, stats, formatINR, MIN_COMMIT } from "@/lib/commitx-store";
 import { analyze, formatHours } from "@/lib/analytics-data";
+import { dailyMessage } from "@/lib/daily-message";
 import {
   usePlans,
-  nextOccurrence,
+  occursOn,
+  upcomingPlan,
   formatTime,
   formatDuration,
   priorityLabel,
@@ -51,17 +53,27 @@ function Home() {
   
   const { plans, hydrated: plansHydrated } = usePlans();
   const firstName = state.profile.name.split(" ")[0];
+  const message = useMemo(() => dailyMessage(), []);
 
-  // Today's scheduled sessions, soonest first (real planner data only).
-  const todays = useMemo(() => {
-    const today = new Date().toDateString();
-    return plans
-      .map((p) => ({ plan: p, at: nextOccurrence(p) }))
-      .filter((r) => new Date(r.at).toDateString() === today)
-      .sort((x, y) => x.at - y.at);
-  }, [plans]);
+  // Re-evaluate every 30s so scheduled sessions become "next" at the right time.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(id);
+  }, []);
 
-  const next = todays[0] ?? null;
+  // Today's scheduled sessions from real planner data, earliest first.
+  const todays = useMemo(
+    () =>
+      plans
+        .map((p) => ({ plan: p, at: occursOn(p, now) }))
+        .filter((r): r is { plan: typeof plans[number]; at: number } => r.at !== null)
+        .sort((x, y) => x.at - y.at),
+    [plans, now],
+  );
+
+  // Most relevant upcoming session (today's remaining ones win, else the next day).
+  const next = useMemo(() => upcomingPlan(plans, now), [plans, now]);
   const lastValue = state.sessions[0]?.value ?? MIN_COMMIT;
 
   return (
@@ -76,7 +88,7 @@ function Home() {
               <Leaf className="h-4 w-4 shrink-0 text-primary" />
             </h1>
             <p className="mt-1 text-[11px] text-muted-foreground">
-              Discipline today, success tomorrow.
+              {hydrated ? message : "\u00A0"}
             </p>
           </div>
 

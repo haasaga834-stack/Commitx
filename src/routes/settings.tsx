@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useLocation, useRouter } from "@tanstack/react-router";
 import { MobileShell } from "@/components/BottomNav";
 import { NotificationsCard } from "@/components/NotificationsCard";
 import { ScreenTimeCard } from "@/components/ScreenTimeCard";
@@ -26,13 +26,22 @@ export const Route = createFileRoute("/settings")({
   component: Settings,
 });
 
-function scrollToSection(id: string) {
+/** Scroll a Settings section into the middle of the screen and glow it briefly. */
+function revealSection(id: string) {
   const el = document.getElementById(id);
-  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (!el) return;
+  el.scrollIntoView({ behavior: "smooth", block: "center" });
+  el.classList.remove("cx-attention");
+  // restart the animation reliably
+  void el.offsetWidth;
+  el.classList.add("cx-attention");
+  window.setTimeout(() => el.classList.remove("cx-attention"), 3200);
 }
+
 
 function Settings() {
   const router = useRouter();
+  const hash = useLocation({ select: (l) => l.hash });
   const { isDark, setMode } = useTheme();
   const [native, setNative] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -47,6 +56,14 @@ function Settings() {
   useEffect(() => {
     setNative(isNativeApp());
   }, []);
+
+  // Home → Settings → Notifications (or Screen time) deep links.
+  useEffect(() => {
+    const target = hash.replace(/^#/, "");
+    if (target !== "notifications" && target !== "screen-time") return;
+    const id = window.setTimeout(() => revealSection(target), 220);
+    return () => window.clearTimeout(id);
+  }, [hash]);
 
   useEffect(() => {
     let active = true;
@@ -130,7 +147,7 @@ function Settings() {
         <div className="mt-6 grid grid-cols-2 gap-3">
           <Link
             to="/how-it-works"
-            className="flex flex-col items-start gap-2 rounded-3xl bg-card p-4 shadow-soft"
+            className="flex flex-col items-center gap-2 rounded-3xl bg-card p-4 text-center shadow-soft"
           >
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/15 text-primary">
               <BookOpen className="h-4 w-4" />
@@ -141,7 +158,7 @@ function Settings() {
           </Link>
           <button
             onClick={rateApp}
-            className="flex flex-col items-start gap-2 rounded-3xl bg-card p-4 text-left shadow-soft"
+            className="flex flex-col items-center gap-2 rounded-3xl bg-card p-4 text-center shadow-soft"
           >
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/15 text-primary">
               <Star className="h-4 w-4" />
@@ -151,8 +168,8 @@ function Settings() {
             </span>
           </button>
           <button
-            onClick={() => scrollToSection("notifications")}
-            className="flex flex-col items-start gap-2 rounded-3xl bg-card p-4 text-left shadow-soft"
+            onClick={() => revealSection("notifications")}
+            className="flex flex-col items-center gap-2 rounded-3xl bg-card p-4 text-center shadow-soft"
           >
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/15 text-primary">
               <Bell className="h-4 w-4" />
@@ -162,8 +179,8 @@ function Settings() {
             </span>
           </button>
           <button
-            onClick={() => scrollToSection("screen-time")}
-            className="flex flex-col items-start gap-2 rounded-3xl bg-card p-4 text-left shadow-soft"
+            onClick={() => revealSection("screen-time")}
+            className="flex flex-col items-center gap-2 rounded-3xl bg-card p-4 text-center shadow-soft"
           >
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/15 text-primary">
               <Timer className="h-4 w-4" />

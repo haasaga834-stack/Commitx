@@ -104,6 +104,27 @@ function toRow(row: StudyPlan, userId: string) {
 }
 
 export function addPlan(plan: Omit<StudyPlan, "id" | "createdAt">) {
+  // Prevent duplicates: same subject + time + repeat is treated as the same plan.
+  const duplicate = getPlans().find(
+    (p) =>
+      p.subject.trim().toLowerCase() === plan.subject.trim().toLowerCase() &&
+      p.time === plan.time &&
+      p.repeat === plan.repeat &&
+      p.weekday === plan.weekday &&
+      p.monthday === plan.monthday,
+  );
+  if (duplicate) {
+    const merged: StudyPlan = { ...duplicate, ...plan };
+    write(getPlans().map((p) => (p.id === merged.id ? merged : p)));
+    if (cloudUserId) {
+      void supabase
+        .from("study_plans")
+        .upsert(toRow(merged, cloudUserId), { onConflict: "id" })
+        .then(() => {});
+    }
+    return merged;
+  }
+
   const row: StudyPlan = { ...plan, id: newId(), createdAt: Date.now() };
   write([...getPlans(), row]);
   if (cloudUserId) {
@@ -198,6 +219,40 @@ export function nextOccurrence(plan: StudyPlan, from = Date.now()): number {
     if (t >= from && d.getDate() === day) return t;
   }
   return at(base) + 30 * 24 * 3600 * 1000;
+}
+
+/**
+ * Timestamp of this plan's slot on the day of `from` when it occurs that day,
+ * otherwise null. Used for "Today's Plan" so a session stays listed for the
+ * rest of the day even after its start time has passed.
+ */
+export function occursOn(plan: StudyPlan, from = Date.now()): number | null {
+  const [h, m] = plan.time.split(":").map((n) => parseInt(n, 10));
+  const d = new Date(from);
+  if (plan.repeat === "weekly" && (plan.weekday ?? d.getDay()) !== d.getDay()) return null;
+  if (plan.repeat === "monthly" && (plan.monthday ?? d.getDate()) !== d.getDate()) return null;
+  d.setHours(h || 0, m || 0, 0, 0);
+  return d.getTime();
+}
+
+/**
+ * The single most relevant upcoming session: the soonest occurrence that has
+ * not finished yet (a session already running still counts).
+ */
+export function upcomingPlan(
+  plans: StudyPlan[],
+  from = Date.now(),
+): { plan: StudyPlan; at: number } | null {
+  let best: { plan: StudyPlan; at: number } | null = null;
+  for (const plan of plans) {
+    const today = occursOn(plan, from);
+    const at =
+      today !== null && from < today + plan.durationMinutes * 60_000
+        ? today
+        : nextOccurrence(plan, from);
+    if (!best || at < best.at) best = { plan, at };
+  }
+  return best;
 }
 
 export function formatTime(time: string) {
