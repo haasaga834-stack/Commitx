@@ -2,14 +2,11 @@ import { useMemo, useState } from "react";
 import { useRouter } from "@tanstack/react-router";
 import {
   ArrowRight,
-  BellRing,
   CheckCircle2,
   Flame,
   Hourglass as HourglassIcon,
-  Leaf,
   ListChecks,
   ShieldCheck,
-  Smartphone,
   Sparkles,
   Target,
   Timer,
@@ -154,19 +151,25 @@ function Screen({
   footer?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-1 flex-col items-center text-center">
-      <div className="mt-6 flex justify-center animate-gentle-float">{visual}</div>
+    <div className="flex min-h-0 flex-1 flex-col">
+      {/* Scrollable content — the CTA below never moves off screen. */}
+      <div className="min-h-0 flex-1 overflow-y-auto pb-6">
+        <div className="flex flex-col items-center text-center">
+          <div className="mt-4 flex justify-center animate-gentle-float">{visual}</div>
 
-      <h1 className="mt-8 max-w-[19rem] text-balance font-display text-[1.75rem] font-semibold leading-[1.2] tracking-tight">
-        {title}
-      </h1>
-      <p className="mt-3 max-w-[19rem] text-sm leading-relaxed text-muted-foreground">
-        {text}
-      </p>
+          <h1 className="mt-6 max-w-[19rem] text-balance font-display text-[1.6rem] font-semibold leading-[1.2] tracking-tight">
+            {title}
+          </h1>
+          <p className="mt-2 max-w-[19rem] text-sm leading-relaxed text-muted-foreground">
+            {text}
+          </p>
 
-      {children && <div className="mt-7 w-full space-y-3">{children}</div>}
+          {children && <div className="mt-5 w-full space-y-3">{children}</div>}
+        </div>
+      </div>
 
-      <div className="mt-auto w-full pt-9">
+      {/* Fixed footer CTA */}
+      <div className="shrink-0 bg-background pt-3">
         <button
           type="button"
           onClick={onCta}
@@ -243,9 +246,9 @@ export function Onboarding({ onDone }: OnboardingProps) {
 
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-background">
+    <div className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-background">
       <AmbientNature />
-      <div className="relative mx-auto flex min-h-full w-full max-w-md flex-col px-6 pb-10 pt-12">
+      <div className="relative mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col px-6 pb-6 pt-10">
         <div className="flex items-center justify-between">
           <span className="w-10" />
           <Dots step={step} />
@@ -266,7 +269,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
               </Halo>
             }
             title="Make a Commitment"
-            text="Choose what you want to accomplish and how long you'll focus."
+            text="Pick a task, a duration, and an amount to commit."
             cta="Continue"
             onCta={next}
           >
@@ -299,23 +302,23 @@ export function Onboarding({ onDone }: OnboardingProps) {
                 <Hourglass size={132} state="running" progress={0.42} />
               </Halo>
             }
-            title="Stay Focused Until It's Done"
-            text="CommitX keeps you accountable while you work."
-            cta="Keep Focusing"
+            title="Stay Focused"
+            text="Two ways to focus. Pick one when you start."
+            cta="Next"
             onCta={next}
           >
             <div className="rounded-3xl bg-card p-5 shadow-soft">
               <Bullet
                 icon={<Timer className="h-4 w-4" />}
                 title="Standard Mode"
-                text="Flexible focus. Your timer keeps running on real time, even if life interrupts."
+                text="Flexible focus on real time."
               />
             </div>
             <div className="rounded-3xl bg-card p-5 shadow-soft">
               <Bullet
                 icon={<ShieldCheck className="h-4 w-4" />}
                 title="Verified Mode"
-                text="Strict accountability. Stay inside CommitX for the full session — leaving ends it."
+                text="Strict — leaving the app ends it."
               />
             </div>
           </Screen>
@@ -330,9 +333,9 @@ export function Onboarding({ onDone }: OnboardingProps) {
                 </span>
               </Halo>
             }
-            title="Complete It. Build Your Streak."
-            text="Every successful commitment moves you forward."
-            cta="Build My Streak"
+            title="Complete It"
+            text="Finish the session, get your commitment back."
+            cta="Next"
             onCta={next}
           >
             <div className="flex items-center gap-3 rounded-3xl bg-card p-4 text-left shadow-soft">
@@ -344,8 +347,8 @@ export function Onboarding({ onDone }: OnboardingProps) {
                   {firstName}, your streak is {s.streak} day{s.streak === 1 ? "" : "s"}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {s.completed} commitment{s.completed === 1 ? "" : "s"} completed ·{" "}
-                  {s.cxCoins} Cx Coin{s.cxCoins === 1 ? "" : "s"}
+                  {s.completed} completed · {s.cxCoins} Cx Coin
+                  {s.cxCoins === 1 ? "" : "s"}
                 </p>
               </div>
             </div>
@@ -353,23 +356,13 @@ export function Onboarding({ onDone }: OnboardingProps) {
             <div className="space-y-4 rounded-3xl bg-card p-5 shadow-soft">
               <Bullet
                 icon={<ListChecks className="h-4 w-4" />}
-                title="Study Planner & To-Do List"
-                text="Plan sessions and tasks, then work through them one by one."
+                title="Planner & To-Do"
+                text="Plan sessions and daily tasks."
               />
               <Bullet
                 icon={<TrendingUp className="h-4 w-4" />}
                 title="Study Insights"
-                text="See your focus hours and consistency curve over the week."
-              />
-              <Bullet
-                icon={<Leaf className="h-4 w-4" />}
-                title="5-minute Recovery Break"
-                text="After every completed hour, pause, breathe and come back refreshed."
-              />
-              <Bullet
-                icon={<CxCoin className="h-4 w-4" />}
-                title="Cx Coins"
-                text="Earned for every successfully completed focus hour."
+                text="Track your weekly focus hours."
               />
             </div>
           </Screen>
@@ -384,9 +377,9 @@ export function Onboarding({ onDone }: OnboardingProps) {
                 </span>
               </Halo>
             }
-            title="Commit. Complete. Get It Back."
-            text="Complete your commitments, build your streak and earn Cx Coins through successful focus hours."
-            cta="Continue"
+            title="Grow With Cx Coins"
+            text="1 completed hour = 1 Cx Coin."
+            cta="Next"
             onCta={next}
             footer={
               <button
@@ -403,50 +396,20 @@ export function Onboarding({ onDone }: OnboardingProps) {
               icon={<CxCoin className="h-4 w-4" />}
               title="Cx Coins"
               items={[
-                "1 completed hour = 1 Cx Coin.",
-                "Cx Coins are not cash.",
-                "Cx Coins cannot be withdrawn.",
-                "Cx Coins cannot be transferred.",
-                "Save Cx Coins for future Cx Coupon redemption.",
-                "Cx Coupons are Coming Soon.",
+                "Not cash — cannot be withdrawn or transferred.",
+                "Save them for Cx Coupons (coming soon).",
               ]}
-              footer={`You have ${s.cxCoins} Cx Coin${s.cxCoins === 1 ? "" : "s"} right now.`}
             />
 
             <FactList
               icon={<Sparkles className="h-4 w-4 text-primary" />}
               title="Demo Money"
               items={[
-                `New users receive ${formatINR(WELCOME_DEMO)} Demo Money.`,
-                `Referrals can provide ${formatINR(REFERRAL_BONUS)} Demo Money.`,
-                "Demo Money is virtual and has no cash value.",
-                "Demo Money cannot be withdrawn or transferred.",
-                "Real-money deposits and withdrawals are currently not active.",
+                `${formatINR(WELCOME_DEMO)} to start · ${formatINR(REFERRAL_BONUS)} per referral.`,
+                "Virtual only — no cash value.",
               ]}
               footer={`Your demo balance: ${formatINR(state.balances.demo)}`}
             />
-
-            <div className="space-y-4 rounded-3xl bg-card p-5 shadow-soft">
-              <Bullet
-                icon={<Smartphone className="h-4 w-4" />}
-                title="Screen Time"
-                text="Track your daily phone use and set a healthy limit in Settings."
-              />
-              <Bullet
-                icon={<BellRing className="h-4 w-4" />}
-                title="Notifications"
-                text="Gentle reminders for plans and to-dos — turn them on or off anytime."
-              />
-              <Bullet
-                icon={<Leaf className="h-4 w-4" />}
-                title="Recovery Break"
-                text="A mandatory 5-minute rest after each completed focus hour."
-              />
-            </div>
-
-            <p className="pt-2 text-sm text-muted-foreground">
-              Want to know more about CommitX?
-            </p>
           </Screen>
         )}
 
@@ -460,7 +423,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
               </Halo>
             }
             title="What should I do next?"
-            text="Tell CommitX what you want to accomplish today."
+            text="Add today's focus session."
             cta={saving ? "Saving…" : "Set My Plan"}
             onCta={savePlan}
             ctaDisabled={saving || !subject.trim()}

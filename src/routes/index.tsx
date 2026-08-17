@@ -7,11 +7,12 @@ import { DailyGoalProgress } from "@/components/DailyGoalProgress";
 import { SwipeToStart } from "@/components/SwipeToStart";
 import cozyStudy from "@/assets/cozy-study.jpg";
 
-import { useAppState, stats, formatINR, MIN_COMMIT } from "@/lib/commitx-store";
+import { useAppState, stats } from "@/lib/commitx-store";
 import { analyze, formatHours } from "@/lib/analytics-data";
 import { dailyMessage } from "@/lib/daily-message";
 import {
   usePlans,
+  useTodos,
   occursOn,
   upcomingPlan,
   formatTime,
@@ -52,6 +53,7 @@ function Home() {
   const a = useMemo(() => analyze(state.sessions), [state.sessions]);
   
   const { plans, hydrated: plansHydrated } = usePlans();
+  const { todos } = useTodos();
   const firstName = state.profile.name.split(" ")[0];
   const message = useMemo(() => dailyMessage(), []);
 
@@ -74,7 +76,6 @@ function Home() {
 
   // Most relevant upcoming session (today's remaining ones win, else the next day).
   const next = useMemo(() => upcomingPlan(plans, now), [plans, now]);
-  const lastValue = state.sessions[0]?.value ?? MIN_COMMIT;
 
   return (
     <MobileShell>
@@ -150,16 +151,11 @@ function Home() {
                     {priorityLabel(next.plan.priority)} Priority
                   </p>
 
-                  <div className="mt-3 grid grid-cols-2 gap-2">
+                  <div className="mt-3">
                     <MiniFact
                       icon={<Clock className="h-3.5 w-3.5" />}
                       label="Target duration"
                       value={formatDuration(next.plan.durationMinutes)}
-                    />
-                    <MiniFact
-                      icon={<span className="text-[12px] leading-none">₹</span>}
-                      label="Commitment"
-                      value={formatINR(next.plan.commitValue ?? lastValue)}
                     />
                   </div>
                 </>
@@ -199,9 +195,9 @@ function Home() {
             </Link>
           </div>
 
-          {plansHydrated && todays.length > 0 ? (
+          {plansHydrated && (todays.length > 0 || todos.length > 0) ? (
             <ul className="mt-3 divide-y divide-hairline">
-              {todays.slice(0, 3).map(({ plan, at }) => (
+              {todays.slice(0, 3).map(({ plan }) => (
                 <li key={plan.id} className="flex items-center gap-3 py-2.5">
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-medium text-foreground">
@@ -216,10 +212,27 @@ function Home() {
                   </span>
                 </li>
               ))}
+              {todos.slice(0, 4).map((t) => (
+                <li key={t.id} className="flex items-center gap-3 py-2.5">
+                  <span className="min-w-0 flex-1">
+                    <span
+                      className={`block truncate text-sm font-medium ${
+                        t.done ? "text-muted-foreground line-through" : "text-foreground"
+                      }`}
+                    >
+                      {t.text}
+                    </span>
+                    <span className="block text-[11px] text-muted-foreground">To-do</span>
+                  </span>
+                  <span className="shrink-0 text-[11px] text-muted-foreground">
+                    {t.done ? "Done" : "Today"}
+                  </span>
+                </li>
+              ))}
             </ul>
           ) : (
             <p className="mt-3 text-xs text-muted-foreground">
-              {plansHydrated ? "No sessions planned for today yet." : "\u00A0"}
+              {plansHydrated ? "Nothing planned for today yet." : "\u00A0"}
             </p>
           )}
 
@@ -230,7 +243,9 @@ function Home() {
             <CalendarDays className="h-4 w-4 shrink-0 text-primary" />
             <span className="min-w-0 flex-1 truncate text-xs text-foreground">
               {plansHydrated
-                ? `${todays.length} ${todays.length === 1 ? "task" : "tasks"} planned`
+                ? `${todays.length + todos.length} ${
+                    todays.length + todos.length === 1 ? "task" : "tasks"
+                  } planned`
                 : "\u00A0"}
             </span>
             <span className="shrink-0 text-[11px] text-muted-foreground">Open</span>
