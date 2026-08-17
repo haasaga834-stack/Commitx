@@ -305,23 +305,23 @@ export function Onboarding({ onDone }: OnboardingProps) {
                 <Hourglass size={132} state="running" progress={0.42} />
               </Halo>
             }
-            title="Stay Focused Until It's Done"
-            text="CommitX keeps you accountable while you work."
-            cta="Keep Focusing"
+            title="Stay Focused"
+            text="Two ways to focus. Pick one when you start."
+            cta="Next"
             onCta={next}
           >
             <div className="rounded-3xl bg-card p-5 shadow-soft">
               <Bullet
                 icon={<Timer className="h-4 w-4" />}
                 title="Standard Mode"
-                text="Flexible focus. Your timer keeps running on real time, even if life interrupts."
+                text="Flexible focus on real time."
               />
             </div>
             <div className="rounded-3xl bg-card p-5 shadow-soft">
               <Bullet
                 icon={<ShieldCheck className="h-4 w-4" />}
                 title="Verified Mode"
-                text="Strict accountability. Stay inside CommitX for the full session — leaving ends it."
+                text="Strict — leaving the app ends it."
               />
             </div>
           </Screen>
@@ -336,9 +336,9 @@ export function Onboarding({ onDone }: OnboardingProps) {
                 </span>
               </Halo>
             }
-            title="Complete It. Build Your Streak."
-            text="Every successful commitment moves you forward."
-            cta="Build My Streak"
+            title="Complete It"
+            text="Finish the session, get your commitment back."
+            cta="Next"
             onCta={next}
           >
             <div className="flex items-center gap-3 rounded-3xl bg-card p-4 text-left shadow-soft">
@@ -350,8 +350,8 @@ export function Onboarding({ onDone }: OnboardingProps) {
                   {firstName}, your streak is {s.streak} day{s.streak === 1 ? "" : "s"}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {s.completed} commitment{s.completed === 1 ? "" : "s"} completed ·{" "}
-                  {s.cxCoins} Cx Coin{s.cxCoins === 1 ? "" : "s"}
+                  {s.completed} completed · {s.cxCoins} Cx Coin
+                  {s.cxCoins === 1 ? "" : "s"}
                 </p>
               </div>
             </div>
@@ -359,23 +359,13 @@ export function Onboarding({ onDone }: OnboardingProps) {
             <div className="space-y-4 rounded-3xl bg-card p-5 shadow-soft">
               <Bullet
                 icon={<ListChecks className="h-4 w-4" />}
-                title="Study Planner & To-Do List"
-                text="Plan sessions and tasks, then work through them one by one."
+                title="Planner & To-Do"
+                text="Plan sessions and daily tasks."
               />
               <Bullet
                 icon={<TrendingUp className="h-4 w-4" />}
                 title="Study Insights"
-                text="See your focus hours and consistency curve over the week."
-              />
-              <Bullet
-                icon={<Leaf className="h-4 w-4" />}
-                title="5-minute Recovery Break"
-                text="After every completed hour, pause, breathe and come back refreshed."
-              />
-              <Bullet
-                icon={<CxCoin className="h-4 w-4" />}
-                title="Cx Coins"
-                text="Earned for every successfully completed focus hour."
+                text="Track your weekly focus hours."
               />
             </div>
           </Screen>
@@ -390,9 +380,9 @@ export function Onboarding({ onDone }: OnboardingProps) {
                 </span>
               </Halo>
             }
-            title="Commit. Complete. Get It Back."
-            text="Complete your commitments, build your streak and earn Cx Coins through successful focus hours."
-            cta="Continue"
+            title="Grow With Cx Coins"
+            text="1 completed hour = 1 Cx Coin."
+            cta="Next"
             onCta={next}
             footer={
               <button
@@ -409,50 +399,20 @@ export function Onboarding({ onDone }: OnboardingProps) {
               icon={<CxCoin className="h-4 w-4" />}
               title="Cx Coins"
               items={[
-                "1 completed hour = 1 Cx Coin.",
-                "Cx Coins are not cash.",
-                "Cx Coins cannot be withdrawn.",
-                "Cx Coins cannot be transferred.",
-                "Save Cx Coins for future Cx Coupon redemption.",
-                "Cx Coupons are Coming Soon.",
+                "Not cash — cannot be withdrawn or transferred.",
+                "Save them for Cx Coupons (coming soon).",
               ]}
-              footer={`You have ${s.cxCoins} Cx Coin${s.cxCoins === 1 ? "" : "s"} right now.`}
             />
 
             <FactList
               icon={<Sparkles className="h-4 w-4 text-primary" />}
               title="Demo Money"
               items={[
-                `New users receive ${formatINR(WELCOME_DEMO)} Demo Money.`,
-                `Referrals can provide ${formatINR(REFERRAL_BONUS)} Demo Money.`,
-                "Demo Money is virtual and has no cash value.",
-                "Demo Money cannot be withdrawn or transferred.",
-                "Real-money deposits and withdrawals are currently not active.",
+                `${formatINR(WELCOME_DEMO)} to start · ${formatINR(REFERRAL_BONUS)} per referral.`,
+                "Virtual only — no cash value.",
               ]}
               footer={`Your demo balance: ${formatINR(state.balances.demo)}`}
             />
-
-            <div className="space-y-4 rounded-3xl bg-card p-5 shadow-soft">
-              <Bullet
-                icon={<Smartphone className="h-4 w-4" />}
-                title="Screen Time"
-                text="Track your daily phone use and set a healthy limit in Settings."
-              />
-              <Bullet
-                icon={<BellRing className="h-4 w-4" />}
-                title="Notifications"
-                text="Gentle reminders for plans and to-dos — turn them on or off anytime."
-              />
-              <Bullet
-                icon={<Leaf className="h-4 w-4" />}
-                title="Recovery Break"
-                text="A mandatory 5-minute rest after each completed focus hour."
-              />
-            </div>
-
-            <p className="pt-2 text-sm text-muted-foreground">
-              Want to know more about CommitX?
-            </p>
           </Screen>
         )}
 
