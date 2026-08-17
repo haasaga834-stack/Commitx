@@ -69,7 +69,7 @@ function Bullet({
 
 export function Onboarding({ onDone }: OnboardingProps) {
   const router = useRouter();
-  const state = useAppState();
+  const { state } = useAppState();
   const [step, setStep] = useState(0);
 
   const s = useMemo(() => stats(state.sessions), [state.sessions]);
