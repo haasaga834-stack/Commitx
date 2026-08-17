@@ -124,8 +124,12 @@ function Home() {
                   <p className="truncate text-base font-semibold text-foreground">
                     {next.plan.subject}
                   </p>
+                  {next.plan.topic ? (
+                    <p className="truncate text-xs text-foreground/80">{next.plan.topic}</p>
+                  ) : null}
                   <p className="mt-0.5 text-[11px] text-muted-foreground">
-                    Scheduled {formatTime(next.plan.time)}
+                    Scheduled {formatTime(next.plan.time)} ·{" "}
+                    {priorityLabel(next.plan.priority)} Priority
                   </p>
 
                   <div className="mt-3 grid grid-cols-2 gap-2">
@@ -137,10 +141,11 @@ function Home() {
                     <MiniFact
                       icon={<span className="text-[12px] leading-none">₹</span>}
                       label="Commitment"
-                      value={formatINR(lastValue)}
+                      value={formatINR(next.plan.commitValue ?? lastValue)}
                     />
                   </div>
                 </>
+
               ) : (
                 <>
                   <p className="text-base font-semibold text-foreground">
