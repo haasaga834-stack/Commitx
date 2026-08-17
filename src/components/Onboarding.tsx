@@ -249,9 +249,9 @@ export function Onboarding({ onDone }: OnboardingProps) {
 
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-background">
+    <div className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-background">
       <AmbientNature />
-      <div className="relative mx-auto flex min-h-full w-full max-w-md flex-col px-6 pb-10 pt-12">
+      <div className="relative mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col px-6 pb-6 pt-10">
         <div className="flex items-center justify-between">
           <span className="w-10" />
           <Dots step={step} />
