@@ -62,6 +62,35 @@ function Auth() {
     }
   }
 
+  async function forgotPassword() {
+    setError(null);
+    setNotice(null);
+    const target = email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(target)) {
+      setError("Enter your registered email above, then tap Forgot password.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(target, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      // Never reveal whether the address has an account.
+      setNotice(
+        "If that email is registered, a password reset link is on its way. Check your inbox and spam folder.",
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Could not send the reset email. Please try again.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function google() {
     setError(null);
     // Android shell: native Google Sign-In (Credential Manager) — never a browser.
@@ -141,6 +170,17 @@ function Auth() {
             placeholder="Password"
             className="mt-3 w-full rounded-2xl border border-hairline bg-background px-4 py-3 text-sm outline-none focus:border-primary"
           />
+
+          {mode === "signin" && (
+            <button
+              type="button"
+              onClick={forgotPassword}
+              disabled={busy}
+              className="mt-3 block w-full text-right text-xs font-medium text-primary disabled:opacity-60"
+            >
+              Forgot password?
+            </button>
+          )}
 
           {error && <p className="mt-3 text-xs text-destructive">{error}</p>}
           {notice && <p className="mt-3 text-xs text-primary">{notice}</p>}

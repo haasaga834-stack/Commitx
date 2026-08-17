@@ -14,6 +14,7 @@ import { Route as SuccessRouteImport } from './routes/success'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SessionRouteImport } from './routes/session'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PlannerRouteImport } from './routes/planner'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
@@ -49,6 +50,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const SessionRoute = SessionRouteImport.update({
   id: '/session',
   path: '/session',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileRoute = ProfileRouteImport.update({
@@ -119,6 +125,7 @@ export interface FileRoutesByFullPath {
   '/how-it-works': typeof HowItWorksRoute
   '/planner': typeof PlannerRoute
   '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/session': typeof SessionRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByTo {
   '/how-it-works': typeof HowItWorksRoute
   '/planner': typeof PlannerRoute
   '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/session': typeof SessionRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -156,6 +164,7 @@ export interface FileRoutesById {
   '/how-it-works': typeof HowItWorksRoute
   '/planner': typeof PlannerRoute
   '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/session': typeof SessionRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -176,6 +185,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/planner'
     | '/profile'
+    | '/reset-password'
     | '/session'
     | '/settings'
     | '/sitemap.xml'
@@ -194,6 +204,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/planner'
     | '/profile'
+    | '/reset-password'
     | '/session'
     | '/settings'
     | '/sitemap.xml'
@@ -212,6 +223,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/planner'
     | '/profile'
+    | '/reset-password'
     | '/session'
     | '/settings'
     | '/sitemap.xml'
@@ -231,6 +243,7 @@ export interface RootRouteChildren {
   HowItWorksRoute: typeof HowItWorksRoute
   PlannerRoute: typeof PlannerRoute
   ProfileRoute: typeof ProfileRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SessionRoute: typeof SessionRoute
   SettingsRoute: typeof SettingsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -273,6 +286,13 @@ declare module '@tanstack/react-router' {
       path: '/session'
       fullPath: '/session'
       preLoaderRoute: typeof SessionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile': {
@@ -367,6 +387,7 @@ const rootRouteChildren: RootRouteChildren = {
   HowItWorksRoute: HowItWorksRoute,
   PlannerRoute: PlannerRoute,
   ProfileRoute: ProfileRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SessionRoute: SessionRoute,
   SettingsRoute: SettingsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
