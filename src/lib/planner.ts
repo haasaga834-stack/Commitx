@@ -566,6 +566,10 @@ export async function pullPlannerFromCloud(userId: string) {
   if (settings) {
     remindersEnabled = settings.reminders_enabled;
     writeGoalLocal(Number(settings.daily_goal_hours) || DEFAULT_DAILY_GOAL_HOURS);
+    writeWeeklyGoalLocal(
+      Number((settings as { weekly_goal_hours?: number }).weekly_goal_hours) ||
+        DEFAULT_WEEKLY_GOAL_HOURS,
+    );
   } else {
     await supabase
       .from("user_settings")
