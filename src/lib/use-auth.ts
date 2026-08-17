@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { pullFromCloud, startCloudSync, stopCloudSync } from "./cloud-sync";
 import { resetState } from "./commitx-store";
 import { clearPlannerLocal, setPlannerUser } from "./planner";
+import { clearAcademicsLocal, setAcademicsUser } from "./academics";
 import { claimPendingReferral } from "./pending-referral";
 
 export function useAuth() {
@@ -20,6 +21,7 @@ export function useAuth() {
       if (session?.user) {
         startCloudSync(session.user.id);
         setPlannerUser(session.user.id);
+        setAcademicsUser(session.user.id);
         const uid = session.user.id;
         void claimPendingReferral()
           .then(() => pullFromCloud(uid))
@@ -27,6 +29,7 @@ export function useAuth() {
       } else {
         stopCloudSync();
         setPlannerUser(null);
+        setAcademicsUser(null);
       }
     };
 
@@ -54,5 +57,6 @@ export async function signOutEverywhere() {
   await supabase.auth.signOut();
   resetState();
   clearPlannerLocal();
+  clearAcademicsLocal();
 }
 
