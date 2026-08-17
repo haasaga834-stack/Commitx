@@ -12,8 +12,10 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import {
   finalizePendingVerifiedFailure,
+  markSessionEnded,
   readActiveVerifiedSession,
 } from "../lib/verified-mode";
+import { releaseActiveDbSession } from "../lib/active-session";
 import { useAuth } from "../lib/use-auth";
 import { useStudyReminders } from "../lib/planner";
 import { AmbientNature } from "../components/AmbientNature";
@@ -156,6 +158,16 @@ function VerifiedRecovery() {
       if (!active || active.mode !== "verified" || !active.pendingFail) return;
       const failure = finalizePendingVerifiedFailure();
       if (!failure) return;
+      // The session stays ended across app restarts and frees the server slot.
+      markSessionEnded({
+        goal: failure.goal,
+        duration: failure.duration,
+        value: failure.value,
+        mode: "verified",
+        status: "failed",
+        reason: failure.reason,
+      });
+      void releaseActiveDbSession();
       // eslint-disable-next-line no-console
       console.log("[CommitX lifecycle] Session Failed", {
         reason: failure.reason,

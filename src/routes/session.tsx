@@ -6,6 +6,8 @@ import { setState, formatINR, planDeduction, getState, type Mode } from "@/lib/c
 import {
   clearActiveVerifiedSession,
   markActiveVerifiedSessionPendingFailure,
+  markSessionEnded,
+  isSessionEnded,
   readActiveVerifiedSession,
   writeActiveVerifiedSession,
   FOCUS_HOUR_MS,
@@ -14,6 +16,8 @@ import {
   type SessionPhase,
   type VerifiedFailureReason,
 } from "@/lib/verified-mode";
+import { releaseActiveDbSession } from "@/lib/active-session";
+
 
 import {
   canCheckDnd,
@@ -89,7 +93,45 @@ function eventReason(event: Event, fallback: VerifiedFailureReason) {
   return fallback;
 }
 
+/**
+ * Gate in front of the live timer. A session may only run while a valid active
+ * ticket exists (written by /commit before navigating) and while this exact
+ * commitment has not already been ended. So a back gesture from the result
+ * screen, a refresh or an app restart can never resurrect a dead timer.
+ */
 function Session() {
+  const { goal, duration, value, mode } = Route.useSearch();
+  const navigate = useNavigate();
+  const [status, setStatus] = useState<"checking" | "live" | "dead">("checking");
+
+  useEffect(() => {
+    const ticket = readActiveVerifiedSession();
+    const valid =
+      !isSessionEnded({ goal, duration, value, mode }) &&
+      !!ticket &&
+      !ticket.pendingFail &&
+      ticket.goal === goal &&
+      ticket.duration === duration &&
+      ticket.value === value &&
+      ticket.mode === mode;
+    if (valid) {
+      setStatus("live");
+      return;
+    }
+    setStatus("dead");
+    setNativeSessionLock(false);
+    setNativeVerifiedModeActive(false);
+    hideSessionProgress();
+    void releaseActiveDbSession();
+    navigate({ to: "/", replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (status !== "live") return null;
+  return <LiveSession />;
+}
+
+function LiveSession() {
   const { goal, duration, value, mode, preferReal } = Route.useSearch();
   const navigate = useNavigate();
   const totalMs = duration * 60 * 1000;
@@ -572,6 +614,18 @@ function Session() {
     setNativeSessionLock(false);
     setNativeVerifiedModeActive(false);
     clearActiveVerifiedSession();
+    hideSessionProgress();
+    // Permanent end marker + server slot release: the timer can never be
+    // restarted or resurrected by back navigation, refresh or app restart.
+    markSessionEnded({
+      goal,
+      duration,
+      value,
+      mode: mode as Mode,
+      status,
+      ...(reason ? { reason } : {}),
+    });
+    void releaseActiveDbSession();
     const current = getState();
     const plan = planDeduction(value, current.balances, preferRealBool);
     const demoUsed = plan.ok ? plan.demoUsed : 0;
@@ -627,9 +681,9 @@ function Session() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col px-6 pb-10 pt-14">
-      <WindScape />
-      <div className="relative flex items-center justify-center">
+    <div className="relative flex min-h-screen flex-col bg-background px-6 pb-10 pt-14">
+      <WindScape fixed={false} className="z-0" />
+      <div className="relative z-10 flex items-center justify-center">
 
         <p className="text-xs uppercase tracking-widest text-muted-foreground">
           {isVerified ? "Verified session" : "Standard session"}
@@ -643,7 +697,7 @@ function Session() {
         </button>
       </div>
 
-      <div className="flex flex-1 flex-col items-center justify-center">
+      <div className="relative z-10 flex flex-1 flex-col items-center justify-center">
         <Hourglass size={260} state={onBreak ? "idle" : "running"} progress={progress} />
         <p className="mt-10 font-display text-6xl font-semibold tabular-nums tracking-tight">
           {fmt(remaining)}
@@ -662,7 +716,7 @@ function Session() {
         )}
       </div>
 
-      <div className="mx-auto w-full max-w-md pb-2 text-center">
+      <div className="relative z-10 mx-auto w-full max-w-md pb-2 text-center">
         <span className="mx-auto block h-px w-16 bg-hairline" />
         <p className="mt-5 px-2 font-display text-base leading-relaxed text-foreground/80">
           “{quote}”
@@ -730,15 +784,15 @@ function Session() {
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-background/95 px-6 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-3xl bg-card p-6 text-center shadow-lift">
             <BellOff className="mx-auto h-8 w-8 text-primary" />
-            <p className="mt-4 font-display text-xl font-semibold">Turn on Do Not Disturb</p>
+            <p className="mt-4 font-display text-xl font-semibold">Do Not Disturb required</p>
             <p className="mt-2 text-sm text-muted-foreground">
-              Verified sessions can only start with Do Not Disturb enabled.
+              DND is required for Verified Mode. Please enable it in Settings.
             </p>
             <button
               onClick={openDndSettings}
               className="mt-6 w-full rounded-full bg-primary px-6 py-4 text-sm font-medium text-primary-foreground"
             >
-              Open Do Not Disturb settings
+              Open Settings
             </button>
             <button
               onClick={() => navigate({ to: "/commit" })}

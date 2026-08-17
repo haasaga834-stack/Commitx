@@ -138,7 +138,7 @@ function Planner() {
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium text-foreground">Academics</p>
             <p className="text-xs text-muted-foreground">
-              Subjects, exam countdown, weekly target and revision.
+              Subjects, exam countdown and revision tracking.
             </p>
           </div>
           <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
