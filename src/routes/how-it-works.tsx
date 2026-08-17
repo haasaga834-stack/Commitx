@@ -110,12 +110,26 @@ function HowItWorks() {
             title="Cx Coins & Cx Coupons"
             delay={240}
             points={[
-              "Every completed hour of focus earns 1 Cx Coin.",
-              "Cx Coins are a reward for consistency — they are never bought and never withdrawn.",
-              "Saved Cx Coins will be redeemable for Cx Coupons as CommitX grows.",
-              "Your Cx Coin balance appears in the Home top banner.",
+              "1 successfully completed hour of focus = 1 Cx Coin. A 30-minute session earns 0, two hours earn 2.",
+              "Cancelled, failed or incomplete sessions earn nothing.",
+              "Cx Coins are not cash. They cannot be withdrawn or transferred.",
+              "They accumulate on your account, so you can save them up over time.",
+              "Your Cx Coin balance is shown in the Home top banner.",
             ]}
-          />
+          >
+            <div className="mt-4 rounded-2xl bg-secondary/60 p-4">
+              <div className="flex items-center gap-2">
+                <CxCoin className="h-4 w-4" />
+                <p className="text-sm font-medium">Cx Coupons — Coming Soon</p>
+              </div>
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                Saved Cx Coins may eventually be redeemed for Cx Coupons offering
+                benefits across eligible education, books and e-learning, food or
+                future partner services. Nothing is redeemable yet, and no
+                partnerships are confirmed — we'll announce them inside the app.
+              </p>
+            </div>
+          </Section>
 
           <Section
             icon={<CheckCircle2 className="h-4 w-4" />}
@@ -166,11 +180,13 @@ function Section({
   title,
   points,
   delay,
+  children,
 }: {
   icon: React.ReactNode;
   title: string;
   points: string[];
   delay: number;
+  children?: React.ReactNode;
 }) {
   return (
     <section
@@ -191,6 +207,7 @@ function Section({
           </li>
         ))}
       </ul>
+      {children}
     </section>
   );
 }

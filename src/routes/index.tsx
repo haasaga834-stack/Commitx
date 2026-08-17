@@ -77,7 +77,7 @@ function Home() {
           <div className="flex shrink-0 items-center gap-2">
             <TopChip
               icon={<CxCoin className="h-4 w-4" />}
-              value={hydrated ? String(s.foodCoins) : "—"}
+              value={hydrated ? String(s.cxCoins) : "—"}
               srLabel="Cx Coins"
             />
             <TopChip

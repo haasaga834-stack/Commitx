@@ -54,7 +54,7 @@ function Success() {
   const s = stats(state.sessions);
 
   const coinsEarned = Math.floor(duration / 60);
-  const coins = Math.round(useCountUp(s.foodCoins, 1100, 500));
+  const coins = Math.round(useCountUp(s.cxCoins, 1100, 500));
   const streakValue = Math.round(useCountUp(s.streak, 800, 380));
   const focusMinutes = Math.round(useCountUp(s.totalMinutes, 1000, 460));
   const successRate = Math.round(useCountUp(s.successRate, 1000, 540));
