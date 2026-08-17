@@ -61,6 +61,8 @@ function Planner() {
       time,
       durationMinutes: clampDuration(durationMinutes),
       repeat,
+      priority: "medium",
+
       weekday: repeat === "weekly" ? weekday : undefined,
       monthday: repeat === "monthly" ? monthday : undefined,
     });

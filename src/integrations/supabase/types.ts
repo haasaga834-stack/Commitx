@@ -130,37 +130,46 @@ export type Database = {
       }
       study_plans: {
         Row: {
+          commit_value: number | null
           created_at: string
           duration_minutes: number
           id: string
           monthday: number | null
+          priority: string
           repeat: string
           subject: string
           time: string
+          topic: string
           updated_at: string
           user_id: string
           weekday: number | null
         }
         Insert: {
+          commit_value?: number | null
           created_at?: string
           duration_minutes?: number
           id?: string
           monthday?: number | null
+          priority?: string
           repeat?: string
           subject?: string
           time?: string
+          topic?: string
           updated_at?: string
           user_id: string
           weekday?: number | null
         }
         Update: {
+          commit_value?: number | null
           created_at?: string
           duration_minutes?: number
           id?: string
           monthday?: number | null
+          priority?: string
           repeat?: string
           subject?: string
           time?: string
+          topic?: string
           updated_at?: string
           user_id?: string
           weekday?: number | null

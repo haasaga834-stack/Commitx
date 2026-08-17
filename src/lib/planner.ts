@@ -3,20 +3,33 @@ import { supabase } from "@/integrations/supabase/client";
 import { syncTodoNotification, syncStudyPlanReminders } from "@/lib/native-notifications";
 
 export type Repeat = "daily" | "weekly" | "monthly";
+export type Priority = "high" | "medium" | "low";
+
+export const PRIORITIES: Priority[] = ["high", "medium", "low"];
+
+export function priorityLabel(p: Priority) {
+  return p === "high" ? "High" : p === "low" ? "Low" : "Medium";
+}
 
 export interface StudyPlan {
   id: string;
   subject: string;
+  /** Topic / task inside the subject (optional) */
+  topic?: string;
   /** HH:MM 24h */
   time: string;
   durationMinutes: number;
   repeat: Repeat;
+  priority: Priority;
+  /** Optional commitment amount in ₹ */
+  commitValue?: number;
   /** 0=Sun..6=Sat — used when repeat = weekly */
   weekday?: number;
   /** 1..31 — used when repeat = monthly */
   monthday?: number;
   createdAt: number;
 }
+
 
 const KEY = "commitx-planner-v1";
 const NOTIFIED_KEY = "commitx-planner-notified-v1";
@@ -74,25 +87,56 @@ export function getPlans(): StudyPlan[] {
   return cache;
 }
 
+function toRow(row: StudyPlan, userId: string) {
+  return {
+    id: row.id,
+    user_id: userId,
+    subject: row.subject,
+    topic: row.topic ?? "",
+    time: row.time,
+    duration_minutes: row.durationMinutes,
+    repeat: row.repeat,
+    priority: row.priority,
+    commit_value: row.commitValue ?? null,
+    weekday: row.weekday ?? null,
+    monthday: row.monthday ?? null,
+  };
+}
+
 export function addPlan(plan: Omit<StudyPlan, "id" | "createdAt">) {
   const row: StudyPlan = { ...plan, id: newId(), createdAt: Date.now() };
   write([...getPlans(), row]);
   if (cloudUserId) {
-    void supabase
-      .from("study_plans")
-      .insert({
-        id: row.id,
-        user_id: cloudUserId,
-        subject: row.subject,
-        time: row.time,
-        duration_minutes: row.durationMinutes,
-        repeat: row.repeat,
-        weekday: row.weekday ?? null,
-        monthday: row.monthday ?? null,
-      })
-      .then(() => {});
+    void supabase.from("study_plans").insert(toRow(row, cloudUserId)).then(() => {});
   }
+  return row;
 }
+
+/**
+ * Onboarding / "What should I do next?" plan.
+ * Updates the user's existing plan when there is one so we never create a
+ * duplicate record; otherwise inserts a single new plan. Throws on failure so
+ * the caller can show an error and let the user retry.
+ */
+export async function savePrimaryPlan(
+  plan: Omit<StudyPlan, "id" | "createdAt">,
+): Promise<StudyPlan> {
+  const existing = getPlans()[0];
+  const row: StudyPlan = existing
+    ? { ...existing, ...plan }
+    : { ...plan, id: newId(), createdAt: Date.now() };
+
+  if (cloudUserId) {
+    const { error } = await supabase
+      .from("study_plans")
+      .upsert(toRow(row, cloudUserId), { onConflict: "id" });
+    if (error) throw error;
+  }
+
+  write(existing ? getPlans().map((p) => (p.id === row.id ? row : p)) : [...getPlans(), row]);
+  return row;
+}
+
 
 export function removePlan(id: string) {
   write(getPlans().filter((p) => p.id !== id));
@@ -497,13 +541,17 @@ export async function pullPlannerFromCloud(userId: string) {
     (plans ?? []).map((r) => ({
       id: r.id,
       subject: r.subject,
+      topic: r.topic ?? undefined,
       time: r.time,
       durationMinutes: r.duration_minutes,
       repeat: r.repeat as Repeat,
+      priority: (r.priority as Priority) ?? "medium",
+      commitValue: r.commit_value ?? undefined,
       weekday: r.weekday ?? undefined,
       monthday: r.monthday ?? undefined,
       createdAt: new Date(r.created_at).getTime(),
     })),
+
   );
 
   writeTodos(

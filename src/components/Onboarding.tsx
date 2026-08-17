@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   Smartphone,
   Sparkles,
+  Target,
   Timer,
   TrendingUp,
 } from "lucide-react";
@@ -23,7 +24,27 @@ import {
   useAppState,
   REFERRAL_BONUS,
   WELCOME_DEMO,
+  MIN_COMMIT,
+  MAX_COMMIT,
 } from "@/lib/commitx-store";
+import {
+  usePlans,
+  savePrimaryPlan,
+  clampDuration,
+  formatDuration,
+  DURATION_OPTIONS,
+  PRIORITIES,
+  priorityLabel,
+  type Priority,
+} from "@/lib/planner";
+
+/** A time a few minutes from now, so the plan lands on today's schedule. */
+function soonTime() {
+  const d = new Date(Date.now() + 10 * 60 * 1000);
+  if (d.toDateString() !== new Date().toDateString()) return "23:55";
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
 
 interface OnboardingProps {
   onDone: () => void;
@@ -32,7 +53,7 @@ interface OnboardingProps {
 function Dots({ step }: { step: number }) {
   return (
     <div className="flex items-center justify-center gap-1.5">
-      {[0, 1, 2, 3].map((i) => (
+      {[0, 1, 2, 3, 4].map((i) => (
         <span
           key={i}
           className={
@@ -120,6 +141,7 @@ function Screen({
   children,
   cta,
   onCta,
+  ctaDisabled,
   footer,
 }: {
   visual: React.ReactNode;
@@ -128,6 +150,7 @@ function Screen({
   children?: React.ReactNode;
   cta: string;
   onCta: () => void;
+  ctaDisabled?: boolean;
   footer?: React.ReactNode;
 }) {
   return (
@@ -147,7 +170,8 @@ function Screen({
         <button
           type="button"
           onClick={onCta}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-sm font-medium text-primary-foreground shadow-soft transition active:scale-[0.99]"
+          disabled={ctaDisabled}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-sm font-medium text-primary-foreground shadow-soft transition active:scale-[0.99] disabled:opacity-60"
         >
           {cta} <ArrowRight className="h-4 w-4" />
         </button>
@@ -157,13 +181,29 @@ function Screen({
   );
 }
 
+
 export function Onboarding({ onDone }: OnboardingProps) {
   const router = useRouter();
   const { state } = useAppState();
+  const { plans } = usePlans();
   const [step, setStep] = useState(0);
 
   const s = useMemo(() => stats(state.sessions), [state.sessions]);
   const firstName = (state.profile.name || "there").trim().split(" ")[0];
+
+  // Screen 5 — plan form, prefilled from the user's existing plan when present.
+  const existing = plans[0];
+  const [subject, setSubject] = useState(existing?.subject ?? "");
+  const [topic, setTopic] = useState(existing?.topic ?? "");
+  const [durationMinutes, setDurationMinutes] = useState(
+    existing?.durationMinutes ?? 120,
+  );
+  const [priority, setPriority] = useState<Priority>(existing?.priority ?? "high");
+  const [commitValue, setCommitValue] = useState<string>(
+    existing?.commitValue ? String(existing.commitValue) : "",
+  );
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const next = () => setStep((v) => v + 1);
 
@@ -171,6 +211,36 @@ export function Onboarding({ onDone }: OnboardingProps) {
     onDone();
     if (to) router.navigate({ to });
   };
+
+  async function savePlan() {
+    if (!subject.trim() || saving) return;
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const amount = commitValue.trim() ? parseInt(commitValue, 10) : NaN;
+      await savePrimaryPlan({
+        subject: subject.trim(),
+        topic: topic.trim(),
+        time: soonTime(),
+        durationMinutes: clampDuration(durationMinutes),
+        repeat: "daily",
+        priority,
+        commitValue: Number.isFinite(amount)
+          ? Math.min(MAX_COMMIT, Math.max(MIN_COMMIT, amount))
+          : undefined,
+      });
+      finish();
+    } catch (err) {
+      setSaveError(
+        err instanceof Error && err.message
+          ? `Couldn't save your plan: ${err.message}`
+          : "Couldn't save your plan. Please try again.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-background">
@@ -316,17 +386,18 @@ export function Onboarding({ onDone }: OnboardingProps) {
             }
             title="Commit. Complete. Get It Back."
             text="Complete your commitments, build your streak and earn Cx Coins through successful focus hours."
-            cta="How CommitX Works"
-            onCta={() => finish("/how-it-works")}
+            cta="Continue"
+            onCta={next}
             footer={
               <button
                 type="button"
-                onClick={() => finish()}
+                onClick={() => finish("/how-it-works")}
                 className="mt-3 w-full rounded-2xl bg-card py-4 text-sm font-medium text-muted-foreground shadow-soft"
               >
-                Skip
+                How CommitX Works
               </button>
             }
+
           >
             <FactList
               icon={<CxCoin className="h-4 w-4" />}
@@ -378,6 +449,114 @@ export function Onboarding({ onDone }: OnboardingProps) {
             </p>
           </Screen>
         )}
+
+        {step === 4 && (
+          <Screen
+            visual={
+              <Halo>
+                <span className="inline-flex h-24 w-24 items-center justify-center rounded-full bg-card shadow-soft">
+                  <Target className="h-11 w-11 text-primary" />
+                </span>
+              </Halo>
+            }
+            title="What should I do next?"
+            text="Tell CommitX what you want to accomplish today."
+            cta={saving ? "Saving…" : "Set My Plan"}
+            onCta={savePlan}
+            ctaDisabled={saving || !subject.trim()}
+            footer={
+              saveError ? (
+                <p className="mt-3 rounded-2xl bg-destructive/10 px-4 py-3 text-xs text-destructive">
+                  {saveError} Tap “Set My Plan” to retry.
+                </p>
+              ) : null
+            }
+          >
+            <div className="space-y-3 rounded-3xl bg-card p-5 text-left shadow-soft">
+              <label className="block">
+                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                  Subject
+                </span>
+                <input
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  placeholder="e.g. Medicine"
+                  className="mt-1.5 w-full rounded-2xl bg-background px-4 py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                  Topic / Task
+                </span>
+                <input
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                  placeholder="e.g. Cardiology"
+                  className="mt-1.5 w-full rounded-2xl bg-background px-4 py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                />
+              </label>
+
+              <div>
+                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                  Duration
+                </span>
+                <div className="mt-1.5 flex gap-2 overflow-x-auto pb-1">
+                  {DURATION_OPTIONS.map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => setDurationMinutes(m)}
+                      className={`shrink-0 rounded-full px-4 py-2 text-xs font-medium transition ${
+                        durationMinutes === m
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-background text-muted-foreground"
+                      }`}
+                    >
+                      {formatDuration(m)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                  Priority
+                </span>
+                <div className="mt-1.5 grid grid-cols-3 gap-2">
+                  {PRIORITIES.map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => setPriority(p)}
+                      className={`rounded-2xl py-2.5 text-xs font-medium transition ${
+                        priority === p
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-background text-muted-foreground"
+                      }`}
+                    >
+                      {priorityLabel(p)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <label className="block">
+                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                  Commitment amount (optional)
+                </span>
+                <input
+                  value={commitValue}
+                  onChange={(e) => setCommitValue(e.target.value.replace(/\D/g, ""))}
+                  inputMode="numeric"
+                  placeholder={`₹${MIN_COMMIT} – ₹${MAX_COMMIT}`}
+                  className="mt-1.5 w-full rounded-2xl bg-background px-4 py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                />
+              </label>
+            </div>
+          </Screen>
+        )}
+
       </div>
     </div>
   );
