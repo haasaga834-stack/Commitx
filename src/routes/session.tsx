@@ -411,7 +411,10 @@ function Session() {
   // the foreground re-reads the clock and persists state, so the display picks
   // up exactly where real time is — never a stale frame or a jump.
   useEffect(() => {
-    if (isVerified) return;
+    // Also used by Verified sessions while a recovery break / confirmation is
+    // pending, since leaving the app is explicitly allowed then.
+    if (isVerified && phase === "focus") return;
+
 
     const resync = () => {
       if (doneRef.current) return;
