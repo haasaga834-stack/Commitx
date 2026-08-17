@@ -7,8 +7,13 @@ import {
   markActiveVerifiedSessionPendingFailure,
   readActiveVerifiedSession,
   writeActiveVerifiedSession,
+  FOCUS_HOUR_MS,
+  RECOVERY_BREAK_MS,
+  RECOVERY_CONFIRM_MS,
+  type SessionPhase,
   type VerifiedFailureReason,
 } from "@/lib/verified-mode";
+
 import {
   canCheckDnd,
   isDndEnabled,
