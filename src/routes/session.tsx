@@ -532,6 +532,22 @@ function Session() {
   const progress = totalMs > 0 ? elapsedMs / totalMs : 0;
   const remaining = Math.max(0, Math.ceil((totalMs - elapsedMs) / 1000));
 
+  const onBreak = phase !== "focus";
+  const breakRemaining = Math.max(
+    0,
+    Math.ceil(
+      (RECOVERY_BREAK_MS - (breakStartedAtRef.current ? now - breakStartedAtRef.current : 0)) / 1000,
+    ),
+  );
+  const confirmRemaining = Math.max(
+    0,
+    Math.ceil(
+      (RECOVERY_CONFIRM_MS - (confirmSinceRef.current ? now - confirmSinceRef.current : 0)) / 1000,
+    ),
+  );
+
+
+
   // Live study-progress notification (Android): timer + progress bar.
   useEffect(() => {
     if (doneRef.current) return;
