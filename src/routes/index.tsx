@@ -82,7 +82,7 @@ function Home() {
               label="Day streak"
             />
             <TopChip
-              icon={<Coins className="h-3.5 w-3.5 text-gold" />}
+              icon={<Coins className="h-3.5 w-3.5 text-primary" />}
               value={hydrated ? String(s.foodCoins) : "—"}
               label="Food Coins"
             />
