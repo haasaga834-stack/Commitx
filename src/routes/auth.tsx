@@ -1,6 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 import { Hourglass } from "@/components/Hourglass";
 import { Loader2 } from "lucide-react";
 import { hasNativeGoogleSignIn, nativeGoogleSignIn } from "@/lib/native-auth";
