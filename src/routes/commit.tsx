@@ -221,28 +221,14 @@ function Commit() {
             className="mt-4 w-full accent-[color:var(--color-primary)]"
           />
 
-          {/* Deduction preview */}
+          {/* Demo balance preview */}
           <div className="mt-4 rounded-2xl bg-card px-4 py-3 shadow-soft">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Available</span>
+              <span className="text-muted-foreground">Demo balance</span>
               <span className="tabular-nums">
-                Demo {formatINR(state.balances.demo)} · Real {formatINR(state.balances.real)}
+                {hydrated ? formatINR(state.balances.demo) : "—"}
               </span>
             </div>
-            <label className="mt-3 flex items-center gap-2 text-xs text-foreground">
-              <input
-                type="checkbox"
-                checked={preferReal}
-                onChange={(e) => setPreferReal(e.target.checked)}
-                className="h-4 w-4 accent-[color:var(--color-primary)]"
-              />
-              Use Real Balance first
-            </label>
-            {hydrated && plan.ok && (
-              <p className="mt-2 text-[11px] text-muted-foreground tabular-nums">
-                Will deduct: Demo {formatINR(plan.demoUsed)} + Real {formatINR(plan.realUsed)}
-              </p>
-            )}
           </div>
           {error && (
             <p className="mt-3 rounded-2xl bg-destructive/10 px-4 py-2 text-xs text-destructive">
