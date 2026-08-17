@@ -5,6 +5,8 @@ import { MobileShell } from "@/components/BottomNav";
 import { CxCoin } from "@/components/CxCoin";
 import { DailyGoalProgress } from "@/components/DailyGoalProgress";
 import { SwipeToStart } from "@/components/SwipeToStart";
+import { TabletHome } from "@/components/TabletHome";
+import { useIsTablet } from "@/lib/use-tablet";
 import cozyStudy from "@/assets/cozy-study.jpg";
 
 import { useAppState, stats } from "@/lib/commitx-store";
