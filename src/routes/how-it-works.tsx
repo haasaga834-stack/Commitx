@@ -98,10 +98,9 @@ function HowItWorks() {
             title="Demo money"
             delay={180}
             points={[
-              "CommitX currently runs on demo balance only — no real money is charged.",
-              "New accounts start with a one-time demo grant, and a valid referral code adds more.",
-              "Demo balance is always used before any real balance.",
-              "Real deposits and withdrawals stay disabled during the trial phase.",
+              "CommitX runs entirely on virtual demo money — nothing is charged.",
+              "New accounts start with ₹300 demo money, and a valid referral code adds ₹100.",
+              "Demo money is used only to back your commitments inside the app.",
             ]}
           />
 
