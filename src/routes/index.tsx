@@ -9,7 +9,13 @@ import cozyStudy from "@/assets/cozy-study.jpg";
 
 import { useAppState, stats, formatINR, MIN_COMMIT } from "@/lib/commitx-store";
 import { analyze, formatHours } from "@/lib/analytics-data";
-import { usePlans, nextOccurrence, formatTime, formatDuration } from "@/lib/planner";
+import {
+  usePlans,
+  nextOccurrence,
+  formatTime,
+  formatDuration,
+  priorityLabel,
+} from "@/lib/planner";
 
 export const Route = createFileRoute("/")({
   head: () => ({
