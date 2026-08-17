@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      academic_subjects: {
+        Row: {
+          created_at: string
+          exam_date: string | null
+          id: string
+          name: string
+          revised: boolean
+          revised_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          exam_date?: string | null
+          id?: string
+          name: string
+          revised?: boolean
+          revised_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          exam_date?: string | null
+          id?: string
+          name?: string
+          revised?: boolean
+          revised_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       focus_sessions: {
         Row: {
           created_at: string
@@ -214,6 +247,7 @@ export type Database = {
           theme: string
           updated_at: string
           user_id: string
+          weekly_goal_hours: number
         }
         Insert: {
           created_at?: string
@@ -222,6 +256,7 @@ export type Database = {
           theme?: string
           updated_at?: string
           user_id: string
+          weekly_goal_hours?: number
         }
         Update: {
           created_at?: string
@@ -230,6 +265,7 @@ export type Database = {
           theme?: string
           updated_at?: string
           user_id?: string
+          weekly_goal_hours?: number
         }
         Relationships: []
       }
