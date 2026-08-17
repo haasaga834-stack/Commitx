@@ -440,14 +440,16 @@ function Session() {
       window.removeEventListener("pagehide", persist);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVerified, persist, elapsedNow, totalMs]);
+  }, [isVerified, phase, persist]);
 
 
 
 
   // Verified mode: foreground-only, with a 60s emergency grace window.
   useEffect(() => {
-    if (!isVerified || dndBlocked) return;
+    // Verified restrictions are suspended (only) during a recovery break and
+    // its confirmation window, then immediately resume.
+    if (!isVerified || dndBlocked || phase !== "focus") return;
     log("Verified Mode Armed", { startedAt, totalMs });
     setNativeVerifiedModeActive(true);
 
@@ -484,6 +486,7 @@ function Session() {
         clearGrace();
         setNow(Date.now());
         log("Verified Returned", { away });
+        evaluateRef.current();
       }
     };
     const onPageHide = (event: PageTransitionEvent) => {
@@ -523,7 +526,7 @@ function Session() {
       window.removeEventListener("commitx:android-multi-window", onNativeMultiWindow);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVerified, dndBlocked]);
+  }, [isVerified, dndBlocked, phase]);
 
   const elapsedMs = Math.min(totalMs, accumulatedRef.current + (runningSinceRef.current ? now - runningSinceRef.current : 0));
   const progress = totalMs > 0 ? elapsedMs / totalMs : 0;
