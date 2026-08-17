@@ -3,20 +3,33 @@ import { supabase } from "@/integrations/supabase/client";
 import { syncTodoNotification, syncStudyPlanReminders } from "@/lib/native-notifications";
 
 export type Repeat = "daily" | "weekly" | "monthly";
+export type Priority = "high" | "medium" | "low";
+
+export const PRIORITIES: Priority[] = ["high", "medium", "low"];
+
+export function priorityLabel(p: Priority) {
+  return p === "high" ? "High" : p === "low" ? "Low" : "Medium";
+}
 
 export interface StudyPlan {
   id: string;
   subject: string;
+  /** Topic / task inside the subject (optional) */
+  topic?: string;
   /** HH:MM 24h */
   time: string;
   durationMinutes: number;
   repeat: Repeat;
+  priority: Priority;
+  /** Optional commitment amount in ₹ */
+  commitValue?: number;
   /** 0=Sun..6=Sat — used when repeat = weekly */
   weekday?: number;
   /** 1..31 — used when repeat = monthly */
   monthday?: number;
   createdAt: number;
 }
+
 
 const KEY = "commitx-planner-v1";
 const NOTIFIED_KEY = "commitx-planner-notified-v1";
