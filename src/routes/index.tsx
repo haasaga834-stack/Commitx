@@ -287,21 +287,9 @@ function Home() {
           </div>
         </section>
 
-        {/* Daily goal + community impact */}
-        <div className="mt-4 animate-fade-up" style={{ animationDelay: "300ms" }}>
+        {/* Daily goal */}
+        <div className="mt-4 mb-4 animate-fade-up" style={{ animationDelay: "300ms" }}>
           <DailyGoalProgress todayMinutes={s.todayMinutes} hydrated={hydrated} />
-        </div>
-
-        <div
-          className="mt-4 mb-4 animate-fade-up"
-          style={{ animationDelay: "360ms" }}
-        >
-          <FoodCoins
-            userCoins={s.foodCoins}
-            milestone={1000}
-            communityCoins={community.coins}
-            hydrated={hydrated && community.loaded}
-          />
         </div>
       </div>
     </MobileShell>
