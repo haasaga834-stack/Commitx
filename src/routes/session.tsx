@@ -117,12 +117,14 @@ function Session() {
           }
           const started = typeof prev.startedAt === "number" ? prev.startedAt : 0;
           const sinceStart = Date.now() - started;
-          if (!started || sinceStart < 0 || sinceStart > 6 * 60 * 60 * 1000) return null;
+          if (!started || sinceStart < 0) return null;
+          // Allow for the committed duration plus every mandated break window.
+          if (sinceStart > duration * 60 * 1000 + 3 * 60 * 60 * 1000) return null;
           const banked =
             (prev.accumulatedMs ?? 0) +
             (prev.runningSince ? Math.max(0, Date.now() - prev.runningSince) : 0);
           // Never restore something that would instantly finish.
-          if (banked >= duration * 60 * 1000) return null;
+          if ((prev.phase ?? "focus") === "focus" && banked >= duration * 60 * 1000) return null;
           return prev;
         })(),
   ).current;
@@ -133,6 +135,18 @@ function Session() {
     restored ? (restored.runningSince ?? null) : Date.now(),
   );
 
+  // ---- Recovery-break state (timestamp authoritative, persisted) ----
+  const restoredPhase: SessionPhase = restored?.phase ?? "focus";
+  const [phase, setPhaseState] = useState<SessionPhase>(restoredPhase);
+  const phaseRef = useRef<SessionPhase>(restoredPhase);
+  const breakStartedAtRef = useRef<number | null>(restored?.breakStartedAt ?? null);
+  const confirmSinceRef = useRef<number | null>(restored?.confirmSince ?? null);
+  const breaksTakenRef = useRef<number>(restored?.breaksTaken ?? 0);
+  const nonFocusMsRef = useRef<number>(restored?.nonFocusMs ?? 0);
+  const setPhase = useCallback((next: SessionPhase) => {
+    phaseRef.current = next;
+    setPhaseState(next);
+  }, []);
 
   const [now, setNow] = useState<number>(() => Date.now());
   const [, setPaused] = useState<boolean>(() => runningSinceRef.current === null);
@@ -141,6 +155,7 @@ function Session() {
   const doneRef = useRef(false);
   const graceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hiddenAtRef = useRef<number | null>(null);
+
 
   const persist = useCallback(() => {
     writeActiveVerifiedSession({
