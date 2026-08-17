@@ -448,6 +448,114 @@ export function Onboarding({ onDone }: OnboardingProps) {
             </p>
           </Screen>
         )}
+
+        {step === 4 && (
+          <Screen
+            visual={
+              <Halo>
+                <span className="inline-flex h-24 w-24 items-center justify-center rounded-full bg-card shadow-soft">
+                  <Target className="h-11 w-11 text-primary" />
+                </span>
+              </Halo>
+            }
+            title="What should I do next?"
+            text="Tell CommitX what you want to accomplish today."
+            cta={saving ? "Saving…" : "Set My Plan"}
+            onCta={savePlan}
+            ctaDisabled={saving || !subject.trim()}
+            footer={
+              saveError ? (
+                <p className="mt-3 rounded-2xl bg-destructive/10 px-4 py-3 text-xs text-destructive">
+                  {saveError} Tap “Set My Plan” to retry.
+                </p>
+              ) : null
+            }
+          >
+            <div className="space-y-3 rounded-3xl bg-card p-5 text-left shadow-soft">
+              <label className="block">
+                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                  Subject
+                </span>
+                <input
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  placeholder="e.g. Medicine"
+                  className="mt-1.5 w-full rounded-2xl bg-background px-4 py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                  Topic / Task
+                </span>
+                <input
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                  placeholder="e.g. Cardiology"
+                  className="mt-1.5 w-full rounded-2xl bg-background px-4 py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                />
+              </label>
+
+              <div>
+                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                  Duration
+                </span>
+                <div className="mt-1.5 flex gap-2 overflow-x-auto pb-1">
+                  {DURATION_OPTIONS.map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => setDurationMinutes(m)}
+                      className={`shrink-0 rounded-full px-4 py-2 text-xs font-medium transition ${
+                        durationMinutes === m
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-background text-muted-foreground"
+                      }`}
+                    >
+                      {formatDuration(m)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                  Priority
+                </span>
+                <div className="mt-1.5 grid grid-cols-3 gap-2">
+                  {PRIORITIES.map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => setPriority(p)}
+                      className={`rounded-2xl py-2.5 text-xs font-medium transition ${
+                        priority === p
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-background text-muted-foreground"
+                      }`}
+                    >
+                      {priorityLabel(p)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <label className="block">
+                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                  Commitment amount (optional)
+                </span>
+                <input
+                  value={commitValue}
+                  onChange={(e) => setCommitValue(e.target.value.replace(/\D/g, ""))}
+                  inputMode="numeric"
+                  placeholder={`₹${MIN_COMMIT} – ₹${MAX_COMMIT}`}
+                  className="mt-1.5 w-full rounded-2xl bg-background px-4 py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                />
+              </label>
+            </div>
+          </Screen>
+        )}
+
       </div>
     </div>
   );
