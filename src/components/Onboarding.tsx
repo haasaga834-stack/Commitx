@@ -23,7 +23,27 @@ import {
   useAppState,
   REFERRAL_BONUS,
   WELCOME_DEMO,
+  MIN_COMMIT,
+  MAX_COMMIT,
 } from "@/lib/commitx-store";
+import {
+  usePlans,
+  savePrimaryPlan,
+  clampDuration,
+  formatDuration,
+  DURATION_OPTIONS,
+  PRIORITIES,
+  priorityLabel,
+  type Priority,
+} from "@/lib/planner";
+
+/** A time a few minutes from now, so the plan lands on today's schedule. */
+function soonTime() {
+  const d = new Date(Date.now() + 10 * 60 * 1000);
+  if (d.toDateString() !== new Date().toDateString()) return "23:55";
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
 
 interface OnboardingProps {
   onDone: () => void;
