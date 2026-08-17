@@ -63,6 +63,7 @@ export type Database = {
           education: string
           id: string
           notifications_enabled: boolean
+          onboarding_completed: boolean
           referral_code: string
           referred_by: string | null
           sex: string
@@ -77,6 +78,7 @@ export type Database = {
           education?: string
           id: string
           notifications_enabled?: boolean
+          onboarding_completed?: boolean
           referral_code: string
           referred_by?: string | null
           sex?: string
@@ -91,6 +93,7 @@ export type Database = {
           education?: string
           id?: string
           notifications_enabled?: boolean
+          onboarding_completed?: boolean
           referral_code?: string
           referred_by?: string | null
           sex?: string
