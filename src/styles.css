@@ -252,6 +252,19 @@
   animation: ember-float 3.4s ease-out infinite;
 }
 
+@keyframes cx-attention {
+  0% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--primary) 42%, transparent); }
+  55% { box-shadow: 0 0 0 10px color-mix(in oklab, var(--primary) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--primary) 0%, transparent); }
+}
+@utility animate-cx-attention {
+  animation: cx-attention 1.5s ease-out 2;
+}
+.cx-attention {
+  border-radius: 1.5rem;
+  animation: cx-attention 1.5s ease-out 2;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -51,7 +51,7 @@ export const MIN_COMMIT = 50;
 export const MAX_COMMIT = 500;
 export const REFERRAL_BONUS = 100;
 /** Demo balance granted on sign-up (a referral code adds REFERRAL_BONUS on top). */
-export const WELCOME_DEMO = 200;
+export const WELCOME_DEMO = 300;
 
 const initial: AppState = {
   balances: { real: 0, demo: WELCOME_DEMO },
