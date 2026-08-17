@@ -2,14 +2,11 @@ import { useMemo, useState } from "react";
 import { useRouter } from "@tanstack/react-router";
 import {
   ArrowRight,
-  BellRing,
   CheckCircle2,
   Flame,
   Hourglass as HourglassIcon,
-  Leaf,
   ListChecks,
   ShieldCheck,
-  Smartphone,
   Sparkles,
   Target,
   Timer,
@@ -272,7 +269,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
               </Halo>
             }
             title="Make a Commitment"
-            text="Choose what you want to accomplish and how long you'll focus."
+            text="Pick a task, a duration, and an amount to commit."
             cta="Continue"
             onCta={next}
           >
@@ -426,7 +423,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
               </Halo>
             }
             title="What should I do next?"
-            text="Tell CommitX what you want to accomplish today."
+            text="Add today's focus session."
             cta={saving ? "Saving…" : "Set My Plan"}
             onCta={savePlan}
             ctaDisabled={saving || !subject.trim()}
