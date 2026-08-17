@@ -167,17 +167,17 @@ function Settings() {
               Rate CommitX
             </span>
           </button>
-          <button
-            onClick={() => revealSection("notifications")}
+          <Link
+            to="/about"
             className="flex flex-col items-center gap-2 rounded-3xl bg-card p-4 text-center shadow-soft"
           >
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/15 text-primary">
-              <Bell className="h-4 w-4" />
+              <Info className="h-4 w-4" />
             </span>
             <span className="text-xs font-medium leading-tight text-foreground">
-              Notifications
+              About us
             </span>
-          </button>
+          </Link>
           <button
             onClick={() => revealSection("screen-time")}
             className="flex flex-col items-center gap-2 rounded-3xl bg-card p-4 text-center shadow-soft"
