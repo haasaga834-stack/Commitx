@@ -1,33 +1,23 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { MobileShell } from "@/components/BottomNav";
-import { useAppState } from "@/lib/commitx-store";
 import {
   useSubjects,
   addSubject,
   removeSubject,
   toggleRevised,
   updateSubject,
-  subjectProgress,
   suggestedSubjects,
   countdownLabel,
   daysUntil,
   type Subject,
 } from "@/lib/academics";
-import {
-  usePlans,
-  useDailyGoal,
-  useWeeklyGoal,
-  formatGoalHours,
-  formatDuration,
-} from "@/lib/planner";
-import { analyze, formatHours } from "@/lib/analytics-data";
+import { usePlans } from "@/lib/planner";
 import {
   GraduationCap,
   Plus,
   Trash2,
   CalendarClock,
-  Target,
   CheckCircle2,
   Circle,
   ChevronLeft,
@@ -41,12 +31,12 @@ export const Route = createFileRoute("/academics")({
       {
         name: "description",
         content:
-          "Track subjects, exam countdowns, daily and weekly study targets, subject progress and revision in CommitX.",
+          "Track subjects, exam countdowns and revision in CommitX.",
       },
       { property: "og:title", content: "CommitX — Academics" },
       {
         property: "og:description",
-        content: "Subjects, exam countdowns, study targets and revision tracking.",
+        content: "Subjects, exam countdowns and revision tracking.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -89,22 +79,14 @@ function Empty({ children }: { children: React.ReactNode }) {
 }
 
 function Academics() {
-  const { state, hydrated } = useAppState();
   const { subjects, hydrated: subjectsHydrated } = useSubjects();
   const { plans } = usePlans();
-  const { goalHours, setGoalHours } = useDailyGoal();
-  const { weeklyHours, setWeeklyHours } = useWeeklyGoal();
 
   const [name, setName] = useState("");
   const [examDate, setExamDate] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const analytics = useMemo(() => analyze(state.sessions), [state.sessions]);
-  const progress = useMemo(
-    () => subjectProgress(subjects, state.sessions, plans),
-    [subjects, state.sessions, plans],
-  );
   const suggestions = useMemo(() => suggestedSubjects(plans, subjects), [plans, subjects]);
 
   const exams = useMemo(
@@ -115,10 +97,6 @@ function Academics() {
     [subjects],
   );
 
-  const todayMinutes = analytics.week.find((d) => d.isToday)?.minutes ?? 0;
-  const dailyTarget = goalHours * 60;
-  const weeklyTarget = weeklyHours * 60;
-  const maxSubjectMinutes = Math.max(...progress.map((p) => p.completedMinutes), 1);
   const revisedCount = subjects.filter((s) => s.revised).length;
 
   async function run(fn: () => Promise<unknown>) {
@@ -149,7 +127,7 @@ function Academics() {
           Academics
         </h1>
         <p className="mt-1 text-xs text-muted-foreground">
-          Subjects, exams, targets and revision — built from your real CommitX data.
+          Subjects, exams and revision — built from your real CommitX data.
         </p>
       </header>
 
