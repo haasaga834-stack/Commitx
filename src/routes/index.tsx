@@ -42,7 +42,7 @@ function Home() {
   const { state, hydrated } = useAppState();
   const s = stats(state.sessions);
   const a = useMemo(() => analyze(state.sessions), [state.sessions]);
-  const community = useCommunityFoodCoins();
+  
   const { plans, hydrated: plansHydrated } = usePlans();
   const firstName = state.profile.name.split(" ")[0];
 
