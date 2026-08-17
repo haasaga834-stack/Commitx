@@ -107,11 +107,11 @@ export function WindScape({
         ))}
       </div>
 
-      {/* Leaves carried by the wind */}
+      {/* Small leaves gliding slowly on the breeze */}
       {LEAVES.map((l, i) => (
         <svg
           key={i}
-          className="absolute left-0 animate-wind-across"
+          className="absolute left-0 animate-wind-glide"
           style={{
             top: l.top,
             width: l.size,
@@ -124,11 +124,13 @@ export function WindScape({
         >
           <path
             d="M10 1C3 8 0 15 3 21c3 6 11 7 14 1 3-6 1-14-7-21Z"
-            fill="var(--color-primary)"
-            opacity="0.45"
+            fill={l.fill}
+            opacity={l.opacity}
           />
+          <path d="M10 3v20" stroke={l.fill} strokeWidth="0.8" opacity={l.opacity * 0.6} />
         </svg>
       ))}
+
 
       {/* Soft atmospheric motes */}
       {MOTES.map((m, i) => (
