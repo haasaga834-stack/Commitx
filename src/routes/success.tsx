@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Hourglass } from "@/components/Hourglass";
 import { Check, Flame, Clock, Target } from "lucide-react";
+import { CxCoin } from "@/components/CxCoin";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 import { useAppState, stats, formatINR } from "@/lib/commitx-store";
@@ -132,7 +133,7 @@ function Success() {
           highlight
         />
         <StatTile icon={<Clock className="h-4 w-4" />} label="Focus total" value={focusHours} />
-        <StatTile icon={<span className="text-sm">🪙</span>} label="Food Coins" value={String(coins)} />
+        <StatTile icon={<CxCoin className="h-4 w-4" />} label="Cx Coins" value={String(coins)} />
         <StatTile icon={<Target className="h-4 w-4" />} label="Success" value={`${successRate}%`} />
       </div>
 
