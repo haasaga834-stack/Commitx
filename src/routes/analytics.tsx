@@ -65,12 +65,15 @@ function Analytics() {
             icon={<CalendarDays className="h-4 w-4" />}
             label="Weekly total"
             value={hydrated ? formatHours(a.weeklyMinutes) : "—"}
+            small
           />
           <Metric
             icon={<CalendarDays className="h-4 w-4" />}
             label="Monthly total"
             value={hydrated ? formatHours(a.monthlyMinutes) : "—"}
+            small
           />
+
           <Metric
             icon={<Clock className="h-4 w-4" />}
             label="Avg daily"
