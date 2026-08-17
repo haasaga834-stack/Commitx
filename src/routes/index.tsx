@@ -275,7 +275,7 @@ function Home() {
                 No active commitment
               </p>
               <p className="truncate text-[11px] text-muted-foreground">
-                Start a commitment and stay consistent!
+                Start one and stay consistent
               </p>
             </div>
             <Link
