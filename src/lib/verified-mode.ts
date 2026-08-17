@@ -30,7 +30,18 @@ export interface ActiveVerifiedSession {
   accumulatedMs?: number;
   /** Timestamp the timer last started running, or null while paused. */
   runningSince?: number | null;
+  /** Session phase: focus / recovery break / awaiting confirmation. */
+  phase?: SessionPhase;
+  /** Wall-clock timestamp the current recovery break started. */
+  breakStartedAt?: number | null;
+  /** Wall-clock timestamp the confirmation window opened. */
+  confirmSince?: number | null;
+  /** How many recovery breaks have been completed & confirmed. */
+  breaksTaken?: number;
+  /** Total wall-clock time spent outside focus (breaks + confirmation). */
+  nonFocusMs?: number;
 }
+
 
 
 export interface VerifiedFailureOutcome {
