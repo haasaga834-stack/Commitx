@@ -52,7 +52,7 @@ interface OnboardingProps {
 function Dots({ step }: { step: number }) {
   return (
     <div className="flex items-center justify-center gap-1.5">
-      {[0, 1, 2, 3].map((i) => (
+      {[0, 1, 2, 3, 4].map((i) => (
         <span
           key={i}
           className={
