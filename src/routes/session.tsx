@@ -417,7 +417,8 @@ function Session() {
       if (doneRef.current) return;
       setNow(Date.now());
       persist();
-      if (canCompleteNow()) complete("completed");
+      evaluateRef.current();
+
     };
 
     const onVisibility = () => {
