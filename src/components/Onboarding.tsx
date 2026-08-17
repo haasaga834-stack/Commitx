@@ -120,6 +120,7 @@ function Screen({
   children,
   cta,
   onCta,
+  ctaDisabled,
   footer,
 }: {
   visual: React.ReactNode;
@@ -128,6 +129,7 @@ function Screen({
   children?: React.ReactNode;
   cta: string;
   onCta: () => void;
+  ctaDisabled?: boolean;
   footer?: React.ReactNode;
 }) {
   return (
@@ -147,7 +149,8 @@ function Screen({
         <button
           type="button"
           onClick={onCta}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-sm font-medium text-primary-foreground shadow-soft transition active:scale-[0.99]"
+          disabled={ctaDisabled}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-sm font-medium text-primary-foreground shadow-soft transition active:scale-[0.99] disabled:opacity-60"
         >
           {cta} <ArrowRight className="h-4 w-4" />
         </button>
@@ -156,6 +159,7 @@ function Screen({
     </div>
   );
 }
+
 
 export function Onboarding({ onDone }: OnboardingProps) {
   const router = useRouter();
