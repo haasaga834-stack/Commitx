@@ -11,7 +11,7 @@ import { claimReferral, deleteAccount as deleteAccountFn } from "@/lib/account.f
 import { getDeviceHash } from "@/lib/device";
 import { signOutEverywhere } from "@/lib/use-auth";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Moon, Sun, Copy, Check, Trash2, ShieldAlert, LogOut, BookOpen, ChevronRight, Star, Info, Mail } from "lucide-react";
+import { ArrowLeft, Moon, Sun, Copy, Check, Trash2, ShieldAlert, LogOut, BookOpen, ChevronRight, Star, Info, Mail, Bell, Timer } from "lucide-react";
 import { isNativeApp, rateApp } from "@/lib/native-notifications";
 
 export const Route = createFileRoute("/settings")({
@@ -25,6 +25,11 @@ export const Route = createFileRoute("/settings")({
   }),
   component: Settings,
 });
+
+function scrollToSection(id: string) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+}
 
 function Settings() {
   const router = useRouter();
@@ -241,7 +246,9 @@ function Settings() {
         </p>
         <div className="mt-4 grid gap-4">
           <NotificationsCard />
-          <ScreenTimeCard />
+          <div id="screen-time">
+            <ScreenTimeCard />
+          </div>
         </div>
 
         {/* Referral */}
