@@ -7,9 +7,9 @@ export const Route = createFileRoute("/wallet")({
   head: () => ({
     meta: [
       { title: "CommitX — Wallet" },
-      { name: "description", content: "Track your Real and Demo balances." },
+      { name: "description", content: "Track your Demo balance and commitment history." },
       { property: "og:title", content: "CommitX — Wallet" },
-      { property: "og:description", content: "Track your Real and Demo balances." },
+      { property: "og:description", content: "Track your Demo balance and commitment history." },
     ],
   }),
   component: Wallet,
@@ -27,7 +27,7 @@ function Wallet() {
         <p className="text-xs uppercase tracking-widest text-muted-foreground">
           Wallet
         </p>
-        <h1 className="mt-2 text-3xl font-semibold">Your balances</h1>
+        <h1 className="mt-2 text-3xl font-semibold">Your demo balance</h1>
 
         {/* Demo Balance */}
         <div className="mt-6 rounded-3xl border border-hairline bg-card p-6 shadow-soft">
