@@ -77,12 +77,12 @@ function Home() {
 
           <div className="flex shrink-0 items-center gap-2">
             <TopChip
-              icon="🔥"
+              icon={<Flame className="h-3.5 w-3.5 text-accent" />}
               value={hydrated ? String(s.streak) : "—"}
               label="Day streak"
             />
             <TopChip
-              icon="🪙"
+              icon={<Coins className="h-3.5 w-3.5 text-gold" />}
               value={hydrated ? String(s.foodCoins) : "—"}
               label="Food Coins"
             />
