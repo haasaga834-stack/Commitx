@@ -41,7 +41,6 @@ function Commit() {
   const [value, setValue] = useState(MIN_COMMIT);
   const [mode, setMode] = useState<"standard" | "verified">("standard");
   const [confirmVerified, setConfirmVerified] = useState(false);
-  const [preferReal, setPreferReal] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [verifiedWarn, setVerifiedWarn] = useState(false);
   const [dndOn, setDndOn] = useState<boolean | null>(null);
@@ -68,10 +67,7 @@ function Commit() {
 
   const finalGoal = goal === "Custom" ? customGoal.trim() || "Custom" : goal;
 
-  const plan = useMemo(
-    () => planDeduction(value, state.balances, preferReal),
-    [value, state.balances, preferReal],
-  );
+  const plan = useMemo(() => planDeduction(value, state.balances), [value, state.balances]);
 
   function begin() {
     if (value < MIN_COMMIT || value > MAX_COMMIT) {
@@ -79,7 +75,7 @@ function Commit() {
       return;
     }
     if (!plan.ok) {
-      setError("Insufficient Demo Balance. Real money deposits are coming soon during the trial phase.");
+      setError("Not enough demo money for this commitment. Lower the amount and try again.");
       return;
     }
     setError(null);
@@ -101,7 +97,7 @@ function Commit() {
       duration: String(duration),
       value: String(value),
       mode,
-      preferReal: preferReal ? "1" : "0",
+      preferReal: "0",
     });
     navigate({ to: "/session", search: Object.fromEntries(params) as Record<string, string> });
   }
