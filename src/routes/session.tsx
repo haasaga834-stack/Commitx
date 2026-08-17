@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Hourglass } from "@/components/Hourglass";
+import { WindScape } from "@/components/WindScape";
 import { setState, formatINR, planDeduction, getState, type Mode } from "@/lib/commitx-store";
 import {
   clearActiveVerifiedSession,
