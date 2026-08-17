@@ -7,8 +7,13 @@ import {
   markActiveVerifiedSessionPendingFailure,
   readActiveVerifiedSession,
   writeActiveVerifiedSession,
+  FOCUS_HOUR_MS,
+  RECOVERY_BREAK_MS,
+  RECOVERY_CONFIRM_MS,
+  type SessionPhase,
   type VerifiedFailureReason,
 } from "@/lib/verified-mode";
+
 import {
   canCheckDnd,
   isDndEnabled,
@@ -16,7 +21,7 @@ import {
   setNativeSessionLock,
   setNativeVerifiedModeActive,
 } from "@/lib/native-session";
-import { BellOff, X } from "lucide-react";
+import { BellOff, Leaf, X } from "lucide-react";
 
 import { showSessionProgress, hideSessionProgress } from "@/lib/native-notifications";
 import { z } from "zod";
@@ -117,12 +122,14 @@ function Session() {
           }
           const started = typeof prev.startedAt === "number" ? prev.startedAt : 0;
           const sinceStart = Date.now() - started;
-          if (!started || sinceStart < 0 || sinceStart > 6 * 60 * 60 * 1000) return null;
+          if (!started || sinceStart < 0) return null;
+          // Allow for the committed duration plus every mandated break window.
+          if (sinceStart > duration * 60 * 1000 + 3 * 60 * 60 * 1000) return null;
           const banked =
             (prev.accumulatedMs ?? 0) +
             (prev.runningSince ? Math.max(0, Date.now() - prev.runningSince) : 0);
           // Never restore something that would instantly finish.
-          if (banked >= duration * 60 * 1000) return null;
+          if ((prev.phase ?? "focus") === "focus" && banked >= duration * 60 * 1000) return null;
           return prev;
         })(),
   ).current;
@@ -133,6 +140,18 @@ function Session() {
     restored ? (restored.runningSince ?? null) : Date.now(),
   );
 
+  // ---- Recovery-break state (timestamp authoritative, persisted) ----
+  const restoredPhase: SessionPhase = restored?.phase ?? "focus";
+  const [phase, setPhaseState] = useState<SessionPhase>(restoredPhase);
+  const phaseRef = useRef<SessionPhase>(restoredPhase);
+  const breakStartedAtRef = useRef<number | null>(restored?.breakStartedAt ?? null);
+  const confirmSinceRef = useRef<number | null>(restored?.confirmSince ?? null);
+  const breaksTakenRef = useRef<number>(restored?.breaksTaken ?? 0);
+  const nonFocusMsRef = useRef<number>(restored?.nonFocusMs ?? 0);
+  const setPhase = useCallback((next: SessionPhase) => {
+    phaseRef.current = next;
+    setPhaseState(next);
+  }, []);
 
   const [now, setNow] = useState<number>(() => Date.now());
   const [, setPaused] = useState<boolean>(() => runningSinceRef.current === null);
@@ -141,6 +160,7 @@ function Session() {
   const doneRef = useRef(false);
   const graceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hiddenAtRef = useRef<number | null>(null);
+
 
   const persist = useCallback(() => {
     writeActiveVerifiedSession({
@@ -152,33 +172,48 @@ function Session() {
       startedAt,
       accumulatedMs: accumulatedRef.current,
       runningSince: runningSinceRef.current,
+      phase: phaseRef.current,
+      breakStartedAt: breakStartedAtRef.current,
+      confirmSince: confirmSinceRef.current,
+      breaksTaken: breaksTakenRef.current,
+      nonFocusMs: nonFocusMsRef.current,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [goal, duration, value, mode, preferRealBool, startedAt]);
 
+  /** Wall-clock time spent outside focus (recovery breaks + confirmations). */
+  const nonFocusTotal = useCallback(() => {
+    const anchor = breakStartedAtRef.current;
+    const live = phaseRef.current !== "focus" && anchor ? Math.max(0, Date.now() - anchor) : 0;
+    return nonFocusMsRef.current + live;
+  }, []);
+
   const elapsedNow = useCallback(() => {
     const running = runningSinceRef.current;
     const banked = accumulatedRef.current + (running ? Date.now() - running : 0);
-    // Verified sessions are anchored to the wall clock: banked time can never
-    // exceed the real time passed since the session started, so re-renders,
-    // backgrounding or restored state can't shorten the commitment.
-    if (isVerified) return Math.max(0, Math.min(banked, Date.now() - startedAt));
+    // Verified sessions are anchored to the wall clock: banked focus time can
+    // never exceed real time since start minus recovery-break time, so
+    // re-renders, backgrounding or restored state can't shorten the commitment.
+    if (isVerified) {
+      return Math.max(0, Math.min(banked, Date.now() - startedAt - nonFocusTotal()));
+    }
     return Math.max(0, banked);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVerified, startedAt]);
+  }, [isVerified, startedAt, nonFocusTotal]);
 
   /**
    * Authoritative completion gate. A session may only finish once the full
    * committed duration has genuinely elapsed; Verified sessions additionally
-   * require the wall clock since start to have passed, which makes early or
-   * duplicate completion impossible.
+   * require the wall clock since start (minus breaks) to have passed, which
+   * makes early or duplicate completion impossible.
    */
   const canCompleteNow = useCallback(() => {
+    if (phaseRef.current !== "focus") return false;
     if (elapsedNow() < totalMs) return false;
-    if (isVerified && Date.now() - startedAt < totalMs) return false;
+    if (isVerified && Date.now() - startedAt - nonFocusTotal() < totalMs) return false;
     return true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [elapsedNow, totalMs, isVerified, startedAt]);
+  }, [elapsedNow, totalMs, isVerified, startedAt, nonFocusTotal]);
 
 
   const pauseTimer = useCallback(
@@ -206,6 +241,98 @@ function Session() {
     [persist],
   );
 
+  /** Begin the mandatory 5-minute recovery break (main timer pauses). */
+  const startRecoveryBreak = useCallback(
+    (at: number) => {
+      if (doneRef.current || phaseRef.current !== "focus") return;
+      // Bank exactly the hour boundary so no focus time is lost or gained.
+      accumulatedRef.current = elapsedNow();
+      runningSinceRef.current = null;
+      setPaused(true);
+      breakStartedAtRef.current = at;
+      confirmSinceRef.current = null;
+      setPhase("recovery_break");
+      persist();
+      setNow(Date.now());
+      log("Recovery Break Started", { at, breaksTaken: breaksTakenRef.current });
+    },
+    [elapsedNow, persist, setPhase],
+  );
+
+  const enterAwaitingConfirmation = useCallback(
+    (at: number) => {
+      if (doneRef.current || phaseRef.current !== "recovery_break") return;
+      confirmSinceRef.current = at;
+      setPhase("awaiting_confirmation");
+      persist();
+      setNow(Date.now());
+      log("Recovery Break Finished", { confirmSince: at });
+    },
+    [persist, setPhase],
+  );
+
+  const confirmRefreshed = useCallback(() => {
+    if (doneRef.current || phaseRef.current !== "awaiting_confirmation") return;
+    const anchor = breakStartedAtRef.current;
+    if (anchor) nonFocusMsRef.current += Math.max(0, Date.now() - anchor);
+    breakStartedAtRef.current = null;
+    confirmSinceRef.current = null;
+    breaksTakenRef.current += 1;
+    setPhase("focus");
+    resumeTimer("recovery_confirmed");
+    persist();
+    log("Recovery Confirmed", { breaksTaken: breaksTakenRef.current });
+  }, [persist, resumeTimer, setPhase]);
+
+  /**
+   * Single timestamp-driven state machine. Every tick, foreground return and
+   * lifecycle event routes through here, so exactly one completion trigger and
+   * one failure trigger exist.
+   */
+  const evaluate = useCallback(() => {
+    if (doneRef.current) return;
+    const t = Date.now();
+    if (phaseRef.current === "focus") {
+      if (dndBlocked) return;
+      if (canCompleteNow()) {
+        complete("completed");
+        return;
+      }
+      const elapsed = elapsedNow();
+      const nextBreakAt = (breaksTakenRef.current + 1) * FOCUS_HOUR_MS;
+      if (elapsed >= nextBreakAt && elapsed < totalMs) {
+        startRecoveryBreak(t - (elapsed - nextBreakAt));
+      }
+      return;
+    }
+    if (phaseRef.current === "recovery_break") {
+      const anchor = breakStartedAtRef.current ?? t;
+      if (t - anchor >= RECOVERY_BREAK_MS) {
+        enterAwaitingConfirmation(anchor + RECOVERY_BREAK_MS);
+      }
+      return;
+    }
+    // awaiting_confirmation
+    const since = confirmSinceRef.current ?? t;
+    if (t - since > RECOVERY_CONFIRM_MS) {
+      log("Recovery Confirmation Missed", { since });
+      if (isVerified) markActiveVerifiedSessionPendingFailure("recovery_timeout");
+      complete("failed", "recovery_timeout");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    dndBlocked,
+    canCompleteNow,
+    elapsedNow,
+    totalMs,
+    startRecoveryBreak,
+    enterAwaitingConfirmation,
+    isVerified,
+  ]);
+
+  const evaluateRef = useRef(evaluate);
+  evaluateRef.current = evaluate;
+
   // Keep the stored session in sync from the very first render.
   useEffect(() => {
     if (dndBlocked) {
@@ -213,6 +340,7 @@ function Session() {
       return;
     }
     persist();
+    evaluateRef.current();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -222,7 +350,7 @@ function Session() {
     const id = setInterval(() => {
       if (isDndEnabled() !== false) {
         setDndBlocked(false);
-        resumeTimer("dnd_enabled");
+        if (phaseRef.current === "focus") resumeTimer("dnd_enabled");
       }
     }, 1200);
     return () => clearInterval(id);
@@ -233,17 +361,15 @@ function Session() {
     let raf = 0;
     const tick = () => {
       setNow(Date.now());
-      if (!doneRef.current && !dndBlocked && canCompleteNow()) {
-        complete("completed");
-        return;
-      }
-
+      evaluateRef.current();
+      if (doneRef.current) return;
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dndBlocked]);
+  }, []);
+
 
   // Sessions may only be ended through the in-session End Session flow:
   // every system back action opens the confirmation dialog instead.
@@ -285,13 +411,17 @@ function Session() {
   // the foreground re-reads the clock and persists state, so the display picks
   // up exactly where real time is — never a stale frame or a jump.
   useEffect(() => {
-    if (isVerified) return;
+    // Also used by Verified sessions while a recovery break / confirmation is
+    // pending, since leaving the app is explicitly allowed then.
+    if (isVerified && phase === "focus") return;
+
 
     const resync = () => {
       if (doneRef.current) return;
       setNow(Date.now());
       persist();
-      if (canCompleteNow()) complete("completed");
+      evaluateRef.current();
+
     };
 
     const onVisibility = () => {
@@ -310,14 +440,16 @@ function Session() {
       window.removeEventListener("pagehide", persist);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVerified, persist, elapsedNow, totalMs]);
+  }, [isVerified, phase, persist]);
 
 
 
 
   // Verified mode: foreground-only, with a 60s emergency grace window.
   useEffect(() => {
-    if (!isVerified || dndBlocked) return;
+    // Verified restrictions are suspended (only) during a recovery break and
+    // its confirmation window, then immediately resume.
+    if (!isVerified || dndBlocked || phase !== "focus") return;
     log("Verified Mode Armed", { startedAt, totalMs });
     setNativeVerifiedModeActive(true);
 
@@ -354,6 +486,7 @@ function Session() {
         clearGrace();
         setNow(Date.now());
         log("Verified Returned", { away });
+        evaluateRef.current();
       }
     };
     const onPageHide = (event: PageTransitionEvent) => {
@@ -393,11 +526,27 @@ function Session() {
       window.removeEventListener("commitx:android-multi-window", onNativeMultiWindow);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVerified, dndBlocked]);
+  }, [isVerified, dndBlocked, phase]);
 
   const elapsedMs = Math.min(totalMs, accumulatedRef.current + (runningSinceRef.current ? now - runningSinceRef.current : 0));
   const progress = totalMs > 0 ? elapsedMs / totalMs : 0;
   const remaining = Math.max(0, Math.ceil((totalMs - elapsedMs) / 1000));
+
+  const onBreak = phase !== "focus";
+  const breakRemaining = Math.max(
+    0,
+    Math.ceil(
+      (RECOVERY_BREAK_MS - (breakStartedAtRef.current ? now - breakStartedAtRef.current : 0)) / 1000,
+    ),
+  );
+  const confirmRemaining = Math.max(
+    0,
+    Math.ceil(
+      (RECOVERY_CONFIRM_MS - (confirmSinceRef.current ? now - confirmSinceRef.current : 0)) / 1000,
+    ),
+  );
+
+
 
   // Live study-progress notification (Android): timer + progress bar.
   useEffect(() => {
@@ -492,15 +641,20 @@ function Session() {
       </div>
 
       <div className="flex flex-1 flex-col items-center justify-center">
-        <Hourglass size={260} state="running" progress={progress} />
+        <Hourglass size={260} state={onBreak ? "idle" : "running"} progress={progress} />
         <p className="mt-10 font-display text-6xl font-semibold tabular-nums tracking-tight">
           {fmt(remaining)}
         </p>
         <p className="mt-3 text-sm text-muted-foreground">{goal}</p>
         <p className="mt-1 text-xs text-muted-foreground">{formatINR(value)} committed</p>
-        {isVerified && (
+        {isVerified && !onBreak && (
           <p className="mt-6 rounded-full bg-foreground/5 px-4 py-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">
             Leaving CommitX fails this session
+          </p>
+        )}
+        {onBreak && (
+          <p className="mt-6 rounded-full bg-primary/10 px-4 py-1.5 text-[11px] uppercase tracking-widest text-primary">
+            Recovery break · timer paused
           </p>
         )}
       </div>
@@ -516,6 +670,58 @@ function Session() {
       </div>
 
 
+
+      {onBreak && (
+        <div className="fixed inset-0 z-[70] flex items-end justify-center bg-background/92 px-5 pb-8 backdrop-blur-md sm:items-center sm:pb-0">
+          <div className="w-full max-w-sm rounded-[28px] bg-card p-7 text-center shadow-lift">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+              <Leaf className="h-7 w-7 text-primary animate-gentle-float" />
+            </div>
+
+            {phase === "recovery_break" ? (
+              <>
+                <p className="mt-5 font-display text-xl font-semibold">Recovery break</p>
+                <p className="mt-6 font-display text-5xl font-semibold tabular-nums tracking-tight text-primary">
+                  {fmt(breakRemaining)}
+                </p>
+                <div className="mt-5 h-1.5 w-full overflow-hidden rounded-full bg-foreground/10">
+                  <div
+                    className="h-full rounded-full bg-primary transition-[width] duration-500 ease-linear"
+                    style={{
+                      width: `${Math.min(100, Math.max(0, 100 - (breakRemaining / (RECOVERY_BREAK_MS / 1000)) * 100))}%`,
+                    }}
+                  />
+                </div>
+                <p className="mt-6 text-sm leading-relaxed text-muted-foreground">
+                  Breathe. Stretch. Take a short walk. Rest your eyes.
+                </p>
+                <p className="mt-3 text-[11px] uppercase tracking-widest text-muted-foreground">
+                  You may use your phone freely · nothing fails now
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="mt-5 font-display text-xl font-semibold">Are you refreshed?</p>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  Confirm within {confirmRemaining}s to resume your commitment.
+                </p>
+                <p className="mt-5 font-display text-4xl font-semibold tabular-nums text-primary">
+                  0:{confirmRemaining.toString().padStart(2, "0")}
+                </p>
+                <button
+                  onClick={confirmRefreshed}
+                  className="mt-6 w-full rounded-full bg-primary px-6 py-4 text-sm font-medium text-primary-foreground"
+                >
+                  Yes, I&rsquo;m refreshed
+                </button>
+                <p className="mt-3 text-[11px] uppercase tracking-widest text-muted-foreground">
+                  Not confirming ends the commitment
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {dndBlocked && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-background/95 px-6 backdrop-blur-sm">
