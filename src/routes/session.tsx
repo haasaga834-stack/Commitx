@@ -641,7 +641,7 @@ function Session() {
       </div>
 
       <div className="flex flex-1 flex-col items-center justify-center">
-        <Hourglass size={260} state={onBreak ? "paused" : "running"} progress={progress} />
+        <Hourglass size={260} state={onBreak ? "idle" : "running"} progress={progress} />
         <p className="mt-10 font-display text-6xl font-semibold tabular-nums tracking-tight">
           {fmt(remaining)}
         </p>
