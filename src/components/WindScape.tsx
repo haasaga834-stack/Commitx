@@ -55,9 +55,14 @@ export function WindScape({
         className,
       )}
     >
-      {/* Warm light wash */}
-      <div className="absolute -top-24 right-[-15%] h-72 w-72 rounded-full bg-gradient-sun opacity-30 blur-3xl" />
+      {/* Warm pale-yellow sunlight, softly breathing */}
+      <div className="absolute -top-24 right-[-15%] h-72 w-72 animate-sun-breathe rounded-full bg-gradient-sun blur-3xl" />
       <div className="absolute -bottom-32 -left-20 h-80 w-80 rounded-full bg-primary/10 blur-3xl" />
+      <div
+        className="absolute left-[18%] top-[8%] h-40 w-40 animate-sun-breathe rounded-full bg-accent/20 blur-3xl"
+        style={{ animationDelay: "-7s", animationDuration: "24s" }}
+      />
+
 
       {/* Flowing wind mist bands */}
       <div className="absolute inset-x-[-20%] top-[16%] h-24 animate-wind-mist rounded-full bg-clay/25 blur-2xl" />
