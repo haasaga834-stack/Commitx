@@ -312,19 +312,21 @@ function Home() {
 function TopChip({
   icon,
   value,
-  label,
+  srLabel,
 }: {
   icon: ReactNode;
   value: string;
-  label: string;
+  srLabel: string;
 }) {
   return (
-    <div className="rounded-2xl bg-card px-2.5 py-1.5 text-center shadow-soft">
-      <p className="flex items-center justify-center gap-1 text-xs font-semibold text-foreground tabular-nums">
-        {icon}
+    <div
+      className="flex items-center gap-1.5 rounded-full bg-card px-3 py-2 shadow-soft"
+      aria-label={srLabel}
+    >
+      {icon}
+      <span className="text-xs font-semibold text-foreground tabular-nums">
         {value}
-      </p>
-      <p className="text-[9px] leading-tight text-muted-foreground">{label}</p>
+      </span>
     </div>
   );
 }
