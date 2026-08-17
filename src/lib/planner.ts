@@ -597,3 +597,60 @@ export function clearPlannerLocal() {
     } catch {}
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * Weekly study target (cloud-backed user setting, mirrors the daily target)
+ * ------------------------------------------------------------------------ */
+
+const WEEKLY_GOAL_KEY = "commitx-weekly-goal-v1";
+export const DEFAULT_WEEKLY_GOAL_HOURS = 14;
+
+const weeklyListeners = new Set<() => void>();
+let weeklyCache: number | null = null;
+
+function readWeeklyGoal(): number {
+  if (typeof window === "undefined") return DEFAULT_WEEKLY_GOAL_HOURS;
+  try {
+    const raw = localStorage.getItem(WEEKLY_GOAL_KEY);
+    const n = raw ? parseFloat(raw) : NaN;
+    return Number.isFinite(n) && n > 0 ? n : DEFAULT_WEEKLY_GOAL_HOURS;
+  } catch {
+    return DEFAULT_WEEKLY_GOAL_HOURS;
+  }
+}
+
+export function getWeeklyGoalHours(): number {
+  if (weeklyCache === null) weeklyCache = readWeeklyGoal();
+  return weeklyCache;
+}
+
+export function writeWeeklyGoalLocal(hours: number) {
+  weeklyCache = hours;
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem(WEEKLY_GOAL_KEY, String(hours));
+    } catch {}
+  }
+  weeklyListeners.forEach((l) => l());
+}
+
+export function setWeeklyGoalHours(hours: number) {
+  const clamped = Math.min(100, Math.max(1, hours));
+  writeWeeklyGoalLocal(clamped);
+  void upsertSettings({ weekly_goal_hours: clamped });
+}
+
+export function useWeeklyGoal() {
+  const [, tick] = useState(0);
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+    weeklyCache = readWeeklyGoal();
+    setHydrated(true);
+    const l = () => tick((t) => t + 1);
+    weeklyListeners.add(l);
+    return () => {
+      weeklyListeners.delete(l);
+    };
+  }, []);
+  return { weeklyHours: getWeeklyGoalHours(), setWeeklyHours: setWeeklyGoalHours, hydrated };
+}
