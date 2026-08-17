@@ -15,6 +15,15 @@ export type VerifiedFailureReason =
   | "quit"
   | string;
 
+/** Persisted session phase — timestamps remain the source of truth. */
+export type SessionPhase = "focus" | "recovery_break" | "awaiting_confirmation";
+
+/** Mandatory recovery break cadence & windows. */
+export const FOCUS_HOUR_MS = 60 * 60 * 1000;
+export const RECOVERY_BREAK_MS = 5 * 60 * 1000;
+export const RECOVERY_CONFIRM_MS = 30 * 1000;
+
+
 export interface ActiveVerifiedSession {
   goal: string;
   duration: number;
