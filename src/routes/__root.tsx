@@ -196,6 +196,8 @@ function AuthGate({ children }: { children: ReactNode }) {
   const router = useRouter();
   const { user, loading } = useAuth();
   const pathname = router.state.location.pathname;
+  const { needsOnboarding, complete } = useOnboarding(user?.id ?? null);
+
 
   useEffect(() => {
     if (loading) return;
