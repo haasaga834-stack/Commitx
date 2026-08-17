@@ -218,6 +218,28 @@
   20% { opacity: 0.5; }
   100% { transform: translate3d(26vw, -34px, 0); opacity: 0; }
 }
+@keyframes wind-glide {
+  0% { transform: translate3d(-14vw, 0, 0) rotate(-6deg); opacity: 0; }
+  8% { opacity: 0.5; }
+  25% { transform: translate3d(18vw, -18px, 0) rotate(28deg); }
+  50% { transform: translate3d(48vw, 16px, 0) rotate(-14deg); }
+  75% { transform: translate3d(80vw, -12px, 0) rotate(34deg); }
+  92% { opacity: 0.42; }
+  100% { transform: translate3d(116vw, 8px, 0) rotate(12deg); opacity: 0; }
+}
+@keyframes sun-breathe {
+  0%, 100% { opacity: 0.22; transform: scale(1); }
+  50% { opacity: 0.36; transform: scale(1.06); }
+}
+@utility animate-wind-glide {
+  animation: wind-glide 52s linear infinite;
+  will-change: transform, opacity;
+}
+@utility animate-sun-breathe {
+  animation: sun-breathe 18s ease-in-out infinite;
+  will-change: opacity, transform;
+}
+
 @utility animate-wind-sway {
   animation: wind-sway 9s ease-in-out infinite;
   transform-origin: bottom center;

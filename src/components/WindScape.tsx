@@ -8,12 +8,23 @@ const BLADES = Array.from({ length: 26 }, (_, i) => ({
   opacity: 0.16 + ((i % 4) * 0.05),
 }));
 
-const LEAVES = Array.from({ length: 5 }, (_, i) => ({
-  top: `${18 + i * 14}%`,
-  size: 9 + ((i * 5) % 7),
-  delay: `-${i * 7}s`,
-  duration: `${30 + i * 5}s`,
+const LEAF_TINTS = [
+  "oklch(0.72 0.115 138)", // light green
+  "oklch(0.86 0.095 100)", // soft yellow-green
+  "oklch(0.88 0.070 86)", // warm cream
+  "oklch(0.66 0.090 145)", // meadow green
+  "oklch(0.80 0.100 78)", // pale sunlight
+];
+
+const LEAVES = Array.from({ length: 8 }, (_, i) => ({
+  top: `${10 + i * 10}%`,
+  size: 8 + ((i * 3) % 7),
+  delay: `-${i * 6.5}s`,
+  duration: `${46 + i * 6}s`,
+  fill: LEAF_TINTS[i % LEAF_TINTS.length],
+  opacity: 0.34 + ((i % 3) * 0.09),
 }));
+
 
 const MOTES = Array.from({ length: 9 }, (_, i) => ({
   left: `${(i * 11 + 4) % 90}%`,
@@ -44,9 +55,14 @@ export function WindScape({
         className,
       )}
     >
-      {/* Warm light wash */}
-      <div className="absolute -top-24 right-[-15%] h-72 w-72 rounded-full bg-gradient-sun opacity-30 blur-3xl" />
+      {/* Warm pale-yellow sunlight, softly breathing */}
+      <div className="absolute -top-24 right-[-15%] h-72 w-72 animate-sun-breathe rounded-full bg-gradient-sun blur-3xl" />
       <div className="absolute -bottom-32 -left-20 h-80 w-80 rounded-full bg-primary/10 blur-3xl" />
+      <div
+        className="absolute left-[18%] top-[8%] h-40 w-40 animate-sun-breathe rounded-full bg-accent/20 blur-3xl"
+        style={{ animationDelay: "-7s", animationDuration: "24s" }}
+      />
+
 
       {/* Flowing wind mist bands */}
       <div className="absolute inset-x-[-20%] top-[16%] h-24 animate-wind-mist rounded-full bg-clay/25 blur-2xl" />
@@ -91,11 +107,11 @@ export function WindScape({
         ))}
       </div>
 
-      {/* Leaves carried by the wind */}
+      {/* Small leaves gliding slowly on the breeze */}
       {LEAVES.map((l, i) => (
         <svg
           key={i}
-          className="absolute left-0 animate-wind-across"
+          className="absolute left-0 animate-wind-glide"
           style={{
             top: l.top,
             width: l.size,
@@ -108,11 +124,13 @@ export function WindScape({
         >
           <path
             d="M10 1C3 8 0 15 3 21c3 6 11 7 14 1 3-6 1-14-7-21Z"
-            fill="var(--color-primary)"
-            opacity="0.45"
+            fill={l.fill}
+            opacity={l.opacity}
           />
+          <path d="M10 3v20" stroke={l.fill} strokeWidth="0.8" opacity={l.opacity * 0.6} />
         </svg>
       ))}
+
 
       {/* Soft atmospheric motes */}
       {MOTES.map((m, i) => (
