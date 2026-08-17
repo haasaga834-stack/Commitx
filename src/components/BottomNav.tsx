@@ -3,6 +3,8 @@ import { Home, CalendarDays, BarChart3, Wallet, User } from "lucide-react";
 import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { setNativeAtRootScreen } from "@/lib/native-session";
+import { useIsTablet } from "@/lib/use-tablet";
+import { TabletShell } from "@/components/TabletShell";
 
 const items = [
   { to: "/", label: "Home", icon: Home },
