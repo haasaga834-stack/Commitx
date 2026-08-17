@@ -311,6 +311,11 @@ function Commit() {
             <h2 className="mt-4 font-display text-xl font-semibold">
               Before you start a Verified session
             </h2>
+            <p className="mt-2 text-sm text-foreground">
+              Verified Session requires you to stay inside CommitX. You cannot leave
+              the app, switch to another app, or use the Back button during the
+              session.
+            </p>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               {[
                 "You cannot leave the app — Home, Recents or switching apps fails the session immediately.",
