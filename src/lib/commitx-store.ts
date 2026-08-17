@@ -63,6 +63,7 @@ const initial: AppState = {
     education: "B.Tech, Computer Science",
   },
   referralCredited: false,
+  notificationsEnabled: true,
 };
 
 function migrate(raw: any): AppState {
