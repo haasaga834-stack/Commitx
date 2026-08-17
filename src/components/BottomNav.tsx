@@ -3,6 +3,8 @@ import { Home, CalendarDays, BarChart3, Wallet, User } from "lucide-react";
 import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { setNativeAtRootScreen } from "@/lib/native-session";
+import { useIsTablet } from "@/lib/use-tablet";
+import { TabletShell } from "@/components/TabletShell";
 
 const items = [
   { to: "/", label: "Home", icon: Home },
@@ -58,15 +60,17 @@ export function BottomNav() {
 }
 
 /**
- * App shell. Phone keeps the narrow single column; tablets get a wider,
- * comfortably padded content measure instead of a stretched phone layout.
+ * App shell. Phones keep the untouched mobile layout with the bottom tab bar;
+ * tablets switch to the dedicated dashboard shell with a vertical nav rail.
  */
 export function MobileShell({ children }: { children: React.ReactNode }) {
+  const isTablet = useIsTablet();
+
+  if (isTablet) return <TabletShell>{children}</TabletShell>;
+
   return (
     <div className="min-h-dvh overflow-x-hidden bg-background">
-      <div className="mx-auto w-full max-w-md overflow-x-hidden pb-28 md:max-w-2xl md:px-4 md:pb-32 lg:max-w-3xl">
-        {children}
-      </div>
+      <div className="mx-auto w-full max-w-md overflow-x-hidden pb-28">{children}</div>
       <BottomNav />
     </div>
   );
