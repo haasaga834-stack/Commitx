@@ -8,12 +8,23 @@ const BLADES = Array.from({ length: 26 }, (_, i) => ({
   opacity: 0.16 + ((i % 4) * 0.05),
 }));
 
-const LEAVES = Array.from({ length: 5 }, (_, i) => ({
-  top: `${18 + i * 14}%`,
-  size: 9 + ((i * 5) % 7),
-  delay: `-${i * 7}s`,
-  duration: `${30 + i * 5}s`,
+const LEAF_TINTS = [
+  "oklch(0.72 0.115 138)", // light green
+  "oklch(0.86 0.095 100)", // soft yellow-green
+  "oklch(0.88 0.070 86)", // warm cream
+  "oklch(0.66 0.090 145)", // meadow green
+  "oklch(0.80 0.100 78)", // pale sunlight
+];
+
+const LEAVES = Array.from({ length: 8 }, (_, i) => ({
+  top: `${10 + i * 10}%`,
+  size: 8 + ((i * 3) % 7),
+  delay: `-${i * 6.5}s`,
+  duration: `${46 + i * 6}s`,
+  fill: LEAF_TINTS[i % LEAF_TINTS.length],
+  opacity: 0.34 + ((i % 3) * 0.09),
 }));
+
 
 const MOTES = Array.from({ length: 9 }, (_, i) => ({
   left: `${(i * 11 + 4) % 90}%`,
