@@ -42,8 +42,11 @@ function reasonCopy(reason?: string) {
       return "You left CommitX while using Verified Mode.";
     case "killed":
       return "The app was closed during a Verified session.";
+    case "recovery_timeout":
+      return "You didn’t confirm you were refreshed within 30 seconds after the recovery break.";
     case "quit":
       return "You ended the session before it completed.";
+
     default:
       return "The session was not completed.";
   }
