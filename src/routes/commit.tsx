@@ -84,9 +84,17 @@ function Commit() {
     }
     setError(null);
     // Verified sessions must be acknowledged and require Do Not Disturb.
-    if (mode === "verified" && (!confirmVerified || !dndReady)) {
-      setVerifiedWarn(true);
-      return;
+    // Re-verify the real DND state at start time — never trust a stale
+    // acknowledgement or the fact that the user came back from Settings.
+    if (mode === "verified") {
+      const liveDnd = isDndEnabled();
+      setDndOn(liveDnd);
+      const liveReady = !dndCheckable || liveDnd === true;
+      if (!confirmVerified || !liveReady) {
+        if (!liveReady) setConfirmVerified(false);
+        setVerifiedWarn(true);
+        return;
+      }
     }
     const params = new URLSearchParams({
       goal: finalGoal,
