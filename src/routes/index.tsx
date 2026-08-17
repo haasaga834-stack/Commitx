@@ -47,6 +47,12 @@ function greeting() {
 }
 
 function Home() {
+  const isTablet = useIsTablet();
+  if (isTablet) return <TabletHome />;
+  return <MobileHome />;
+}
+
+function MobileHome() {
   const navigate = useNavigate();
   const { state, hydrated } = useAppState();
   const s = stats(state.sessions);
