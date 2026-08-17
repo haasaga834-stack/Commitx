@@ -91,11 +91,7 @@ function Wallet() {
                       })}
                       {" · "}
                       {returned ? "Returned" : "Deducted"}
-                      {s.demoUsed && s.realUsed
-                        ? " · Demo + Real"
-                        : s.realUsed
-                          ? " · Real"
-                          : " · Demo"}
+                      {" · Demo"}
                     </p>
                   </div>
                   <p
