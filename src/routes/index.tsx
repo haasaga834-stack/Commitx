@@ -1,14 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, type ReactNode } from "react";
-import { Bell, CalendarDays, Clock, Coins, Flame, Hourglass as HourglassIcon, Leaf, Sparkles, TrendingUp, Trophy } from "lucide-react";
+import { Bell, CalendarDays, Clock, Flame, Hourglass as HourglassIcon, Leaf, Sparkles, TrendingUp, Trophy } from "lucide-react";
 import { MobileShell } from "@/components/BottomNav";
-import { FoodCoins } from "@/components/FoodCoins";
+import { CxCoin } from "@/components/CxCoin";
 import { DailyGoalProgress } from "@/components/DailyGoalProgress";
 import { SwipeToStart } from "@/components/SwipeToStart";
 import cozyStudy from "@/assets/cozy-study.jpg";
 
 import { useAppState, stats, formatINR, MIN_COMMIT } from "@/lib/commitx-store";
-import { useCommunityFoodCoins } from "@/lib/community";
 import { analyze, formatHours } from "@/lib/analytics-data";
 import { usePlans, nextOccurrence, formatTime, formatDuration } from "@/lib/planner";
 
