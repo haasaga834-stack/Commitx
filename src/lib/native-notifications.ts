@@ -123,7 +123,7 @@ export function syncStudyPlanReminders(
   }[],
 ) {
   try {
-    bridge()?.syncStudyPlans?.(JSON.stringify(plans));
+    bridge()?.syncStudyPlans?.(JSON.stringify(notificationsAllowed() ? plans : []));
   } catch {}
 }
 
@@ -132,6 +132,7 @@ export function syncStudyPlanReminders(
 
 export function showSessionProgress(title: string, text: string, progress: number) {
   try {
+    if (!notificationsAllowed()) return bridge()?.hideSessionProgress?.();
     bridge()?.showSessionProgress?.(title, text, Math.round(progress));
   } catch {}
 }
