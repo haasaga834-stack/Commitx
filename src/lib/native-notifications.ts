@@ -96,7 +96,8 @@ export function useNotificationPermission() {
 export function syncTodoNotification(todos: TodoItem[]) {
   try {
     const payload = todos.map((t) => ({ id: t.id, text: t.text, done: t.done }));
-    if (payload.length === 0) bridge()?.clearTodoNotification?.();
+    if (payload.length === 0 || !notificationsAllowed())
+      bridge()?.clearTodoNotification?.();
     else bridge()?.syncTodos?.(JSON.stringify(payload));
   } catch {}
 }
