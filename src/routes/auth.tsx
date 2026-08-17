@@ -107,21 +107,19 @@ function Auth() {
         setBusy(false);
       }
     }
-    // Web: go straight to Google via the project's own Google OAuth client so
-    // the consent screen is branded CommitX (never Lovable).
+    // Web: managed Google OAuth.
     setBusy(true);
-    const { error: oauthError } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: window.location.origin,
-        queryParams: { prompt: "select_account" },
-      },
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+      extraParams: { prompt: "select_account" },
     });
     setBusy(false);
-    if (oauthError) {
+    if (result.error) {
       setError("Google sign-in failed. Please try again.");
+      return;
     }
-
+    if (result.redirected) return;
+    router.navigate({ to: "/" });
   }
 
   return (
