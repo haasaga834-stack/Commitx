@@ -92,7 +92,7 @@ async function push(userId: string) {
       sex: state.profile.sex,
       education: state.profile.education,
       avatar_url: state.profile.photo || null,
-
+      notifications_enabled: state.notificationsEnabled ?? true,
     })
     .eq("id", userId);
 
