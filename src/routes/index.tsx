@@ -77,18 +77,19 @@ function Home() {
 
           <div className="flex shrink-0 items-center gap-2">
             <TopChip
-              icon={<Flame className="h-3.5 w-3.5 text-accent" />}
-              value={hydrated ? String(s.streak) : "—"}
-              label="Day streak"
+              icon={<CxCoin className="h-4 w-4" />}
+              value={hydrated ? String(s.foodCoins) : "—"}
+              srLabel="Cx Coins"
             />
             <TopChip
-              icon={<Coins className="h-3.5 w-3.5 text-primary" />}
-              value={hydrated ? String(s.foodCoins) : "—"}
-              label="Food Coins"
+              icon={<Flame className="h-4 w-4 text-accent" />}
+              value={hydrated ? String(s.streak) : "—"}
+              srLabel="Day streak"
             />
             <Link
               to="/settings"
-              aria-label="Notifications"
+              hash="notifications"
+              aria-label="Notification settings"
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-card text-foreground shadow-soft"
             >
               <Bell className="h-4 w-4" />
