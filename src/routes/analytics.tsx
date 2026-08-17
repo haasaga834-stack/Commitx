@@ -206,10 +206,12 @@ function Metric({
   icon,
   label,
   value,
+  small = false,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
+  small?: boolean;
 }) {
   return (
     <div className="rounded-2xl bg-card p-4 shadow-soft">
@@ -217,7 +219,13 @@ function Metric({
         {icon}
         <p className="min-w-0 truncate text-[11px] uppercase tracking-wider">{label}</p>
       </div>
-      <p className="mt-1 font-display text-xl font-semibold tabular-nums">{value}</p>
+      <p
+        className={`mt-1 font-display font-semibold tabular-nums ${
+          small ? "text-lg" : "text-xl"
+        }`}
+      >
+        {value}
+      </p>
     </div>
   );
 }
