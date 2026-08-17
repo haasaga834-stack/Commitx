@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { pullFromCloud, startCloudSync, stopCloudSync } from "./cloud-sync";
 import { resetState } from "./commitx-store";
 import { clearPlannerLocal, setPlannerUser } from "./planner";
+import { clearAcademicsLocal, setAcademicsUser } from "./academics";
 import { claimPendingReferral } from "./pending-referral";
 
 export function useAuth() {
