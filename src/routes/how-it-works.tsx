@@ -111,7 +111,7 @@ function HowItWorks() {
             points={[
               "1 successfully completed hour of focus = 1 Cx Coin. A 30-minute session earns 0, two hours earn 2.",
               "Cancelled, failed or incomplete sessions earn nothing.",
-              "Cx Coins are not cash. They cannot be withdrawn or transferred.",
+              "Cx Coins are not cash and cannot be transferred.",
               "They accumulate on your account, so you can save them up over time.",
               "Your Cx Coin balance is shown in the Home top banner.",
             ]}
@@ -147,7 +147,7 @@ function HowItWorks() {
             delay={360}
             points={[
               "CommitX is in open beta: features and rules may still change.",
-              "Nothing costs real money yet, so it is safe to experiment.",
+              "Everything runs on virtual demo money, so it is safe to experiment.",
               "Your data syncs to your account, so it follows you across devices.",
             ]}
           />

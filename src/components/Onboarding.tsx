@@ -396,7 +396,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
               icon={<CxCoin className="h-4 w-4" />}
               title="Cx Coins"
               items={[
-                "Not cash — cannot be withdrawn or transferred.",
+                "Not cash — they cannot be transferred.",
                 "Save them for Cx Coupons (coming soon).",
               ]}
             />

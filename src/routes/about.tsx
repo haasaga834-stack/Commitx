@@ -54,8 +54,8 @@ function About() {
             grows.<span className="text-foreground"> Turning discipline into progress.</span>
           </p>
           <p>
-            CommitX is currently in its trial phase. Real-money deposits and
-            withdrawals are disabled, and all balances are demo balances.
+            CommitX runs entirely on virtual demo money — every balance in the
+            app is demo money used only to back your commitments.
           </p>
         </div>
       </div>

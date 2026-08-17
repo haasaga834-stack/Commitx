@@ -43,7 +43,7 @@ function Wallet() {
             {hydrated ? formatINR(demo) : "—"}
           </p>
           <p className="mt-2 text-xs text-muted-foreground">
-            Virtual · non-withdrawable · one-time welcome credit of ₹300.
+            Virtual only · one-time welcome credit of ₹300.
           </p>
           <p className="mt-4 rounded-2xl border border-hairline bg-background px-4 py-3 text-xs text-muted-foreground">
             Demo money is granted once and cannot be topped up. Complete your commitments to
