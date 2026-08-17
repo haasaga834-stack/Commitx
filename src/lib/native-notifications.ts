@@ -4,9 +4,27 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import type { TodoItem } from "@/lib/planner";
+import { getState, setState } from "@/lib/commitx-store";
 
 function bridge() {
   return typeof window === "undefined" ? undefined : window.CommitXAndroid;
+}
+
+/** The user's own notification preference (persisted per account). */
+export function notificationsAllowed() {
+  return getState().notificationsEnabled !== false;
+}
+
+/** Turn CommitX notifications on/off for this user; clears live ones when off. */
+export function setNotificationsAllowed(allowed: boolean) {
+  setState((s) => ({ ...s, notificationsEnabled: allowed }));
+  if (!allowed) {
+    clearTodoNotification();
+    hideSessionProgress();
+    try {
+      bridge()?.syncStudyPlans?.("[]");
+    } catch {}
+  }
 }
 
 /* --------------------------- Permission handling ------------------------- */
