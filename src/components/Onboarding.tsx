@@ -385,17 +385,18 @@ export function Onboarding({ onDone }: OnboardingProps) {
             }
             title="Commit. Complete. Get It Back."
             text="Complete your commitments, build your streak and earn Cx Coins through successful focus hours."
-            cta="How CommitX Works"
-            onCta={() => finish("/how-it-works")}
+            cta="Continue"
+            onCta={next}
             footer={
               <button
                 type="button"
-                onClick={() => finish()}
+                onClick={() => finish("/how-it-works")}
                 className="mt-3 w-full rounded-2xl bg-card py-4 text-sm font-medium text-muted-foreground shadow-soft"
               >
-                Skip
+                How CommitX Works
               </button>
             }
+
           >
             <FactList
               icon={<CxCoin className="h-4 w-4" />}
