@@ -234,6 +234,7 @@
 @utility animate-wind-mote {
   animation: wind-mote 22s linear infinite;
   will-change: transform, opacity;
+}
 @utility bg-gradient-warm {
   background-image: var(--gradient-warm);
 }
