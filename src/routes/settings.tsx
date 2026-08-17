@@ -145,7 +145,30 @@ function Settings() {
               Rate CommitX
             </span>
           </button>
+          <button
+            onClick={() => scrollToSection("notifications")}
+            className="flex flex-col items-start gap-2 rounded-3xl bg-card p-4 text-left shadow-soft"
+          >
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/15 text-primary">
+              <Bell className="h-4 w-4" />
+            </span>
+            <span className="text-xs font-medium leading-tight text-foreground">
+              Notifications
+            </span>
+          </button>
+          <button
+            onClick={() => scrollToSection("screen-time")}
+            className="flex flex-col items-start gap-2 rounded-3xl bg-card p-4 text-left shadow-soft"
+          >
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/15 text-primary">
+              <Timer className="h-4 w-4" />
+            </span>
+            <span className="text-xs font-medium leading-tight text-foreground">
+              Screen time
+            </span>
+          </button>
         </div>
+
 
         {/* Appearance */}
         <p className="mt-9 text-xs uppercase tracking-widest text-muted-foreground">
