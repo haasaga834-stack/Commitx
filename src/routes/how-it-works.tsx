@@ -180,11 +180,13 @@ function Section({
   title,
   points,
   delay,
+  children,
 }: {
   icon: React.ReactNode;
   title: string;
   points: string[];
   delay: number;
+  children?: React.ReactNode;
 }) {
   return (
     <section
@@ -205,6 +207,7 @@ function Section({
           </li>
         ))}
       </ul>
+      {children}
     </section>
   );
 }
