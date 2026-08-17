@@ -147,6 +147,7 @@ function Success() {
 
       <Link
         to="/"
+        replace
         className="mt-8 inline-block w-full max-w-xs rounded-full bg-primary px-8 py-4 text-center text-base font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.98] animate-fade-up"
         style={{ animationDelay: "540ms" }}
       >

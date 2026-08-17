@@ -94,6 +94,7 @@ function Failed() {
 
       <Link
         to="/"
+        replace
         className="mt-10 inline-block w-full max-w-xs rounded-full bg-foreground px-8 py-4 text-center text-base font-medium text-background shadow-soft"
       >
         Return Home
