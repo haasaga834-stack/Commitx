@@ -37,6 +37,8 @@ export interface AppState {
   sessions: Session[];
   profile: Profile;
   referralCredited?: boolean;
+  /** User preference: whether CommitX may post notifications. */
+  notificationsEnabled?: boolean;
 }
 
 const KEY = "commitx-state-v2";
