@@ -172,33 +172,48 @@ function Session() {
       startedAt,
       accumulatedMs: accumulatedRef.current,
       runningSince: runningSinceRef.current,
+      phase: phaseRef.current,
+      breakStartedAt: breakStartedAtRef.current,
+      confirmSince: confirmSinceRef.current,
+      breaksTaken: breaksTakenRef.current,
+      nonFocusMs: nonFocusMsRef.current,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [goal, duration, value, mode, preferRealBool, startedAt]);
 
+  /** Wall-clock time spent outside focus (recovery breaks + confirmations). */
+  const nonFocusTotal = useCallback(() => {
+    const anchor = breakStartedAtRef.current;
+    const live = phaseRef.current !== "focus" && anchor ? Math.max(0, Date.now() - anchor) : 0;
+    return nonFocusMsRef.current + live;
+  }, []);
+
   const elapsedNow = useCallback(() => {
     const running = runningSinceRef.current;
     const banked = accumulatedRef.current + (running ? Date.now() - running : 0);
-    // Verified sessions are anchored to the wall clock: banked time can never
-    // exceed the real time passed since the session started, so re-renders,
-    // backgrounding or restored state can't shorten the commitment.
-    if (isVerified) return Math.max(0, Math.min(banked, Date.now() - startedAt));
+    // Verified sessions are anchored to the wall clock: banked focus time can
+    // never exceed real time since start minus recovery-break time, so
+    // re-renders, backgrounding or restored state can't shorten the commitment.
+    if (isVerified) {
+      return Math.max(0, Math.min(banked, Date.now() - startedAt - nonFocusTotal()));
+    }
     return Math.max(0, banked);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVerified, startedAt]);
+  }, [isVerified, startedAt, nonFocusTotal]);
 
   /**
    * Authoritative completion gate. A session may only finish once the full
    * committed duration has genuinely elapsed; Verified sessions additionally
-   * require the wall clock since start to have passed, which makes early or
-   * duplicate completion impossible.
+   * require the wall clock since start (minus breaks) to have passed, which
+   * makes early or duplicate completion impossible.
    */
   const canCompleteNow = useCallback(() => {
+    if (phaseRef.current !== "focus") return false;
     if (elapsedNow() < totalMs) return false;
-    if (isVerified && Date.now() - startedAt < totalMs) return false;
+    if (isVerified && Date.now() - startedAt - nonFocusTotal() < totalMs) return false;
     return true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [elapsedNow, totalMs, isVerified, startedAt]);
+  }, [elapsedNow, totalMs, isVerified, startedAt, nonFocusTotal]);
 
 
   const pauseTimer = useCallback(
@@ -226,6 +241,98 @@ function Session() {
     [persist],
   );
 
+  /** Begin the mandatory 5-minute recovery break (main timer pauses). */
+  const startRecoveryBreak = useCallback(
+    (at: number) => {
+      if (doneRef.current || phaseRef.current !== "focus") return;
+      // Bank exactly the hour boundary so no focus time is lost or gained.
+      accumulatedRef.current = elapsedNow();
+      runningSinceRef.current = null;
+      setPaused(true);
+      breakStartedAtRef.current = at;
+      confirmSinceRef.current = null;
+      setPhase("recovery_break");
+      persist();
+      setNow(Date.now());
+      log("Recovery Break Started", { at, breaksTaken: breaksTakenRef.current });
+    },
+    [elapsedNow, persist, setPhase],
+  );
+
+  const enterAwaitingConfirmation = useCallback(
+    (at: number) => {
+      if (doneRef.current || phaseRef.current !== "recovery_break") return;
+      confirmSinceRef.current = at;
+      setPhase("awaiting_confirmation");
+      persist();
+      setNow(Date.now());
+      log("Recovery Break Finished", { confirmSince: at });
+    },
+    [persist, setPhase],
+  );
+
+  const confirmRefreshed = useCallback(() => {
+    if (doneRef.current || phaseRef.current !== "awaiting_confirmation") return;
+    const anchor = breakStartedAtRef.current;
+    if (anchor) nonFocusMsRef.current += Math.max(0, Date.now() - anchor);
+    breakStartedAtRef.current = null;
+    confirmSinceRef.current = null;
+    breaksTakenRef.current += 1;
+    setPhase("focus");
+    resumeTimer("recovery_confirmed");
+    persist();
+    log("Recovery Confirmed", { breaksTaken: breaksTakenRef.current });
+  }, [persist, resumeTimer, setPhase]);
+
+  /**
+   * Single timestamp-driven state machine. Every tick, foreground return and
+   * lifecycle event routes through here, so exactly one completion trigger and
+   * one failure trigger exist.
+   */
+  const evaluate = useCallback(() => {
+    if (doneRef.current) return;
+    const t = Date.now();
+    if (phaseRef.current === "focus") {
+      if (dndBlocked) return;
+      if (canCompleteNow()) {
+        complete("completed");
+        return;
+      }
+      const elapsed = elapsedNow();
+      const nextBreakAt = (breaksTakenRef.current + 1) * FOCUS_HOUR_MS;
+      if (elapsed >= nextBreakAt && elapsed < totalMs) {
+        startRecoveryBreak(t - (elapsed - nextBreakAt));
+      }
+      return;
+    }
+    if (phaseRef.current === "recovery_break") {
+      const anchor = breakStartedAtRef.current ?? t;
+      if (t - anchor >= RECOVERY_BREAK_MS) {
+        enterAwaitingConfirmation(anchor + RECOVERY_BREAK_MS);
+      }
+      return;
+    }
+    // awaiting_confirmation
+    const since = confirmSinceRef.current ?? t;
+    if (t - since > RECOVERY_CONFIRM_MS) {
+      log("Recovery Confirmation Missed", { since });
+      if (isVerified) markActiveVerifiedSessionPendingFailure("recovery_timeout");
+      complete("failed", "recovery_timeout");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    dndBlocked,
+    canCompleteNow,
+    elapsedNow,
+    totalMs,
+    startRecoveryBreak,
+    enterAwaitingConfirmation,
+    isVerified,
+  ]);
+
+  const evaluateRef = useRef(evaluate);
+  evaluateRef.current = evaluate;
+
   // Keep the stored session in sync from the very first render.
   useEffect(() => {
     if (dndBlocked) {
@@ -233,6 +340,7 @@ function Session() {
       return;
     }
     persist();
+    evaluateRef.current();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -242,7 +350,7 @@ function Session() {
     const id = setInterval(() => {
       if (isDndEnabled() !== false) {
         setDndBlocked(false);
-        resumeTimer("dnd_enabled");
+        if (phaseRef.current === "focus") resumeTimer("dnd_enabled");
       }
     }, 1200);
     return () => clearInterval(id);
@@ -253,17 +361,15 @@ function Session() {
     let raf = 0;
     const tick = () => {
       setNow(Date.now());
-      if (!doneRef.current && !dndBlocked && canCompleteNow()) {
-        complete("completed");
-        return;
-      }
-
+      evaluateRef.current();
+      if (doneRef.current) return;
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dndBlocked]);
+  }, []);
+
 
   // Sessions may only be ended through the in-session End Session flow:
   // every system back action opens the confirmation dialog instead.
