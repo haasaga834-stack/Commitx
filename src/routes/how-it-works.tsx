@@ -98,10 +98,9 @@ function HowItWorks() {
             title="Demo money"
             delay={180}
             points={[
-              "CommitX currently runs on demo balance only — no real money is charged.",
-              "New accounts start with a one-time demo grant, and a valid referral code adds more.",
-              "Demo balance is always used before any real balance.",
-              "Real deposits and withdrawals stay disabled during the trial phase.",
+              "CommitX runs entirely on virtual demo money — nothing is charged.",
+              "New accounts start with ₹300 demo money, and a valid referral code adds ₹100.",
+              "Demo money is used only to back your commitments inside the app.",
             ]}
           />
 
@@ -112,7 +111,7 @@ function HowItWorks() {
             points={[
               "1 successfully completed hour of focus = 1 Cx Coin. A 30-minute session earns 0, two hours earn 2.",
               "Cancelled, failed or incomplete sessions earn nothing.",
-              "Cx Coins are not cash. They cannot be withdrawn or transferred.",
+              "Cx Coins are not cash and cannot be transferred.",
               "They accumulate on your account, so you can save them up over time.",
               "Your Cx Coin balance is shown in the Home top banner.",
             ]}
@@ -148,7 +147,7 @@ function HowItWorks() {
             delay={360}
             points={[
               "CommitX is in open beta: features and rules may still change.",
-              "Nothing costs real money yet, so it is safe to experiment.",
+              "Everything runs on virtual demo money, so it is safe to experiment.",
               "Your data syncs to your account, so it follows you across devices.",
             ]}
           />

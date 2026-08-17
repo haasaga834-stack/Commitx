@@ -56,6 +56,7 @@ public class MainActivity extends Activity {
     private SharedPreferences preferences;
     private volatile boolean verifiedModeActive = false;
     private volatile boolean sessionLockActive = false;
+    private volatile boolean atRootScreen = true;
 
     private static final int REQUEST_FILE_CHOOSER = 8021;
     private ValueCallback<Uri[]> fileChooserCallback;
@@ -406,6 +407,13 @@ public class MainActivity extends Activity {
             return;
         }
 
+        // Home is the root destination: back must leave the app instead of
+        // walking back into a previously visited section.
+        if (atRootScreen) {
+            moveTaskToBack(true);
+            return;
+        }
+
         if (webView != null && webView.canGoBack()) {
             webView.goBack();
             return;
@@ -550,6 +558,12 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void setSessionLockActive(boolean active) {
             sessionLockActive = active;
+        }
+
+        /** True while the Home (root) screen is showing. */
+        @JavascriptInterface
+        public void setAtRootScreen(boolean atRoot) {
+            atRootScreen = atRoot;
         }
 
         /** Do Not Disturb state can be read on Android M and newer. */

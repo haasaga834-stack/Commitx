@@ -7,6 +7,7 @@ declare global {
     CommitXAndroid?: {
       setVerifiedModeActive?: (active: boolean) => void;
       setSessionLockActive?: (active: boolean) => void;
+      setAtRootScreen?: (atRoot: boolean) => void;
       clearPendingFailure?: () => void;
       hasNativeGoogleSignIn?: () => boolean;
       googleSignIn?: () => void;
@@ -54,6 +55,16 @@ export function hasNativeBridge() {
 export function setNativeSessionLock(active: boolean) {
   try {
     window.CommitXAndroid?.setSessionLockActive?.(active);
+  } catch {}
+}
+
+/**
+ * Tells the native shell whether Home (the root destination) is showing, so the
+ * Android back gesture minimises the app instead of walking WebView history.
+ */
+export function setNativeAtRootScreen(atRoot: boolean) {
+  try {
+    window.CommitXAndroid?.setAtRootScreen?.(atRoot);
   } catch {}
 }
 

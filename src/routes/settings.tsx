@@ -266,7 +266,7 @@ function Settings() {
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
             When a friend signs up with your code, you receive{" "}
             {formatINR(REFERRAL_BONUS)} demo balance — once per referred friend.
-            Demo balance is non-withdrawable and can only be used for commitments.
+            Demo money is virtual and can only be used for commitments.
           </p>
           <button
             onClick={copyReferral}

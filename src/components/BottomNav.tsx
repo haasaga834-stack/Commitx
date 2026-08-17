@@ -1,6 +1,8 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, CalendarDays, BarChart3, Wallet, User } from "lucide-react";
+import { useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { setNativeAtRootScreen } from "@/lib/native-session";
 
 const items = [
   { to: "/", label: "Home", icon: Home },
@@ -12,6 +14,13 @@ const items = [
 
 export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  // Home is the app's root destination — tell the native shell so the Android
+  // back gesture minimises the app there instead of returning to a past screen.
+  useEffect(() => {
+    setNativeAtRootScreen(pathname === "/");
+  }, [pathname]);
+
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-background/85 backdrop-blur-xl md:border-t-0 md:bg-transparent md:backdrop-blur-none md:pb-4">
       <div
@@ -27,6 +36,9 @@ export function BottomNav() {
             <Link
               key={to}
               to={to}
+              // Tab switches replace the current entry so sections never stack
+              // behind Home in the navigation history.
+              replace
               className={cn(
                 "flex min-w-0 flex-1 flex-col items-center gap-1 py-2 text-[10px] font-medium tracking-wide transition-colors sm:text-[11px]",
                 active ? "text-primary" : "text-muted-foreground",
