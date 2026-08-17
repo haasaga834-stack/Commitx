@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo } from "react";
-import { Bell, CalendarDays, Clock, Flame, Hourglass as HourglassIcon, Leaf, Sparkles, TrendingUp, Trophy } from "lucide-react";
+import { useMemo, type ReactNode } from "react";
+import { Bell, CalendarDays, Clock, Coins, Flame, Hourglass as HourglassIcon, Leaf, Sparkles, TrendingUp, Trophy } from "lucide-react";
 import { MobileShell } from "@/components/BottomNav";
 import { FoodCoins } from "@/components/FoodCoins";
 import { DailyGoalProgress } from "@/components/DailyGoalProgress";
@@ -77,12 +77,12 @@ function Home() {
 
           <div className="flex shrink-0 items-center gap-2">
             <TopChip
-              icon="🔥"
+              icon={<Flame className="h-3.5 w-3.5 text-accent" />}
               value={hydrated ? String(s.streak) : "—"}
               label="Day streak"
             />
             <TopChip
-              icon="🪙"
+              icon={<Coins className="h-3.5 w-3.5 text-primary" />}
               value={hydrated ? String(s.foodCoins) : "—"}
               label="Food Coins"
             />
@@ -275,7 +275,7 @@ function Home() {
                 No active commitment
               </p>
               <p className="truncate text-[11px] text-muted-foreground">
-                Start a commitment and stay consistent!
+                Start one and stay consistent
               </p>
             </div>
             <Link
@@ -313,14 +313,14 @@ function TopChip({
   value,
   label,
 }: {
-  icon: string;
+  icon: ReactNode;
   value: string;
   label: string;
 }) {
   return (
     <div className="rounded-2xl bg-card px-2.5 py-1.5 text-center shadow-soft">
-      <p className="text-xs font-semibold text-foreground tabular-nums">
-        <span className="mr-0.5">{icon}</span>
+      <p className="flex items-center justify-center gap-1 text-xs font-semibold text-foreground tabular-nums">
+        {icon}
         {value}
       </p>
       <p className="text-[9px] leading-tight text-muted-foreground">{label}</p>
