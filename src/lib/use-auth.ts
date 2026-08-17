@@ -21,6 +21,7 @@ export function useAuth() {
       if (session?.user) {
         startCloudSync(session.user.id);
         setPlannerUser(session.user.id);
+        setAcademicsUser(session.user.id);
         const uid = session.user.id;
         void claimPendingReferral()
           .then(() => pullFromCloud(uid))
@@ -28,6 +29,7 @@ export function useAuth() {
       } else {
         stopCloudSync();
         setPlannerUser(null);
+        setAcademicsUser(null);
       }
     };
 
@@ -55,5 +57,6 @@ export async function signOutEverywhere() {
   await supabase.auth.signOut();
   resetState();
   clearPlannerLocal();
+  clearAcademicsLocal();
 }
 
