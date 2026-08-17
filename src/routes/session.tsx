@@ -712,7 +712,7 @@ function Session() {
                   onClick={confirmRefreshed}
                   className="mt-6 w-full rounded-full bg-primary px-6 py-4 text-sm font-medium text-primary-foreground"
                 >
-                  Yes, I\u2019m refreshed
+                  Yes, I&rsquo;m refreshed
                 </button>
                 <p className="mt-3 text-[11px] uppercase tracking-widest text-muted-foreground">
                   Not confirming ends the commitment
