@@ -154,19 +154,25 @@ function Screen({
   footer?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-1 flex-col items-center text-center">
-      <div className="mt-6 flex justify-center animate-gentle-float">{visual}</div>
+    <div className="flex min-h-0 flex-1 flex-col">
+      {/* Scrollable content — the CTA below never moves off screen. */}
+      <div className="min-h-0 flex-1 overflow-y-auto pb-6">
+        <div className="flex flex-col items-center text-center">
+          <div className="mt-4 flex justify-center animate-gentle-float">{visual}</div>
 
-      <h1 className="mt-8 max-w-[19rem] text-balance font-display text-[1.75rem] font-semibold leading-[1.2] tracking-tight">
-        {title}
-      </h1>
-      <p className="mt-3 max-w-[19rem] text-sm leading-relaxed text-muted-foreground">
-        {text}
-      </p>
+          <h1 className="mt-6 max-w-[19rem] text-balance font-display text-[1.6rem] font-semibold leading-[1.2] tracking-tight">
+            {title}
+          </h1>
+          <p className="mt-2 max-w-[19rem] text-sm leading-relaxed text-muted-foreground">
+            {text}
+          </p>
 
-      {children && <div className="mt-7 w-full space-y-3">{children}</div>}
+          {children && <div className="mt-5 w-full space-y-3">{children}</div>}
+        </div>
+      </div>
 
-      <div className="mt-auto w-full pt-9">
+      {/* Fixed footer CTA */}
+      <div className="shrink-0 bg-background pt-3">
         <button
           type="button"
           onClick={onCta}
