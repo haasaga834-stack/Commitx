@@ -84,9 +84,17 @@ function Commit() {
     }
     setError(null);
     // Verified sessions must be acknowledged and require Do Not Disturb.
-    if (mode === "verified" && (!confirmVerified || !dndReady)) {
-      setVerifiedWarn(true);
-      return;
+    // Re-verify the real DND state at start time — never trust a stale
+    // acknowledgement or the fact that the user came back from Settings.
+    if (mode === "verified") {
+      const liveDnd = isDndEnabled();
+      setDndOn(liveDnd);
+      const liveReady = !dndCheckable || liveDnd === true;
+      if (!confirmVerified || !liveReady) {
+        if (!liveReady) setConfirmVerified(false);
+        setVerifiedWarn(true);
+        return;
+      }
     }
     const params = new URLSearchParams({
       goal: finalGoal,
@@ -303,11 +311,17 @@ function Commit() {
             <h2 className="mt-4 font-display text-xl font-semibold">
               Before you start a Verified session
             </h2>
+            <p className="mt-2 text-sm text-foreground">
+              Verified Session requires you to stay inside CommitX. You cannot leave
+              the app, switch to another app, or use the Back button during the
+              session.
+            </p>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               {[
                 "You cannot leave the app — Home, Recents or switching apps fails the session immediately.",
                 "The Back button is disabled while the session is running.",
                 "Do Not Disturb must stay on; emergency calls have a 60 second grace window.",
+                "The only exception is the mandatory 5-minute Recovery Break after each hour — you may use your phone freely then.",
                 "Your committed amount is returned only when you finish.",
               ].map((t) => (
                 <li key={t} className="flex gap-2">
