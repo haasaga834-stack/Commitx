@@ -321,6 +321,7 @@ function Commit() {
                 "You cannot leave the app — Home, Recents or switching apps fails the session immediately.",
                 "The Back button is disabled while the session is running.",
                 "Do Not Disturb must stay on; emergency calls have a 60 second grace window.",
+                "The only exception is the mandatory 5-minute Recovery Break after each hour — you may use your phone freely then.",
                 "Your committed amount is returned only when you finish.",
               ].map((t) => (
                 <li key={t} className="flex gap-2">
