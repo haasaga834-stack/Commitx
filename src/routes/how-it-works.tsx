@@ -11,6 +11,7 @@ import {
   FlaskConical,
 } from "lucide-react";
 import { formatINR, MIN_COMMIT, MAX_COMMIT } from "@/lib/commitx-store";
+import { CxCoin } from "@/components/CxCoin";
 
 export const Route = createFileRoute("/how-it-works")({
   head: () => ({
