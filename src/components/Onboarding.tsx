@@ -164,10 +164,25 @@ function Screen({
 export function Onboarding({ onDone }: OnboardingProps) {
   const router = useRouter();
   const { state } = useAppState();
+  const { plans } = usePlans();
   const [step, setStep] = useState(0);
 
   const s = useMemo(() => stats(state.sessions), [state.sessions]);
   const firstName = (state.profile.name || "there").trim().split(" ")[0];
+
+  // Screen 5 — plan form, prefilled from the user's existing plan when present.
+  const existing = plans[0];
+  const [subject, setSubject] = useState(existing?.subject ?? "");
+  const [topic, setTopic] = useState(existing?.topic ?? "");
+  const [durationMinutes, setDurationMinutes] = useState(
+    existing?.durationMinutes ?? 120,
+  );
+  const [priority, setPriority] = useState<Priority>(existing?.priority ?? "high");
+  const [commitValue, setCommitValue] = useState<string>(
+    existing?.commitValue ? String(existing.commitValue) : "",
+  );
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const next = () => setStep((v) => v + 1);
 
@@ -175,6 +190,36 @@ export function Onboarding({ onDone }: OnboardingProps) {
     onDone();
     if (to) router.navigate({ to });
   };
+
+  async function savePlan() {
+    if (!subject.trim() || saving) return;
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const amount = commitValue.trim() ? parseInt(commitValue, 10) : NaN;
+      await savePrimaryPlan({
+        subject: subject.trim(),
+        topic: topic.trim(),
+        time: soonTime(),
+        durationMinutes: clampDuration(durationMinutes),
+        repeat: "daily",
+        priority,
+        commitValue: Number.isFinite(amount)
+          ? Math.min(MAX_COMMIT, Math.max(MIN_COMMIT, amount))
+          : undefined,
+      });
+      finish();
+    } catch (err) {
+      setSaveError(
+        err instanceof Error && err.message
+          ? `Couldn't save your plan: ${err.message}`
+          : "Couldn't save your plan. Please try again.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-background">
