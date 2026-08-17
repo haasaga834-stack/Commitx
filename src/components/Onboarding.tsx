@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   Smartphone,
   Sparkles,
+  Target,
   Timer,
   TrendingUp,
 } from "lucide-react";
