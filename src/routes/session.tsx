@@ -627,7 +627,9 @@ function Session() {
 
   return (
     <div className="flex min-h-screen flex-col px-6 pb-10 pt-14">
+      <WindScape />
       <div className="relative flex items-center justify-center">
+
         <p className="text-xs uppercase tracking-widest text-muted-foreground">
           {isVerified ? "Verified session" : "Standard session"}
         </p>
