@@ -313,14 +313,14 @@ function TopChip({
   value,
   label,
 }: {
-  icon: string;
+  icon: ReactNode;
   value: string;
   label: string;
 }) {
   return (
     <div className="rounded-2xl bg-card px-2.5 py-1.5 text-center shadow-soft">
-      <p className="text-xs font-semibold text-foreground tabular-nums">
-        <span className="mr-0.5">{icon}</span>
+      <p className="flex items-center justify-center gap-1 text-xs font-semibold text-foreground tabular-nums">
+        {icon}
         {value}
       </p>
       <p className="text-[9px] leading-tight text-muted-foreground">{label}</p>
