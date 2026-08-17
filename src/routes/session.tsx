@@ -21,7 +21,7 @@ import {
   setNativeSessionLock,
   setNativeVerifiedModeActive,
 } from "@/lib/native-session";
-import { BellOff, X } from "lucide-react";
+import { BellOff, Leaf, X } from "lucide-react";
 
 import { showSessionProgress, hideSessionProgress } from "@/lib/native-notifications";
 import { z } from "zod";
@@ -641,15 +641,20 @@ function Session() {
       </div>
 
       <div className="flex flex-1 flex-col items-center justify-center">
-        <Hourglass size={260} state="running" progress={progress} />
+        <Hourglass size={260} state={onBreak ? "paused" : "running"} progress={progress} />
         <p className="mt-10 font-display text-6xl font-semibold tabular-nums tracking-tight">
           {fmt(remaining)}
         </p>
         <p className="mt-3 text-sm text-muted-foreground">{goal}</p>
         <p className="mt-1 text-xs text-muted-foreground">{formatINR(value)} committed</p>
-        {isVerified && (
+        {isVerified && !onBreak && (
           <p className="mt-6 rounded-full bg-foreground/5 px-4 py-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">
             Leaving CommitX fails this session
+          </p>
+        )}
+        {onBreak && (
+          <p className="mt-6 rounded-full bg-primary/10 px-4 py-1.5 text-[11px] uppercase tracking-widest text-primary">
+            Recovery break · timer paused
           </p>
         )}
       </div>
@@ -665,6 +670,58 @@ function Session() {
       </div>
 
 
+
+      {onBreak && (
+        <div className="fixed inset-0 z-[70] flex items-end justify-center bg-background/92 px-5 pb-8 backdrop-blur-md sm:items-center sm:pb-0">
+          <div className="w-full max-w-sm rounded-[28px] bg-card p-7 text-center shadow-lift">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+              <Leaf className="h-7 w-7 text-primary animate-gentle-float" />
+            </div>
+
+            {phase === "recovery_break" ? (
+              <>
+                <p className="mt-5 font-display text-xl font-semibold">Recovery break</p>
+                <p className="mt-6 font-display text-5xl font-semibold tabular-nums tracking-tight text-primary">
+                  {fmt(breakRemaining)}
+                </p>
+                <div className="mt-5 h-1.5 w-full overflow-hidden rounded-full bg-foreground/10">
+                  <div
+                    className="h-full rounded-full bg-primary transition-[width] duration-500 ease-linear"
+                    style={{
+                      width: `${Math.min(100, Math.max(0, 100 - (breakRemaining / (RECOVERY_BREAK_MS / 1000)) * 100))}%`,
+                    }}
+                  />
+                </div>
+                <p className="mt-6 text-sm leading-relaxed text-muted-foreground">
+                  Breathe. Stretch. Take a short walk. Rest your eyes.
+                </p>
+                <p className="mt-3 text-[11px] uppercase tracking-widest text-muted-foreground">
+                  You may use your phone freely · nothing fails now
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="mt-5 font-display text-xl font-semibold">Are you refreshed?</p>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  Confirm within {confirmRemaining}s to resume your commitment.
+                </p>
+                <p className="mt-5 font-display text-4xl font-semibold tabular-nums text-primary">
+                  0:{confirmRemaining.toString().padStart(2, "0")}
+                </p>
+                <button
+                  onClick={confirmRefreshed}
+                  className="mt-6 w-full rounded-full bg-primary px-6 py-4 text-sm font-medium text-primary-foreground"
+                >
+                  Yes, I\u2019m refreshed
+                </button>
+                <p className="mt-3 text-[11px] uppercase tracking-widest text-muted-foreground">
+                  Not confirming ends the commitment
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {dndBlocked && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-background/95 px-6 backdrop-blur-sm">
