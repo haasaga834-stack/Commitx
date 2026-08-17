@@ -17,6 +17,8 @@ import {
 import { useAuth } from "../lib/use-auth";
 import { useStudyReminders } from "../lib/planner";
 import { AmbientNature } from "../components/AmbientNature";
+import { Onboarding } from "../components/Onboarding";
+import { useOnboarding } from "../lib/onboarding";
 
 function NotFoundComponent() {
   return (
