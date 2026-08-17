@@ -279,7 +279,7 @@ export function TabletHome() {
             </div>
 
             {/* Real weekly focus minutes */}
-            <div className="mt-5 flex items-end gap-2">
+            <div className="mt-5 flex h-24 items-end gap-2">
               {a.week.map((d) => (
                 <div key={d.label} className="flex min-w-0 flex-1 flex-col items-center gap-1.5">
                   <div
