@@ -36,6 +36,9 @@ export function BottomNav() {
             <Link
               key={to}
               to={to}
+              // Tab switches replace the current entry so sections never stack
+              // behind Home in the navigation history.
+              replace
               className={cn(
                 "flex min-w-0 flex-1 flex-col items-center gap-1 py-2 text-[10px] font-medium tracking-wide transition-colors sm:text-[11px]",
                 active ? "text-primary" : "text-muted-foreground",
