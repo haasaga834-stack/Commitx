@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { MobileShell } from "@/components/BottomNav";
 import { useMemo, useRef, useState } from "react";
 import {
@@ -15,7 +15,15 @@ import {
   WEEKDAYS,
   type Repeat,
 } from "@/lib/planner";
-import { BookOpen, Plus, Trash2, Clock, Target } from "lucide-react";
+import {
+  BookOpen,
+  Plus,
+  Trash2,
+  Clock,
+  Target,
+  GraduationCap,
+  ChevronRight,
+} from "lucide-react";
 import { DurationWheel } from "@/components/DurationWheel";
 import { TodoList } from "@/components/TodoList";
 
@@ -119,6 +127,22 @@ function Planner() {
             ))}
           </div>
         </div>
+
+        <Link
+          to="/academics"
+          className="mt-3 flex items-center gap-3 rounded-2xl border border-hairline bg-card p-4 shadow-soft"
+        >
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/15 text-primary">
+            <GraduationCap className="h-5 w-5" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium text-foreground">Academics</p>
+            <p className="text-xs text-muted-foreground">
+              Subjects, exam countdown, weekly target and revision.
+            </p>
+          </div>
+          <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+        </Link>
 
         <div ref={todoRef} className="mt-5">
           <TodoList />
