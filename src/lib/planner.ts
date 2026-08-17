@@ -175,8 +175,17 @@ export function usePlans() {
     write(cache);
     const l = () => tick((t) => t + 1);
     listeners.add(l);
+    // Keep other tabs / the native shell in step with plan changes.
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === KEY) {
+        cache = read();
+        tick((t) => t + 1);
+      }
+    };
+    window.addEventListener("storage", onStorage);
     return () => {
       listeners.delete(l);
+      window.removeEventListener("storage", onStorage);
     };
   }, []);
   return { plans: getPlans(), hydrated };
