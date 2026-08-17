@@ -11,7 +11,7 @@ import { claimReferral, deleteAccount as deleteAccountFn } from "@/lib/account.f
 import { getDeviceHash } from "@/lib/device";
 import { signOutEverywhere } from "@/lib/use-auth";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Moon, Sun, Copy, Check, Trash2, ShieldAlert, LogOut, BookOpen, ChevronRight, Star, Info, Mail, Bell, Timer } from "lucide-react";
+import { ArrowLeft, Moon, Sun, Copy, Check, Trash2, ShieldAlert, LogOut, BookOpen, ChevronRight, Star, Info, Mail, Timer } from "lucide-react";
 import { isNativeApp, rateApp } from "@/lib/native-notifications";
 
 export const Route = createFileRoute("/settings")({
@@ -229,18 +229,6 @@ function Settings() {
 
         {!native && (
           <div className="mt-4 grid gap-3">
-            <Link
-              to="/about"
-              className="flex items-center gap-3 rounded-3xl bg-card p-5 shadow-soft"
-            >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/15 text-primary">
-                <Info className="h-4 w-4" />
-              </span>
-              <span className="min-w-0 flex-1 text-sm font-medium text-foreground">
-                About us
-              </span>
-              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-            </Link>
             <Link
               to="/contact"
               className="flex items-center gap-3 rounded-3xl bg-card p-5 shadow-soft"
