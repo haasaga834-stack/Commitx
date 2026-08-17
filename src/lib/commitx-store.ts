@@ -192,7 +192,7 @@ export function stats(sessions: Session[]) {
     .filter((s) => new Date(s.date).toDateString() === new Date().toDateString())
     .reduce((sum, s) => sum + s.durationMinutes, 0);
 
-  const foodCoins = Math.floor(totalMinutes / 60);
+  const cxCoins = Math.floor(totalMinutes / 60);
 
   return {
     completed: completed.length,
@@ -202,7 +202,7 @@ export function stats(sessions: Session[]) {
     streak,
     longest,
     todayMinutes,
-    foodCoins,
+    cxCoins,
   };
 }
 
