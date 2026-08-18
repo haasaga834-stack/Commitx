@@ -383,7 +383,18 @@ public class MainActivity extends Activity {
         triggerVerifiedFailure("android_user_leave");
     }
 
+    /**
+     * Rotation is handled in-process (configChanges declares orientation), so the
+     * WebView and the running session/timer survive rotation without a restart.
+     */
     @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        applyOrientationPolicy();
+    }
+
+    @Override
+
     public void onMultiWindowModeChanged(boolean isInMultiWindowMode, Configuration newConfig) {
         super.onMultiWindowModeChanged(isInMultiWindowMode, newConfig);
         if (isInMultiWindowMode) {
