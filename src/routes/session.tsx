@@ -681,7 +681,7 @@ function LiveSession() {
   }
 
   return (
-    <div className="relative flex min-h-screen flex-col bg-background px-6 pb-10 pt-14">
+    <div className="relative flex min-h-dvh flex-col bg-background px-6 pb-10 pt-14">
       <WindScape fixed={false} className="z-0" />
       <div className="relative z-10 flex items-center justify-center">
 
@@ -697,23 +697,29 @@ function LiveSession() {
         </button>
       </div>
 
-      <div className="relative z-10 flex flex-1 flex-col items-center justify-center">
-        <Hourglass size={260} state={onBreak ? "idle" : "running"} progress={progress} />
-        <p className="mt-10 font-display text-6xl font-semibold tabular-nums tracking-tight">
-          {fmt(remaining)}
-        </p>
-        <p className="mt-3 text-sm text-muted-foreground">{goal}</p>
-        <p className="mt-1 text-xs text-muted-foreground">{formatINR(value)} committed</p>
-        {isVerified && !onBreak && (
-          <p className="mt-6 rounded-full bg-foreground/5 px-4 py-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">
-            Leaving CommitX fails this session
+      {/* Tablet landscape splits the hourglass and the readout side by side so
+          nothing is cut off on short, wide screens. */}
+      <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center gap-8 md:landscape:flex-row md:landscape:gap-14">
+        <div className="shrink-0">
+          <Hourglass size={260} state={onBreak ? "idle" : "running"} progress={progress} />
+        </div>
+        <div className="flex min-w-0 flex-col items-center md:landscape:items-start">
+          <p className="font-display text-6xl font-semibold tabular-nums tracking-tight">
+            {fmt(remaining)}
           </p>
-        )}
-        {onBreak && (
-          <p className="mt-6 rounded-full bg-primary/10 px-4 py-1.5 text-[11px] uppercase tracking-widest text-primary">
-            Recovery break · timer paused
-          </p>
-        )}
+          <p className="mt-3 text-sm text-muted-foreground">{goal}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{formatINR(value)} committed</p>
+          {isVerified && !onBreak && (
+            <p className="mt-6 rounded-full bg-foreground/5 px-4 py-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">
+              Leaving CommitX fails this session
+            </p>
+          )}
+          {onBreak && (
+            <p className="mt-6 rounded-full bg-primary/10 px-4 py-1.5 text-[11px] uppercase tracking-widest text-primary">
+              Recovery break · timer paused
+            </p>
+          )}
+        </div>
       </div>
 
       <div className="relative z-10 mx-auto w-full max-w-md pb-2 text-center">
@@ -725,6 +731,7 @@ function LiveSession() {
           Stay with it · turning discipline into impact
         </p>
       </div>
+
 
 
 
