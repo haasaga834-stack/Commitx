@@ -86,11 +86,27 @@ public class MainActivity extends Activity {
         pendingCameraUri = null;
     }
 
+    /**
+     * Tablets (smallest width >= 600dp) rotate freely between portrait and
+     * landscape; phones stay locked to portrait. Re-applied on configuration
+     * changes so display/multi-window moves are re-evaluated.
+     */
+    private void applyOrientationPolicy() {
+        boolean allowLandscape = getResources().getBoolean(R.bool.allow_landscape);
+        int wanted = allowLandscape
+                ? android.content.pm.ActivityInfo.SCREEN_ORIENTATION_FULL_USER
+                : android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+        if (getRequestedOrientation() != wanted) {
+            setRequestedOrientation(wanted);
+        }
+    }
+
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
+        applyOrientationPolicy();
         current = this;
         preferences = getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         CommitXNotifications.ensureChannels(this);
@@ -367,7 +383,18 @@ public class MainActivity extends Activity {
         triggerVerifiedFailure("android_user_leave");
     }
 
+    /**
+     * Rotation is handled in-process (configChanges declares orientation), so the
+     * WebView and the running session/timer survive rotation without a restart.
+     */
     @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        applyOrientationPolicy();
+    }
+
+    @Override
+
     public void onMultiWindowModeChanged(boolean isInMultiWindowMode, Configuration newConfig) {
         super.onMultiWindowModeChanged(isInMultiWindowMode, newConfig);
         if (isInMultiWindowMode) {

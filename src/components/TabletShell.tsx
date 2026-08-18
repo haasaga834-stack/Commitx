@@ -72,7 +72,7 @@ function NavRail() {
   }, [pathname]);
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 flex w-[15rem] flex-col border-r border-hairline bg-background/95 px-4 py-6 backdrop-blur-xl lg:w-[16.5rem]">
+    <aside className="fixed inset-y-0 left-0 z-40 flex w-[15rem] flex-col overflow-y-auto overscroll-contain border-r border-hairline bg-background/95 px-4 py-6 backdrop-blur-xl lg:w-[16.5rem]">
       <Link to="/" replace className="flex items-center gap-2.5 px-2">
         <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-base font-semibold text-primary-foreground">
           Cx

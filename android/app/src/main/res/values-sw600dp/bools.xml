@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tablets (>= 600dp smallest width) rotate freely. -->
+    <bool name="allow_landscape">true</bool>
+</resources>
