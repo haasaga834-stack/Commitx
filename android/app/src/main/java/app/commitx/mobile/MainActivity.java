@@ -86,6 +86,21 @@ public class MainActivity extends Activity {
         pendingCameraUri = null;
     }
 
+    /**
+     * Tablets (smallest width >= 600dp) rotate freely between portrait and
+     * landscape; phones stay locked to portrait. Re-applied on configuration
+     * changes so display/multi-window moves are re-evaluated.
+     */
+    private void applyOrientationPolicy() {
+        boolean allowLandscape = getResources().getBoolean(R.bool.allow_landscape);
+        int wanted = allowLandscape
+                ? android.content.pm.ActivityInfo.SCREEN_ORIENTATION_FULL_USER
+                : android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+        if (getRequestedOrientation() != wanted) {
+            setRequestedOrientation(wanted);
+        }
+    }
+
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
