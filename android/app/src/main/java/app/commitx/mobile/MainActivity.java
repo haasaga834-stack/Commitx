@@ -91,6 +91,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
+        applyOrientationPolicy();
         current = this;
         preferences = getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         CommitXNotifications.ensureChannels(this);
