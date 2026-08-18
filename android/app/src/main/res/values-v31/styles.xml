@@ -2,6 +2,6 @@
 <resources>
     <style name="AppTheme.Splash" parent="AppTheme">
         <item name="android:windowSplashScreenBackground">@color/splash_background</item>
-        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_logo</item>
     </style>
 </resources>
