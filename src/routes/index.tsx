@@ -263,19 +263,23 @@ function MobileHome() {
           </Link>
         </section>
 
-        {/* Current Commit Now */}
+        {/* Commit Now */}
         <section
           className="mt-4 animate-fade-up"
           style={{ animationDelay: "240ms" }}
         >
-          <div className="flex items-center justify-between gap-3">
+          <div className="relative flex items-center justify-center gap-3">
             <h2 className="font-display text-base font-semibold text-foreground">
-              Current Commit Now
+              Commit Now
             </h2>
-            <Link to="/history" className="text-[11px] font-medium text-primary">
+            <Link
+              to="/history"
+              className="absolute right-0 text-[11px] font-medium text-primary"
+            >
               View all
             </Link>
           </div>
+
 
           <div className="mt-2.5 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-3xl border border-hairline bg-card p-4 shadow-soft">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/15 text-primary">
