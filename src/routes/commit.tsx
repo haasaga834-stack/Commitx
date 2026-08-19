@@ -245,16 +245,22 @@ function Commit() {
           )}
         </section>
 
-        {/* Duration — comes from the scheduled study plan */}
+        {/* Duration — preloaded from the plan when swiped, otherwise chosen here */}
         <section className="mt-8">
           <div className="flex items-baseline justify-between">
             <Label>Duration</Label>
             <span className="font-display text-2xl font-semibold text-primary">
-              {plansHydrated ? (duration ? fmtDuration(duration) : "Not set") : "\u2026"}
+              {usePlanDuration && !plansHydrated
+                ? "\u2026"
+                : duration
+                  ? fmtDuration(duration)
+                  : "Not set"}
             </span>
           </div>
 
-          {plansHydrated && !duration ? (
+          {!usePlanDuration ? (
+            <DurationWheel value={pickedDuration} onChange={setPickedDuration} />
+          ) : plansHydrated && !duration ? (
             <Link
               to="/planner"
               className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-dashed border-hairline bg-card px-4 py-3.5"
