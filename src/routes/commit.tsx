@@ -56,9 +56,10 @@ function Commit() {
 
   const dndCheckable = canCheckDnd();
 
-  // Verify DND state whenever the warning is open (and after returning from settings).
+  // Verify DND state whenever Verified is in play (and after returning from settings).
   useEffect(() => {
-    if (!verifiedWarn) return;
+    if (!verifiedWarn && mode !== "verified") return;
+
     const check = () => setDndOn(isDndEnabled());
     check();
     const id = window.setInterval(check, 1000);
