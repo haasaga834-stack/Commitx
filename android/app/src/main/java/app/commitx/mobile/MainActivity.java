@@ -42,7 +42,7 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 import java.util.concurrent.Executors;
 
 public class MainActivity extends Activity {
-    private static final String START_URL = "https://commitx.lovable.app/";
+    private static final String START_URL = "https://commitx.site/";
     private static final String PREFS = "commitx_verified_mode";
     private static final String PENDING_REASON = "pending_failure_reason";
     static final String EXTRA_ROUTE = "commitx_route";
@@ -458,7 +458,10 @@ public class MainActivity extends Activity {
     private boolean isCommitXUrl(Uri uri) {
         if (uri == null) return false;
         String host = uri.getHost();
-        return "commitx.lovable.app".equals(host);
+        if (host == null) return false;
+        return "commitx.site".equals(host)
+                || host.endsWith(".commitx.site")
+                || "commitx.lovable.app".equals(host);
     }
 
     /** CommitX plus the identity providers used by sign-in stay inside the app. */
