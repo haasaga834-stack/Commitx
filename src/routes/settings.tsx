@@ -4,6 +4,12 @@ import { NotificationsCard } from "@/components/NotificationsCard";
 import { ScreenTimeCard } from "@/components/ScreenTimeCard";
 
 import { useTheme } from "@/lib/theme";
+import {
+  useSavedDuration,
+  formatSessionDuration,
+  MIN_SESSION_MINUTES,
+  MAX_SESSION_MINUTES,
+} from "@/lib/session-prefs";
 import { formatINR, REFERRAL_BONUS } from "@/lib/commitx-store";
 import { ACTIVE_VERIFIED_SESSION_KEY } from "@/lib/verified-mode";
 import { supabase } from "@/integrations/supabase/client";
