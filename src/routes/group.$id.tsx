@@ -253,8 +253,8 @@ function GroupSession() {
             <div className="w-10" />
           </div>
 
-          <h1 className="mt-8 font-display text-3xl font-semibold">{group.goal}</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <h1 className="mt-4 text-center font-display text-3xl font-semibold">{group.goal}</h1>
+          <p className="mt-2 text-center text-sm text-muted-foreground">
             {group.duration_minutes} minutes · {formatINR(group.commit_value)} each ·{" "}
             {group.mode === "verified" ? "Verified" : "Standard"}
           </p>
