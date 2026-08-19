@@ -219,33 +219,47 @@ function Commit() {
           )}
         </section>
 
-        {/* Duration */}
+        {/* Duration — always the commitment time saved in Settings */}
         <section className="mt-8">
           <div className="flex items-baseline justify-between">
             <Label>Duration</Label>
             <span className="font-display text-2xl font-semibold text-primary">
-              {fmtDuration(duration)}
+              {savedHydrated ? (savedDuration ? fmtDuration(savedDuration) : "Not set") : "…"}
             </span>
           </div>
-          <input
-            type="range"
-            min={10}
-            max={360}
-            step={5}
-            value={duration}
-            onChange={(e) => setDuration(Number(e.target.value))}
-            className="mt-4 w-full accent-[color:var(--color-primary)]"
-          />
-          <div className="mt-1 flex justify-between text-[11px] text-muted-foreground">
-            <span>10 min</span>
-            <span>6 h</span>
-          </div>
+
+          {savedHydrated && !savedDuration ? (
+            <Link
+              to="/settings"
+              hash="commit-time"
+              className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-dashed border-hairline bg-card px-4 py-3.5"
+            >
+              <span className="text-xs leading-relaxed text-muted-foreground">
+                No commitment time saved yet. Set it once in Settings and every
+                commitment will use it.
+              </span>
+              <span className="shrink-0 text-xs font-medium text-primary">Open Settings</span>
+            </Link>
+          ) : (
+            <Link
+              to="/settings"
+              hash="commit-time"
+              className="mt-3 flex items-center justify-between gap-3 rounded-2xl bg-card px-4 py-3.5 shadow-soft"
+            >
+              <span className="text-xs text-muted-foreground">
+                Saved in Settings — used for every commitment
+              </span>
+              <span className="shrink-0 text-xs font-medium text-primary">Change</span>
+            </Link>
+          )}
+
           {duration > 120 && (
             <p className="mt-3 rounded-2xl bg-accent/10 px-4 py-3 text-xs text-primary">
               You'll receive one complimentary 10 minute break reminder.
             </p>
           )}
         </section>
+
 
         {/* Value */}
         <section className="mt-8">
