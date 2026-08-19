@@ -10,7 +10,7 @@ import {
   MAX_COMMIT,
 } from "@/lib/commitx-store";
 import { canCheckDnd, isDndEnabled, openDndSettings } from "@/lib/native-session";
-import { useSavedDuration } from "@/lib/session-prefs";
+import { usePlans, upcomingPlan } from "@/lib/planner";
 import { claimActiveDbSession, releaseActiveDbSession } from "@/lib/active-session";
 import { clearEndedSession, writeActiveVerifiedSession } from "@/lib/verified-mode";
 
@@ -38,10 +38,7 @@ function fmtDuration(min: number) {
 function Commit() {
   const navigate = useNavigate();
   const { state, hydrated } = useAppState();
-  const {
-    duration: savedDuration,
-    hydrated: savedHydrated,
-  } = useSavedDuration();
+  const { plans, hydrated: plansHydrated } = usePlans();
   const [goal, setGoal] = useState("Study");
   const [customGoal, setCustomGoal] = useState("");
   const [value, setValue] = useState(MIN_COMMIT);
@@ -52,8 +49,9 @@ function Commit() {
   const [dndOn, setDndOn] = useState<boolean | null>(null);
   const [starting, setStarting] = useState(false);
 
-  // Settings is the single source of truth for commitment time.
-  const duration = savedDuration ?? 0;
+  // The study plan is the single source of truth for commitment time.
+  const nextPlan = useMemo(() => upcomingPlan(plans), [plans]);
+  const duration = nextPlan?.plan.durationMinutes ?? 0;
 
 
   const dndCheckable = canCheckDnd();
@@ -84,7 +82,7 @@ function Commit() {
     // Double-tap / retry guard: only one start attempt may ever be in flight.
     if (starting) return;
     if (!duration) {
-      setError("Set your commitment time in Settings first, then start your session.");
+      setError("Add a study plan with a time and duration first — your commitment uses it.");
       return;
     }
     if (value < MIN_COMMIT || value > MAX_COMMIT) {
@@ -231,35 +229,35 @@ function Commit() {
           )}
         </section>
 
-        {/* Duration — always the commitment time saved in Settings */}
+        {/* Duration — comes from the scheduled study plan */}
         <section className="mt-8">
           <div className="flex items-baseline justify-between">
             <Label>Duration</Label>
             <span className="font-display text-2xl font-semibold text-primary">
-              {savedHydrated ? (savedDuration ? fmtDuration(savedDuration) : "Not set") : "…"}
+              {plansHydrated ? (duration ? fmtDuration(duration) : "Not set") : "\u2026"}
             </span>
           </div>
 
-          {savedHydrated && !savedDuration ? (
+          {plansHydrated && !duration ? (
             <Link
-              to="/settings"
-              hash="commit-time"
+              to="/planner"
               className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-dashed border-hairline bg-card px-4 py-3.5"
             >
               <span className="text-xs leading-relaxed text-muted-foreground">
-                No commitment time saved yet. Set it once in Settings and every
-                commitment will use it.
+                No study plan yet. Add one with a time and duration and your
+                commitment will use it automatically.
               </span>
-              <span className="shrink-0 text-xs font-medium text-primary">Open Settings</span>
+              <span className="shrink-0 text-xs font-medium text-primary">Open Planner</span>
             </Link>
           ) : (
             <Link
-              to="/settings"
-              hash="commit-time"
+              to="/planner"
               className="mt-3 flex items-center justify-between gap-3 rounded-2xl bg-card px-4 py-3.5 shadow-soft"
             >
-              <span className="text-xs text-muted-foreground">
-                Saved in Settings — used for every commitment
+              <span className="min-w-0 truncate text-xs text-muted-foreground">
+                {nextPlan
+                  ? `From your plan · ${nextPlan.plan.subject}`
+                  : "From your study plan"}
               </span>
               <span className="shrink-0 text-xs font-medium text-primary">Change</span>
             </Link>
