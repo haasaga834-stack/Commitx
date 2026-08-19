@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { cn } from "@/lib/utils";
 
 const LEAVES = [
@@ -24,7 +25,7 @@ const PARTICLES = [
  * Soft, hand-painted nature backdrop: gentle clouds, drifting leaves and
  * glowing motes. Purely decorative and never interactive.
  */
-export function AmbientNature({ className }: { className?: string }) {
+function AmbientNatureBase({ className }: { className?: string }) {
   return (
     <div
       aria-hidden
@@ -127,3 +128,6 @@ export function AmbientNature({ className }: { className?: string }) {
     </div>
   );
 }
+
+/** Purely decorative — never re-render it because a route re-rendered. */
+export const AmbientNature = memo(AmbientNatureBase);

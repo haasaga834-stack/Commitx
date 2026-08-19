@@ -80,12 +80,14 @@ function Settings() {
   useEffect(() => {
     let active = true;
     (async () => {
-      const { data: auth } = await supabase.auth.getUser();
-      if (!auth.user) return;
+      // Local session read — no network round trip on every Settings mount.
+      const { data: auth } = await supabase.auth.getSession();
+      const user = auth.session?.user;
+      if (!user) return;
       const { data } = await supabase
         .from("profiles")
         .select("referral_code, referred_by")
-        .eq("id", auth.user.id)
+        .eq("id", user.id)
         .maybeSingle();
       if (!active || !data) return;
       setReferralCode(data.referral_code);
