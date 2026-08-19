@@ -26,12 +26,13 @@ export function GroupStudyCard({ compact = false }: { compact?: boolean }) {
         </div>
       </div>
 
-      <div className="mt-3.5 rounded-2xl bg-background px-3.5 py-3">
+      <div className="mt-3.5 rounded-2xl bg-background px-3.5 py-3 text-center">
         <p className="text-sm font-semibold text-foreground">Lock in with your people. 🎯</p>
         <p className="mt-1 text-xs text-muted-foreground">
           Pick a time, commit together, and see who makes it to the finish.
         </p>
       </div>
+
 
       <Link
         to="/group"
