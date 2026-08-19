@@ -187,14 +187,13 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                Uri uri = request.getUrl();
-                if (isInAppUrl(uri)) {
-                    return false;
-                }
-                if (uri != null) {
-                    startActivity(new Intent(Intent.ACTION_VIEW, uri));
-                }
-                return true;
+                return handleNavigation(view, request == null ? null : request.getUrl());
+            }
+
+            @Override
+            @SuppressWarnings("deprecation")
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                return handleNavigation(view, url == null ? null : Uri.parse(url));
             }
 
             @Override
@@ -209,6 +208,27 @@ public class MainActivity extends Activity {
 
         setContentView(webView);
         webView.loadUrl(startUrlFor(getIntent()));
+    }
+
+    /**
+     * Keep every CommitX navigation in this activity, including redirects from
+     * the former lovable.app host to the custom domain. Only genuinely external
+     * web links are handed to another Android app.
+     */
+    private boolean handleNavigation(WebView view, Uri uri) {
+        if (uri == null) return true;
+        if (isInAppUrl(uri)) {
+            // Returning false makes this WebView own the navigation. This also
+            // covers server-side redirects and both WebView callback variants.
+            return false;
+        }
+        String scheme = uri.getScheme();
+        if ("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme)) {
+            try {
+                startActivity(new Intent(Intent.ACTION_VIEW, uri));
+            } catch (Throwable ignored) {}
+        }
+        return true;
     }
 
     private String startUrlFor(Intent intent) {
@@ -459,9 +479,11 @@ public class MainActivity extends Activity {
         if (uri == null) return false;
         String host = uri.getHost();
         if (host == null) return false;
+        host = host.toLowerCase(java.util.Locale.ROOT);
         return "commitx.site".equals(host)
                 || host.endsWith(".commitx.site")
-                || "commitx.lovable.app".equals(host);
+                || "commitx.lovable.app".equals(host)
+                || "commitx.lovable.dev".equals(host);
     }
 
     /** CommitX plus the identity providers used by sign-in stay inside the app. */
@@ -469,14 +491,20 @@ public class MainActivity extends Activity {
         if (uri == null) return false;
         String host = uri.getHost();
         if (host == null) return false;
+        host = host.toLowerCase(java.util.Locale.ROOT);
         return isCommitXUrl(uri)
-                || host.endsWith("lovable.app")
-                || host.endsWith("lovable.dev")
-                || host.endsWith("supabase.co")
+                || host.equals("lovable.app")
+                || host.endsWith(".lovable.app")
+                || host.equals("lovable.dev")
+                || host.endsWith(".lovable.dev")
+                || host.equals("supabase.co")
+                || host.endsWith(".supabase.co")
                 || host.equals("accounts.google.com")
                 || host.endsWith(".google.com")
-                || host.endsWith("googleusercontent.com")
-                || host.endsWith("gstatic.com");
+                || host.equals("googleusercontent.com")
+                || host.endsWith(".googleusercontent.com")
+                || host.equals("gstatic.com")
+                || host.endsWith(".gstatic.com");
     }
 
     private void injectPendingFailureIfNeeded() {
