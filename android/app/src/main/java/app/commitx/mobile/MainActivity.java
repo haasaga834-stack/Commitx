@@ -458,7 +458,10 @@ public class MainActivity extends Activity {
     private boolean isCommitXUrl(Uri uri) {
         if (uri == null) return false;
         String host = uri.getHost();
-        return "commitx.lovable.app".equals(host);
+        if (host == null) return false;
+        return "commitx.site".equals(host)
+                || host.endsWith(".commitx.site")
+                || "commitx.lovable.app".equals(host);
     }
 
     /** CommitX plus the identity providers used by sign-in stay inside the app. */
