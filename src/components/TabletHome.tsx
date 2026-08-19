@@ -16,6 +16,7 @@ import { TabletShell } from "@/components/TabletShell";
 import cozyStudy from "@/assets/cozy-study.jpg";
 
 import { useAppState, stats } from "@/lib/commitx-store";
+import { useSavedDuration } from "@/lib/session-prefs";
 import { dailyMessage } from "@/lib/daily-message";
 import {
   usePlans,
@@ -38,7 +39,8 @@ function greeting() {
 export function TabletHome() {
   const navigate = useNavigate();
   const { state, hydrated } = useAppState();
-  const s = stats(state.sessions);
+  const s = useMemo(() => stats(state.sessions), [state.sessions]);
+  const { duration: savedDuration } = useSavedDuration();
 
   const { plans, hydrated: plansHydrated } = usePlans();
   const { todos } = useTodos();
@@ -159,7 +161,11 @@ export function TabletHome() {
               <div className="mt-5 max-w-xl">
                 <SwipeToStart
                   label="Swipe to Start Commitment"
-                  onStart={() => navigate({ to: "/commit" })}
+                  onStart={() =>
+                    savedDuration
+                      ? navigate({ to: "/commit" })
+                      : navigate({ to: "/settings", hash: "commit-time" })
+                  }
                 />
               </div>
             </div>
