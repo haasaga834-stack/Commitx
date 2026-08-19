@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { CxCoin } from "@/components/CxCoin";
 import { DailyGoalProgress } from "@/components/DailyGoalProgress";
+import { GroupStudyCard } from "@/components/GroupStudyCard";
 import { SwipeToStart } from "@/components/SwipeToStart";
 import { TabletShell } from "@/components/TabletShell";
 import cozyStudy from "@/assets/cozy-study.jpg";
@@ -244,57 +245,6 @@ export function TabletHome() {
 
         {/* RIGHT COLUMN */}
         <div className="grid gap-6">
-          {/* Study Insights */}
-          <section className="rounded-3xl border border-hairline bg-card p-6 shadow-soft">
-            <div className="flex items-center justify-between gap-4">
-              <h2 className="font-display text-lg font-semibold text-foreground">
-                Study Insights
-              </h2>
-              <Link to="/analytics" className="text-xs font-medium text-primary">
-                See all
-              </Link>
-            </div>
-
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <Insight
-                icon={<CalendarDays className="h-4 w-4" />}
-                label="This week"
-                value={hydrated ? formatHours(a.weeklyMinutes) : "—"}
-              />
-              <Insight
-                icon={<TrendingUp className="h-4 w-4" />}
-                label="Success rate"
-                value={hydrated ? `${s.successRate}%` : "—"}
-              />
-              <Insight
-                icon={<Clock className="h-4 w-4" />}
-                label="Avg daily"
-                value={hydrated ? formatHours(a.averageDailyMinutes) : "—"}
-              />
-              <Insight
-                icon={<Trophy className="h-4 w-4" />}
-                label="Longest streak"
-                value={hydrated ? `${s.longest}d` : "—"}
-              />
-            </div>
-
-            {/* Real weekly focus minutes */}
-            <div className="mt-5 flex h-24 items-end gap-2">
-              {a.week.map((d) => (
-                <div key={d.label} className="flex min-w-0 flex-1 flex-col items-center justify-end gap-1.5">
-                  <div
-                    className={`w-full rounded-t-md ${
-                      d.isToday ? "bg-primary" : "bg-primary/25"
-                    }`}
-                    style={{ height: `${8 + (d.minutes / weekMax) * 64}px` }}
-                    aria-label={`${d.label}: ${formatHours(d.minutes)}`}
-                  />
-                  <span className="text-[10px] text-muted-foreground">{d.label[0]}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-
           {/* Current Commit Now */}
           <section className="rounded-3xl border border-hairline bg-card p-6 shadow-soft">
             <div className="flex items-center justify-between gap-4">
@@ -330,6 +280,9 @@ export function TabletHome() {
 
           {/* Daily goal */}
           <DailyGoalProgress todayMinutes={s.todayMinutes} hydrated={hydrated} />
+
+          {/* Group Study */}
+          <GroupStudyCard />
         </div>
       </div>
     </TabletShell>

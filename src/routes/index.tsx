@@ -1,16 +1,16 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Bell, CalendarDays, Clock, Flame, Hourglass as HourglassIcon, Leaf, Sparkles, TrendingUp, Trophy } from "lucide-react";
+import { Bell, CalendarDays, Clock, Flame, Hourglass as HourglassIcon, Leaf, Sparkles } from "lucide-react";
 import { MobileShell } from "@/components/BottomNav";
 import { CxCoin } from "@/components/CxCoin";
 import { DailyGoalProgress } from "@/components/DailyGoalProgress";
+import { GroupStudyCard } from "@/components/GroupStudyCard";
 import { SwipeToStart } from "@/components/SwipeToStart";
 import { TabletHome } from "@/components/TabletHome";
 import { useIsTablet } from "@/lib/use-tablet";
 import cozyStudy from "@/assets/cozy-study.jpg";
 
 import { useAppState, stats } from "@/lib/commitx-store";
-import { analyze, formatHours } from "@/lib/analytics-data";
 import { dailyMessage } from "@/lib/daily-message";
 import {
   usePlans,
@@ -58,7 +58,6 @@ function MobileHome() {
   const navigate = useNavigate();
   const { state, hydrated } = useAppState();
   const s = stats(state.sessions);
-  const a = useMemo(() => analyze(state.sessions), [state.sessions]);
   
   const { plans, hydrated: plansHydrated } = usePlans();
   const { todos } = useTodos();
@@ -260,44 +259,6 @@ function MobileHome() {
           </Link>
         </section>
 
-        {/* Study Insights */}
-        <section
-          className="mt-4 rounded-3xl border border-hairline bg-card p-4 shadow-soft animate-fade-up"
-          style={{ animationDelay: "180ms" }}
-        >
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="font-display text-base font-semibold text-foreground">
-              Study Insights
-            </h2>
-            <Link to="/analytics" className="text-[11px] font-medium text-primary">
-              See all
-            </Link>
-          </div>
-
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <Insight
-              icon={<CalendarDays className="h-3.5 w-3.5" />}
-              label="This week"
-              value={hydrated ? formatHours(a.weeklyMinutes) : "—"}
-            />
-            <Insight
-              icon={<TrendingUp className="h-3.5 w-3.5" />}
-              label="Success rate"
-              value={hydrated ? `${s.successRate}%` : "—"}
-            />
-            <Insight
-              icon={<Clock className="h-3.5 w-3.5" />}
-              label="Avg daily"
-              value={hydrated ? formatHours(a.averageDailyMinutes) : "—"}
-            />
-            <Insight
-              icon={<Trophy className="h-3.5 w-3.5" />}
-              label="Longest streak"
-              value={hydrated ? `${s.longest}d` : "—"}
-            />
-          </div>
-        </section>
-
         {/* Current Commit Now */}
         <section
           className="mt-4 animate-fade-up"
@@ -336,6 +297,11 @@ function MobileHome() {
         {/* Daily goal */}
         <div className="mt-4 mb-4 animate-fade-up" style={{ animationDelay: "300ms" }}>
           <DailyGoalProgress todayMinutes={s.todayMinutes} hydrated={hydrated} />
+        </div>
+
+        {/* Group Study */}
+        <div className="mb-4 animate-fade-up" style={{ animationDelay: "360ms" }}>
+          <GroupStudyCard />
         </div>
       </div>
     </MobileShell>
@@ -384,26 +350,6 @@ function MiniFact({
         </span>
         <span className="block truncate text-[10px] text-muted-foreground">{label}</span>
       </span>
-    </div>
-  );
-}
-
-function Insight({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-2xl bg-background px-3 py-2.5">
-      <div className="flex items-center gap-1.5 text-muted-foreground">
-        {icon}
-        <p className="min-w-0 truncate text-[10px] uppercase tracking-wider">{label}</p>
-      </div>
-      <p className="mt-0.5 text-sm font-semibold text-foreground tabular-nums">{value}</p>
     </div>
   );
 }
