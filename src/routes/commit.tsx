@@ -9,12 +9,20 @@ import {
   MIN_COMMIT,
   MAX_COMMIT,
 } from "@/lib/commitx-store";
-import { canCheckDnd, isDndEnabled, openDndSettings } from "@/lib/native-session";
+import { canCheckDnd, hasNativeBridge, isDndEnabled, openDndSettings } from "@/lib/native-session";
+import { DurationWheel } from "@/components/DurationWheel";
+import { z } from "zod";
 import { usePlans, upcomingPlan } from "@/lib/planner";
 import { claimActiveDbSession, releaseActiveDbSession } from "@/lib/active-session";
 import { clearEndedSession, writeActiveVerifiedSession } from "@/lib/verified-mode";
 
+const commitSearch = z.object({
+  /** "1" when arriving from Swipe to Start — duration is preloaded from the plan. */
+  plan: z.coerce.number().optional(),
+});
+
 export const Route = createFileRoute("/commit")({
+  validateSearch: commitSearch,
   head: () => ({
     meta: [
       { title: "CommitX — New Commitment" },
@@ -37,6 +45,8 @@ function fmtDuration(min: number) {
 
 function Commit() {
   const navigate = useNavigate();
+  const { plan: fromPlan } = Route.useSearch();
+  const usePlanDuration = fromPlan === 1;
   const { state, hydrated } = useAppState();
   const { plans, hydrated: plansHydrated } = usePlans();
   const [goal, setGoal] = useState("Study");
@@ -51,9 +61,12 @@ function Commit() {
 
   // The study plan is the single source of truth for commitment time.
   const nextPlan = useMemo(() => upcomingPlan(plans), [plans]);
-  const duration = nextPlan?.plan.durationMinutes ?? 0;
+  const planDuration = nextPlan?.plan.durationMinutes ?? 0;
+  const [pickedDuration, setPickedDuration] = useState(60);
+  const duration = usePlanDuration ? planDuration : pickedDuration;
 
 
+  const native = hasNativeBridge();
   const dndCheckable = canCheckDnd();
 
   // Verify DND state whenever Verified is in play (and after returning from settings).
@@ -73,7 +86,9 @@ function Commit() {
     };
   }, [verifiedWarn, mode]);
 
-  const dndReady = !dndCheckable || dndOn === true;
+  // On Android we must positively confirm DND. Anything else (unknown, false, or
+  // a bridge that can't report it) blocks the Verified session.
+  const dndReady = native ? dndOn === true : true;
 
   const finalGoal = goal === "Custom" ? customGoal.trim() || "Custom" : goal;
 
@@ -83,7 +98,11 @@ function Commit() {
     // Double-tap / retry guard: only one start attempt may ever be in flight.
     if (starting) return;
     if (!duration) {
-      setError("Add a study plan with a time and duration first — your commitment uses it.");
+      setError(
+        usePlanDuration
+          ? "Add a study plan with a time and duration first — your commitment uses it."
+          : "Choose a duration first.",
+      );
       return;
     }
     if (value < MIN_COMMIT || value > MAX_COMMIT) {
@@ -101,7 +120,7 @@ function Commit() {
     if (mode === "verified") {
       const liveDnd = isDndEnabled();
       setDndOn(liveDnd);
-      const liveReady = !dndCheckable || liveDnd === true;
+      const liveReady = native ? liveDnd === true : true;
       if (!confirmVerified || !liveReady) {
         if (!liveReady) setConfirmVerified(false);
         setVerifiedWarn(true);
@@ -129,7 +148,7 @@ function Commit() {
       if (mode === "verified") {
         const liveDnd = isDndEnabled();
         setDndOn(liveDnd);
-        if (dndCheckable && liveDnd !== true) {
+        if (native && liveDnd !== true) {
           await releaseActiveDbSession();
           setConfirmVerified(false);
           setVerifiedWarn(true);
@@ -230,16 +249,22 @@ function Commit() {
           )}
         </section>
 
-        {/* Duration — comes from the scheduled study plan */}
+        {/* Duration — preloaded from the plan when swiped, otherwise chosen here */}
         <section className="mt-8">
           <div className="flex items-baseline justify-between">
             <Label>Duration</Label>
             <span className="font-display text-2xl font-semibold text-primary">
-              {plansHydrated ? (duration ? fmtDuration(duration) : "Not set") : "\u2026"}
+              {usePlanDuration && !plansHydrated
+                ? "\u2026"
+                : duration
+                  ? fmtDuration(duration)
+                  : "Not set"}
             </span>
           </div>
 
-          {plansHydrated && !duration ? (
+          {!usePlanDuration ? (
+            <DurationWheel value={pickedDuration} onChange={setPickedDuration} />
+          ) : plansHydrated && !duration ? (
             <Link
               to="/planner"
               className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-dashed border-hairline bg-card px-4 py-3.5"
@@ -352,9 +377,9 @@ function Commit() {
             />
           </div>
 
-          {mode === "verified" && dndCheckable && (
+          {mode === "verified" && native && (
             <div className="mt-4 rounded-2xl border border-hairline bg-card p-4 shadow-soft">
-              {dndReady ? (
+              {dndOn === true ? (
                 <p className="flex items-center gap-2 text-sm font-medium text-primary">
                   <Check className="h-4 w-4" strokeWidth={3} />
                   DND Enabled ✓
@@ -381,7 +406,7 @@ function Commit() {
 
           {mode === "verified" && confirmVerified && dndReady && (
             <p className="mt-4 rounded-2xl bg-foreground/5 px-4 py-3 text-sm text-foreground">
-              Verified rules accepted{dndCheckable ? " · DND Enabled ✓" : ""}. Tap
+              Verified rules accepted{native ? " · DND Enabled ✓" : ""}. Tap
               Commit Now to begin.
             </p>
           )}
@@ -432,7 +457,11 @@ function Commit() {
             </ul>
 
             <div className="mt-5 rounded-2xl border border-hairline bg-background p-4">
-              {dndReady ? (
+              {!native ? (
+                <p className="text-xs text-muted-foreground">
+                  Do Not Disturb is enforced in the CommitX Android app.
+                </p>
+              ) : dndOn === true ? (
                 <p className="flex items-center gap-2 text-sm font-medium text-primary">
                   <Check className="h-4 w-4" strokeWidth={3} />
                   DND Enabled ✓

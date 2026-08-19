@@ -161,7 +161,7 @@ export function TabletHome() {
                   label="Swipe to Start Commitment"
                   onStart={() =>
                     next
-                      ? navigate({ to: "/commit" })
+                      ? navigate({ to: "/commit", search: { plan: 1 } })
                       : navigate({ to: "/planner" })
                   }
                 />
