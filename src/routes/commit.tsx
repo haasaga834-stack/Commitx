@@ -56,9 +56,10 @@ function Commit() {
 
   const dndCheckable = canCheckDnd();
 
-  // Verify DND state whenever the warning is open (and after returning from settings).
+  // Verify DND state whenever Verified is in play (and after returning from settings).
   useEffect(() => {
-    if (!verifiedWarn) return;
+    if (!verifiedWarn && mode !== "verified") return;
+
     const check = () => setDndOn(isDndEnabled());
     check();
     const id = window.setInterval(check, 1000);
@@ -70,7 +71,7 @@ function Commit() {
       document.removeEventListener("visibilitychange", onVis);
       window.removeEventListener("focus", onVis);
     };
-  }, [verifiedWarn]);
+  }, [verifiedWarn, mode]);
 
   const dndReady = !dndCheckable || dndOn === true;
 
@@ -350,12 +351,41 @@ function Commit() {
               }}
             />
           </div>
+
+          {mode === "verified" && dndCheckable && (
+            <div className="mt-4 rounded-2xl border border-hairline bg-card p-4 shadow-soft">
+              {dndReady ? (
+                <p className="flex items-center gap-2 text-sm font-medium text-primary">
+                  <Check className="h-4 w-4" strokeWidth={3} />
+                  DND Enabled ✓
+                </p>
+              ) : (
+                <>
+                  <p className="text-sm font-medium text-foreground">
+                    Do Not Disturb is required
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Your Verified session can't start until DND is on. Turn it on, then
+                    come back — we re-check automatically.
+                  </p>
+                  <button
+                    onClick={openDndSettings}
+                    className="mt-3 w-full rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground"
+                  >
+                    Enable Do Not Disturb
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+
           {mode === "verified" && confirmVerified && dndReady && (
             <p className="mt-4 rounded-2xl bg-foreground/5 px-4 py-3 text-sm text-foreground">
               Verified rules accepted{dndCheckable ? " · DND Enabled ✓" : ""}. Tap
               Commit Now to begin.
             </p>
           )}
+
         </section>
 
         <button

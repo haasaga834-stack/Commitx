@@ -244,16 +244,17 @@ export function TabletHome() {
 
         {/* RIGHT COLUMN */}
         <div className="grid gap-6">
-          {/* Current Commit Now */}
+          {/* Commit Now */}
           <section className="rounded-3xl border border-hairline bg-card p-6 shadow-soft">
-            <div className="flex items-center justify-between gap-4">
+            <div className="relative flex items-center justify-center gap-4">
               <h2 className="font-display text-lg font-semibold text-foreground">
-                Current Commit Now
+                Commit Now
               </h2>
-              <Link to="/history" className="text-xs font-medium text-primary">
+              <Link to="/history" className="absolute right-0 text-xs font-medium text-primary">
                 View all
               </Link>
             </div>
+
 
             <div className="mt-4 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-4">
               <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-accent/15 text-primary">
