@@ -32,8 +32,11 @@ export const createGroup = createServerFn({ method: "POST" })
       .select("demo_balance, real_balance")
       .eq("user_id", userId)
       .maybeSingle();
-    const balance = (wallet?.demo_balance ?? 0) + (wallet?.real_balance ?? 0);
-    if (balance < data.value) throw new Error("Not enough demo money for this commitment.");
+    // No wallet row yet means the cloud mirror hasn't synced; local guards apply.
+    if (wallet) {
+      const balance = (wallet.demo_balance ?? 0) + (wallet.real_balance ?? 0);
+      if (balance < data.value) throw new Error("Not enough demo money for this commitment.");
+    }
 
     let lastError: unknown = null;
     for (let attempt = 0; attempt < 5; attempt++) {
@@ -138,9 +141,11 @@ export const joinGroup = createServerFn({ method: "POST" })
       .select("demo_balance, real_balance")
       .eq("user_id", userId)
       .maybeSingle();
-    const balance = (wallet?.demo_balance ?? 0) + (wallet?.real_balance ?? 0);
-    if (balance < row.commit_value) {
-      throw new Error("You need at least ₹" + row.commit_value + " to commit to this group.");
+    if (wallet) {
+      const balance = (wallet.demo_balance ?? 0) + (wallet.real_balance ?? 0);
+      if (balance < row.commit_value) {
+        throw new Error("You need at least ₹" + row.commit_value + " to commit to this group.");
+      }
     }
 
     const { error } = await supabase.from("group_members").insert({
