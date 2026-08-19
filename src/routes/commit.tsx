@@ -18,7 +18,7 @@ import { clearEndedSession, writeActiveVerifiedSession } from "@/lib/verified-mo
 
 const commitSearch = z.object({
   /** "1" when arriving from Swipe to Start — duration is preloaded from the plan. */
-  plan: z.string().optional(),
+  plan: z.coerce.string().optional(),
 });
 
 export const Route = createFileRoute("/commit")({
