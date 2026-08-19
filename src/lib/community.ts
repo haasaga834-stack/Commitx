@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchCommunityCxCoins, fetchLeaderboard } from "@/lib/community.functions";
 
 export interface LeaderRow {
   userId: string;
@@ -15,15 +15,19 @@ export function useLeaderboard(limit = 10) {
   useEffect(() => {
     let alive = true;
     const load = async () => {
-      const { data } = await supabase.rpc("leaderboard_top", { _limit: limit });
-      if (!alive) return;
-      setRows(
-        (data ?? []).map((r) => ({
-          userId: r.user_id,
-          name: r.display_name,
-          minutes: Number(r.total_minutes) || 0,
-        })),
-      );
+      try {
+        const data = await fetchLeaderboard({ data: { limit } });
+        if (!alive) return;
+        setRows(
+          (data ?? []).map((r) => ({
+            userId: r.user_id,
+            name: r.display_name,
+            minutes: Number(r.total_minutes) || 0,
+          })),
+        );
+      } catch {
+        if (!alive) return;
+      }
       setLoading(false);
     };
     void load();
@@ -46,9 +50,13 @@ export function useCommunityCxCoins() {
   useEffect(() => {
     let alive = true;
     const load = async () => {
-      const { data } = await supabase.rpc("community_food_coins");
-      if (!alive) return;
-      setCoins(Number(data) || 0);
+      try {
+        const value = await fetchCommunityCxCoins();
+        if (!alive) return;
+        setCoins(value);
+      } catch {
+        if (!alive) return;
+      }
       setLoaded(true);
     };
     void load();
@@ -61,3 +69,4 @@ export function useCommunityCxCoins() {
 
   return { coins, loaded };
 }
+
