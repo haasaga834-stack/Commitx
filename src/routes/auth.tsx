@@ -124,20 +124,46 @@ function Auth() {
         setBusy(false);
       }
     }
-    // Web: Google OAuth straight through our own auth domain (no third-party
-    // OAuth broker host), so the flow stays on HTTPS URLs we control.
     setBusy(true);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth`,
-        queryParams: { prompt: "select_account" },
-      },
-    });
-    setBusy(false);
-    if (error) {
-      setError("Google sign-in failed. Please try again.");
-      return;
+    try {
+      // Inside the Lovable editor preview (sandboxed iframe on a gated host) a
+      // full-page OAuth redirect lands on a 403. Use the managed popup flow there.
+      const inEditorPreview =
+        typeof window !== "undefined" &&
+        (window.self !== window.top ||
+          /lovableproject\.com$/i.test(window.location.hostname) ||
+          window.location.hostname.startsWith("id-preview--"));
+
+      if (inEditorPreview) {
+        const { lovable } = await import("@/integrations/lovable/index");
+        const result = await lovable.auth.signInWithOAuth("google", {
+          redirect_uri: window.location.origin,
+          extraParams: { prompt: "select_account" },
+        });
+        if (result.error) {
+          setError("Google sign-in failed. Please try again.");
+          return;
+        }
+        if (result.redirected) return;
+        router.navigate({ to: "/" });
+        return;
+      }
+
+      // Production/custom domain: Google OAuth straight through our own auth
+      // domain so the flow stays on HTTPS URLs we control.
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth`,
+          queryParams: { prompt: "select_account" },
+        },
+      });
+      if (error) {
+        setError("Google sign-in failed. Please try again.");
+        return;
+      }
+    } finally {
+      setBusy(false);
     }
   }
 
