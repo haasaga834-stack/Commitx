@@ -12,7 +12,6 @@ import cozyStudy from "@/assets/cozy-study.jpg";
 
 import { useAppState, stats } from "@/lib/commitx-store";
 import { dailyMessage } from "@/lib/daily-message";
-import { useSavedDuration } from "@/lib/session-prefs";
 import {
   usePlans,
   useTodos,
@@ -59,7 +58,6 @@ function MobileHome() {
   const navigate = useNavigate();
   const { state, hydrated } = useAppState();
   const s = useMemo(() => stats(state.sessions), [state.sessions]);
-  const { duration: savedDuration } = useSavedDuration();
   
   const { plans, hydrated: plansHydrated } = usePlans();
   const { todos } = useTodos();
@@ -185,10 +183,10 @@ function MobileHome() {
               <SwipeToStart
                 label="Swipe to Start Commitment"
                 onStart={() =>
-                  savedDuration
-                    ? navigate({ to: "/commit" })
-                    : navigate({ to: "/settings", hash: "commit-time" })
-                }
+                    next
+                      ? navigate({ to: "/commit" })
+                      : navigate({ to: "/planner" })
+                  }
               />
             </div>
           </div>
