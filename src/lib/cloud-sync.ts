@@ -12,6 +12,37 @@ let applyingRemote = false;
 let unsubscribe: (() => void) | null = null;
 let currentUserId: string | null = null;
 let pushTimer: ReturnType<typeof setTimeout> | null = null;
+/** Timestamp of the last local write we pushed — used to ignore our own echo. */
+let lastPushAt = 0;
+/** Coalesce concurrent pulls: one network round-trip at a time. */
+let pullInFlight: Promise<unknown> | null = null;
+let pullQueued = false;
+
+/**
+ * Pull at most once per burst. Realtime fires several events for a single
+ * local write (wallet + session rows); without this the app used to run 3
+ * queries per event and re-render the whole tree each time.
+ */
+function schedulePull(userId: string) {
+  if (pullInFlight) {
+    pullQueued = true;
+    return;
+  }
+  pullInFlight = pullFromCloud(userId)
+    .catch(() => {})
+    .finally(() => {
+      pullInFlight = null;
+      if (pullQueued) {
+        pullQueued = false;
+        if (currentUserId) schedulePull(currentUserId);
+      }
+    });
+}
+
+/** True while a realtime event is most likely the echo of our own write. */
+function isOwnEcho() {
+  return Date.now() - lastPushAt < 4000;
+}
 
 function toSession(row: any): Session {
   return {
@@ -128,7 +159,12 @@ export function startCloudSync(userId: string) {
     if (applyingRemote || !currentUserId) return;
     if (pushTimer) clearTimeout(pushTimer);
     pushTimer = setTimeout(() => {
-      void push(currentUserId!).catch(() => {});
+      lastPushAt = Date.now();
+      void push(currentUserId!)
+        .catch(() => {})
+        .finally(() => {
+          lastPushAt = Date.now();
+        });
     }, 400);
   });
 
@@ -139,14 +175,14 @@ export function startCloudSync(userId: string) {
       "postgres_changes",
       { event: "*", schema: "public", table: "wallets", filter: `user_id=eq.${userId}` },
       () => {
-        if (currentUserId) void pullFromCloud(currentUserId).catch(() => {});
+        if (currentUserId && !isOwnEcho()) schedulePull(currentUserId);
       },
     )
     .on(
       "postgres_changes",
       { event: "*", schema: "public", table: "focus_sessions", filter: `user_id=eq.${userId}` },
       () => {
-        if (currentUserId) void pullFromCloud(currentUserId).catch(() => {});
+        if (currentUserId && !isOwnEcho()) schedulePull(currentUserId);
       },
     )
     .subscribe();
@@ -159,6 +195,8 @@ export function stopCloudSync() {
   if (pushTimer) clearTimeout(pushTimer);
   pushTimer = null;
   syncedSessionIds = new Set();
+  pullQueued = false;
+  lastPushAt = 0;
   if (channel) {
     supabase.removeChannel(channel);
     channel = null;

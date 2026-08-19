@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, CalendarDays, BarChart3, Wallet, User } from "lucide-react";
-import { useEffect } from "react";
+import { memo, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { setNativeAtRootScreen } from "@/lib/native-session";
 import { useIsTablet } from "@/lib/use-tablet";
@@ -14,7 +14,7 @@ const items = [
   { to: "/profile", label: "Profile", icon: User },
 ] as const;
 
-export function BottomNav() {
+function BottomNavBase() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   // Home is the app's root destination — tell the native shell so the Android
@@ -63,6 +63,8 @@ export function BottomNav() {
  * App shell. Phones keep the untouched mobile layout with the bottom tab bar;
  * tablets switch to the dedicated dashboard shell with a vertical nav rail.
  */
+export const BottomNav = memo(BottomNavBase);
+
 export function MobileShell({ children }: { children: React.ReactNode }) {
   const isTablet = useIsTablet();
 

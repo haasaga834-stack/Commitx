@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 export type Mode = "standard" | "verified";
 export type Status = "completed" | "failed";
@@ -119,19 +119,27 @@ export function setState(updater: (s: AppState) => AppState) {
   listeners.forEach((l) => l());
 }
 
+function subscribeStore(listener: () => void) {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
 export function useAppState() {
-  const [, setTick] = useState(0);
+  // useSyncExternalStore only re-renders when the state object actually
+  // changes, instead of on every notification.
+  const state = useSyncExternalStore(subscribeStore, ensure, () => initial);
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => {
-    current = read();
+    const fresh = read();
     setHydrated(true);
-    const l = () => setTick((t) => t + 1);
-    listeners.add(l);
-    return () => {
-      listeners.delete(l);
-    };
+    if (JSON.stringify(fresh) !== JSON.stringify(current)) {
+      current = fresh;
+      listeners.forEach((l) => l());
+    }
   }, []);
-  return { state: ensure(), hydrated };
+  return { state, hydrated };
 }
 
 /** Indian rupee formatting: ₹1,00,000 style grouping. */
@@ -159,7 +167,24 @@ export function planDeduction(
   return { demoUsed, realUsed: value - demoUsed, ok: true };
 }
 
+let statsCacheKey: Session[] | null = null;
+let statsCacheDay = "";
+let statsCacheValue: ReturnType<typeof computeStats> | null = null;
+
+/** Stats are pure over (sessions, calendar day) — cache to avoid recompute storms. */
 export function stats(sessions: Session[]) {
+  const day = new Date().toDateString();
+  if (statsCacheValue && statsCacheKey === sessions && statsCacheDay === day) {
+    return statsCacheValue;
+  }
+  const value = computeStats(sessions);
+  statsCacheKey = sessions;
+  statsCacheDay = day;
+  statsCacheValue = value;
+  return value;
+}
+
+function computeStats(sessions: Session[]) {
   const completed = sessions.filter((s) => s.status === "completed");
   const failed = sessions.filter((s) => s.status === "failed");
   const totalMinutes = completed.reduce((sum, s) => sum + s.durationMinutes, 0);

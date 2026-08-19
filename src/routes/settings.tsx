@@ -4,6 +4,12 @@ import { NotificationsCard } from "@/components/NotificationsCard";
 import { ScreenTimeCard } from "@/components/ScreenTimeCard";
 
 import { useTheme } from "@/lib/theme";
+import {
+  useSavedDuration,
+  formatSessionDuration,
+  MIN_SESSION_MINUTES,
+  MAX_SESSION_MINUTES,
+} from "@/lib/session-prefs";
 import { formatINR, REFERRAL_BONUS } from "@/lib/commitx-store";
 import { ACTIVE_VERIFIED_SESSION_KEY } from "@/lib/verified-mode";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,6 +49,11 @@ function Settings() {
   const router = useRouter();
   const hash = useLocation({ select: (l) => l.hash });
   const { isDark, setMode } = useTheme();
+  const {
+    duration: savedDuration,
+    setDuration: setSavedDuration,
+    hydrated: savedHydrated,
+  } = useSavedDuration();
   const [native, setNative] = useState(false);
   const [copied, setCopied] = useState(false);
   const [confirming, setConfirming] = useState(false);
@@ -60,7 +71,8 @@ function Settings() {
   // Home → Settings → Notifications (or Screen time) deep links.
   useEffect(() => {
     const target = hash.replace(/^#/, "");
-    if (target !== "notifications" && target !== "screen-time") return;
+    if (target !== "notifications" && target !== "screen-time" && target !== "commit-time")
+      return;
     const id = window.setTimeout(() => revealSection(target), 220);
     return () => window.clearTimeout(id);
   }, [hash]);
@@ -68,12 +80,14 @@ function Settings() {
   useEffect(() => {
     let active = true;
     (async () => {
-      const { data: auth } = await supabase.auth.getUser();
-      if (!auth.user) return;
+      // Local session read — no network round trip on every Settings mount.
+      const { data: auth } = await supabase.auth.getSession();
+      const user = auth.session?.user;
+      if (!user) return;
       const { data } = await supabase
         .from("profiles")
         .select("referral_code, referred_by")
-        .eq("id", auth.user.id)
+        .eq("id", user.id)
         .maybeSingle();
       if (!active || !data) return;
       setReferralCode(data.referral_code);
@@ -191,6 +205,65 @@ function Settings() {
           </button>
         </div>
 
+
+        {/* Commitment time — the single source of truth for every session */}
+        <p className="mt-9 text-xs uppercase tracking-widest text-muted-foreground">
+          Commitment
+        </p>
+        <div id="commit-time" className="mt-4 rounded-3xl bg-card p-5 shadow-soft">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-secondary">
+                <Timer className="h-4 w-4" />
+              </span>
+              <div>
+                <p className="text-sm font-medium">Commitment time</p>
+                <p className="text-xs text-muted-foreground">
+                  Applied automatically when you swipe to start
+                </p>
+              </div>
+            </div>
+            <span className="font-display text-xl font-semibold text-primary">
+              {savedHydrated
+                ? savedDuration
+                  ? formatSessionDuration(savedDuration)
+                  : "Not set"
+                : "…"}
+            </span>
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {[30, 45, 60, 90, 120, 180].map((m) => (
+              <button
+                key={m}
+                onClick={() => setSavedDuration(m)}
+                className={
+                  "rounded-full border px-4 py-2 text-xs transition-colors " +
+                  (savedDuration === m
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-hairline bg-background text-foreground")
+                }
+              >
+                {formatSessionDuration(m)}
+              </button>
+            ))}
+          </div>
+
+          <input
+            type="range"
+            min={MIN_SESSION_MINUTES}
+            max={MAX_SESSION_MINUTES}
+            step={5}
+            value={savedDuration ?? 30}
+            onChange={(e) => setSavedDuration(Number(e.target.value))}
+            aria-label="Commitment time in minutes"
+            className="mt-4 w-full accent-[color:var(--color-primary)]"
+          />
+          <div className="flex justify-between text-[11px] text-muted-foreground">
+            <span>10 min</span>
+            <span>6 h</span>
+          </div>
+        </div>
 
         {/* Appearance */}
         <p className="mt-9 text-xs uppercase tracking-widest text-muted-foreground">
