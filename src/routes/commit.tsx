@@ -98,7 +98,11 @@ function Commit() {
     // Double-tap / retry guard: only one start attempt may ever be in flight.
     if (starting) return;
     if (!duration) {
-      setError("Add a study plan with a time and duration first — your commitment uses it.");
+      setError(
+        usePlanDuration
+          ? "Add a study plan with a time and duration first — your commitment uses it."
+          : "Choose a duration first.",
+      );
       return;
     }
     if (value < MIN_COMMIT || value > MAX_COMMIT) {
