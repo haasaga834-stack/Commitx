@@ -213,7 +213,7 @@ function AuthGate({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (loading) return;
-    if (!user && pathname !== "/auth" && pathname !== "/wind-test") {
+    if (!user && pathname !== "/auth") {
       router.navigate({ to: "/auth" });
     }
     if (user && pathname === "/auth") {
@@ -229,7 +229,7 @@ function AuthGate({ children }: { children: ReactNode }) {
     );
   }
 
-  if (!user && pathname !== "/auth" && pathname !== "/wind-test") return null;
+  if (!user && pathname !== "/auth") return null;
   return (
     <>
       {children}
