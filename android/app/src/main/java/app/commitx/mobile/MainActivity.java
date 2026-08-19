@@ -36,6 +36,7 @@ import androidx.credentials.GetCredentialRequest;
 import androidx.credentials.GetCredentialResponse;
 import androidx.credentials.exceptions.GetCredentialException;
 
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption;
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 
@@ -551,21 +552,43 @@ public class MainActivity extends Activity {
      * client registered with this app's package name and signing SHA-1.
      */
     private void startNativeGoogleSignIn() {
+        // Stage 0: one-tap with accounts already authorized for CommitX.
+        // Stage 1: chooser over every Google account on the device.
+        // Stage 2: branded "Sign in with Google" sheet as a final fallback.
+        requestGoogleCredential(0);
+    }
+
+    private void requestGoogleCredential(final int stage) {
         final String clientId = getString(R.string.google_web_client_id);
         if (clientId == null || clientId.trim().isEmpty()) {
             notifyGoogleSignInError("native_unavailable");
             return;
         }
         try {
-            GetSignInWithGoogleOption option =
-                    new GetSignInWithGoogleOption.Builder(clientId).build();
-            GetCredentialRequest request = new GetCredentialRequest.Builder()
-                    .addCredentialOption(option)
-                    .build();
+            GetCredentialRequest.Builder requestBuilder = new GetCredentialRequest.Builder();
+            if (stage == 0) {
+                requestBuilder.addCredentialOption(
+                        new GetGoogleIdOption.Builder()
+                                .setServerClientId(clientId)
+                                .setFilterByAuthorizedAccounts(true)
+                                .setAutoSelectEnabled(true)
+                                .build());
+            } else if (stage == 1) {
+                requestBuilder.addCredentialOption(
+                        new GetGoogleIdOption.Builder()
+                                .setServerClientId(clientId)
+                                .setFilterByAuthorizedAccounts(false)
+                                .setAutoSelectEnabled(false)
+                                .build());
+            } else {
+                requestBuilder.addCredentialOption(
+                        new GetSignInWithGoogleOption.Builder(clientId).build());
+            }
+
             CredentialManager credentialManager = CredentialManager.create(this);
             credentialManager.getCredentialAsync(
                     MainActivity.this,
-                    request,
+                    requestBuilder.build(),
                     null,
                     Executors.newSingleThreadExecutor(),
                     new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
@@ -583,13 +606,28 @@ public class MainActivity extends Activity {
 
                         @Override
                         public void onError(GetCredentialException e) {
+                            // No matching credential (or the sheet couldn't be shown) —
+                            // widen the request instead of forcing manual email entry.
+                            if (stage < 2 && !isUserCancellation(e)) {
+                                runOnUiThread(() -> requestGoogleCredential(stage + 1));
+                                return;
+                            }
                             notifyGoogleSignInError(e.getClass().getSimpleName());
                         }
                     });
         } catch (Throwable t) {
+            if (stage < 2) {
+                runOnUiThread(() -> requestGoogleCredential(stage + 1));
+                return;
+            }
             notifyGoogleSignInError("native_unavailable");
         }
     }
+
+    private boolean isUserCancellation(GetCredentialException e) {
+        return e instanceof androidx.credentials.exceptions.GetCredentialCancellationException;
+    }
+
 
     private void notifyGoogleIdToken(final String idToken) {
         evalOnWeb("window.CommitXNativeAuth&&window.CommitXNativeAuth.onGoogleIdToken("
