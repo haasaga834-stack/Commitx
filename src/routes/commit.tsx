@@ -18,7 +18,7 @@ import { clearEndedSession, writeActiveVerifiedSession } from "@/lib/verified-mo
 
 const commitSearch = z.object({
   /** "1" when arriving from Swipe to Start — duration is preloaded from the plan. */
-  plan: z.coerce.string().optional(),
+  plan: z.coerce.number().optional(),
 });
 
 export const Route = createFileRoute("/commit")({
@@ -46,7 +46,7 @@ function fmtDuration(min: number) {
 function Commit() {
   const navigate = useNavigate();
   const { plan: fromPlan } = Route.useSearch();
-  const usePlanDuration = fromPlan === "1";
+  const usePlanDuration = fromPlan === 1;
   const { state, hydrated } = useAppState();
   const { plans, hydrated: plansHydrated } = usePlans();
   const [goal, setGoal] = useState("Study");
