@@ -37,9 +37,12 @@ function fmtDuration(min: number) {
 function Commit() {
   const navigate = useNavigate();
   const { state, hydrated } = useAppState();
+  const {
+    duration: savedDuration,
+    hydrated: savedHydrated,
+  } = useSavedDuration();
   const [goal, setGoal] = useState("Study");
   const [customGoal, setCustomGoal] = useState("");
-  const [duration, setDuration] = useState(30);
   const [value, setValue] = useState(MIN_COMMIT);
   const [mode, setMode] = useState<"standard" | "verified">("standard");
   const [confirmVerified, setConfirmVerified] = useState(false);
@@ -47,6 +50,10 @@ function Commit() {
   const [verifiedWarn, setVerifiedWarn] = useState(false);
   const [dndOn, setDndOn] = useState<boolean | null>(null);
   const [starting, setStarting] = useState(false);
+
+  // Settings is the single source of truth for commitment time.
+  const duration = savedDuration ?? 0;
+
 
   const dndCheckable = canCheckDnd();
 
