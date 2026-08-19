@@ -39,7 +39,7 @@ function Auth() {
     try {
       if (mode === "signup") {
         setPendingReferral(referral);
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -48,6 +48,23 @@ function Auth() {
           },
         });
         if (error) throw error;
+        if (data.session) {
+          setNotice("Account created. You can start committing now.");
+          router.navigate({ to: "/" });
+          return;
+        }
+        // No session returned — sign in with the same credentials.
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (signInError) {
+          setNotice(
+            "Account created. Check your email to confirm, then sign in.",
+          );
+          setMode("signin");
+          return;
+        }
         setNotice("Account created. You can start committing now.");
         router.navigate({ to: "/" });
       } else {
