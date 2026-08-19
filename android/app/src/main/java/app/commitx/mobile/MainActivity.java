@@ -42,7 +42,7 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 import java.util.concurrent.Executors;
 
 public class MainActivity extends Activity {
-    private static final String START_URL = "https://commitx.lovable.app/";
+    private static final String START_URL = "https://commitx.site/";
     private static final String PREFS = "commitx_verified_mode";
     private static final String PENDING_REASON = "pending_failure_reason";
     static final String EXTRA_ROUTE = "commitx_route";
