@@ -447,7 +447,11 @@ function Commit() {
             </ul>
 
             <div className="mt-5 rounded-2xl border border-hairline bg-background p-4">
-              {native && dndOn === true ? (
+              {!native ? (
+                <p className="text-xs text-muted-foreground">
+                  Do Not Disturb is enforced in the CommitX Android app.
+                </p>
+              ) : dndOn === true ? (
                 <p className="flex items-center gap-2 text-sm font-medium text-primary">
                   <Check className="h-4 w-4" strokeWidth={3} />
                   DND Enabled ✓
