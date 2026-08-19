@@ -71,7 +71,7 @@ function Commit() {
       document.removeEventListener("visibilitychange", onVis);
       window.removeEventListener("focus", onVis);
     };
-  }, [verifiedWarn]);
+  }, [verifiedWarn, mode]);
 
   const dndReady = !dndCheckable || dndOn === true;
 
