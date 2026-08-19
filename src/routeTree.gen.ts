@@ -27,6 +27,8 @@ import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as AcademicsRouteImport } from './routes/academics'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GroupIndexRouteImport } from './routes/group.index'
+import { Route as GroupIdRouteImport } from './routes/group.$id'
 
 const WalletRoute = WalletRouteImport.update({
   id: '/wallet',
@@ -118,6 +120,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GroupIndexRoute = GroupIndexRouteImport.update({
+  id: '/group/',
+  path: '/group/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GroupIdRoute = GroupIdRouteImport.update({
+  id: '/group/$id',
+  path: '/group/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -138,6 +150,8 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/success': typeof SuccessRoute
   '/wallet': typeof WalletRoute
+  '/group/$id': typeof GroupIdRoute
+  '/group/': typeof GroupIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -158,6 +172,8 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/success': typeof SuccessRoute
   '/wallet': typeof WalletRoute
+  '/group/$id': typeof GroupIdRoute
+  '/group': typeof GroupIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -179,6 +195,8 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/success': typeof SuccessRoute
   '/wallet': typeof WalletRoute
+  '/group/$id': typeof GroupIdRoute
+  '/group/': typeof GroupIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -201,6 +219,8 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/success'
     | '/wallet'
+    | '/group/$id'
+    | '/group/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -221,6 +241,8 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/success'
     | '/wallet'
+    | '/group/$id'
+    | '/group'
   id:
     | '__root__'
     | '/'
@@ -241,6 +263,8 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/success'
     | '/wallet'
+    | '/group/$id'
+    | '/group/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -262,6 +286,8 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SuccessRoute: typeof SuccessRoute
   WalletRoute: typeof WalletRoute
+  GroupIdRoute: typeof GroupIdRoute
+  GroupIndexRoute: typeof GroupIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -392,6 +418,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/group/': {
+      id: '/group/'
+      path: '/group'
+      fullPath: '/group/'
+      preLoaderRoute: typeof GroupIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/group/$id': {
+      id: '/group/$id'
+      path: '/group/$id'
+      fullPath: '/group/$id'
+      preLoaderRoute: typeof GroupIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -414,6 +454,8 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SuccessRoute: SuccessRoute,
   WalletRoute: WalletRoute,
+  GroupIdRoute: GroupIdRoute,
+  GroupIndexRoute: GroupIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

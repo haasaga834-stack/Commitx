@@ -116,6 +116,53 @@ export type Database = {
         }
         Relationships: []
       }
+      group_members: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          display_name: string
+          group_id: string
+          id: string
+          joined_at: string | null
+          left_at: string | null
+          role: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          display_name?: string
+          group_id: string
+          id?: string
+          joined_at?: string | null
+          left_at?: string | null
+          role?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          display_name?: string
+          group_id?: string
+          id?: string
+          joined_at?: string | null
+          left_at?: string | null
+          role?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "study_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           age: string
@@ -188,6 +235,51 @@ export type Database = {
           referred_device_hash?: string | null
           referred_id?: string
           referrer_id?: string
+        }
+        Relationships: []
+      }
+      study_groups: {
+        Row: {
+          code: string
+          commit_value: number
+          created_at: string
+          creator_id: string
+          duration_minutes: number
+          ends_at: string | null
+          goal: string
+          id: string
+          mode: string
+          started_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          commit_value?: number
+          created_at?: string
+          creator_id: string
+          duration_minutes?: number
+          ends_at?: string | null
+          goal?: string
+          id?: string
+          mode?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          commit_value?: number
+          created_at?: string
+          creator_id?: string
+          duration_minutes?: number
+          ends_at?: string | null
+          goal?: string
+          id?: string
+          mode?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -327,6 +419,23 @@ export type Database = {
     Functions: {
       community_food_coins: { Args: never; Returns: number }
       generate_referral_code: { Args: never; Returns: string }
+      group_invite_preview: {
+        Args: { _code: string }
+        Returns: {
+          commit_value: number
+          creator_name: string
+          duration_minutes: number
+          goal: string
+          id: string
+          member_count: number
+          mode: string
+          status: string
+        }[]
+      }
+      is_group_member: {
+        Args: { _group_id: string; _user_id: string }
+        Returns: boolean
+      }
       leaderboard_top: {
         Args: { _limit?: number }
         Returns: {

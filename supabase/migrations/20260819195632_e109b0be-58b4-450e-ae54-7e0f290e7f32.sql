@@ -1,0 +1,1 @@
+DELETE FROM public.study_groups WHERE code = 'Z4W9WW';
