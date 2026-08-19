@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Hourglass } from "@/components/Hourglass";
 import { Loader2 } from "lucide-react";
 
+import { lovable } from "@/integrations/lovable/index";
 import { setPendingReferral } from "@/lib/pending-referral";
 import { WELCOME_DEMO, REFERRAL_BONUS, formatINR } from "@/lib/commitx-store";
 
@@ -106,6 +107,32 @@ function Auth() {
       setBusy(false);
     }
   }
+
+  async function googleSignIn() {
+    setError(null);
+    setNotice(null);
+    setBusy(true);
+    try {
+      const { hasNativeGoogleSignIn, nativeGoogleSignIn } = await import("@/lib/native-auth");
+      if (hasNativeGoogleSignIn()) {
+        await nativeGoogleSignIn();
+        router.navigate({ to: "/" });
+        return;
+      }
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) throw result.error;
+      if (result.redirected) return;
+      router.navigate({ to: "/" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Google sign-in failed.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+
 
 
   return (
