@@ -3,7 +3,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Hourglass } from "@/components/Hourglass";
 import { Loader2 } from "lucide-react";
-import { hasNativeGoogleSignIn, nativeGoogleSignIn } from "@/lib/native-auth";
+
 import { setPendingReferral } from "@/lib/pending-referral";
 import { WELCOME_DEMO, REFERRAL_BONUS, formatINR } from "@/lib/commitx-store";
 
@@ -107,59 +107,6 @@ function Auth() {
     }
   }
 
-  async function google() {
-    setError(null);
-    // Android shell: native Google Sign-In (Credential Manager) — never a browser.
-    if (mode === "signup") setPendingReferral(referral);
-    if (hasNativeGoogleSignIn()) {
-      setBusy(true);
-      try {
-        await nativeGoogleSignIn();
-        router.navigate({ to: "/" });
-        return;
-      } catch {
-        setError("Google sign-in failed. Please try again.");
-        return;
-      } finally {
-        setBusy(false);
-      }
-    }
-    setBusy(true);
-    try {
-      // Google OAuth goes straight through our own auth domain — never through a
-      // third-party OAuth broker host (which Chrome Safe Browsing flags).
-      const inEditorPreview =
-        typeof window !== "undefined" &&
-        (window.self !== window.top ||
-          /lovableproject\.com$/i.test(window.location.hostname) ||
-          window.location.hostname.startsWith("id-preview--"));
-
-      // Inside the gated editor preview iframe a same-frame redirect 403s, so we
-      // hand off to the live domain in a top-level tab instead.
-      const origin = inEditorPreview ? "https://commitx.site" : window.location.origin;
-
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${origin}/auth`,
-          queryParams: { prompt: "select_account" },
-          skipBrowserRedirect: true,
-        },
-      });
-      if (error || !data?.url) {
-        setError("Google sign-in failed. Please try again.");
-        return;
-      }
-      if (inEditorPreview) {
-        window.open(data.url, "_blank", "noopener,noreferrer");
-        setError("Continue Google sign-in in the new tab (opens commitx.site).");
-        return;
-      }
-      window.location.href = data.url;
-    } finally {
-      setBusy(false);
-    }
-  }
 
   return (
     <div className="min-h-screen">
