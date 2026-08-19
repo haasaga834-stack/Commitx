@@ -54,6 +54,14 @@ jobs:
         with:
           gradle-version: 8.10.2
 
+      # Keep one signing identity across CI runs so a newly downloaded APK can
+      # update the previous build instead of requiring a fresh uninstall.
+      - name: Restore APK signing identity
+        uses: actions/cache@v4
+        with:
+          path: android/app/commitx.keystore
+          key: commitx-apk-signing-v1
+
       - name: Generate signing keystore (non-interactive)
         run: |
           set -eux
@@ -79,7 +87,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: commitx-apk
+          name: commitx-apk-${{ github.run_number }}
           path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
 
