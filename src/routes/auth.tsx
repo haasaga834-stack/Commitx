@@ -183,19 +183,6 @@ function Auth() {
             {mode === "signin" ? "Sign in" : "Create account"}
           </button>
 
-          <div className="my-5 flex items-center gap-3">
-            <span className="h-px flex-1 bg-hairline" />
-            <span className="text-[11px] uppercase tracking-widest text-muted-foreground">or</span>
-            <span className="h-px flex-1 bg-hairline" />
-          </div>
-
-          <button
-            type="button"
-            onClick={google}
-            className="inline-flex w-full items-center justify-center rounded-2xl border border-hairline bg-background px-4 py-3.5 text-sm font-medium"
-          >
-            Continue with Google
-          </button>
         </form>
 
         <button
