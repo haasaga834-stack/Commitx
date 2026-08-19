@@ -53,4 +53,4 @@ adb install app-release-signed.apk
 
 If your published Lovable URL changes, edit `START_URL` in `android/app/src/main/java/app/commitx/mobile/MainActivity.java` and re-run `build-apk.sh`.
 
-Current host: `commitx.lovable.app`
+Current host: `commitx.site`
