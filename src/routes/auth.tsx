@@ -126,42 +126,36 @@ function Auth() {
     }
     setBusy(true);
     try {
-      // Inside the Lovable editor preview (sandboxed iframe on a gated host) a
-      // full-page OAuth redirect lands on a 403. Use the managed popup flow there.
+      // Google OAuth goes straight through our own auth domain — never through a
+      // third-party OAuth broker host (which Chrome Safe Browsing flags).
       const inEditorPreview =
         typeof window !== "undefined" &&
         (window.self !== window.top ||
           /lovableproject\.com$/i.test(window.location.hostname) ||
           window.location.hostname.startsWith("id-preview--"));
 
-      if (inEditorPreview) {
-        const { lovable } = await import("@/integrations/lovable/index");
-        const result = await lovable.auth.signInWithOAuth("google", {
-          redirect_uri: window.location.origin,
-          extraParams: { prompt: "select_account" },
-        });
-        if (result.error) {
-          setError("Google sign-in failed. Please try again.");
-          return;
-        }
-        if (result.redirected) return;
-        router.navigate({ to: "/" });
-        return;
-      }
+      // Inside the gated editor preview iframe a same-frame redirect 403s, so we
+      // hand off to the live domain in a top-level tab instead.
+      const origin = inEditorPreview ? "https://commitx.site" : window.location.origin;
 
-      // Production/custom domain: Google OAuth straight through our own auth
-      // domain so the flow stays on HTTPS URLs we control.
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth`,
+          redirectTo: `${origin}/auth`,
           queryParams: { prompt: "select_account" },
+          skipBrowserRedirect: true,
         },
       });
-      if (error) {
+      if (error || !data?.url) {
         setError("Google sign-in failed. Please try again.");
         return;
       }
+      if (inEditorPreview) {
+        window.open(data.url, "_blank", "noopener,noreferrer");
+        setError("Continue Google sign-in in the new tab (opens commitx.site).");
+        return;
+      }
+      window.location.href = data.url;
     } finally {
       setBusy(false);
     }
