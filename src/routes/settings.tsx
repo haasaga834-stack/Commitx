@@ -49,6 +49,11 @@ function Settings() {
   const router = useRouter();
   const hash = useLocation({ select: (l) => l.hash });
   const { isDark, setMode } = useTheme();
+  const {
+    duration: savedDuration,
+    setDuration: setSavedDuration,
+    hydrated: savedHydrated,
+  } = useSavedDuration();
   const [native, setNative] = useState(false);
   const [copied, setCopied] = useState(false);
   const [confirming, setConfirming] = useState(false);
