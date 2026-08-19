@@ -125,19 +125,21 @@ function Auth() {
         setBusy(false);
       }
     }
-    // Web: managed Google OAuth.
+    // Web: Google OAuth straight through our own auth domain (no third-party
+    // OAuth broker host), so the flow stays on HTTPS URLs we control.
     setBusy(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-      extraParams: { prompt: "select_account" },
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth`,
+        queryParams: { prompt: "select_account" },
+      },
     });
     setBusy(false);
-    if (result.error) {
+    if (error) {
       setError("Google sign-in failed. Please try again.");
       return;
     }
-    if (result.redirected) return;
-    router.navigate({ to: "/" });
   }
 
   return (
