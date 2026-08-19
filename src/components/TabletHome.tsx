@@ -7,8 +7,6 @@ import {
   Flame,
   Hourglass as HourglassIcon,
   Sparkles,
-  TrendingUp,
-  Trophy,
 } from "lucide-react";
 import { CxCoin } from "@/components/CxCoin";
 import { DailyGoalProgress } from "@/components/DailyGoalProgress";
@@ -18,7 +16,6 @@ import { TabletShell } from "@/components/TabletShell";
 import cozyStudy from "@/assets/cozy-study.jpg";
 
 import { useAppState, stats } from "@/lib/commitx-store";
-import { analyze, formatHours } from "@/lib/analytics-data";
 import { dailyMessage } from "@/lib/daily-message";
 import {
   usePlans,
@@ -42,7 +39,6 @@ export function TabletHome() {
   const navigate = useNavigate();
   const { state, hydrated } = useAppState();
   const s = stats(state.sessions);
-  const a = useMemo(() => analyze(state.sessions), [state.sessions]);
 
   const { plans, hydrated: plansHydrated } = usePlans();
   const { todos } = useTodos();
@@ -66,7 +62,6 @@ export function TabletHome() {
 
   const next = useMemo(() => upcomingPlan(plans, now), [plans, now]);
   const taskCount = todays.length + todos.length;
-  const weekMax = Math.max(1, ...a.week.map((d) => d.minutes));
 
   return (
     <TabletShell>
@@ -333,26 +328,6 @@ function MiniFact({
         </span>
         <span className="block truncate text-[10px] text-muted-foreground">{label}</span>
       </span>
-    </div>
-  );
-}
-
-function Insight({
-  icon,
-  label,
-  value,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-2xl bg-background px-4 py-3">
-      <div className="flex items-center gap-2 text-muted-foreground">
-        {icon}
-        <p className="min-w-0 truncate text-[10px] uppercase tracking-wider">{label}</p>
-      </div>
-      <p className="mt-1 text-base font-semibold tabular-nums text-foreground">{value}</p>
     </div>
   );
 }
