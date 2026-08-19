@@ -83,6 +83,10 @@ function Commit() {
   async function begin() {
     // Double-tap / retry guard: only one start attempt may ever be in flight.
     if (starting) return;
+    if (!duration) {
+      setError("Set your commitment time in Settings first, then start your session.");
+      return;
+    }
     if (value < MIN_COMMIT || value > MAX_COMMIT) {
       setError(`Commitment must be between ${formatINR(MIN_COMMIT)} and ${formatINR(MAX_COMMIT)}.`);
       return;
