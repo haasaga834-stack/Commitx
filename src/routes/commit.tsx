@@ -10,6 +10,7 @@ import {
   MAX_COMMIT,
 } from "@/lib/commitx-store";
 import { canCheckDnd, isDndEnabled, openDndSettings } from "@/lib/native-session";
+import { useSavedDuration } from "@/lib/session-prefs";
 import { claimActiveDbSession, releaseActiveDbSession } from "@/lib/active-session";
 import { clearEndedSession, writeActiveVerifiedSession } from "@/lib/verified-mode";
 
