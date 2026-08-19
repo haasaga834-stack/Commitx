@@ -60,7 +60,8 @@ function Settings() {
   // Home → Settings → Notifications (or Screen time) deep links.
   useEffect(() => {
     const target = hash.replace(/^#/, "");
-    if (target !== "notifications" && target !== "screen-time") return;
+    if (target !== "notifications" && target !== "screen-time" && target !== "commit-time")
+      return;
     const id = window.setTimeout(() => revealSection(target), 220);
     return () => window.clearTimeout(id);
   }, [hash]);
