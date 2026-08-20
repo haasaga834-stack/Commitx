@@ -6,6 +6,7 @@ import {
   type AppState,
   type Session,
 } from "./commitx-store";
+import { recordSessions } from "./wallet.functions";
 
 let syncedSessionIds = new Set<string>();
 let applyingRemote = false;
