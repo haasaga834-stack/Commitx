@@ -494,10 +494,6 @@ public class MainActivity extends Activity {
         if (host == null) return false;
         host = host.toLowerCase(java.util.Locale.ROOT);
         return isCommitXUrl(uri)
-                || host.equals("lovable.app")
-                || host.endsWith(".lovable.app")
-                || host.equals("lovable.dev")
-                || host.endsWith(".lovable.dev")
                 || host.equals("supabase.co")
                 || host.endsWith(".supabase.co")
                 || host.equals("accounts.google.com")
