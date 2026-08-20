@@ -38,6 +38,7 @@ export const createGroup = createServerFn({ method: "POST" })
       if (balance < data.value) throw new Error("Not enough demo money for this commitment.");
     }
 
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     let lastError: unknown = null;
     for (let attempt = 0; attempt < 5; attempt++) {
       const code = makeGroupCode();
@@ -55,7 +56,7 @@ export const createGroup = createServerFn({ method: "POST" })
         .select("id, code")
         .single();
       if (!error && row) {
-        await supabase.from("group_members").insert({
+        await supabaseAdmin.from("group_members").insert({
           group_id: row.id,
           user_id: userId,
           display_name: await displayNameFor(supabase, userId),
@@ -148,7 +149,7 @@ export const joinGroup = createServerFn({ method: "POST" })
       }
     }
 
-    const { error } = await supabase.from("group_members").insert({
+    const { error } = await supabaseAdmin.from("group_members").insert({
       group_id: row.id,
       user_id: userId,
       display_name: await displayNameFor(supabase, userId),
@@ -173,7 +174,8 @@ export const getGroupState = createServerFn({ method: "GET" })
       .maybeSingle();
     if (error || !group) throw new Error("Group not found.");
 
-    const { data: members } = await supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: members } = await supabaseAdmin
       .from("group_members")
       .select("user_id, display_name, role, status, joined_at")
       .eq("group_id", data.id)
@@ -183,7 +185,7 @@ export const getGroupState = createServerFn({ method: "GET" })
 
     // Auto-close the group once the shared clock has run out.
     if (group.status === "active" && group.ends_at && Date.parse(group.ends_at) <= Date.now()) {
-      await supabase.from("study_groups").update({ status: "ended" }).eq("id", data.id);
+      await supabaseAdmin.from("study_groups").update({ status: "ended" }).eq("id", data.id);
       group.status = "ended";
     }
 
@@ -214,9 +216,10 @@ export const startGroup = createServerFn({ method: "POST" })
     }
     if (group.status === "ended") throw new Error("This group session has already finished.");
 
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const startedAt = new Date();
     const endsAt = new Date(startedAt.getTime() + group.duration_minutes * 60_000);
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from("study_groups")
       .update({
         status: "active",
@@ -226,7 +229,7 @@ export const startGroup = createServerFn({ method: "POST" })
       .eq("id", data.id);
     if (error) throw new Error("Could not start the session.");
 
-    await supabase
+    await supabaseAdmin
       .from("group_members")
       .update({ status: "joined", joined_at: startedAt.toISOString() })
       .eq("group_id", data.id)
@@ -247,8 +250,9 @@ export const setMyGroupOutcome = createServerFn({ method: "POST" })
       .parse(data),
   )
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
-    const { supabase, userId } = context;
-    await supabase
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin
       .from("group_members")
       .update({
         status: data.status,
