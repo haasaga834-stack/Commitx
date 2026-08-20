@@ -554,12 +554,26 @@ public class MainActivity extends Activity {
         requestGoogleCredential(0);
     }
 
+    /**
+     * Web (server) OAuth client ID. Baked in at build time when available, and
+     * otherwise supplied by the web app at runtime via
+     * CommitXAndroid.configureGoogleSignIn(clientId) — kept in prefs so later
+     * launches can show the account chooser immediately.
+     */
+    private String googleWebClientId() {
+        String runtime = preferences != null ? preferences.getString(GOOGLE_CLIENT_ID, "") : "";
+        if (runtime != null && !runtime.trim().isEmpty()) return runtime.trim();
+        String baked = getString(R.string.google_web_client_id);
+        return baked == null ? "" : baked.trim();
+    }
+
     private void requestGoogleCredential(final int stage) {
-        final String clientId = getString(R.string.google_web_client_id);
-        if (clientId == null || clientId.trim().isEmpty()) {
+        final String clientId = googleWebClientId();
+        if (clientId.isEmpty()) {
             notifyGoogleSignInError("native_unavailable");
             return;
         }
+
         try {
             GetCredentialRequest.Builder requestBuilder = new GetCredentialRequest.Builder();
             if (stage == 0) {
