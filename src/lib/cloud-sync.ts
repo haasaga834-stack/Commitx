@@ -104,17 +104,7 @@ export async function pullFromCloud(userId: string) {
 async function push(userId: string) {
   const state = getState();
 
-  await supabase
-    .from("wallets")
-    .upsert(
-      {
-        user_id: userId,
-        real_balance: Math.round(state.balances.real),
-        demo_balance: Math.round(state.balances.demo),
-      },
-      { onConflict: "user_id" },
-    );
-
+  // Profile fields are user-owned preferences and stay a direct write.
   await supabase
     .from("profiles")
     .update({
@@ -127,26 +117,32 @@ async function push(userId: string) {
     })
     .eq("id", userId);
 
+  // Balances and session rewards are recomputed server-side; the client only
+  // reports what happened and then adopts the authoritative result.
   const unsynced = state.sessions.filter((s) => !syncedSessionIds.has(s.id));
-  for (const s of unsynced) {
-    syncedSessionIds.add(s.id);
-    const { data } = await supabase
-      .from("focus_sessions")
-      .insert({
-        user_id: userId,
-        goal: s.goal,
-        duration_minutes: s.durationMinutes,
-        value: s.value,
+  if (unsynced.length === 0) return;
+  for (const s of unsynced) syncedSessionIds.add(s.id);
+
+  const result = await recordSessions({
+    data: {
+      sessions: unsynced.slice(0, 20).map((s) => ({
+        goal: s.goal || "Focus",
+        durationMinutes: Math.max(0, Math.round(s.durationMinutes)),
+        value: Math.max(0, Math.round(s.value)),
         mode: s.mode,
         status: s.status,
-        demo_used: s.demoUsed ?? 0,
-        real_used: s.realUsed ?? 0,
-        created_at: new Date(s.date).toISOString(),
-      })
-      .select("id")
-      .maybeSingle();
-    if (data?.id) syncedSessionIds.add(data.id);
-  }
+      })),
+    },
+  });
+
+  for (const id of result.ids) syncedSessionIds.add(id);
+
+  applyingRemote = true;
+  hydrateState({
+    ...getState(),
+    balances: { real: result.real, demo: result.demo },
+  });
+  applyingRemote = false;
 }
 
 let channel: ReturnType<typeof supabase.channel> | null = null;
