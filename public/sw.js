@@ -1,5 +1,15 @@
-const CACHE_NAME = "commitx-v1";
-const PRECACHE_ASSETS = ["/", "/styles.css", "/favicon.ico"];
+const CACHE_NAME = "commitx-v2";
+const PRECACHE_ASSETS = ["/", "/favicon.png"];
+
+function isAuthRequest(url) {
+  return (
+    url.pathname.startsWith("/~oauth") ||
+    url.pathname.startsWith("/auth/callback") ||
+    url.pathname.startsWith("/reset-password") ||
+    url.searchParams.has("code") ||
+    url.searchParams.has("error")
+  );
+}
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -26,7 +36,14 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;
-  if (request.url.startsWith("http") && !request.url.includes(self.location.origin)) return;
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin || isAuthRequest(url)) return;
+
+  // Never let stale cached HTML replace live redirects or authentication state.
+  if (request.mode === "navigate") {
+    event.respondWith(fetch(request).catch(() => caches.match("/")));
+    return;
+  }
 
   event.respondWith(
     caches.match(request).then((cached) => {

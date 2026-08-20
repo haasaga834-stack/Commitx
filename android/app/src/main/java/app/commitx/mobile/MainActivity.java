@@ -487,19 +487,15 @@ public class MainActivity extends Activity {
                 || "commitx.lovable.dev".equals(host);
     }
 
-    /** CommitX plus the identity providers used by sign-in stay inside the app. */
+    /** CommitX plus the exact identity-provider hosts used by sign-in stay inside the app. */
     private boolean isInAppUrl(Uri uri) {
         if (uri == null) return false;
         String host = uri.getHost();
         if (host == null) return false;
         host = host.toLowerCase(java.util.Locale.ROOT);
         return isCommitXUrl(uri)
-                || host.equals("lovable.app")
-                || host.endsWith(".lovable.app")
-                || host.equals("lovable.dev")
-                || host.endsWith(".lovable.dev")
-                || host.equals("supabase.co")
-                || host.endsWith(".supabase.co")
+                || host.equals("oauth.lovable.app")
+                || host.equals("ldnjfjmwzqczjmewzdai.supabase.co")
                 || host.equals("accounts.google.com")
                 || host.endsWith(".google.com")
                 || host.equals("googleusercontent.com")
