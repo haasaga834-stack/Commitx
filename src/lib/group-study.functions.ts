@@ -42,7 +42,7 @@ export const createGroup = createServerFn({ method: "POST" })
     let lastError: unknown = null;
     for (let attempt = 0; attempt < 5; attempt++) {
       const code = makeGroupCode();
-      const { data: row, error } = await supabase
+      const { data: row, error } = await supabaseAdmin
         .from("study_groups")
         .insert({
           creator_id: userId,
