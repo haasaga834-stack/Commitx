@@ -47,6 +47,10 @@ public class MainActivity extends Activity {
     private static final String PREFS = "commitx_verified_mode";
     private static final String PENDING_REASON = "pending_failure_reason";
     static final String EXTRA_ROUTE = "commitx_route";
+    /** Preference key holding the Web (server) OAuth client ID for native sign-in. */
+    private static final String GOOGLE_CLIENT_ID = "google_web_client_id";
+    /** The one and only Android OAuth redirect URI. Registered in the manifest. */
+    static final String OAUTH_REDIRECT = "commitx://login-callback/";
 
     /** Live instance used by notification actions to reach the web layer. */
     private static volatile MainActivity current;
@@ -58,6 +62,7 @@ public class MainActivity extends Activity {
     private volatile boolean verifiedModeActive = false;
     private volatile boolean sessionLockActive = false;
     private volatile boolean atRootScreen = true;
+    private volatile String pendingOAuthCallback = null;
 
     private static final int REQUEST_FILE_CHOOSER = 8021;
     private ValueCallback<Uri[]> fileChooserCallback;
@@ -203,12 +208,16 @@ public class MainActivity extends Activity {
                 if (isCommitXUrl(Uri.parse(url))) {
                     injectPendingFailureIfNeeded();
                     flushPendingTodoToggles();
+                    String callback = pendingOAuthCallback;
+                    if (callback != null) deliverOAuthCallback(callback);
                 }
             }
         });
 
         setContentView(webView);
         webView.loadUrl(startUrlFor(getIntent()));
+        // A cold start from the OAuth deep link: replay it once the page is ready.
+        pendingOAuthCallback = oauthCallbackFrom(getIntent());
     }
 
     /**
@@ -246,6 +255,27 @@ public class MainActivity extends Activity {
         if (route != null && !route.trim().isEmpty() && webView != null) {
             webView.loadUrl(startUrlFor(intent));
         }
+        String callback = oauthCallbackFrom(intent);
+        if (callback != null) deliverOAuthCallback(callback);
+    }
+
+    /** Returns the full commitx://login-callback/... URL carried by this intent. */
+    private String oauthCallbackFrom(Intent intent) {
+        if (intent == null) return null;
+        Uri data = intent.getData();
+        if (data == null) return null;
+        if (!"commitx".equalsIgnoreCase(String.valueOf(data.getScheme()))) return null;
+        return data.toString();
+    }
+
+    /**
+     * Hands the OAuth callback URL to the web layer, which owns the Supabase
+     * session exchange (the PKCE verifier lives in the WebView's storage).
+     */
+    private void deliverOAuthCallback(final String url) {
+        pendingOAuthCallback = null;
+        evalOnWeb("window.CommitXOAuth&&window.CommitXOAuth.onCallback&&"
+                + "window.CommitXOAuth.onCallback(" + JSONObjectQuote(url) + ")");
     }
 
     @Override
@@ -712,8 +742,38 @@ public class MainActivity extends Activity {
         /** Called by the web app; true when native Google Sign-In can be used. */
         @JavascriptInterface
         public boolean hasNativeGoogleSignIn() {
-            String id = getString(R.string.google_web_client_id);
-            return id != null && !id.trim().isEmpty();
+            return !googleWebClientId().isEmpty();
+        }
+
+        /** Lets the web app supply the Web (server) OAuth client ID at runtime. */
+        @JavascriptInterface
+        public void configureGoogleSignIn(String clientId) {
+            if (clientId == null || clientId.trim().isEmpty() || preferences == null) return;
+            preferences.edit().putString(GOOGLE_CLIENT_ID, clientId.trim()).apply();
+        }
+
+        /** The redirect URI this build handles; the web app passes it to Supabase. */
+        @JavascriptInterface
+        public String oauthRedirectUri() {
+            return OAUTH_REDIRECT;
+        }
+
+        /**
+         * Opens a provider consent URL in the real browser. Google rejects
+         * embedded WebViews, so this is the only supported browser-based path;
+         * the browser returns to us through commitx://login-callback/.
+         */
+        @JavascriptInterface
+        public boolean openExternalAuth(String url) {
+            if (url == null || url.trim().isEmpty()) return false;
+            try {
+                Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url.trim()));
+                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(i);
+                return true;
+            } catch (Throwable t) {
+                return false;
+            }
         }
 
         @JavascriptInterface
