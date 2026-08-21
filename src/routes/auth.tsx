@@ -119,6 +119,16 @@ function Auth() {
         router.navigate({ to: "/" });
         return;
       }
+      // Android shell: Google blocks embedded WebViews, so use the browser
+      // round-trip that returns through commitx://login-callback/.
+      const { canUseNativeOAuth, nativeBrowserGoogleSignIn } = await import("@/lib/native-oauth");
+      if (canUseNativeOAuth()) {
+        setNotice("Continue in your browser — you'll come straight back to CommitX.");
+        await nativeBrowserGoogleSignIn();
+        setNotice(null);
+        router.navigate({ to: "/" });
+        return;
+      }
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,
       });
