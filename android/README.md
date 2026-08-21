@@ -61,3 +61,18 @@ then rebuild and reinstall the APK. Changing the website alone cannot update
 native code already installed on a phone.
 
 Current host: `commitx.site`
+
+## Google Sign-In (Android)
+
+Two paths, in order:
+
+1. **Native account chooser** (Credential Manager) when a Web client ID is
+   available — no browser at all.
+2. **Browser round-trip** otherwise: the consent screen opens in the device
+   browser and returns via the redirect URI `commitx://login-callback/`,
+   which `MainActivity` handles through its `VIEW`/`BROWSABLE` intent filter.
+   The session exchange happens inside the WebView, so no client secret is
+   ever present in the APK.
+
+Required once, in the backend auth settings: add `commitx://login-callback/`
+to the redirect URL allow-list. Site URL stays unchanged.
