@@ -179,25 +179,58 @@ export const setMyGroupOutcome = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-/** Groups this user belongs to that are still open or running. */
+/**
+ * Groups this user is genuinely still part of: waiting in the lobby, or running
+ * inside their window. Anything expired is settled first and then dropped, so
+ * finished sessions never linger in the list.
+ */
 export const listMyGroups = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<GroupDTO[]> => {
     const { supabase, userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: memberships } = await supabase
       .from("group_members")
-      .select("group_id")
+      .select("group_id, status")
       .eq("user_id", userId);
-    const ids = (memberships ?? []).map((membership) => membership.group_id);
-    if (ids.length === 0) return [];
+    const rows = memberships ?? [];
+    const openIds = rows
+      .filter((m) => m.status === "committed" || m.status === "joined")
+      .map((m) => m.group_id);
+    if (openIds.length === 0) return [];
+
+    // Settle anything whose window has already elapsed before reading.
+    await Promise.all(
+      openIds.map((id) =>
+        supabaseAdmin
+          .rpc("settle_expired_study_group", { _user_id: userId, _group_id: id })
+          .then(() => undefined, () => undefined),
+      ),
+    );
+
+    const { data: fresh } = await supabase
+      .from("group_members")
+      .select("group_id, status")
+      .eq("user_id", userId)
+      .in("group_id", openIds);
+    const stillOpen = (fresh ?? [])
+      .filter((m) => m.status === "committed" || m.status === "joined")
+      .map((m) => m.group_id);
+    if (stillOpen.length === 0) return [];
+
     const { data: groups } = await supabase
       .from("study_groups")
       .select("*")
-      .in("id", ids)
-      .neq("status", "ended")
+      .in("id", stillOpen)
+      .in("status", ["lobby", "active"])
       .order("created_at", { ascending: false });
-    return (groups ?? []) as GroupDTO[];
+
+    const now = Date.now();
+    return ((groups ?? []) as GroupDTO[]).filter(
+      (g) => !g.ends_at || new Date(g.ends_at).getTime() > now,
+    );
   });
+
 
 /** Creator cancels a group that hasn't started. */
 export const cancelGroup = createServerFn({ method: "POST" })
