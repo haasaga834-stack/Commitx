@@ -2,6 +2,7 @@ import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
+import { isAbortedError } from "./lib/is-aborted-error";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -46,17 +47,7 @@ async function normalizeCatastrophicSsrResponse(
 }
 
 function isAbortedRequest(error: unknown, request: Request): boolean {
-  if (request.signal?.aborted) return true;
-  const seen = new Set<unknown>();
-  let current: unknown = error;
-  while (current && typeof current === "object" && !seen.has(current)) {
-    seen.add(current);
-    const e = current as { code?: unknown; message?: unknown; cause?: unknown };
-    if (e.code === "ECONNRESET" || e.code === "ABORT_ERR") return true;
-    if (typeof e.message === "string" && /aborted|ECONNRESET/i.test(e.message)) return true;
-    current = e.cause;
-  }
-  return false;
+  return Boolean(request.signal?.aborted) || isAbortedError(error);
 }
 
 
@@ -76,6 +67,7 @@ export default {
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response, request);
     } catch (error) {
+      if (isAbortedError(error)) return new Response(null, { status: 499 });
       console.error(error);
       return new Response(renderErrorPage(), {
         status: 500,
