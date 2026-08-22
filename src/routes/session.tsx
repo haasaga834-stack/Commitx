@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Hourglass } from "@/components/Hourglass";
-import { WindScape } from "@/components/WindScape";
+import { SessionScene } from "@/components/SessionScene";
 import { setState, formatINR, planDeduction, getState, type Mode } from "@/lib/commitx-store";
 import {
   clearActiveVerifiedSession,
@@ -13,10 +13,13 @@ import {
   FOCUS_HOUR_MS,
   RECOVERY_BREAK_MS,
   RECOVERY_CONFIRM_MS,
+  wellnessBreaksApply,
   type SessionPhase,
   type VerifiedFailureReason,
 } from "@/lib/verified-mode";
 import { releaseActiveDbSession } from "@/lib/active-session";
+import { normalizeTheme, type SessionThemeId } from "@/lib/session-themes";
+import { announceWellnessBreak, announceBreakOver } from "@/lib/wellness-chime";
 
 
 import {
@@ -46,6 +49,7 @@ const search = z.object({
   duration: z.coerce.number().min(1).default(30),
   value: z.coerce.number().min(0).default(10),
   mode: z.enum(["standard", "verified"]).default("standard"),
+  theme: z.string().optional(),
   preferReal: z
     .union([z.string(), z.number(), z.boolean()])
     .optional()
@@ -135,9 +139,11 @@ function Session() {
 }
 
 function LiveSession() {
-  const { goal, duration, value, mode, preferReal } = Route.useSearch();
+  const { goal, duration, value, mode, preferReal, theme } = Route.useSearch();
   const navigate = useNavigate();
   const totalMs = duration * 60 * 1000;
+  // Sessions longer than an hour get a mandatory wellness break every 60 min.
+  const breaksApply = wellnessBreaksApply(duration);
   const preferRealBool = preferReal === "1";
   const isVerified = mode === "verified";
 
@@ -178,6 +184,11 @@ function LiveSession() {
           if ((prev.phase ?? "focus") === "focus" && banked >= duration * 60 * 1000) return null;
           return prev;
         })(),
+  ).current;
+
+  // Theme is fixed for the whole session: search param first, then the ticket.
+  const sessionTheme = useRef<SessionThemeId>(
+    normalizeTheme(theme ?? restored?.theme),
   ).current;
 
   const startedAt = useRef<number>(restored?.startedAt ?? Date.now()).current;
@@ -223,9 +234,10 @@ function LiveSession() {
       confirmSince: confirmSinceRef.current,
       breaksTaken: breaksTakenRef.current,
       nonFocusMs: nonFocusMsRef.current,
+      theme: sessionTheme,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [goal, duration, value, mode, preferRealBool, startedAt]);
+  }, [goal, duration, value, mode, preferRealBool, startedAt, sessionTheme]);
 
   /** Wall-clock time spent outside focus (recovery breaks + confirmations). */
   const nonFocusTotal = useCallback(() => {
@@ -300,7 +312,8 @@ function LiveSession() {
       setPhase("recovery_break");
       persist();
       setNow(Date.now());
-      log("Recovery Break Started", { at, breaksTaken: breaksTakenRef.current });
+      announceWellnessBreak();
+      log("Wellness Break Started", { at, breaksTaken: breaksTakenRef.current });
     },
     [elapsedNow, persist, setPhase],
   );
@@ -312,7 +325,8 @@ function LiveSession() {
       setPhase("awaiting_confirmation");
       persist();
       setNow(Date.now());
-      log("Recovery Break Finished", { confirmSince: at });
+      announceBreakOver();
+      log("Wellness Break Finished", { confirmSince: at });
     },
     [persist, setPhase],
   );
@@ -344,6 +358,7 @@ function LiveSession() {
         complete("completed");
         return;
       }
+      if (!breaksApply) return;
       const elapsed = elapsedNow();
       const nextBreakAt = (breaksTakenRef.current + 1) * FOCUS_HOUR_MS;
       if (elapsed >= nextBreakAt && elapsed < totalMs) {
@@ -368,6 +383,7 @@ function LiveSession() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     dndBlocked,
+    breaksApply,
     canCompleteNow,
     elapsedNow,
     totalMs,
@@ -685,7 +701,12 @@ function LiveSession() {
 
   return (
     <div className="relative flex min-h-dvh flex-col bg-background px-6 pb-10 pt-14">
-      <WindScape fixed={false} className="z-0 md:top-28 lg:top-32" />
+      <SessionScene
+        theme={sessionTheme}
+        progress={progress}
+        paused={onBreak}
+        className="z-0 md:top-28 lg:top-32"
+      />
       <div className="relative z-10 flex items-center justify-center">
 
         <p className="text-xs uppercase tracking-widest text-muted-foreground">
