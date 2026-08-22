@@ -74,26 +74,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { name: "theme-color", content: "#F5F1E6" },
-      { title: "CommitX — Home" },
-      {
-        name: "description",
-        content:
-          "Start a focused commitment. One promise at a time, kept beautifully.",
-      },
       { property: "og:type", content: "website" },
-      { property: "og:title", content: "CommitX — Home" },
-      {
-        property: "og:description",
-        content:
-          "Start a focused commitment. One promise at a time, kept beautifully.",
-      },
+      { property: "og:site_name", content: "CommitX" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "CommitX — Home" },
-      {
-        name: "twitter:description",
-        content:
-          "Start a focused commitment. One promise at a time, kept beautifully.",
-      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
