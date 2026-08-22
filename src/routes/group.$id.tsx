@@ -89,6 +89,8 @@ function GroupSession() {
 
   const [data, setData] = useState<GroupStateDTO | null>(null);
   const [error, setError] = useState<string | null>(null);
+  /** Errors from lobby actions stay inline; they must not replace the screen. */
+  const [actionError, setActionError] = useState<string | null>(null);
   const [offline, setOffline] = useState(false);
   const [busy, setBusy] = useState(false);
   const [confirmLeave, setConfirmLeave] = useState(false);
