@@ -89,13 +89,17 @@ function Academics() {
 
   const suggestions = useMemo(() => suggestedSubjects(plans, subjects), [plans, subjects]);
 
-  const exams = useMemo(
+  const ordered = useMemo<Subject[]>(
     () =>
-      subjects
-        .filter((s): s is Subject & { examDate: string } => Boolean(s.examDate))
-        .sort((a, b) => daysUntil(a.examDate) - daysUntil(b.examDate)),
+      [...subjects].sort((a, b) => {
+        if (a.examDate && b.examDate) return daysUntil(a.examDate) - daysUntil(b.examDate);
+        if (a.examDate) return -1;
+        if (b.examDate) return 1;
+        return a.name.localeCompare(b.name);
+      }),
     [subjects],
   );
+
 
   const revisedCount = subjects.filter((s) => s.revised).length;
 
@@ -194,80 +198,78 @@ function Academics() {
             </div>
           ) : null}
 
-          <div className="mt-3 space-y-2">
-            {!subjectsHydrated ? null : subjects.length === 0 ? (
-              <Empty>No subjects yet. Add one above to start tracking.</Empty>
-            ) : (
-              subjects.map((s) => (
-                <div
-                  key={s.id}
-                  className="flex items-center gap-2 rounded-2xl border border-hairline px-3 py-2.5"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-foreground">{s.name}</p>
-                    <p className="text-[11px] text-muted-foreground">
-                      {s.examDate ? `Exam ${s.examDate} · ${countdownLabel(s.examDate)}` : "No exam date"}
-                    </p>
-                  </div>
-                  <input
-                    type="date"
-                    value={s.examDate ?? ""}
-                    onChange={(e) =>
-                      run(() => updateSubject(s.id, { examDate: e.target.value || undefined }))
-                    }
-                    className="w-[7.5rem] shrink-0 rounded-xl border border-hairline bg-background px-2 py-1.5 text-[11px] outline-none"
-                    aria-label={`Exam date for ${s.name}`}
-                  />
-                  <button
-                    type="button"
-                    aria-label={`Remove ${s.name}`}
-                    onClick={() => run(() => removeSubject(s.id))}
-                    className="shrink-0 text-muted-foreground"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
+          {subjectsHydrated && subjects.length === 0 ? (
+            <p className="mt-3 rounded-2xl bg-muted/50 px-3 py-3 text-center text-[11px] text-muted-foreground">
+              Added subjects appear in Exam countdown and Revision tracking below.
+            </p>
+          ) : null}
+
         </Card>
 
         {/* Exam countdown ------------------------------------------------- */}
         <Card>
-          <CardTitle icon={<CalendarClock className="h-4 w-4" />} title="Exam countdown" />
-          {exams.length === 0 ? (
-            <Empty>Set an exam date on a subject to see its countdown.</Empty>
+          <CardTitle
+            icon={<CalendarClock className="h-4 w-4" />}
+            title="Exam countdown"
+            hint="Set or change an exam date for each subject here."
+          />
+          {subjects.length === 0 ? (
+            <Empty>Add a subject above to see its exam countdown.</Empty>
           ) : (
             <div className="space-y-2">
-              {exams.map((s) => {
-                const d = daysUntil(s.examDate);
+              {ordered.map((s) => {
+                const d = s.examDate ? daysUntil(s.examDate) : null;
                 return (
                   <div
                     key={s.id}
-                    className="flex items-center justify-between gap-3 rounded-2xl bg-muted/50 px-3 py-2.5"
+                    className="flex items-center gap-2 rounded-2xl bg-muted/50 px-3 py-2.5"
                   >
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-foreground">{s.name}</p>
-                      <p className="text-[11px] text-muted-foreground">{s.examDate}</p>
-                    </div>
-                    <span
-                      className={cn(
-                        "shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold",
-                        d < 0
-                          ? "bg-muted text-muted-foreground"
-                          : d <= 7
-                            ? "bg-destructive/15 text-destructive"
-                            : "bg-primary/12 text-primary",
+                      {s.examDate ? (
+                        <p className="text-[11px] text-muted-foreground">
+                          {s.examDate} ·{" "}
+                          <span
+                            className={cn(
+                              "font-semibold",
+                              d !== null && d < 0
+                                ? "text-muted-foreground"
+                                : d !== null && d <= 7
+                                  ? "text-destructive"
+                                  : "text-primary",
+                            )}
+                          >
+                            {countdownLabel(s.examDate)}
+                          </span>
+                        </p>
+                      ) : (
+                        <p className="text-[11px] text-muted-foreground">No exam date yet</p>
                       )}
+                    </div>
+                    <input
+                      type="date"
+                      value={s.examDate ?? ""}
+                      onChange={(e) =>
+                        run(() => updateSubject(s.id, { examDate: e.target.value || undefined }))
+                      }
+                      className="w-[7.5rem] shrink-0 rounded-xl border border-hairline bg-background px-2 py-1.5 text-[11px] outline-none"
+                      aria-label={`Exam date for ${s.name}`}
+                    />
+                    <button
+                      type="button"
+                      aria-label={`Remove ${s.name}`}
+                      onClick={() => run(() => removeSubject(s.id))}
+                      className="shrink-0 text-muted-foreground"
                     >
-                      {countdownLabel(s.examDate)}
-                    </span>
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
                 );
               })}
             </div>
           )}
         </Card>
+
 
         {/* Revision ------------------------------------------------------- */}
         <Card>
