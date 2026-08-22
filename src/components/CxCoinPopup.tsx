@@ -42,7 +42,12 @@ export function CxCoinPopup({ children, coins, hydrated = true }: CxCoinPopupPro
 
   return (
     <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
-      <DialogPrimitive.Trigger asChild>{children}</DialogPrimitive.Trigger>
+      <DialogPrimitive.Trigger
+        className="inline-flex items-center justify-center bg-transparent p-0 font-inherit text-inherit"
+        asChild
+      >
+        {children}
+      </DialogPrimitive.Trigger>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay
           className={cn(
