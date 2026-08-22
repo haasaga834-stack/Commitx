@@ -108,6 +108,10 @@ function GroupIndex() {
     setError(null);
     try {
       const res = await join({ data: { code: code.trim(), acceptedTerms: true } });
+      if ("error" in res) {
+        setError(res.error);
+        return;
+      }
       setTerms(null);
       navigate({ to: "/group/$id", params: { id: res.id } });
     } catch (e) {
