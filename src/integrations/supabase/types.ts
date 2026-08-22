@@ -472,6 +472,10 @@ export type Database = {
           user_id: string
         }[]
       }
+      leave_study_lobby: {
+        Args: { _group_id: string; _user_id: string }
+        Returns: boolean
+      }
       release_stale_commitments: {
         Args: { _user_id: string }
         Returns: undefined
