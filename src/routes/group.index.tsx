@@ -6,7 +6,13 @@ import { cn } from "@/lib/utils";
 import { TabletShell } from "@/components/TabletShell";
 import { useIsTablet } from "@/lib/use-tablet";
 import { formatINR, MIN_COMMIT, MAX_COMMIT, useAppState } from "@/lib/commitx-store";
-import { createGroup, joinGroup, listMyGroups, previewInvite } from "@/lib/group-study.functions";
+import {
+  createGroup,
+  getMyOpenGroup,
+  joinGroup,
+  listMyGroups,
+  previewInvite,
+} from "@/lib/group-study.functions";
 import { MAX_GROUP_SIZE, type GroupDTO, type InvitePreviewDTO } from "@/lib/group-study.shared";
 
 export const Route = createFileRoute("/group/")({
@@ -45,6 +51,7 @@ function GroupIndex() {
   const join = useServerFn(joinGroup);
   const preview = useServerFn(previewInvite);
   const mine = useServerFn(listMyGroups);
+  const openGroupFn = useServerFn(getMyOpenGroup);
 
   const [duration, setDuration] = useState(60);
   const [value, setValue] = useState(MIN_COMMIT);
@@ -56,19 +63,39 @@ function GroupIndex() {
   const [terms, setTerms] = useState<InvitePreviewDTO | null>(null);
   const [accepted, setAccepted] = useState(false);
   const [groups, setGroups] = useState<GroupDTO[]>([]);
+  const [openGroup, setOpenGroup] = useState<{
+    id: string;
+    code: string;
+    status: string;
+    isHost: boolean;
+  } | null>(null);
 
   const refresh = useCallback(() => {
     mine({})
       .then((rows) => setGroups(rows))
       .catch(() => {});
-  }, [mine]);
+    openGroupFn({})
+      .then((g) => setOpenGroup(g))
+      .catch(() => {});
+  }, [mine, openGroupFn]);
 
   useEffect(() => {
     refresh();
   }, [refresh]);
 
+  /** A blocked create/join always means one open group — surface the way back. */
+  const recoverOpenGroup = useCallback(async () => {
+    try {
+      const g = await openGroupFn({});
+      setOpenGroup(g);
+      return g;
+    } catch {
+      return null;
+    }
+  }, [openGroupFn]);
+
   async function onCreate() {
-    if (busy) return;
+    if (busy || openGroup) return;
     setBusy(true);
     setError(null);
     try {
@@ -77,11 +104,13 @@ function GroupIndex() {
       });
       if ("error" in res) {
         setError(res.error);
+        await recoverOpenGroup();
         return;
       }
       navigate({ to: "/group/$id", params: { id: res.id } });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not create the group.");
+      await recoverOpenGroup();
     } finally {
       setBusy(false);
     }
@@ -114,12 +143,16 @@ function GroupIndex() {
       const res = await join({ data: { code: code.trim(), acceptedTerms: true } });
       if ("error" in res) {
         setError(res.error);
+        const g = await recoverOpenGroup();
+        if (g) setTerms(null);
         return;
       }
       setTerms(null);
       navigate({ to: "/group/$id", params: { id: res.id } });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not join this group.");
+      const g = await recoverOpenGroup();
+      if (g) setTerms(null);
     } finally {
       setBusy(false);
     }
@@ -151,6 +184,35 @@ function GroupIndex() {
             Pick a time, commit together, and see who makes it to the finish.
           </p>
         </div>
+
+        {/* Unfinished group — always a way back in */}
+        {openGroup && (
+          <section
+            className={cn(
+              "mt-7 rounded-3xl border border-primary/40 bg-card p-5 shadow-soft",
+              isTablet && "col-start-1",
+            )}
+          >
+            <h2 className="font-display text-base font-semibold">You have an unfinished group</h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {openGroup.status === "active"
+                ? "Your group session is running — jump back in to keep your commitment."
+                : `Waiting in the lobby · code ${openGroup.code}`}
+              {openGroup.isHost ? " · you're the host" : ""}
+            </p>
+            <Link
+              to="/group/$id"
+              params={{ id: openGroup.id }}
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-medium text-primary-foreground shadow-soft"
+            >
+              {openGroup.status === "active" ? "Rejoin session" : "Open lobby"}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <p className="mt-3 text-[11px] text-muted-foreground">
+              One group at a time — finish, leave or cancel this one before starting another.
+            </p>
+          </section>
+        )}
 
         {/* Open groups */}
         {groups.length > 0 && (
@@ -294,10 +356,14 @@ function GroupIndex() {
 
           <button
             onClick={onCreate}
-            disabled={busy}
+            disabled={busy || !!openGroup}
             className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-sm font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.98] disabled:opacity-60"
           >
-            {busy ? "Working…" : "Create group & invite friends"}
+            {openGroup
+              ? "Finish your current group first"
+              : busy
+                ? "Working…"
+                : "Create group & invite friends"}
             <ArrowRight className="h-4 w-4" />
           </button>
         </section>
@@ -322,7 +388,7 @@ function GroupIndex() {
             />
             <button
               onClick={onPreview}
-              disabled={busy || code.trim().length < 4}
+              disabled={busy || !!openGroup || code.trim().length < 4}
               className="shrink-0 rounded-2xl bg-secondary px-5 text-sm font-medium text-secondary-foreground disabled:opacity-50"
             >
               View
