@@ -682,7 +682,7 @@ function LiveSession() {
 
   return (
     <div className="relative flex min-h-dvh flex-col bg-background px-6 pb-10 pt-14">
-      <WindScape fixed={false} className="z-0" />
+      <WindScape fixed={false} className="z-0 md:top-28 lg:top-32" />
       <div className="relative z-10 flex items-center justify-center">
 
         <p className="text-xs uppercase tracking-widest text-muted-foreground">
@@ -704,7 +704,7 @@ function LiveSession() {
           <Hourglass size={260} state={onBreak ? "idle" : "running"} progress={progress} />
         </div>
         <div className="flex w-full flex-col items-center text-center">
-          <p className="mx-auto w-[7ch] text-center font-display text-6xl font-semibold tabular-nums tracking-tight">
+          <p className="mx-auto min-w-[7ch] text-center font-display text-6xl font-semibold tabular-nums tracking-tight">
             {fmt(remaining)}
           </p>
           <p className="mt-3 text-sm text-muted-foreground">{goal}</p>
