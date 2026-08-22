@@ -322,8 +322,9 @@ function Settings() {
             <div>
               <p className="text-sm font-medium">Delete account</p>
               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                Permanently erases your profile, wallet, sessions, streaks, Food
+                Permanently erases your profile, wallet, sessions, streaks, Cx
                 Coins, referrals and settings. This cannot be undone.
+
               </p>
             </div>
           </div>
