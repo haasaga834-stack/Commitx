@@ -320,15 +320,32 @@ function GroupSession() {
     }
   };
 
+  /** Host cancels: the group is deleted and everyone's hold released. */
   const onCancel = async () => {
     if (busy) return;
     setBusy(true);
     setActionError(null);
     try {
       await drop({ data: { id } });
-      navigate({ to: "/group" });
+      leftRef.current = true;
+      navigate({ to: "/group", replace: true });
     } catch (e) {
       setActionError(e instanceof Error ? e.message : "Could not cancel the group.");
+      setBusy(false);
+    }
+  };
+
+  /** Member leaves a lobby that hasn't started: seat freed, no penalty. */
+  const onLeave = async () => {
+    if (busy) return;
+    setBusy(true);
+    setActionError(null);
+    try {
+      await quit({ data: { id } });
+      leftRef.current = true;
+      navigate({ to: "/group", replace: true });
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : "Could not leave the group.");
       setBusy(false);
     }
   };
@@ -347,47 +364,58 @@ function GroupSession() {
           canStart={canStart}
           onStart={onStart}
           onCancel={onCancel}
+          onLeave={onLeave}
           actionError={actionError}
         />
       );
     }
+    const others = active.length - 1;
     return (
       <div className="min-h-screen pb-16">
-        <div className="mx-auto max-w-md px-6 pt-14">
-          <div className="flex items-center justify-between">
+        <div className="mx-auto max-w-md px-5 pt-12">
+          <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
             <Link
               to="/group"
+              aria-label="Back to Group Study"
               className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-soft"
             >
               <ChevronLeft className="h-5 w-5" />
             </Link>
-            <p className="text-xs uppercase tracking-widest text-muted-foreground">
+            <p className="truncate text-center text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
               {group.status === "ended" ? "Session finished" : "Waiting room"}
             </p>
-            <div className="w-10" />
+            <span className="flex shrink-0 items-center gap-1 rounded-full bg-accent/10 px-3 py-1.5 text-[11px] font-medium text-primary">
+              {group.mode === "verified" ? (
+                <ShieldCheck className="h-3.5 w-3.5" />
+              ) : (
+                <Users className="h-3.5 w-3.5" />
+              )}
+              {active.length}/{MAX_GROUP_SIZE}
+            </span>
           </div>
 
-          <h1 className="mt-4 text-center font-display text-3xl font-semibold">{group.goal}</h1>
-          <p className="mt-2 text-center text-sm text-muted-foreground">
+          <h1 className="mt-6 truncate text-center font-display text-2xl font-semibold">
+            {group.goal}
+          </h1>
+          <p className="mt-1.5 text-center text-xs text-muted-foreground">
             {group.duration_minutes} minutes · {formatINR(group.commit_value)} each ·{" "}
             {group.mode === "verified" ? "Verified" : "Standard"}
           </p>
 
           {/* Invite */}
           <section className="mt-6 rounded-3xl border border-hairline bg-card p-5 shadow-soft">
-            <h2 className="font-display text-base font-semibold">Invite friends</h2>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Share this code. Friends accept the terms and commit the same amount to join. Max{" "}
-              {MAX_GROUP_SIZE} people.
+            <h2 className="font-display text-sm font-semibold">Invite friends</h2>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              Share this code. Friends commit the same amount to join.
             </p>
             <button
               onClick={copyCode}
-              className="mt-3 flex w-full items-center justify-between rounded-2xl border border-hairline bg-background px-4 py-3.5"
+              className="mt-3 flex w-full items-center justify-between gap-3 rounded-2xl border border-hairline bg-background px-4 py-3"
             >
-              <span className="font-display text-2xl font-semibold tracking-[0.3em] text-foreground">
+              <span className="min-w-0 truncate font-display text-lg font-semibold tracking-[0.24em] text-foreground">
                 {group.code}
               </span>
-              <span className="flex items-center gap-1.5 text-xs font-medium text-primary">
+              <span className="flex shrink-0 items-center gap-1.5 text-xs font-medium text-primary">
                 {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                 {copied ? "Copied" : "Copy"}
               </span>
@@ -395,18 +423,21 @@ function GroupSession() {
           </section>
 
           {/* Participants */}
-          <section className="mt-5 rounded-3xl border border-hairline bg-card p-5 shadow-soft">
+          <section className="mt-4 rounded-3xl border border-hairline bg-card p-5 shadow-soft">
             <div className="flex items-center justify-between">
-              <h2 className="font-display text-base font-semibold">Participants</h2>
+              <h2 className="font-display text-sm font-semibold">Participants</h2>
               <span className="text-[11px] text-muted-foreground">
                 {active.length} / {MAX_GROUP_SIZE}
               </span>
             </div>
-            <ul className="mt-3 divide-y divide-hairline">
+            <ul className="mt-3 grid gap-2">
               {data!.members.map((m) => (
-                <li key={m.user_id} className="flex items-center gap-3 py-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/15 text-primary">
-                    <Users className="h-4 w-4" />
+                <li
+                  key={m.user_id}
+                  className="flex items-center gap-3 rounded-2xl bg-background px-3 py-2.5"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/15 text-primary">
+                    <Users className="h-3.5 w-3.5" />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-medium text-foreground">
@@ -419,45 +450,68 @@ function GroupSession() {
                   </span>
                 </li>
               ))}
+              {Array.from({ length: Math.max(0, MAX_GROUP_SIZE - data!.members.length) }).map(
+                (_, i) => (
+                  <li
+                    key={`empty-${i}`}
+                    className="flex items-center gap-3 rounded-2xl border border-dashed border-hairline px-3 py-2.5 text-xs text-muted-foreground"
+                  >
+                    <span className="h-8 w-8 shrink-0 rounded-full border border-dashed border-hairline" />
+                    Open seat
+                  </li>
+                ),
+              )}
             </ul>
           </section>
 
+          {actionError && (
+            <p className="mt-4 rounded-2xl bg-destructive/10 px-4 py-2.5 text-xs text-destructive">
+              {actionError}
+            </p>
+          )}
+
           {group.status === "ended" ? (
-            <p className="mt-6 rounded-2xl bg-foreground/5 px-4 py-3 text-sm text-muted-foreground">
+            <p className="mt-5 rounded-2xl bg-foreground/5 px-4 py-3 text-sm text-muted-foreground">
               This group session has finished.
             </p>
           ) : data!.isCreator ? (
             <>
-              {!canStart && (
-                <p className="mt-6 rounded-2xl bg-foreground/5 px-4 py-3 text-xs text-muted-foreground">
-                  At least one friend must join before you can start.
-                </p>
-              )}
-              {actionError && (
-                <p className="mt-4 rounded-2xl bg-destructive/10 px-4 py-2.5 text-xs text-destructive">
-                  {actionError}
-                </p>
-              )}
+              <p className="mt-5 text-center text-xs text-muted-foreground">
+                {others > 0
+                  ? `${others} friend${others > 1 ? "s" : ""} committed. Starting begins the shared timer.`
+                  : "At least one friend must join before you can start."}
+              </p>
               <button
                 onClick={onStart}
                 disabled={busy || !canStart}
-                className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-base font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.98] disabled:opacity-60"
+                className="mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.98] disabled:opacity-60"
               >
                 <Play className="h-4 w-4" />
                 {busy ? "Starting…" : "Start group session"}
               </button>
               <button
                 onClick={onCancel}
-                className="mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-secondary px-6 py-3.5 text-sm font-medium text-secondary-foreground"
+                disabled={busy}
+                className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-full bg-secondary px-6 py-3 text-sm font-medium text-secondary-foreground disabled:opacity-60"
               >
                 <Trash2 className="h-4 w-4" />
                 Cancel group
               </button>
             </>
           ) : (
-            <p className="mt-7 rounded-2xl bg-accent/10 px-4 py-3.5 text-sm text-primary">
-              You're committed. The host starts the shared timer — keep this screen open.
-            </p>
+            <>
+              <p className="mt-5 rounded-2xl bg-accent/10 px-4 py-3 text-xs text-primary">
+                You're committed. The host starts the shared timer — keep this screen open.
+              </p>
+              <button
+                onClick={onLeave}
+                disabled={busy}
+                className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-full bg-secondary px-6 py-3 text-sm font-medium text-secondary-foreground disabled:opacity-60"
+              >
+                <LogOut className="h-4 w-4" />
+                Leave group
+              </button>
+            </>
           )}
         </div>
       </div>
