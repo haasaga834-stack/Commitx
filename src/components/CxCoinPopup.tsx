@@ -44,7 +44,6 @@ export function CxCoinPopup({ children, coins, hydrated = true }: CxCoinPopupPro
     <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
       <DialogPrimitive.Trigger
         className="inline-flex items-center justify-center bg-transparent p-0 font-inherit text-inherit"
-        asChild
       >
         {children}
       </DialogPrimitive.Trigger>
