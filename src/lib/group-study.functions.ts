@@ -34,22 +34,20 @@ export const createGroup = createServerFn({ method: "POST" })
       })
       .parse(data),
   )
-  .handler(
-    async ({ data, context }): Promise<{ id: string; code: string } | { error: string }> => {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const { data: rows, error } = await supabaseAdmin.rpc("create_study_group", {
-        _user_id: context.userId,
-        _goal: data.goal,
-        _duration: data.duration,
-        _value: data.value,
-        _mode: data.mode,
-        _theme: data.theme,
-      });
-      const row = Array.isArray(rows) ? rows[0] : null;
-      if (error || !row) return { error: error?.message || "Could not create the group." };
-      return { id: row.id as string, code: row.code as string };
-    },
-  );
+  .handler(async ({ data, context }): Promise<{ id: string; code: string } | { error: string }> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows, error } = await supabaseAdmin.rpc("create_study_group", {
+      _user_id: context.userId,
+      _goal: data.goal,
+      _duration: data.duration,
+      _value: data.value,
+      _mode: data.mode,
+      _theme: data.theme,
+    });
+    const row = Array.isArray(rows) ? rows[0] : null;
+    if (error || !row) return { error: error?.message || "Could not create the group." };
+    return { id: row.id as string, code: row.code as string };
+  });
 
 /** Terms a friend sees before accepting — read through a trusted server path. */
 export const previewInvite = createServerFn({ method: "GET" })
