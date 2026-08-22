@@ -6,7 +6,13 @@ import { cn } from "@/lib/utils";
 import { TabletShell } from "@/components/TabletShell";
 import { useIsTablet } from "@/lib/use-tablet";
 import { formatINR, MIN_COMMIT, MAX_COMMIT, useAppState } from "@/lib/commitx-store";
-import { createGroup, joinGroup, listMyGroups, previewInvite } from "@/lib/group-study.functions";
+import {
+  createGroup,
+  getMyOpenGroup,
+  joinGroup,
+  listMyGroups,
+  previewInvite,
+} from "@/lib/group-study.functions";
 import { MAX_GROUP_SIZE, type GroupDTO, type InvitePreviewDTO } from "@/lib/group-study.shared";
 
 export const Route = createFileRoute("/group/")({
