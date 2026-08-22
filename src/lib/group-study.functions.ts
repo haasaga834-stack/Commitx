@@ -9,6 +9,17 @@ import {
   type InvitePreviewDTO,
 } from "./group-study.shared";
 
+interface InvitePreviewRow {
+  id: string;
+  goal: string;
+  duration_minutes: number;
+  commit_value: number;
+  mode: "standard" | "verified";
+  status: string;
+  creator_name: string;
+  member_count: number | string;
+}
+
 /** Creator sets the terms and is committed immediately. */
 export const createGroup = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -47,7 +58,7 @@ export const previewInvite = createServerFn({ method: "GET" })
     const { data: rows, error } = await supabaseAdmin.rpc("group_invite_preview", {
       _code: data.code.toUpperCase(),
     });
-    const row = (rows as Array<Record<string, unknown>> | null)?.[0];
+    const row = (rows as InvitePreviewRow[] | null)?.[0];
     if (error || !row) throw new Error("That invite code doesn't exist.");
 
     const { data: mine } = await supabaseAdmin
