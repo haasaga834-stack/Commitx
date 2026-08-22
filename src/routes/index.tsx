@@ -93,6 +93,7 @@ function MobileHome() {
           <div className="min-w-0">
             <p className="text-xs text-muted-foreground">{greeting()},</p>
             <h1 className="mt-0.5 flex min-w-0 items-center gap-1.5 text-2xl font-semibold text-foreground">
+              <span className="sr-only">CommitX study dashboard — </span>
               <span className="truncate">{hydrated ? firstName : "\u00A0"}</span>
               <Leaf className="h-4 w-4 shrink-0 text-primary" />
             </h1>
