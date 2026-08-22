@@ -95,8 +95,11 @@ function drawLeaf(ctx: CanvasRenderingContext2D, leaf: Leaf, t: number) {
   ctx.restore();
 }
 
-function LeafCanvas({ density = 1 }: { density?: number }) {
+function LeafCanvas({ density = 1, paused = false }: { density?: number; paused?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  // Paused frames keep the exact last positions — nothing jumps on resume.
+  const pausedRef = useRef(paused);
+  pausedRef.current = paused;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -145,6 +148,10 @@ function LeafCanvas({ density = 1 }: { density?: number }) {
 
     const frame = (now: number) => {
       raf = requestAnimationFrame(frame);
+      if (pausedRef.current) {
+        last = now;
+        return;
+      }
       if (!last) last = now;
       let dt = (now - last) / 1000;
       last = now;
@@ -215,10 +222,12 @@ export function WindScape({
   className,
   fixed = true,
   density = 1,
+  paused = false,
 }: {
   className?: string;
   fixed?: boolean;
   density?: number;
+  paused?: boolean;
 }) {
   return (
     <div
@@ -226,6 +235,7 @@ export function WindScape({
       className={cn(
         fixed ? "fixed inset-0 -z-10" : "absolute inset-0",
         "pointer-events-none select-none overflow-hidden",
+        paused && "[&_span]:![animation-play-state:paused] [&>div]:![animation-play-state:paused]",
         className,
       )}
     >
@@ -275,7 +285,7 @@ export function WindScape({
       </div>
 
       {/* Naturally falling leaves carried by a changing breeze */}
-      <LeafCanvas density={density} />
+      <LeafCanvas density={density} paused={paused} />
     </div>
   );
 }
