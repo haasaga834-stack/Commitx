@@ -185,6 +185,35 @@ function GroupIndex() {
           </p>
         </div>
 
+        {/* Unfinished group — always a way back in */}
+        {openGroup && (
+          <section
+            className={cn(
+              "mt-7 rounded-3xl border border-primary/40 bg-card p-5 shadow-soft",
+              isTablet && "col-start-1",
+            )}
+          >
+            <h2 className="font-display text-base font-semibold">You have an unfinished group</h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {openGroup.status === "active"
+                ? "Your group session is running — jump back in to keep your commitment."
+                : `Waiting in the lobby · code ${openGroup.code}`}
+              {openGroup.isHost ? " · you're the host" : ""}
+            </p>
+            <Link
+              to="/group/$id"
+              params={{ id: openGroup.id }}
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-medium text-primary-foreground shadow-soft"
+            >
+              {openGroup.status === "active" ? "Rejoin session" : "Open lobby"}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <p className="mt-3 text-[11px] text-muted-foreground">
+              One group at a time — finish, leave or cancel this one before starting another.
+            </p>
+          </section>
+        )}
+
         {/* Open groups */}
         {groups.length > 0 && (
           <section
