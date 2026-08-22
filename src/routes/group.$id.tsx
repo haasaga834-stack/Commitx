@@ -241,6 +241,58 @@ function GroupSession() {
   }
 
   const active = data!.members.filter((m) => m.status !== "left");
+  const canStart = active.length >= 2;
+
+  const copyCode = () => {
+    try {
+      void navigator.clipboard?.writeText(group.code);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch {}
+  };
+
+  const onStart = async () => {
+    if (busy) return;
+    setBusy(true);
+    setActionError(null);
+    try {
+      const res = await start({ data: { id } });
+      // Flip locally right away so the shared timer shows without waiting
+      // for the next poll, then reconcile with the server.
+      setData((prev) =>
+        prev
+          ? {
+              ...prev,
+              group: {
+                ...prev.group,
+                status: "active",
+                started_at: res.started_at,
+                ends_at: res.ends_at,
+              },
+              members: prev.members.map((m) =>
+                m.status === "committed" ? { ...m, status: "joined" } : m,
+              ),
+              me:
+                prev.me && prev.me.status === "committed"
+                  ? { ...prev.me, status: "joined" }
+                  : prev.me,
+            }
+          : prev,
+      );
+      await load();
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : "Could not start.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onCancel = async () => {
+    try {
+      await drop({ data: { id } });
+    } catch {}
+    navigate({ to: "/group" });
+  };
 
   /* ------------------------------- Lobby ------------------------------- */
   if (!isActive) {
