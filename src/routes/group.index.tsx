@@ -388,7 +388,7 @@ function GroupIndex() {
             />
             <button
               onClick={onPreview}
-              disabled={busy || code.trim().length < 4}
+              disabled={busy || !!openGroup || code.trim().length < 4}
               className="shrink-0 rounded-2xl bg-secondary px-5 text-sm font-medium text-secondary-foreground disabled:opacity-50"
             >
               View
