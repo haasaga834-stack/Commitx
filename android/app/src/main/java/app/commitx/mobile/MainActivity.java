@@ -766,8 +766,19 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public boolean openExternalAuth(String url) {
             if (url == null || url.trim().isEmpty()) return false;
+            final Uri target = Uri.parse(url.trim());
+            // A Custom Tab stays on this task, so the commitx://login-callback/
+            // redirect comes back into CommitX instead of stranding the user in
+            // a detached browser window on the website.
             try {
-                Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url.trim()));
+                new CustomTabsIntent.Builder()
+                        .setShowTitle(false)
+                        .build()
+                        .launchUrl(MainActivity.this, target);
+                return true;
+            } catch (Throwable ignored) {}
+            try {
+                Intent i = new Intent(Intent.ACTION_VIEW, target);
                 i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(i);
                 return true;
