@@ -33,7 +33,9 @@ export const Route = createFileRoute("/how-it-works")({
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:url", content: "https://commitx.site/how-it-works" },
     ],
+    links: [{ rel: "canonical", href: "https://commitx.site/how-it-works" }],
   }),
   component: HowItWorks,
 });

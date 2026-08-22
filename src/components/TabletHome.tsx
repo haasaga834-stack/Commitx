@@ -72,6 +72,7 @@ export function TabletHome() {
         <div className="min-w-0">
           <p className="text-sm text-muted-foreground">{greeting()},</p>
           <h1 className="truncate font-display text-3xl font-semibold text-foreground lg:text-4xl">
+            <span className="sr-only">CommitX study dashboard — </span>
             {hydrated ? firstName : "\u00A0"}
           </h1>
           <p className="mt-1.5 max-w-xl text-sm text-muted-foreground">

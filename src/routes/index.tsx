@@ -24,21 +24,20 @@ import {
   priorityLabel,
 } from "@/lib/planner";
 
+const HOME_TITLE = "CommitX Dashboard — Focus Commitments & Study Streaks";
+const HOME_DESCRIPTION =
+  "Your CommitX dashboard: start a focused study commitment, track streaks, Cx Coins and today's plan in one calm place.";
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "CommitX — Home" },
-      {
-        name: "description",
-        content:
-          "Start a focused commitment. One promise at a time, kept beautifully.",
-      },
-      { property: "og:title", content: "CommitX — Home" },
-      {
-        property: "og:description",
-        content: "Start a focused commitment. One promise at a time, kept beautifully.",
-      },
+      { title: HOME_TITLE },
+      { name: "description", content: HOME_DESCRIPTION },
+      { property: "og:title", content: HOME_TITLE },
+      { property: "og:description", content: HOME_DESCRIPTION },
+      { property: "og:url", content: "https://commitx.site/" },
     ],
+    links: [{ rel: "canonical", href: "https://commitx.site/" }],
   }),
   component: Home,
 });
@@ -94,6 +93,7 @@ function MobileHome() {
           <div className="min-w-0">
             <p className="text-xs text-muted-foreground">{greeting()},</p>
             <h1 className="mt-0.5 flex min-w-0 items-center gap-1.5 text-2xl font-semibold text-foreground">
+              <span className="sr-only">CommitX study dashboard — </span>
               <span className="truncate">{hydrated ? firstName : "\u00A0"}</span>
               <Leaf className="h-4 w-4 shrink-0 text-primary" />
             </h1>
