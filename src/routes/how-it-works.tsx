@@ -9,6 +9,9 @@ import {
   CheckCircle2,
   XCircle,
   FlaskConical,
+  Lock,
+  ScrollText,
+
 } from "lucide-react";
 import { formatINR, MIN_COMMIT, MAX_COMMIT } from "@/lib/commitx-store";
 import { CxCoin } from "@/components/CxCoin";
@@ -152,6 +155,24 @@ function HowItWorks() {
             ]}
           />
         </div>
+
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <Link
+            to="/privacy"
+            className="inline-flex items-center gap-1.5 rounded-full bg-card px-3.5 py-2 text-[11px] font-medium text-muted-foreground shadow-soft transition-transform active:scale-[0.97]"
+          >
+            <Lock className="h-3.5 w-3.5 text-primary" />
+            Privacy Policy
+          </Link>
+          <Link
+            to="/terms"
+            className="inline-flex items-center gap-1.5 rounded-full bg-card px-3.5 py-2 text-[11px] font-medium text-muted-foreground shadow-soft transition-transform active:scale-[0.97]"
+          >
+            <ScrollText className="h-3.5 w-3.5 text-primary" />
+            Terms of Service
+          </Link>
+        </div>
+
 
         <div className="mt-6 mb-4 rounded-3xl bg-card p-5 shadow-soft">
           <div className="flex items-center gap-2">
