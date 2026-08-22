@@ -1,6 +1,7 @@
 import { createStart, createMiddleware } from "@tanstack/react-start";
 
 import { renderErrorPage } from "./lib/error-page";
+import { isAbortedError } from "./lib/is-aborted-error";
 import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
@@ -9,6 +10,9 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
   } catch (error) {
     if (error != null && typeof error === "object" && "statusCode" in error) {
       throw error;
+    }
+    if (isAbortedError(error)) {
+      return new Response(null, { status: 499 });
     }
     console.error(error);
     return new Response(renderErrorPage(), {
