@@ -682,7 +682,7 @@ function LiveSession() {
 
   return (
     <div className="relative flex min-h-dvh flex-col bg-background px-6 pb-10 pt-14">
-      <WindScape fixed={false} className="z-0" />
+      <WindScape fixed={false} className="z-0 md:top-28 lg:top-32" />
       <div className="relative z-10 flex items-center justify-center">
 
         <p className="text-xs uppercase tracking-widest text-muted-foreground">
@@ -697,14 +697,14 @@ function LiveSession() {
         </button>
       </div>
 
-      {/* Tablet landscape splits the hourglass and the readout side by side so
-          nothing is cut off on short, wide screens. */}
-      <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center gap-8 md:landscape:flex-row md:landscape:gap-14">
+      {/* Everything stays on one centred axis; the countdown reserves fixed
+          space so changing digits never shift the hourglass sideways. */}
+      <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center gap-8 md:justify-start md:gap-10 md:pt-16 lg:pt-20">
         <div className="shrink-0">
           <Hourglass size={260} state={onBreak ? "idle" : "running"} progress={progress} />
         </div>
-        <div className="flex min-w-0 flex-col items-center md:landscape:items-start">
-          <p className="font-display text-6xl font-semibold tabular-nums tracking-tight">
+        <div className="flex w-full flex-col items-center text-center">
+          <p className="mx-auto min-w-[7ch] text-center font-display text-6xl font-semibold tabular-nums tracking-tight">
             {fmt(remaining)}
           </p>
           <p className="mt-3 text-sm text-muted-foreground">{goal}</p>
@@ -721,6 +721,7 @@ function LiveSession() {
           )}
         </div>
       </div>
+
 
       <div className="relative z-10 mx-auto w-full max-w-md pb-2 text-center">
         <span className="mx-auto block h-px w-16 bg-hairline" />
