@@ -107,7 +107,7 @@ export function Hourglass({
             <ellipse
               cx="60"
               cy={topSandY + 0.5}
-              rx={16 * (1 - p) + 3}
+              rx={16 * topFill + 3}
               ry="2"
               fill="var(--color-background)"
               opacity="0.5"
@@ -131,8 +131,8 @@ export function Hourglass({
             <ellipse
               cx="60"
               cy={botSandY + 2}
-              rx={14 + 12 * p}
-              ry={3 + 2 * p}
+              rx={14 + 12 * botFill}
+              ry={3 + 2 * botFill}
               fill="url(#cxSandGrad)"
             />
           </g>
