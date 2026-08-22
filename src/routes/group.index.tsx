@@ -356,10 +356,14 @@ function GroupIndex() {
 
           <button
             onClick={onCreate}
-            disabled={busy}
+            disabled={busy || !!openGroup}
             className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-sm font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.98] disabled:opacity-60"
           >
-            {busy ? "Working…" : "Create group & invite friends"}
+            {openGroup
+              ? "Finish your current group first"
+              : busy
+                ? "Working…"
+                : "Create group & invite friends"}
             <ArrowRight className="h-4 w-4" />
           </button>
         </section>
