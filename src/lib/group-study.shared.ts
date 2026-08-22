@@ -11,6 +11,8 @@ export interface GroupDTO {
   commit_value: number;
   mode: "standard" | "verified";
   status: "lobby" | "active" | "ended";
+  /** Host's chosen ambience theme, shared by every participant. */
+  theme?: string | null;
   started_at: string | null;
   ends_at: string | null;
   creator_id: string;

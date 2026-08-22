@@ -15,6 +15,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { Hourglass } from "@/components/Hourglass";
 import { WindScape } from "@/components/WindScape";
+import { SessionScene } from "@/components/SessionScene";
 import { formatINR } from "@/lib/commitx-store";
 import {
   cancelGroup,
