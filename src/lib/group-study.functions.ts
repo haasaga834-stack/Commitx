@@ -240,6 +240,47 @@ export const listMyGroups = createServerFn({ method: "GET" })
     );
   });
 
+/**
+ * The single group this user still owes an outcome to (lobby or running).
+ * This is exactly what blocks creating/joining another one, so the UI can
+ * always offer a way back into it instead of a dead end.
+ */
+export const getMyOpenGroup = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(
+    async ({
+      context,
+    }): Promise<{ id: string; code: string; status: string; isHost: boolean } | null> => {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      await supabaseAdmin
+        .rpc("release_stale_commitments", { _user_id: context.userId })
+        .then(() => undefined, () => undefined);
+
+      const { data: rows } = await supabaseAdmin
+        .from("group_members")
+        .select("group_id, role")
+        .eq("user_id", context.userId)
+        .in("status", ["committed", "joined"])
+        .order("created_at", { ascending: false })
+        .limit(1);
+      const m = rows?.[0];
+      if (!m) return null;
+
+      const { data: g } = await supabaseAdmin
+        .from("study_groups")
+        .select("id, code, status, creator_id")
+        .eq("id", m.group_id)
+        .maybeSingle();
+      if (!g || g.status === "ended") return null;
+      return {
+        id: g.id as string,
+        code: g.code as string,
+        status: g.status as string,
+        isHost: g.creator_id === context.userId,
+      };
+    },
+  );
+
 
 /** Creator cancels a group that hasn't started. */
 export const cancelGroup = createServerFn({ method: "POST" })
