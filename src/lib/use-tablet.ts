@@ -32,7 +32,3 @@ export function useIsTablet() {
 
   return isTablet;
 }
-
-
-  return isTablet;
-}
