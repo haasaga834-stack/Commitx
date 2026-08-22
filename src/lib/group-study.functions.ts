@@ -192,6 +192,12 @@ export const listMyGroups = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<GroupDTO[]> => {
     const { supabase, userId } = context;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Drop leftovers from finished / cancelled / expired sessions first, so
+    // nothing stale lingers in the list or blocks a new commitment.
+    await supabaseAdmin
+      .rpc("release_stale_commitments", { _user_id: userId })
+      .then(() => undefined, () => undefined);
+
     const { data: memberships } = await supabase
       .from("group_members")
       .select("group_id, status")
