@@ -298,6 +298,22 @@ function GroupSession() {
 
   /* ------------------------------- Lobby ------------------------------- */
   if (!isActive) {
+    if (isTablet) {
+      return (
+        <GroupLobbyTablet
+          group={group}
+          members={data!.members}
+          isCreator={data!.isCreator}
+          copied={copied}
+          onCopy={copyCode}
+          busy={busy}
+          canStart={canStart}
+          onStart={onStart}
+          onCancel={onCancel}
+          actionError={actionError}
+        />
+      );
+    }
     return (
       <div className="min-h-screen pb-16">
         <div className="mx-auto max-w-md px-6 pt-14">
