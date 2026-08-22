@@ -47,6 +47,7 @@ function fmtDuration(min: number) {
 
 function Commit() {
   const navigate = useNavigate();
+  const isTablet = useIsTablet();
   const { plan: fromPlan } = Route.useSearch();
   const usePlanDuration = fromPlan === 1;
   const { state, hydrated } = useAppState();
