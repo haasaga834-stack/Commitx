@@ -9,6 +9,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { CxCoin } from "@/components/CxCoin";
+import { CxCoinPopup } from "@/components/CxCoinPopup";
 import { DailyGoalProgress } from "@/components/DailyGoalProgress";
 import { GroupStudyCard } from "@/components/GroupStudyCard";
 import { SwipeToStart } from "@/components/SwipeToStart";
@@ -17,6 +18,7 @@ import cozyStudy from "@/assets/cozy-study.jpg";
 
 import { useAppState, stats } from "@/lib/commitx-store";
 import { dailyMessage } from "@/lib/daily-message";
+import { cn } from "@/lib/utils";
 import {
   usePlans,
   useTodos,
@@ -78,11 +80,14 @@ export function TabletHome() {
         </div>
 
         <div className="flex shrink-0 items-center gap-3">
-          <Stat
-            icon={<CxCoin className="h-5 w-5" />}
-            value={hydrated ? String(s.cxCoins) : "—"}
-            label="Cx Coins"
-          />
+          <CxCoinPopup coins={s.cxCoins} hydrated={hydrated}>
+            <Stat
+              icon={<CxCoin className="h-5 w-5" />}
+              value={hydrated ? String(s.cxCoins) : "—"}
+              label="Cx Coins"
+              clickable
+            />
+          </CxCoinPopup>
           <Stat
             icon={<Flame className="h-5 w-5 text-accent" />}
             value={hydrated ? String(s.streak) : "—"}
@@ -293,13 +298,22 @@ function Stat({
   icon,
   value,
   label,
+  clickable,
 }: {
   icon: ReactNode;
   value: string;
   label: string;
+  clickable?: boolean;
 }) {
   return (
-    <div className="flex items-center gap-2.5 rounded-2xl border border-hairline bg-card px-4 py-2.5 shadow-soft">
+    <div
+      className={cn(
+        "flex items-center gap-2.5 rounded-2xl border border-hairline bg-card px-4 py-2.5 shadow-soft",
+        clickable && "cursor-pointer transition-transform active:scale-95 hover:shadow-lift",
+      )}
+      role={clickable ? "button" : undefined}
+      tabIndex={clickable ? 0 : undefined}
+    >
       {icon}
       <span className="min-w-0">
         <span className="block text-sm font-semibold tabular-nums text-foreground">

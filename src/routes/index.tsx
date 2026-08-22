@@ -3,11 +3,13 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Bell, CalendarDays, Clock, Flame, Hourglass as HourglassIcon, Leaf, Sparkles } from "lucide-react";
 import { MobileShell } from "@/components/BottomNav";
 import { CxCoin } from "@/components/CxCoin";
+import { CxCoinPopup } from "@/components/CxCoinPopup";
 import { DailyGoalProgress } from "@/components/DailyGoalProgress";
 import { GroupStudyCard } from "@/components/GroupStudyCard";
 import { SwipeToStart } from "@/components/SwipeToStart";
 import { TabletHome } from "@/components/TabletHome";
 import { useIsTablet } from "@/lib/use-tablet";
+import { cn } from "@/lib/utils";
 import cozyStudy from "@/assets/cozy-study.jpg";
 
 import { useAppState, stats } from "@/lib/commitx-store";
@@ -101,11 +103,14 @@ function MobileHome() {
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
-            <TopChip
-              icon={<CxCoin className="h-4 w-4" />}
-              value={hydrated ? String(s.cxCoins) : "—"}
-              srLabel="Cx Coins"
-            />
+            <CxCoinPopup coins={s.cxCoins} hydrated={hydrated}>
+              <TopChip
+                icon={<CxCoin className="h-4 w-4" />}
+                value={hydrated ? String(s.cxCoins) : "—"}
+                srLabel="Cx Coins"
+                clickable
+              />
+            </CxCoinPopup>
             <TopChip
               icon={<Flame className="h-4 w-4 text-accent" />}
               value={hydrated ? String(s.streak) : "—"}
@@ -320,15 +325,22 @@ function TopChip({
   icon,
   value,
   srLabel,
+  clickable,
 }: {
   icon: ReactNode;
   value: string;
   srLabel: string;
+  clickable?: boolean;
 }) {
   return (
     <div
-      className="flex items-center gap-1.5 rounded-full bg-card px-3 py-2 shadow-soft"
+      className={cn(
+        "flex items-center gap-1.5 rounded-full bg-card px-3 py-2 shadow-soft",
+        clickable && "cursor-pointer transition-transform active:scale-95 hover:shadow-lift",
+      )}
       aria-label={srLabel}
+      role={clickable ? "button" : undefined}
+      tabIndex={clickable ? 0 : undefined}
     >
       {icon}
       <span className="text-xs font-semibold text-foreground tabular-nums">
