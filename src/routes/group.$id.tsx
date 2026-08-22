@@ -116,13 +116,52 @@ function GroupSession() {
 
   useEffect(() => {
     void loadRef.current();
-    const poll = window.setInterval(() => void loadRef.current(), 3000);
+    // Backup poll: realtime is primary, this covers dropped sockets.
+    const poll = window.setInterval(() => void loadRef.current(), 5000);
     const tick = window.setInterval(() => setNow(Date.now()), 250);
     return () => {
       window.clearInterval(poll);
       window.clearInterval(tick);
     };
   }, [id]);
+
+  /**
+   * The backend is the single source of truth: any change to this group or its
+   * members pushes every device to refetch, so joins and the shared start time
+   * appear without a refresh. Reconnects and app resumes refetch as well.
+   */
+  useEffect(() => {
+    const channel = supabase
+      .channel(`group-${id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "group_members", filter: `group_id=eq.${id}` },
+        () => void loadRef.current(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "study_groups", filter: `id=eq.${id}` },
+        () => void loadRef.current(),
+      )
+      .subscribe((status) => {
+        // Re-sync after a reconnect.
+        if (status === "SUBSCRIBED") void loadRef.current();
+      });
+
+    const resync = () => {
+      if (document.visibilityState === "visible") void loadRef.current();
+    };
+    document.addEventListener("visibilitychange", resync);
+    window.addEventListener("online", resync);
+    window.addEventListener("focus", resync);
+    return () => {
+      document.removeEventListener("visibilitychange", resync);
+      window.removeEventListener("online", resync);
+      window.removeEventListener("focus", resync);
+      void supabase.removeChannel(channel);
+    };
+  }, [id]);
+
 
   const group = data?.group ?? null;
   const me = data?.me ?? null;
