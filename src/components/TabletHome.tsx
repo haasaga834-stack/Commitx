@@ -9,6 +9,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { CxCoin } from "@/components/CxCoin";
+import { CxCoinPopup } from "@/components/CxCoinPopup";
 import { DailyGoalProgress } from "@/components/DailyGoalProgress";
 import { GroupStudyCard } from "@/components/GroupStudyCard";
 import { SwipeToStart } from "@/components/SwipeToStart";
@@ -17,6 +18,7 @@ import cozyStudy from "@/assets/cozy-study.jpg";
 
 import { useAppState, stats } from "@/lib/commitx-store";
 import { dailyMessage } from "@/lib/daily-message";
+import { cn } from "@/lib/utils";
 import {
   usePlans,
   useTodos,
