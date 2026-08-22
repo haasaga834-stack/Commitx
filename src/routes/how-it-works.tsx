@@ -195,39 +195,36 @@ function HowItWorks() {
   );
 }
 
-function Section({
+function PolicyCard({
+  to,
   icon,
   title,
-  points,
+  description,
   delay,
-  children,
 }: {
+  to: string;
   icon: React.ReactNode;
   title: string;
-  points: string[];
+  description: string;
   delay: number;
-  children?: React.ReactNode;
 }) {
   return (
-    <section
-      className="rounded-3xl bg-card p-5 shadow-soft animate-fade-up"
+    <Link
+      to={to}
+      className="group flex items-center gap-4 rounded-3xl bg-card p-5 shadow-soft transition-transform animate-fade-up active:scale-[0.98]"
       style={{ animationDelay: `${delay}ms` }}
     >
-      <div className="flex items-center gap-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/15 text-primary">
-          {icon}
-        </span>
-        <h2 className="min-w-0 text-sm font-semibold text-foreground">{title}</h2>
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/15 text-primary transition-colors group-hover:bg-accent/25">
+        {icon}
+      </span>
+      <div className="min-w-0 flex-1">
+        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+        <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+          {description}
+        </p>
       </div>
-      <ul className="mt-3 space-y-2">
-        {points.map((p) => (
-          <li key={p} className="flex gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary/60" />
-            <span className="min-w-0">{p}</span>
-          </li>
-        ))}
-      </ul>
-      {children}
-    </section>
+      <ArrowLeft className="h-4 w-4 shrink-0 rotate-180 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+    </Link>
   );
 }
+
