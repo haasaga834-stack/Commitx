@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { ChevronLeft, Check, Copy, Play, ShieldCheck, Trash2, Users, X } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Hourglass } from "@/components/Hourglass";
 import { WindScape } from "@/components/WindScape";
 import { formatINR } from "@/lib/commitx-store";
@@ -143,7 +144,7 @@ function GroupSession() {
         { event: "*", schema: "public", table: "study_groups", filter: `id=eq.${id}` },
         () => void loadRef.current(),
       )
-      .subscribe((status) => {
+      .subscribe((status: string) => {
         // Re-sync after a reconnect.
         if (status === "SUBSCRIBED") void loadRef.current();
       });
