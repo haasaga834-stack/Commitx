@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Check, ChevronLeft, Copy, Play, ShieldCheck, Trash2, Users } from "lucide-react";
 import { formatINR } from "@/lib/commitx-store";
-import { MAX_GROUP_SIZE, memberStatusLabel } from "@/lib/group-study.shared";
+import { MAX_GROUP_SIZE, memberStatusLabel } from "@/lib/group-study";
 import type { GroupDTO, GroupMemberDTO } from "@/lib/group-study.shared";
 import { cn } from "@/lib/utils";
 
