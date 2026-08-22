@@ -2,9 +2,18 @@ import { supabase } from "@/integrations/supabase/client";
 
 type Bridge = {
   hasNativeGoogleSignIn?: () => boolean;
+  configureGoogleSignIn?: (clientId: string) => void;
   googleSignIn?: () => void;
   googleSignOut?: () => void;
 };
+
+/**
+ * Public Web (server) OAuth client ID. Not a secret — it is visible in every
+ * Google consent URL. Handed to older Android builds at runtime so the in-app
+ * account chooser works without reinstalling.
+ */
+export const GOOGLE_WEB_CLIENT_ID =
+  "1071070006682-q095d7588gsb7ap7joh8t1p5ls3epvtj.apps.googleusercontent.com";
 
 function bridge(): Bridge | null {
   if (typeof window === "undefined") return null;
@@ -15,6 +24,11 @@ function bridge(): Bridge | null {
 /** True when the Android shell can run Google Sign-In natively (no browser). */
 export function hasNativeGoogleSignIn(): boolean {
   const b = bridge();
+  try {
+    b?.configureGoogleSignIn?.(GOOGLE_WEB_CLIENT_ID);
+  } catch {
+    /* older shells without the setter still fall back below */
+  }
   try {
     return !!b?.googleSignIn && b.hasNativeGoogleSignIn?.() === true;
   } catch {
