@@ -198,13 +198,19 @@ export const getGroupState = createServerFn({ method: "GET" })
     };
   });
 
-/** Creator starts the shared timer for everyone. */
+/**
+ * Creator starts the shared timer for everyone.
+ * Idempotent: a second tap returns the already-running window instead of
+ * creating a conflicting one, and at least one other member must have joined.
+ */
 export const startGroup = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => z.object({ id: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }): Promise<{ started_at: string; ends_at: string }> => {
-    const { supabase, userId } = context;
-    const { data: group } = await supabase
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: group } = await supabaseAdmin
       .from("study_groups")
       .select("*")
       .eq("id", data.id)
@@ -216,18 +222,44 @@ export const startGroup = createServerFn({ method: "POST" })
     }
     if (group.status === "ended") throw new Error("This group session has already finished.");
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: members } = await supabaseAdmin
+      .from("group_members")
+      .select("user_id, status")
+      .eq("group_id", data.id);
+    const present = (members ?? []).filter((m: any) => m.status !== "left");
+    if (present.length < 2) {
+      throw new Error("Wait for at least one friend to join before starting.");
+    }
+
     const startedAt = new Date();
     const endsAt = new Date(startedAt.getTime() + group.duration_minutes * 60_000);
-    const { error } = await supabaseAdmin
+
+    // Conditional update — only the first tap flips the lobby to active.
+    const { data: updated, error } = await supabaseAdmin
       .from("study_groups")
       .update({
         status: "active",
         started_at: startedAt.toISOString(),
         ends_at: endsAt.toISOString(),
       })
-      .eq("id", data.id);
+      .eq("id", data.id)
+      .eq("status", "lobby")
+      .select("started_at, ends_at")
+      .maybeSingle();
     if (error) throw new Error("Could not start the session.");
+
+    if (!updated) {
+      // Someone else (a double tap) already started it — reuse that window.
+      const { data: current } = await supabaseAdmin
+        .from("study_groups")
+        .select("status, started_at, ends_at")
+        .eq("id", data.id)
+        .maybeSingle();
+      if (current?.status === "active" && current.started_at && current.ends_at) {
+        return { started_at: current.started_at, ends_at: current.ends_at };
+      }
+      throw new Error("Could not start the session.");
+    }
 
     await supabaseAdmin
       .from("group_members")
@@ -235,7 +267,10 @@ export const startGroup = createServerFn({ method: "POST" })
       .eq("group_id", data.id)
       .eq("status", "committed");
 
-    return { started_at: startedAt.toISOString(), ends_at: endsAt.toISOString() };
+    return {
+      started_at: updated.started_at as string,
+      ends_at: updated.ends_at as string,
+    };
   });
 
 /** Record this participant's outcome (left early, failed, or finished). */
