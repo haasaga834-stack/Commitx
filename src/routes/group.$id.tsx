@@ -126,7 +126,6 @@ function GroupSession() {
       setOffline(false);
       setError(null);
       return next;
-
     } catch (e) {
       // A temporary disconnect must never kill the timer — keep the last
       // known state and keep retrying.
@@ -186,7 +185,6 @@ function GroupSession() {
       void supabase.removeChannel(channel);
     };
   }, [id]);
-
 
   const group = data?.group ?? null;
   const me = data?.me ?? null;
