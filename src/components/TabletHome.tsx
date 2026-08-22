@@ -298,13 +298,22 @@ function Stat({
   icon,
   value,
   label,
+  clickable,
 }: {
   icon: ReactNode;
   value: string;
   label: string;
+  clickable?: boolean;
 }) {
   return (
-    <div className="flex items-center gap-2.5 rounded-2xl border border-hairline bg-card px-4 py-2.5 shadow-soft">
+    <div
+      className={cn(
+        "flex items-center gap-2.5 rounded-2xl border border-hairline bg-card px-4 py-2.5 shadow-soft",
+        clickable && "cursor-pointer transition-transform active:scale-95 hover:shadow-lift",
+      )}
+      role={clickable ? "button" : undefined}
+      tabIndex={clickable ? 0 : undefined}
+    >
       {icon}
       <span className="min-w-0">
         <span className="block text-sm font-semibold tabular-nums text-foreground">
