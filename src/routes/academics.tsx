@@ -194,42 +194,12 @@ function Academics() {
             </div>
           ) : null}
 
-          <div className="mt-3 space-y-2">
-            {!subjectsHydrated ? null : subjects.length === 0 ? (
-              <Empty>No subjects yet. Add one above to start tracking.</Empty>
-            ) : (
-              subjects.map((s) => (
-                <div
-                  key={s.id}
-                  className="flex items-center gap-2 rounded-2xl border border-hairline px-3 py-2.5"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-foreground">{s.name}</p>
-                    <p className="text-[11px] text-muted-foreground">
-                      {s.examDate ? `Exam ${s.examDate} · ${countdownLabel(s.examDate)}` : "No exam date"}
-                    </p>
-                  </div>
-                  <input
-                    type="date"
-                    value={s.examDate ?? ""}
-                    onChange={(e) =>
-                      run(() => updateSubject(s.id, { examDate: e.target.value || undefined }))
-                    }
-                    className="w-[7.5rem] shrink-0 rounded-xl border border-hairline bg-background px-2 py-1.5 text-[11px] outline-none"
-                    aria-label={`Exam date for ${s.name}`}
-                  />
-                  <button
-                    type="button"
-                    aria-label={`Remove ${s.name}`}
-                    onClick={() => run(() => removeSubject(s.id))}
-                    className="shrink-0 text-muted-foreground"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
+          {subjectsHydrated && subjects.length === 0 ? (
+            <p className="mt-3 rounded-2xl bg-muted/50 px-3 py-3 text-center text-[11px] text-muted-foreground">
+              Added subjects appear in Exam countdown and Revision tracking below.
+            </p>
+          ) : null}
+
         </Card>
 
         {/* Exam countdown ------------------------------------------------- */}
