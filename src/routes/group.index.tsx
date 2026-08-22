@@ -567,6 +567,15 @@ function GroupIndex() {
           </div>
         </div>
       )}
+      <ThemePicker
+        open={themeOpen}
+        starting={busy}
+        confirmLabel="Create group"
+        title="Choose the group's mood"
+        subtitle="Everyone in this group studies inside the scene you pick."
+        onCancel={() => setThemeOpen(false)}
+        onConfirm={(theme) => void createWithTheme(theme)}
+      />
     </div>
   );
 
