@@ -100,30 +100,37 @@ function GroupSession() {
   const doneRef = useRef(false);
   const graceRef = useRef<number | null>(null);
 
+  const hasDataRef = useRef(false);
+
   const load = useCallback(async () => {
     try {
       const next = await fetchState({ data: { id } });
       skewRef.current = next.serverNow - Date.now();
+      hasDataRef.current = true;
       setData(next);
       setOffline(false);
       setError(null);
+      return next;
     } catch (e) {
       // A temporary disconnect must never kill the timer — keep the last
       // known state and keep retrying.
-      if (data) setOffline(true);
+      if (hasDataRef.current) setOffline(true);
       else setError(e instanceof Error ? e.message : "Group not found.");
+      return null;
     }
-  }, [fetchState, id, data]);
+  }, [fetchState, id]);
+
+  const loadRef = useRef(load);
+  loadRef.current = load;
 
   useEffect(() => {
-    void load();
-    const poll = window.setInterval(() => void load(), 3000);
+    void loadRef.current();
+    const poll = window.setInterval(() => void loadRef.current(), 3000);
     const tick = window.setInterval(() => setNow(Date.now()), 250);
     return () => {
       window.clearInterval(poll);
       window.clearInterval(tick);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const group = data?.group ?? null;
