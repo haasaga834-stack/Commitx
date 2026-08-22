@@ -1,7 +1,17 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { ChevronLeft, Check, Copy, Play, ShieldCheck, Trash2, Users, X } from "lucide-react";
+import {
+  ChevronLeft,
+  Check,
+  Copy,
+  LogOut,
+  Play,
+  ShieldCheck,
+  Trash2,
+  Users,
+  X,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Hourglass } from "@/components/Hourglass";
 import { WindScape } from "@/components/WindScape";
@@ -9,6 +19,7 @@ import { formatINR } from "@/lib/commitx-store";
 import {
   cancelGroup,
   getGroupState,
+  leaveLobby,
   setMyGroupOutcome,
   startGroup,
 } from "@/lib/group-study.functions";
@@ -76,6 +87,7 @@ function GroupSession() {
   const start = useServerFn(startGroup);
   const finish = useServerFn(setMyGroupOutcome);
   const drop = useServerFn(cancelGroup);
+  const quit = useServerFn(leaveLobby);
 
   const [data, setData] = useState<GroupStateDTO | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -91,10 +103,13 @@ function GroupSession() {
   const skewRef = useRef(0);
   const doneRef = useRef(false);
   const graceRef = useRef<number | null>(null);
+  /** Set once this user cancels/leaves, so polling stops instead of erroring. */
+  const leftRef = useRef(false);
 
   const hasDataRef = useRef(false);
 
   const load = useCallback(async () => {
+    if (leftRef.current) return null;
     try {
       const next = await fetchState({ data: { id } });
       skewRef.current = next.serverNow - Date.now();
