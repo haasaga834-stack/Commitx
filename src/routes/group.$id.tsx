@@ -394,30 +394,26 @@ function GroupSession() {
             </p>
           ) : data!.isCreator ? (
             <>
+              {!canStart && (
+                <p className="mt-6 rounded-2xl bg-foreground/5 px-4 py-3 text-xs text-muted-foreground">
+                  At least one friend must join before you can start.
+                </p>
+              )}
+              {actionError && (
+                <p className="mt-4 rounded-2xl bg-destructive/10 px-4 py-2.5 text-xs text-destructive">
+                  {actionError}
+                </p>
+              )}
               <button
-                onClick={async () => {
-                  if (busy) return;
-                  setBusy(true);
-                  try {
-                    await start({ data: { id } });
-                    await load();
-                  } catch (e) {
-                    setError(e instanceof Error ? e.message : "Could not start.");
-                  } finally {
-                    setBusy(false);
-                  }
-                }}
-                disabled={busy}
-                className="mt-7 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-base font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.98] disabled:opacity-60"
+                onClick={onStart}
+                disabled={busy || !canStart}
+                className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-base font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.98] disabled:opacity-60"
               >
                 <Play className="h-4 w-4" />
                 {busy ? "Starting…" : "Start group session"}
               </button>
               <button
-                onClick={async () => {
-                  await drop({ data: { id } });
-                  navigate({ to: "/group" });
-                }}
+                onClick={onCancel}
                 className="mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-secondary px-6 py-3.5 text-sm font-medium text-secondary-foreground"
               >
                 <Trash2 className="h-4 w-4" />
