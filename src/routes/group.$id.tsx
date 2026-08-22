@@ -251,7 +251,9 @@ function GroupSession() {
       void navigator.clipboard?.writeText(group.code);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1500);
-    } catch {}
+    } catch {
+      setCopied(false);
+    }
   };
 
   const onStart = async () => {

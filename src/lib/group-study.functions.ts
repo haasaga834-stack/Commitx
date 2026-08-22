@@ -47,7 +47,7 @@ export const previewInvite = createServerFn({ method: "GET" })
     const { data: rows, error } = await supabaseAdmin.rpc("group_invite_preview", {
       _code: data.code.toUpperCase(),
     });
-    const row = (rows as any[] | null)?.[0];
+    const row = (rows as Array<Record<string, unknown>> | null)?.[0];
     if (error || !row) throw new Error("That invite code doesn't exist.");
 
     const { data: mine } = await supabaseAdmin
@@ -177,7 +177,7 @@ export const listMyGroups = createServerFn({ method: "GET" })
       .from("group_members")
       .select("group_id")
       .eq("user_id", userId);
-    const ids = (memberships ?? []).map((m: any) => m.group_id as string);
+    const ids = (memberships ?? []).map((membership) => membership.group_id);
     if (ids.length === 0) return [];
     const { data: groups } = await supabase
       .from("study_groups")
