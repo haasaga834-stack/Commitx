@@ -324,15 +324,22 @@ function TopChip({
   icon,
   value,
   srLabel,
+  clickable,
 }: {
   icon: ReactNode;
   value: string;
   srLabel: string;
+  clickable?: boolean;
 }) {
   return (
     <div
-      className="flex items-center gap-1.5 rounded-full bg-card px-3 py-2 shadow-soft"
+      className={cn(
+        "flex items-center gap-1.5 rounded-full bg-card px-3 py-2 shadow-soft",
+        clickable && "cursor-pointer transition-transform active:scale-95 hover:shadow-lift",
+      )}
       aria-label={srLabel}
+      role={clickable ? "button" : undefined}
+      tabIndex={clickable ? 0 : undefined}
     >
       {icon}
       <span className="text-xs font-semibold text-foreground tabular-nums">
