@@ -36,10 +36,18 @@ export function Hourglass({
   const BOT_Y_BASE = 148;
   const BOT_H = 56;
 
-  const topSandY = TOP_Y + TOP_H * p;
-  const topSandH = TOP_H * (1 - p);
-  const botSandH = BOT_H * p;
+  // Both bulbs are cones (widest at the caps, pinched at the neck), so sand
+  // AREA — what the eye reads — grows with the square of its height. Map the
+  // linear time progress through sqrt so the visible sand volume stays exactly
+  // proportional to remaining/total time (2h session, 30m left => 25% visible).
+  const topFill = Math.sqrt(1 - p); // fraction of the top cone's height still holding sand
+  const botFill = Math.sqrt(p); // fraction of the bottom cone's height filled
+
+  const topSandH = TOP_H * topFill;
+  const topSandY = TOP_Y + TOP_H - topSandH;
+  const botSandH = BOT_H * botFill;
   const botSandY = BOT_Y_BASE - botSandH;
+
 
   return (
     <div
@@ -99,7 +107,7 @@ export function Hourglass({
             <ellipse
               cx="60"
               cy={topSandY + 0.5}
-              rx={16 * (1 - p) + 3}
+              rx={16 * topFill + 3}
               ry="2"
               fill="var(--color-background)"
               opacity="0.5"
@@ -123,8 +131,8 @@ export function Hourglass({
             <ellipse
               cx="60"
               cy={botSandY + 2}
-              rx={14 + 12 * p}
-              ry={3 + 2 * p}
+              rx={14 + 12 * botFill}
+              ry={3 + 2 * botFill}
               fill="url(#cxSandGrad)"
             />
           </g>
