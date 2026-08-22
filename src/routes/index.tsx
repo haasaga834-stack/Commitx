@@ -9,6 +9,7 @@ import { GroupStudyCard } from "@/components/GroupStudyCard";
 import { SwipeToStart } from "@/components/SwipeToStart";
 import { TabletHome } from "@/components/TabletHome";
 import { useIsTablet } from "@/lib/use-tablet";
+import { cn } from "@/lib/utils";
 import cozyStudy from "@/assets/cozy-study.jpg";
 
 import { useAppState, stats } from "@/lib/commitx-store";
