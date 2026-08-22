@@ -459,10 +459,7 @@ export type Database = {
           status: string
         }[]
       }
-      is_group_participant: {
-        Args: { _group_id: string; _user_id: string }
-        Returns: boolean
-      }
+      i_am_group_participant: { Args: { _group_id: string }; Returns: boolean }
       join_study_group: {
         Args: { _code: string; _user_id: string }
         Returns: string
