@@ -613,12 +613,28 @@ function LiveSession() {
   useEffect(() => {
     if (doneRef.current) return;
     const label = mode === "verified" ? "Verified session" : "Standard session";
+    if (phase === "recovery_break") {
+      showSessionProgress(
+        `Wellness break \u00B7 ${fmt(breakRemaining)} left`,
+        "Breathe, stretch, walk. Study time is paused.",
+        progress * 100,
+      );
+      return;
+    }
+    if (phase === "awaiting_confirmation") {
+      showSessionProgress(
+        `Break finished \u00B7 ${confirmRemaining}s to continue`,
+        "Return to CommitX and tap Continue Session.",
+        progress * 100,
+      );
+      return;
+    }
     showSessionProgress(
       `${label} \u00B7 ${fmt(remaining)} left`,
       `${goal} \u00B7 ${Math.round(progress * 100)}% of ${duration} min complete`,
       progress * 100,
     );
-  }, [remaining, progress, goal, duration, mode]);
+  }, [remaining, progress, goal, duration, mode, phase, breakRemaining, confirmRemaining]);
 
   useEffect(() => () => hideSessionProgress(), []);
 
