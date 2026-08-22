@@ -95,13 +95,13 @@ export const joinGroup = createServerFn({ method: "POST" })
       })
       .parse(data),
   )
-  .handler(async ({ data, context }): Promise<{ id: string }> => {
+  .handler(async ({ data, context }): Promise<{ id: string } | { error: string }> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: id, error } = await supabaseAdmin.rpc("join_study_group", {
       _user_id: context.userId,
       _code: data.code.toUpperCase(),
     });
-    if (error || !id) throw new Error(error?.message || "Could not join this group.");
+    if (error || !id) return { error: error?.message || "Could not join this group." };
     return { id: id as string };
   });
 

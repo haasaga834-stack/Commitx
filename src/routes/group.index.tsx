@@ -75,6 +75,10 @@ function GroupIndex() {
       const res = await create({
         data: { goal: "Group Study", duration, value, mode },
       });
+      if ("error" in res) {
+        setError(res.error);
+        return;
+      }
       navigate({ to: "/group/$id", params: { id: res.id } });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not create the group.");
