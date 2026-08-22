@@ -426,13 +426,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      cancel_study_group: { Args: { _group_id: string }; Returns: boolean }
+      cancel_study_group: {
+        Args: { _group_id: string; _user_id: string }
+        Returns: boolean
+      }
       community_food_coins: { Args: never; Returns: number }
       create_study_group: {
         Args: {
           _duration: number
           _goal: string
           _mode: string
+          _user_id: string
           _value: number
         }
         Returns: {
@@ -455,7 +459,10 @@ export type Database = {
           status: string
         }[]
       }
-      join_study_group: { Args: { _code: string }; Returns: string }
+      join_study_group: {
+        Args: { _code: string; _user_id: string }
+        Returns: string
+      }
       leaderboard_top: {
         Args: { _limit?: number }
         Returns: {
@@ -465,15 +472,15 @@ export type Database = {
         }[]
       }
       settle_expired_study_group: {
-        Args: { _group_id: string }
+        Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
       settle_study_group_member: {
-        Args: { _group_id: string; _status: string }
+        Args: { _group_id: string; _status: string; _user_id: string }
         Returns: string
       }
       start_study_group: {
-        Args: { _group_id: string }
+        Args: { _group_id: string; _user_id: string }
         Returns: {
           ends_at: string
           started_at: string
