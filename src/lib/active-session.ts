@@ -23,11 +23,18 @@ async function currentUserId() {
   }
 }
 
-/** Rows older than the committed duration + 4h are abandoned leftovers. */
+/**
+ * A row only represents a genuinely running session while its own window is
+ * still open. 30 minutes of slack covers recovery breaks; anything past that is
+ * an abandoned leftover (app killed, crash, forced close) and must never block
+ * a new commitment.
+ */
+const STALE_GRACE_MS = 30 * 60_000;
+
 function isStale(row: ActiveDbSession) {
   const started = new Date(row.started_at).getTime();
   if (!Number.isFinite(started)) return true;
-  return Date.now() - started > row.duration_minutes * 60_000 + 4 * 60 * 60_000;
+  return Date.now() - started > row.duration_minutes * 60_000 + STALE_GRACE_MS;
 }
 
 /** Returns the live active session for this user, cleaning up stale rows. */

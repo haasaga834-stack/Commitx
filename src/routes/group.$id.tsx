@@ -270,7 +270,8 @@ function GroupSession() {
   }
 
   const active = data!.members.filter((m) => m.status !== "left");
-  const canStart = active.length >= 2;
+  // Only the host starts, and never alone.
+  const canStart = data!.isCreator && active.length >= 2;
 
   const copyCode = () => {
     try {
@@ -283,7 +284,8 @@ function GroupSession() {
   };
 
   const onStart = async () => {
-    if (busy) return;
+    // Guards double-taps and non-host taps; the server enforces both too.
+    if (busy || !data!.isCreator || group.status !== "lobby") return;
     setBusy(true);
     setActionError(null);
     try {
