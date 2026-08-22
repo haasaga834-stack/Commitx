@@ -84,6 +84,7 @@ const VERIFIED_GRACE_MS = 60_000;
 function GroupSession() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
+  const isTablet = useIsTablet();
   const fetchState = useServerFn(getGroupState);
   const start = useServerFn(startGroup);
   const finish = useServerFn(setMyGroupOutcome);
