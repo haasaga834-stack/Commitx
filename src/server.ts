@@ -1,4 +1,5 @@
 import "./lib/error-capture";
+import "./lib/server-fn-registry";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
