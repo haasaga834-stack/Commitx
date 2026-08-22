@@ -89,13 +89,17 @@ function Academics() {
 
   const suggestions = useMemo(() => suggestedSubjects(plans, subjects), [plans, subjects]);
 
-  const exams = useMemo(
+  const ordered = useMemo<Subject[]>(
     () =>
-      subjects
-        .filter((s): s is Subject & { examDate: string } => Boolean(s.examDate))
-        .sort((a, b) => daysUntil(a.examDate) - daysUntil(b.examDate)),
+      [...subjects].sort((a, b) => {
+        if (a.examDate && b.examDate) return daysUntil(a.examDate) - daysUntil(b.examDate);
+        if (a.examDate) return -1;
+        if (b.examDate) return 1;
+        return a.name.localeCompare(b.name);
+      }),
     [subjects],
   );
+
 
   const revisedCount = subjects.filter((s) => s.revised).length;
 
