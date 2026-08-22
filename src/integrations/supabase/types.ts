@@ -434,34 +434,20 @@ export type Database = {
         Returns: boolean
       }
       community_food_coins: { Args: never; Returns: number }
-      create_study_group:
-        | {
-            Args: {
-              _duration: number
-              _goal: string
-              _mode: string
-              _user_id: string
-              _value: number
-            }
-            Returns: {
-              code: string
-              id: string
-            }[]
-          }
-        | {
-            Args: {
-              _duration: number
-              _goal: string
-              _mode: string
-              _theme?: string
-              _user_id: string
-              _value: number
-            }
-            Returns: {
-              code: string
-              id: string
-            }[]
-          }
+      create_study_group: {
+        Args: {
+          _duration: number
+          _goal: string
+          _mode: string
+          _theme?: string
+          _user_id: string
+          _value: number
+        }
+        Returns: {
+          code: string
+          id: string
+        }[]
+      }
       generate_referral_code: { Args: never; Returns: string }
       group_display_name: { Args: { _user_id: string }; Returns: string }
       group_invite_preview: {
