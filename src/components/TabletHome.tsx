@@ -80,11 +80,14 @@ export function TabletHome() {
         </div>
 
         <div className="flex shrink-0 items-center gap-3">
-          <Stat
-            icon={<CxCoin className="h-5 w-5" />}
-            value={hydrated ? String(s.cxCoins) : "—"}
-            label="Cx Coins"
-          />
+          <CxCoinPopup coins={s.cxCoins} hydrated={hydrated}>
+            <Stat
+              icon={<CxCoin className="h-5 w-5" />}
+              value={hydrated ? String(s.cxCoins) : "—"}
+              label="Cx Coins"
+              clickable
+            />
+          </CxCoinPopup>
           <Stat
             icon={<Flame className="h-5 w-5 text-accent" />}
             value={hydrated ? String(s.streak) : "—"}
