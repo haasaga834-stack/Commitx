@@ -158,244 +158,241 @@ function GroupIndex() {
     }
   }
 
-  const page = (
-    <div className={cn("min-h-screen pb-16", isTablet && "min-h-0 pb-0")}>
-      <div
-        className={cn(
-          "mx-auto max-w-md px-6 pt-14",
-          isTablet &&
-            "grid max-w-none grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] items-start gap-x-8 px-0 pt-0",
-        )}
-      >
-        <div className={cn(isTablet && "col-span-2")}>
-          <div className="flex items-center justify-between">
-            <Link
-              to="/"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-soft"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Link>
-            <p className="text-xs uppercase tracking-widest text-muted-foreground">Group study</p>
-            <div className="w-10" />
-          </div>
+  const header = (
+    <div>
+      <div className="flex items-center justify-between">
+        <Link
+          to="/"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-soft"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </Link>
+        <p className="text-xs uppercase tracking-widest text-muted-foreground">Group study</p>
+        <div className="w-10" />
+      </div>
 
-          <h1 className="mt-8 font-display text-3xl font-semibold">Lock in with your people. 🎯</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Pick a time, commit together, and see who makes it to the finish.
+      <h1
+        className={cn("mt-8 font-display text-3xl font-semibold", isTablet && "mt-6 text-[2rem]")}
+      >
+        Lock in with your people. 🎯
+      </h1>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Pick a time, commit together, and see who makes it to the finish.
+      </p>
+    </div>
+  );
+
+  const unfinishedCard = openGroup ? (
+    <section className="rounded-3xl border border-primary/40 bg-card p-5 shadow-soft">
+      <h2 className="font-display text-base font-semibold">You have an unfinished group</h2>
+      <p className="mt-1 text-xs text-muted-foreground">
+        {openGroup.status === "active"
+          ? "Your group session is running — jump back in to keep your commitment."
+          : `Waiting in the lobby · code ${openGroup.code}`}
+        {openGroup.isHost ? " · you're the host" : ""}
+      </p>
+      <Link
+        to="/group/$id"
+        params={{ id: openGroup.id }}
+        className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-medium text-primary-foreground shadow-soft"
+      >
+        {openGroup.status === "active" ? "Rejoin session" : "Open lobby"}
+        <ArrowRight className="h-4 w-4" />
+      </Link>
+      <p className="mt-3 text-[11px] text-muted-foreground">
+        One group at a time — finish, leave or cancel this one before starting another.
+      </p>
+    </section>
+  ) : null;
+
+  const groupsCard =
+    groups.length > 0 ? (
+      <section className="rounded-3xl border border-hairline bg-card p-5 shadow-soft">
+        <h2 className="font-display text-base font-semibold">Your groups</h2>
+        <ul className="mt-3 divide-y divide-hairline">
+          {groups.map((g) => (
+            <li key={g.id}>
+              <Link to="/group/$id" params={{ id: g.id }} className="flex items-center gap-3 py-3">
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium text-foreground">
+                    {g.goal} · {fmtDuration(g.duration_minutes)}
+                  </span>
+                  <span className="block text-[11px] text-muted-foreground">
+                    {formatINR(g.commit_value)} each · {g.mode === "verified" ? "Verified" : "Standard"}{" "}
+                    · {g.status === "active" ? "Running" : "Waiting"}
+                  </span>
+                </span>
+                <ArrowRight className="h-4 w-4 shrink-0 text-primary" />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ) : null;
+
+  const createCard = (
+    <section
+      className={cn(
+        "rounded-3xl border border-hairline bg-card p-5 shadow-soft",
+        isTablet && "p-6",
+      )}
+    >
+      <div className="flex items-center gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/15 text-primary">
+          <Users className="h-4.5 w-4.5" />
+        </span>
+        <div className="min-w-0">
+          <h2 className="font-display text-base font-semibold">Create a group</h2>
+          <p className="text-[11px] text-muted-foreground">
+            You + up to 4 friends ({MAX_GROUP_SIZE} max)
           </p>
         </div>
-
-        {/* Unfinished group — always a way back in */}
-        {openGroup && (
-          <section
-            className={cn(
-              "mt-7 rounded-3xl border border-primary/40 bg-card p-5 shadow-soft",
-              isTablet && "col-start-1",
-            )}
-          >
-            <h2 className="font-display text-base font-semibold">You have an unfinished group</h2>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {openGroup.status === "active"
-                ? "Your group session is running — jump back in to keep your commitment."
-                : `Waiting in the lobby · code ${openGroup.code}`}
-              {openGroup.isHost ? " · you're the host" : ""}
-            </p>
-            <Link
-              to="/group/$id"
-              params={{ id: openGroup.id }}
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-medium text-primary-foreground shadow-soft"
-            >
-              {openGroup.status === "active" ? "Rejoin session" : "Open lobby"}
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <p className="mt-3 text-[11px] text-muted-foreground">
-              One group at a time — finish, leave or cancel this one before starting another.
-            </p>
-          </section>
-        )}
-
-        {/* Open groups */}
-        {groups.length > 0 && (
-          <section
-            className={cn(
-              "mt-7 rounded-3xl border border-hairline bg-card p-5 shadow-soft",
-              isTablet && "col-start-1",
-            )}
-          >
-            <h2 className="font-display text-base font-semibold">Your groups</h2>
-            <ul className="mt-3 divide-y divide-hairline">
-              {groups.map((g) => (
-                <li key={g.id}>
-                  <Link
-                    to="/group/$id"
-                    params={{ id: g.id }}
-                    className="flex items-center gap-3 py-3"
-                  >
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium text-foreground">
-                        {g.goal} · {fmtDuration(g.duration_minutes)}
-                      </span>
-                      <span className="block text-[11px] text-muted-foreground">
-                        {formatINR(g.commit_value)} each ·{" "}
-                        {g.mode === "verified" ? "Verified" : "Standard"} ·{" "}
-                        {g.status === "active" ? "Running" : "Waiting"}
-                      </span>
-                    </span>
-                    <ArrowRight className="h-4 w-4 shrink-0 text-primary" />
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {/* Create */}
-        <section
-          className={cn(
-            "mt-5 rounded-3xl border border-hairline bg-card p-5 shadow-soft",
-            isTablet && "col-start-2 row-start-2 row-span-2 mt-7 p-7",
-          )}
-        >
-          <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/15 text-primary">
-              <Users className="h-4.5 w-4.5" />
-            </span>
-            <div>
-              <h2 className="font-display text-base font-semibold">Create a group</h2>
-              <p className="text-[11px] text-muted-foreground">
-                You + up to 4 friends ({MAX_GROUP_SIZE} max)
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-5">
-            <div className="flex items-baseline justify-between">
-              <Label>Duration</Label>
-              <span className="font-display text-xl font-semibold text-primary">
-                {fmtDuration(duration)}
-              </span>
-            </div>
-            <input
-              type="range"
-              min={10}
-              max={360}
-              step={5}
-              value={duration}
-              onChange={(e) => setDuration(Number(e.target.value))}
-              className="mt-3 w-full accent-[color:var(--color-primary)]"
-            />
-          </div>
-
-          <div className="mt-5">
-            <div className="flex items-baseline justify-between">
-              <Label>Commitment each</Label>
-              <span className="text-[11px] text-muted-foreground">
-                {formatINR(MIN_COMMIT)} – {formatINR(MAX_COMMIT)}
-              </span>
-            </div>
-            <div className="mt-3 flex items-center rounded-2xl border border-hairline bg-background px-4 py-3">
-              <span className="text-muted-foreground">₹</span>
-              <input
-                type="number"
-                min={MIN_COMMIT}
-                max={MAX_COMMIT}
-                value={value}
-                onChange={(e) =>
-                  setValue(
-                    Math.min(
-                      MAX_COMMIT,
-                      Math.max(MIN_COMMIT, Math.round(Number(e.target.value) || 0)),
-                    ),
-                  )
-                }
-                className="ml-2 w-full bg-transparent text-lg font-medium outline-none"
-              />
-            </div>
-            <p className="mt-2 text-[11px] text-muted-foreground">
-              Demo balance: {hydrated ? formatINR(state.balances.demo) : "—"}
-            </p>
-          </div>
-
-          <div className="mt-5">
-            <Label>Session type</Label>
-            <div className="mt-3 grid grid-cols-2 gap-3">
-              {(["standard", "verified"] as const).map((m) => (
-                <button
-                  key={m}
-                  onClick={() => setMode(m)}
-                  className={cn(
-                    "rounded-2xl border px-4 py-3 text-left text-sm transition-all",
-                    mode === m
-                      ? "border-primary bg-card shadow-lift"
-                      : "border-hairline bg-background",
-                  )}
-                >
-                  <span className="flex items-center gap-1.5 font-medium capitalize">
-                    {m === "verified" ? (
-                      <ShieldCheck className="h-4 w-4 text-primary" />
-                    ) : (
-                      <Clock className="h-4 w-4 text-primary" />
-                    )}
-                    {m}
-                  </span>
-                  <span className="mt-1 block text-[11px] text-muted-foreground">
-                    {m === "verified"
-                      ? "Leaving the app fails you"
-                      : "Flexible, leaving early fails you"}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {error && (
-            <p className="mt-4 rounded-2xl bg-destructive/10 px-4 py-2 text-xs text-destructive">
-              {error}
-            </p>
-          )}
-
-          <button
-            onClick={onCreate}
-            disabled={busy || !!openGroup}
-            className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-sm font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.98] disabled:opacity-60"
-          >
-            {openGroup
-              ? "Finish your current group first"
-              : busy
-                ? "Working…"
-                : "Create group & invite friends"}
-            <ArrowRight className="h-4 w-4" />
-          </button>
-        </section>
-
-        {/* Join */}
-        <section
-          className={cn(
-            "mt-5 rounded-3xl border border-hairline bg-card p-5 shadow-soft",
-            isTablet && "col-start-1",
-          )}
-        >
-          <h2 className="font-display text-base font-semibold">Join with a code</h2>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Got an invite? Enter the 6-character code to see the terms.
-          </p>
-          <div className="mt-3 flex gap-2">
-            <input
-              value={code}
-              onChange={(e) => setCode(e.target.value.toUpperCase().slice(0, 6))}
-              placeholder="ABC123"
-              className="w-full rounded-2xl border border-hairline bg-background px-4 py-3 text-base font-semibold uppercase tracking-widest outline-none focus:border-primary"
-            />
-            <button
-              onClick={onPreview}
-              disabled={busy || !!openGroup || code.trim().length < 4}
-              className="shrink-0 rounded-2xl bg-secondary px-5 text-sm font-medium text-secondary-foreground disabled:opacity-50"
-            >
-              View
-            </button>
-          </div>
-        </section>
       </div>
+
+      <div className="mt-5">
+        <div className="flex items-baseline justify-between gap-3">
+          <Label>Duration</Label>
+          <span className="font-display text-xl font-semibold text-primary tabular-nums">
+            {fmtDuration(duration)}
+          </span>
+        </div>
+        <input
+          type="range"
+          min={10}
+          max={360}
+          step={5}
+          value={duration}
+          onChange={(e) => setDuration(Number(e.target.value))}
+          className="mt-3 w-full accent-[color:var(--color-primary)]"
+        />
+      </div>
+
+      <div className="mt-5">
+        <div className="flex items-baseline justify-between gap-3">
+          <Label>Commitment each</Label>
+          <span className="text-[11px] text-muted-foreground">
+            {formatINR(MIN_COMMIT)} – {formatINR(MAX_COMMIT)}
+          </span>
+        </div>
+        <div className="mt-3 flex items-center rounded-2xl border border-hairline bg-background px-4 py-3">
+          <span className="text-muted-foreground">₹</span>
+          <input
+            type="number"
+            min={MIN_COMMIT}
+            max={MAX_COMMIT}
+            value={value}
+            onChange={(e) =>
+              setValue(
+                Math.min(MAX_COMMIT, Math.max(MIN_COMMIT, Math.round(Number(e.target.value) || 0))),
+              )
+            }
+            className="ml-2 w-full bg-transparent text-lg font-medium outline-none"
+          />
+        </div>
+        <p className="mt-2 text-[11px] text-muted-foreground">
+          Demo balance: {hydrated ? formatINR(state.balances.demo) : "—"}
+        </p>
+      </div>
+
+      <div className="mt-5">
+        <Label>Session type</Label>
+        <div className="mt-3 grid grid-cols-2 gap-3">
+          {(["standard", "verified"] as const).map((m) => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className={cn(
+                "rounded-2xl border px-4 py-3 text-left text-sm transition-all",
+                mode === m ? "border-primary bg-card shadow-lift" : "border-hairline bg-background",
+              )}
+            >
+              <span className="flex items-center gap-1.5 font-medium capitalize">
+                {m === "verified" ? (
+                  <ShieldCheck className="h-4 w-4 text-primary" />
+                ) : (
+                  <Clock className="h-4 w-4 text-primary" />
+                )}
+                {m}
+              </span>
+              <span className="mt-1 block text-[11px] text-muted-foreground">
+                {m === "verified"
+                  ? "Leaving the app fails you"
+                  : "Flexible, leaving early fails you"}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {error && (
+        <p className="mt-4 rounded-2xl bg-destructive/10 px-4 py-2 text-xs text-destructive">
+          {error}
+        </p>
+      )}
+
+      <button
+        onClick={onCreate}
+        disabled={busy || !!openGroup}
+        className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-sm font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.98] disabled:opacity-60"
+      >
+        {openGroup
+          ? "Finish your current group first"
+          : busy
+            ? "Working…"
+            : "Create group & invite friends"}
+        <ArrowRight className="h-4 w-4" />
+      </button>
+    </section>
+  );
+
+  const joinCard = (
+    <section className="rounded-3xl border border-hairline bg-card p-5 shadow-soft">
+      <h2 className="font-display text-base font-semibold">Join with a code</h2>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Got an invite? Enter the 6-character code to see the terms.
+      </p>
+      <div className="mt-3 flex gap-2">
+        <input
+          value={code}
+          onChange={(e) => setCode(e.target.value.toUpperCase().slice(0, 6))}
+          placeholder="ABC123"
+          className="min-w-0 flex-1 rounded-2xl border border-hairline bg-background px-4 py-3 text-base font-semibold uppercase tracking-widest outline-none focus:border-primary"
+        />
+        <button
+          onClick={onPreview}
+          disabled={busy || !!openGroup || code.trim().length < 4}
+          className="shrink-0 rounded-2xl bg-secondary px-5 text-sm font-medium text-secondary-foreground disabled:opacity-50"
+        >
+          View
+        </button>
+      </div>
+    </section>
+  );
+
+  const page = (
+    <div className={cn("min-h-screen pb-16", isTablet && "min-h-0 pb-0")}>
+      {isTablet ? (
+        <div className="mx-auto w-full max-w-5xl">
+          {header}
+          <div className="mt-8 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start gap-6">
+            <div className="flex flex-col gap-6">
+              {unfinishedCard}
+              {joinCard}
+              {groupsCard}
+            </div>
+            <div className="flex flex-col gap-6">{createCard}</div>
+          </div>
+        </div>
+      ) : (
+        <div className="mx-auto flex max-w-md flex-col gap-5 px-6 pt-14">
+          {header}
+          {unfinishedCard}
+          {groupsCard}
+          {createCard}
+          {joinCard}
+        </div>
+      )}
+
 
       {/* Terms sheet — a friend must accept and commit before joining */}
       {terms && (
