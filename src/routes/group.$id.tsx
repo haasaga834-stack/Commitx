@@ -23,7 +23,6 @@ import {
 import {
   MAX_GROUP_SIZE,
   memberStatusLabel,
-  recordGroupOutcome,
   type GroupStateDTO,
 } from "@/lib/group-study";
 import { setNativeSessionLock } from "@/lib/native-session";
@@ -169,21 +168,20 @@ function GroupSession() {
   useEffect(() => () => hideSessionProgress(), []);
 
   const settle = useCallback(
-    (status: "completed" | "failed", reason?: string) => {
+    async (status: "completed" | "failed", reason?: string) => {
       if (doneRef.current || !group) return;
       doneRef.current = true;
       setNativeSessionLock(false);
       hideSessionProgress();
-      recordGroupOutcome({
-        goal: group.goal,
-        duration: group.duration_minutes,
-        value: group.commit_value,
-        mode: group.mode,
-        status,
-      });
-      void finish({
-        data: { id, status: status === "completed" ? "completed" : "failed" },
-      }).catch(() => {});
+      try {
+        await finish({
+          data: { id, status: status === "completed" ? "completed" : "failed" },
+        });
+      } catch (e) {
+        doneRef.current = false;
+        setActionError(e instanceof Error ? e.message : "Could not finish the session.");
+        return;
+      }
       navigate({
         to: status === "completed" ? "/success" : "/failed",
         search: {
@@ -200,7 +198,7 @@ function GroupSession() {
   /** Timer finished on the server clock → everyone who stayed succeeds. */
   useEffect(() => {
     if (!isActive || !stillIn || remainingMs === null) return;
-    if (remainingMs <= 0) settle("completed");
+    if (remainingMs <= 0) void settle("completed");
   }, [isActive, stillIn, remainingMs, settle]);
 
   /** Verified enforcement: leaving the app fails this participant. */
@@ -215,7 +213,7 @@ function GroupSession() {
     const onHidden = () => {
       if (graceRef.current) return;
       graceRef.current = window.setTimeout(
-        () => settle("failed", "app_switch"),
+        () => void settle("failed", "app_switch"),
         VERIFIED_GRACE_MS,
       );
     };
@@ -224,7 +222,7 @@ function GroupSession() {
       else onHidden();
     };
     const onPageHide = (e: PageTransitionEvent) => {
-      if (!e.persisted) settle("failed", "browser_unload");
+      if (!e.persisted) void settle("failed", "browser_unload");
     };
 
     document.addEventListener("visibilitychange", onVisible);
@@ -293,10 +291,16 @@ function GroupSession() {
   };
 
   const onCancel = async () => {
+    if (busy) return;
+    setBusy(true);
+    setActionError(null);
     try {
       await drop({ data: { id } });
-    } catch {}
-    navigate({ to: "/group" });
+      navigate({ to: "/group" });
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : "Could not cancel the group.");
+      setBusy(false);
+    }
   };
 
   /* ------------------------------- Lobby ------------------------------- */
@@ -531,7 +535,7 @@ function GroupSession() {
                   Keep focusing
                 </button>
                 <button
-                  onClick={() => settle("failed", "quit")}
+                  onClick={() => void settle("failed", "quit")}
                   className="rounded-2xl bg-destructive px-4 py-3 text-sm font-medium text-destructive-foreground"
                 >
                   Leave anyway
@@ -629,7 +633,7 @@ function GroupSession() {
                 Keep focusing
               </button>
               <button
-                onClick={() => settle("failed", "quit")}
+              onClick={() => void settle("failed", "quit")}
                 className="rounded-2xl bg-destructive px-4 py-3 text-sm font-medium text-destructive-foreground"
               >
                 Leave anyway

@@ -52,7 +52,7 @@ export function GroupLobbyTablet({
           </p>
         </div>
 
-        <header className="mt-10 flex flex-wrap items-end justify-between gap-6">
+        <header className="mt-10 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-6">
           <div className="min-w-0">
             <h1 className="font-display text-5xl font-semibold leading-tight">
               {group.goal}
@@ -72,7 +72,7 @@ export function GroupLobbyTablet({
           </div>
         </header>
 
-        <div className="mt-10 grid grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] items-start gap-8">
+        <div className="mt-10 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
           {/* Participants */}
           <section className="rounded-4xl border border-hairline bg-card p-8 shadow-soft">
             <h2 className="font-display text-xl font-semibold">Participants</h2>
