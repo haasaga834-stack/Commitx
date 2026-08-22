@@ -293,5 +293,26 @@ export const cancelGroup = createServerFn({ method: "POST" })
       _group_id: data.id,
     });
     if (error) throw new Error(error.message || "Could not cancel the group.");
+    // Nothing may keep holding this user's demo money afterwards.
+    await supabaseAdmin
+      .rpc("release_stale_commitments", { _user_id: context.userId })
+      .then(() => undefined, () => undefined);
+    return { ok: true };
+  });
+
+/**
+ * Leave a waiting room that hasn't started yet: the seat is freed and the hold
+ * released with no penalty, so the user can create or join another group.
+ */
+export const leaveLobby = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => z.object({ id: z.string().uuid() }).parse(data))
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.rpc("leave_study_lobby", {
+      _user_id: context.userId,
+      _group_id: data.id,
+    });
+    if (error) throw new Error(error.message || "Could not leave the group.");
     return { ok: true };
   });
