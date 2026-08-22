@@ -705,7 +705,7 @@ function LiveSession() {
             size={260}
             state={onBreak ? "idle" : "running"}
             progress={progress}
-            className="animate-none"
+            floating={false}
           />
         </div>
         <div className="mx-auto flex w-[18rem] flex-col items-center text-center">
