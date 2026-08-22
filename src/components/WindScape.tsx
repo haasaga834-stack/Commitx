@@ -237,7 +237,7 @@ export function WindScape({
         style={{ animationDelay: "-7s", animationDuration: "24s" }}
       />
 
-      {/* Layered painted hills */}
+      {/* Layered painted hills - kept low so they stay beneath the timer */}
       <svg
         className="absolute inset-x-0 bottom-0 block w-full"
         viewBox="0 0 400 140"
@@ -245,16 +245,17 @@ export function WindScape({
         fill="none"
       >
         <path
-          d="M0 84c52-24 88 8 138-8 48-15 78-30 122-12 40 16 76 6 140-14v90H0V84Z"
+          d="M0 96c52-18 88 4 138-6 48-11 78-22 122-9 40 12 76 4 140-10v69H0V96Z"
           fill="var(--color-primary)"
           opacity="0.10"
         />
         <path
-          d="M0 104c58-16 98 10 158-4 54-13 96-16 144 4 34 14 66 10 98 2v34H0v-36Z"
+          d="M0 114c58-12 98 6 158-3 54-10 96-12 144 3 34 10 66 7 98 2v24H0v-26Z"
           fill="var(--color-primary)"
           opacity="0.16"
         />
       </svg>
+
 
       {/* Swaying grass along the ground */}
       <div className="absolute inset-x-0 bottom-0 h-40">
