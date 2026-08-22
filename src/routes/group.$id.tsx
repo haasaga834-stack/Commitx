@@ -1,16 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import {
-  ChevronLeft,
-  Check,
-  Copy,
-  Play,
-  ShieldCheck,
-  Trash2,
-  Users,
-  X,
-} from "lucide-react";
+import { ChevronLeft, Check, Copy, Play, ShieldCheck, Trash2, Users, X } from "lucide-react";
 import { Hourglass } from "@/components/Hourglass";
 import { WindScape } from "@/components/WindScape";
 import { formatINR } from "@/lib/commitx-store";
@@ -20,11 +11,7 @@ import {
   setMyGroupOutcome,
   startGroup,
 } from "@/lib/group-study.functions";
-import {
-  MAX_GROUP_SIZE,
-  memberStatusLabel,
-  type GroupStateDTO,
-} from "@/lib/group-study";
+import { MAX_GROUP_SIZE, memberStatusLabel, type GroupStateDTO } from "@/lib/group-study";
 import { setNativeSessionLock } from "@/lib/native-session";
 import { showSessionProgress, hideSessionProgress } from "@/lib/native-notifications";
 import { useIsTablet } from "@/lib/use-tablet";
@@ -145,8 +132,7 @@ function GroupSession() {
   const serverTime = now + skewRef.current;
   const remainingMs = endsAt ? Math.max(0, endsAt - serverTime) : null;
   const totalMs = (group?.duration_minutes ?? 0) * 60_000;
-  const progress =
-    remainingMs !== null && totalMs > 0 ? 1 - remainingMs / totalMs : 0;
+  const progress = remainingMs !== null && totalMs > 0 ? 1 - remainingMs / totalMs : 0;
   const stillIn = me?.status === "committed" || me?.status === "joined";
 
   /** Native lock + progress notification while the shared timer runs. */
@@ -349,8 +335,8 @@ function GroupSession() {
           <section className="mt-6 rounded-3xl border border-hairline bg-card p-5 shadow-soft">
             <h2 className="font-display text-base font-semibold">Invite friends</h2>
             <p className="mt-1 text-xs text-muted-foreground">
-              Share this code. Friends accept the terms and commit the same amount to
-              join. Max {MAX_GROUP_SIZE} people.
+              Share this code. Friends accept the terms and commit the same amount to join. Max{" "}
+              {MAX_GROUP_SIZE} people.
             </p>
             <button
               onClick={copyCode}
@@ -428,8 +414,7 @@ function GroupSession() {
             </>
           ) : (
             <p className="mt-7 rounded-2xl bg-accent/10 px-4 py-3.5 text-sm text-primary">
-              You're committed. The host starts the shared timer — keep this screen
-              open.
+              You're committed. The host starts the shared timer — keep this screen open.
             </p>
           )}
         </div>
@@ -473,9 +458,7 @@ function GroupSession() {
             <p className="mt-10 w-full text-center font-display text-7xl font-semibold tabular-nums tracking-tight">
               {fmt((remainingMs ?? 0) / 1000)}
             </p>
-            <p className="mt-4 w-full text-center text-sm text-muted-foreground">
-              {group.goal}
-            </p>
+            <p className="mt-4 w-full text-center text-sm text-muted-foreground">{group.goal}</p>
             <p className="mt-1 w-full text-center text-xs text-muted-foreground">
               {formatINR(group.commit_value)} committed each
             </p>
@@ -526,8 +509,8 @@ function GroupSession() {
             <div className="w-full max-w-md rounded-4xl bg-card p-8 shadow-lift">
               <h2 className="font-display text-xl font-semibold">Leave the group?</h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                Leaving before the shared timer finishes loses your{" "}
-                {formatINR(group.commit_value)} commitment. Your friends keep going.
+                Leaving before the shared timer finishes loses your {formatINR(group.commit_value)}{" "}
+                commitment. Your friends keep going.
               </p>
               <div className="mt-6 grid grid-cols-2 gap-3">
                 <button
@@ -552,7 +535,6 @@ function GroupSession() {
 
   return (
     <div className="relative flex min-h-dvh flex-col bg-background px-6 pb-10 pt-14">
-
       <WindScape fixed={false} className="z-0" />
       <div className="relative z-10 flex items-center justify-center">
         <p className="text-xs uppercase tracking-widest text-muted-foreground">
@@ -624,8 +606,8 @@ function GroupSession() {
           <div className="w-full max-w-md rounded-t-4xl bg-card p-6 pb-10 shadow-lift">
             <h2 className="font-display text-xl font-semibold">Leave the group?</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Leaving before the shared timer finishes loses your{" "}
-              {formatINR(group.commit_value)} commitment. Your friends keep going.
+              Leaving before the shared timer finishes loses your {formatINR(group.commit_value)}{" "}
+              commitment. Your friends keep going.
             </p>
             <div className="mt-6 grid grid-cols-2 gap-3">
               <button
@@ -635,7 +617,7 @@ function GroupSession() {
                 Keep focusing
               </button>
               <button
-              onClick={() => void settle("failed", "quit")}
+                onClick={() => void settle("failed", "quit")}
                 className="rounded-2xl bg-destructive px-4 py-3 text-sm font-medium text-destructive-foreground"
               >
                 Leave anyway

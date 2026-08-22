@@ -1,24 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import {
-  ChevronLeft,
-  Check,
-  Clock,
-  ShieldCheck,
-  Users,
-  ArrowRight,
-} from "lucide-react";
+import { ChevronLeft, Check, Clock, ShieldCheck, Users, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TabletShell } from "@/components/TabletShell";
 import { useIsTablet } from "@/lib/use-tablet";
 import { formatINR, MIN_COMMIT, MAX_COMMIT, useAppState } from "@/lib/commitx-store";
-import {
-  createGroup,
-  joinGroup,
-  listMyGroups,
-  previewInvite,
-} from "@/lib/group-study.functions";
+import { createGroup, joinGroup, listMyGroups, previewInvite } from "@/lib/group-study.functions";
 import { MAX_GROUP_SIZE, type GroupDTO, type InvitePreviewDTO } from "@/lib/group-study.shared";
 
 export const Route = createFileRoute("/group/")({
@@ -127,32 +115,39 @@ function GroupIndex() {
 
   const page = (
     <div className={cn("min-h-screen pb-16", isTablet && "min-h-0 pb-0")}>
-      <div className={cn("mx-auto max-w-md px-6 pt-14", isTablet && "grid max-w-none grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] items-start gap-x-8 px-0 pt-0")}>
+      <div
+        className={cn(
+          "mx-auto max-w-md px-6 pt-14",
+          isTablet &&
+            "grid max-w-none grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] items-start gap-x-8 px-0 pt-0",
+        )}
+      >
         <div className={cn(isTablet && "col-span-2")}>
-        <div className="flex items-center justify-between">
-          <Link
-            to="/"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-soft"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </Link>
-          <p className="text-xs uppercase tracking-widest text-muted-foreground">
-            Group study
-          </p>
-          <div className="w-10" />
-        </div>
+          <div className="flex items-center justify-between">
+            <Link
+              to="/"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-soft"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Link>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">Group study</p>
+            <div className="w-10" />
+          </div>
 
-        <h1 className="mt-8 font-display text-3xl font-semibold">
-          Lock in with your people. 🎯
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Pick a time, commit together, and see who makes it to the finish.
-        </p>
+          <h1 className="mt-8 font-display text-3xl font-semibold">Lock in with your people. 🎯</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Pick a time, commit together, and see who makes it to the finish.
+          </p>
         </div>
 
         {/* Open groups */}
         {groups.length > 0 && (
-          <section className={cn("mt-7 rounded-3xl border border-hairline bg-card p-5 shadow-soft", isTablet && "col-start-1")}>
+          <section
+            className={cn(
+              "mt-7 rounded-3xl border border-hairline bg-card p-5 shadow-soft",
+              isTablet && "col-start-1",
+            )}
+          >
             <h2 className="font-display text-base font-semibold">Your groups</h2>
             <ul className="mt-3 divide-y divide-hairline">
               {groups.map((g) => (
@@ -181,7 +176,12 @@ function GroupIndex() {
         )}
 
         {/* Create */}
-        <section className={cn("mt-5 rounded-3xl border border-hairline bg-card p-5 shadow-soft", isTablet && "col-start-2 row-start-2 row-span-2 mt-7 p-7")}>
+        <section
+          className={cn(
+            "mt-5 rounded-3xl border border-hairline bg-card p-5 shadow-soft",
+            isTablet && "col-start-2 row-start-2 row-span-2 mt-7 p-7",
+          )}
+        >
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/15 text-primary">
               <Users className="h-4.5 w-4.5" />
@@ -291,7 +291,12 @@ function GroupIndex() {
         </section>
 
         {/* Join */}
-        <section className={cn("mt-5 rounded-3xl border border-hairline bg-card p-5 shadow-soft", isTablet && "col-start-1")}>
+        <section
+          className={cn(
+            "mt-5 rounded-3xl border border-hairline bg-card p-5 shadow-soft",
+            isTablet && "col-start-1",
+          )}
+        >
           <h2 className="font-display text-base font-semibold">Join with a code</h2>
           <p className="mt-1 text-xs text-muted-foreground">
             Got an invite? Enter the 6-character code to see the terms.
@@ -335,10 +340,7 @@ function GroupIndex() {
                 label="Session type"
                 value={terms.mode === "verified" ? "Verified" : "Standard"}
               />
-              <Row
-                label="Group"
-                value={`${terms.member_count} / ${MAX_GROUP_SIZE} joined`}
-              />
+              <Row label="Group" value={`${terms.member_count} / ${MAX_GROUP_SIZE} joined`} />
             </dl>
 
             <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
@@ -395,9 +397,7 @@ function GroupIndex() {
               </button>
               <button
                 onClick={onAcceptAndCommit}
-                disabled={
-                  !accepted || busy || terms.full || terms.status !== "lobby"
-                }
+                disabled={!accepted || busy || terms.full || terms.status !== "lobby"}
                 className="rounded-2xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
               >
                 {terms.full
