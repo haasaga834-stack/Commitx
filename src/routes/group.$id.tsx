@@ -28,6 +28,8 @@ import {
 } from "@/lib/group-study";
 import { setNativeSessionLock } from "@/lib/native-session";
 import { showSessionProgress, hideSessionProgress } from "@/lib/native-notifications";
+import { useIsTablet } from "@/lib/use-tablet";
+import { GroupLobbyTablet } from "@/components/GroupLobbyTablet";
 
 export const Route = createFileRoute("/group/$id")({
   head: () => ({
