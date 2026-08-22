@@ -102,11 +102,14 @@ function MobileHome() {
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
-            <TopChip
-              icon={<CxCoin className="h-4 w-4" />}
-              value={hydrated ? String(s.cxCoins) : "—"}
-              srLabel="Cx Coins"
-            />
+            <CxCoinPopup coins={s.cxCoins} hydrated={hydrated}>
+              <TopChip
+                icon={<CxCoin className="h-4 w-4" />}
+                value={hydrated ? String(s.cxCoins) : "—"}
+                srLabel="Cx Coins"
+                clickable
+              />
+            </CxCoinPopup>
             <TopChip
               icon={<Flame className="h-4 w-4 text-accent" />}
               value={hydrated ? String(s.streak) : "—"}
