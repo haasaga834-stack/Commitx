@@ -110,19 +110,21 @@ export const joinGroup = createServerFn({ method: "POST" })
 export const getGroupState = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => z.object({ id: z.string().uuid() }).parse(data))
-  .handler(async ({ data, context }): Promise<GroupStateDTO> => {
+  .handler(async ({ data, context }): Promise<GroupStateDTO | { gone: true }> => {
     const { supabase, userId } = context;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin.rpc("settle_expired_study_group", {
       _user_id: userId,
       _group_id: data.id,
     });
-    const { data: group, error } = await supabase
+    const { data: group } = await supabase
       .from("study_groups")
       .select("*")
       .eq("id", data.id)
       .maybeSingle();
-    if (error || !group) throw new Error("Group not found.");
+    // Cancelled / deleted groups are a normal outcome, not a crash.
+    if (!group) return { gone: true };
+
 
     const { data: members } = await supabaseAdmin
       .from("group_members")

@@ -112,12 +112,19 @@ function GroupSession() {
     if (leftRef.current) return null;
     try {
       const next = await fetchState({ data: { id } });
+      if ("gone" in next) {
+        // The group was cancelled or deleted — leave quietly instead of erroring.
+        leftRef.current = true;
+        void navigate({ to: "/group" });
+        return null;
+      }
       skewRef.current = next.serverNow - Date.now();
       hasDataRef.current = true;
       setData(next);
       setOffline(false);
       setError(null);
       return next;
+
     } catch (e) {
       // A temporary disconnect must never kill the timer — keep the last
       // known state and keep retrying.
@@ -125,7 +132,7 @@ function GroupSession() {
       else setError(e instanceof Error ? e.message : "Group not found.");
       return null;
     }
-  }, [fetchState, id]);
+  }, [fetchState, id, navigate]);
 
   const loadRef = useRef(load);
   loadRef.current = load;
