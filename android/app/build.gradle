@@ -6,8 +6,11 @@ def keystorePath = System.getenv("COMMITX_KEYSTORE_PATH") ?: "commitx.keystore"
 def keystoreFile = file(keystorePath)
 
 // Web (server) OAuth client ID used by native Google Sign-In.
-// Supply at build time: export GOOGLE_WEB_CLIENT_ID="xxxx.apps.googleusercontent.com"
-def googleWebClientId = System.getenv("GOOGLE_WEB_CLIENT_ID") ?: ""
+// This is the project's public Web client ID (no secret) so the in-app Google
+// account chooser works out of the box. Override at build time with:
+// export GOOGLE_WEB_CLIENT_ID="xxxx.apps.googleusercontent.com"
+def defaultGoogleWebClientId = "1071070006682-q095d7588gsb7ap7joh8t1p5ls3epvtj.apps.googleusercontent.com"
+def googleWebClientId = System.getenv("GOOGLE_WEB_CLIENT_ID") ?: defaultGoogleWebClientId
 
 android {
     namespace "app.commitx.mobile"
@@ -61,6 +64,7 @@ android {
 }
 
 dependencies {
+    implementation "androidx.browser:browser:1.8.0"
     implementation "androidx.credentials:credentials:1.3.0"
     implementation "androidx.credentials:credentials-play-services-auth:1.3.0"
     implementation "com.google.android.libraries.identity.googleid:googleid:1.1.1"
