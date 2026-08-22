@@ -459,6 +459,7 @@ export type Database = {
           status: string
         }[]
       }
+      i_am_group_participant: { Args: { _group_id: string }; Returns: boolean }
       join_study_group: {
         Args: { _code: string; _user_id: string }
         Returns: string
@@ -470,6 +471,10 @@ export type Database = {
           total_minutes: number
           user_id: string
         }[]
+      }
+      release_stale_commitments: {
+        Args: { _user_id: string }
+        Returns: undefined
       }
       settle_expired_study_group: {
         Args: { _group_id: string; _user_id: string }

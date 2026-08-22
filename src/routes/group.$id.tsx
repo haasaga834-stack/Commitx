@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { ChevronLeft, Check, Copy, Play, ShieldCheck, Trash2, Users, X } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Hourglass } from "@/components/Hourglass";
 import { WindScape } from "@/components/WindScape";
 import { formatINR } from "@/lib/commitx-store";
@@ -116,13 +117,52 @@ function GroupSession() {
 
   useEffect(() => {
     void loadRef.current();
-    const poll = window.setInterval(() => void loadRef.current(), 3000);
+    // Backup poll: realtime is primary, this covers dropped sockets.
+    const poll = window.setInterval(() => void loadRef.current(), 5000);
     const tick = window.setInterval(() => setNow(Date.now()), 250);
     return () => {
       window.clearInterval(poll);
       window.clearInterval(tick);
     };
   }, [id]);
+
+  /**
+   * The backend is the single source of truth: any change to this group or its
+   * members pushes every device to refetch, so joins and the shared start time
+   * appear without a refresh. Reconnects and app resumes refetch as well.
+   */
+  useEffect(() => {
+    const channel = supabase
+      .channel(`group-${id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "group_members", filter: `group_id=eq.${id}` },
+        () => void loadRef.current(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "study_groups", filter: `id=eq.${id}` },
+        () => void loadRef.current(),
+      )
+      .subscribe((status: string) => {
+        // Re-sync after a reconnect.
+        if (status === "SUBSCRIBED") void loadRef.current();
+      });
+
+    const resync = () => {
+      if (document.visibilityState === "visible") void loadRef.current();
+    };
+    document.addEventListener("visibilitychange", resync);
+    window.addEventListener("online", resync);
+    window.addEventListener("focus", resync);
+    return () => {
+      document.removeEventListener("visibilitychange", resync);
+      window.removeEventListener("online", resync);
+      window.removeEventListener("focus", resync);
+      void supabase.removeChannel(channel);
+    };
+  }, [id]);
+
 
   const group = data?.group ?? null;
   const me = data?.me ?? null;
@@ -230,7 +270,8 @@ function GroupSession() {
   }
 
   const active = data!.members.filter((m) => m.status !== "left");
-  const canStart = active.length >= 2;
+  // Only the host starts, and never alone.
+  const canStart = data!.isCreator && active.length >= 2;
 
   const copyCode = () => {
     try {
@@ -243,7 +284,8 @@ function GroupSession() {
   };
 
   const onStart = async () => {
-    if (busy) return;
+    // Guards double-taps and non-host taps; the server enforces both too.
+    if (busy || !data!.isCreator || group.status !== "lobby") return;
     setBusy(true);
     setActionError(null);
     try {
