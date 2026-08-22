@@ -11,6 +11,8 @@ import {
 } from "@/lib/commitx-store";
 import { canCheckDnd, hasNativeBridge, isDndEnabled, openDndSettings } from "@/lib/native-session";
 import { DurationWheel } from "@/components/DurationWheel";
+import { CommitTablet } from "@/components/CommitTablet";
+import { useIsTablet } from "@/lib/use-tablet";
 import { z } from "zod";
 import { usePlans, upcomingPlan } from "@/lib/planner";
 import { claimActiveDbSession, releaseActiveDbSession } from "@/lib/active-session";
