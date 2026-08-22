@@ -10,12 +10,14 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WalletRouteImport } from './routes/wallet'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SuccessRouteImport } from './routes/success'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SessionRouteImport } from './routes/session'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PlannerRouteImport } from './routes/planner'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as HistoryRouteImport } from './routes/history'
@@ -33,6 +35,11 @@ import { Route as GroupIdRouteImport } from './routes/group.$id'
 const WalletRoute = WalletRouteImport.update({
   id: '/wallet',
   path: '/wallet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SuccessRoute = SuccessRouteImport.update({
@@ -63,6 +70,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlannerRoute = PlannerRouteImport.update({
@@ -143,12 +155,14 @@ export interface FileRoutesByFullPath {
   '/history': typeof HistoryRoute
   '/how-it-works': typeof HowItWorksRoute
   '/planner': typeof PlannerRoute
+  '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/session': typeof SessionRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/success': typeof SuccessRoute
+  '/terms': typeof TermsRoute
   '/wallet': typeof WalletRoute
   '/group/$id': typeof GroupIdRoute
   '/group/': typeof GroupIndexRoute
@@ -165,12 +179,14 @@ export interface FileRoutesByTo {
   '/history': typeof HistoryRoute
   '/how-it-works': typeof HowItWorksRoute
   '/planner': typeof PlannerRoute
+  '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/session': typeof SessionRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/success': typeof SuccessRoute
+  '/terms': typeof TermsRoute
   '/wallet': typeof WalletRoute
   '/group/$id': typeof GroupIdRoute
   '/group': typeof GroupIndexRoute
@@ -188,12 +204,14 @@ export interface FileRoutesById {
   '/history': typeof HistoryRoute
   '/how-it-works': typeof HowItWorksRoute
   '/planner': typeof PlannerRoute
+  '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/session': typeof SessionRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/success': typeof SuccessRoute
+  '/terms': typeof TermsRoute
   '/wallet': typeof WalletRoute
   '/group/$id': typeof GroupIdRoute
   '/group/': typeof GroupIndexRoute
@@ -212,12 +230,14 @@ export interface FileRouteTypes {
     | '/history'
     | '/how-it-works'
     | '/planner'
+    | '/privacy'
     | '/profile'
     | '/reset-password'
     | '/session'
     | '/settings'
     | '/sitemap.xml'
     | '/success'
+    | '/terms'
     | '/wallet'
     | '/group/$id'
     | '/group/'
@@ -234,12 +254,14 @@ export interface FileRouteTypes {
     | '/history'
     | '/how-it-works'
     | '/planner'
+    | '/privacy'
     | '/profile'
     | '/reset-password'
     | '/session'
     | '/settings'
     | '/sitemap.xml'
     | '/success'
+    | '/terms'
     | '/wallet'
     | '/group/$id'
     | '/group'
@@ -256,12 +278,14 @@ export interface FileRouteTypes {
     | '/history'
     | '/how-it-works'
     | '/planner'
+    | '/privacy'
     | '/profile'
     | '/reset-password'
     | '/session'
     | '/settings'
     | '/sitemap.xml'
     | '/success'
+    | '/terms'
     | '/wallet'
     | '/group/$id'
     | '/group/'
@@ -279,12 +303,14 @@ export interface RootRouteChildren {
   HistoryRoute: typeof HistoryRoute
   HowItWorksRoute: typeof HowItWorksRoute
   PlannerRoute: typeof PlannerRoute
+  PrivacyRoute: typeof PrivacyRoute
   ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SessionRoute: typeof SessionRoute
   SettingsRoute: typeof SettingsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SuccessRoute: typeof SuccessRoute
+  TermsRoute: typeof TermsRoute
   WalletRoute: typeof WalletRoute
   GroupIdRoute: typeof GroupIdRoute
   GroupIndexRoute: typeof GroupIndexRoute
@@ -297,6 +323,13 @@ declare module '@tanstack/react-router' {
       path: '/wallet'
       fullPath: '/wallet'
       preLoaderRoute: typeof WalletRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/success': {
@@ -339,6 +372,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/planner': {
@@ -447,12 +487,14 @@ const rootRouteChildren: RootRouteChildren = {
   HistoryRoute: HistoryRoute,
   HowItWorksRoute: HowItWorksRoute,
   PlannerRoute: PlannerRoute,
+  PrivacyRoute: PrivacyRoute,
   ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SessionRoute: SessionRoute,
   SettingsRoute: SettingsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SuccessRoute: SuccessRoute,
+  TermsRoute: TermsRoute,
   WalletRoute: WalletRoute,
   GroupIdRoute: GroupIdRoute,
   GroupIndexRoute: GroupIndexRoute,
