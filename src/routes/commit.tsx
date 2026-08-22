@@ -17,6 +17,8 @@ import { z } from "zod";
 import { usePlans, upcomingPlan } from "@/lib/planner";
 import { claimActiveDbSession, releaseActiveDbSession } from "@/lib/active-session";
 import { clearEndedSession, writeActiveVerifiedSession } from "@/lib/verified-mode";
+import { ThemePicker } from "@/components/ThemePicker";
+import { DEFAULT_SESSION_THEME, type SessionThemeId } from "@/lib/session-themes";
 
 const commitSearch = z.object({
   /** "1" when arriving from Swipe to Start — duration is preloaded from the plan. */
@@ -61,6 +63,8 @@ function Commit() {
   const [verifiedWarn, setVerifiedWarn] = useState(false);
   const [dndOn, setDndOn] = useState<boolean | null>(null);
   const [starting, setStarting] = useState(false);
+  // A session may only begin once a theme has been picked and confirmed.
+  const [themeOpen, setThemeOpen] = useState(false);
 
   // The study plan is the single source of truth for commitment time.
   const nextPlan = useMemo(() => upcomingPlan(plans), [plans]);
@@ -97,29 +101,10 @@ function Commit() {
 
   const plan = useMemo(() => planDeduction(value, state.balances), [value, state.balances]);
 
-  async function begin() {
-    // Double-tap / retry guard: only one start attempt may ever be in flight.
+  /** Validates the terms, then opens the theme selector. */
+  function begin() {
     if (starting) return;
-    if (!duration) {
-      setError(
-        usePlanDuration
-          ? "Add a study plan with a time and duration first — your commitment uses it."
-          : "Choose a duration first.",
-      );
-      return;
-    }
-    if (value < MIN_COMMIT || value > MAX_COMMIT) {
-      setError(`Commitment must be between ${formatINR(MIN_COMMIT)} and ${formatINR(MAX_COMMIT)}.`);
-      return;
-    }
-    if (!plan.ok) {
-      setError("Not enough demo money for this commitment. Lower the amount and try again.");
-      return;
-    }
-    setError(null);
-    // Verified sessions must be acknowledged and require Do Not Disturb.
-    // Re-verify the real DND state at start time — never trust a stale
-    // acknowledgement or the fact that the user came back from Settings.
+    if (!validate()) return;
     if (mode === "verified") {
       const liveDnd = isDndEnabled();
       setDndOn(liveDnd);
@@ -130,7 +115,37 @@ function Commit() {
         return;
       }
     }
+    setThemeOpen(true);
+  }
 
+  function validate() {
+    if (!duration) {
+      setError(
+        usePlanDuration
+          ? "Add a study plan with a time and duration first — your commitment uses it."
+          : "Choose a duration first.",
+      );
+      return false;
+    }
+    if (value < MIN_COMMIT || value > MAX_COMMIT) {
+      setError(`Commitment must be between ${formatINR(MIN_COMMIT)} and ${formatINR(MAX_COMMIT)}.`);
+      return false;
+    }
+    if (!plan.ok) {
+      setError("Not enough demo money for this commitment. Lower the amount and try again.");
+      return false;
+    }
+    setError(null);
+    return true;
+  }
+
+  /** Starts the session with the confirmed theme. */
+  async function startWithTheme(theme: SessionThemeId) {
+    if (starting) return;
+    if (!validate()) {
+      setThemeOpen(false);
+      return;
+    }
     setStarting(true);
     try {
       // Only one active session per user — the database is the source of truth.
@@ -176,6 +191,7 @@ function Commit() {
         confirmSince: null,
         breaksTaken: 0,
         nonFocusMs: 0,
+        theme,
       });
 
       navigate({
@@ -186,10 +202,12 @@ function Commit() {
           value: String(value),
           mode,
           preferReal: "0",
+          theme,
         } as Record<string, string>,
       });
     } finally {
       setStarting(false);
+      setThemeOpen(false);
     }
   }
 
@@ -221,7 +239,7 @@ function Commit() {
             "You cannot leave the app — Home, Recents or switching apps fails the session immediately.",
             "The Back button is disabled while the session is running.",
             "Do Not Disturb must stay on; emergency calls have a 60 second grace window.",
-            "The only exception is the mandatory 5-minute Recovery Break after each hour — you may use your phone freely then.",
+            "Sessions over an hour pause for a mandatory 5-minute wellness break — stay inside CommitX during it.",
             "Your committed amount is returned only when you finish.",
           ].map((t) => (
             <li key={t} className="flex gap-2">
@@ -285,6 +303,15 @@ function Commit() {
     </div>
   ) : null;
 
+  const picker = (
+    <ThemePicker
+      open={themeOpen}
+      starting={starting}
+      onCancel={() => setThemeOpen(false)}
+      onConfirm={(theme) => void startWithTheme(theme)}
+    />
+  );
+
   if (isTablet) {
     return (
       <CommitTablet
@@ -317,7 +344,12 @@ function Commit() {
         native={native}
         starting={starting}
         onBegin={begin}
-        overlay={overlay}
+        overlay={
+          <>
+            {overlay}
+            {picker}
+          </>
+        }
       />
     );
   }
@@ -550,6 +582,7 @@ function Commit() {
       </div>
 
       {overlay}
+      {picker}
     </div>
 
   );
