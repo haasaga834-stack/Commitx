@@ -209,7 +209,9 @@ function GroupSession() {
     const pushLock = () => {
       try {
         window.history.pushState({ commitxGroupLock: Date.now() }, "");
-      } catch {}
+      } catch {
+        // Native back interception still protects the Android app.
+      }
     };
 
     const handleBack = () => {
