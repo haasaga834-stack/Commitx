@@ -51,6 +51,7 @@ function GroupIndex() {
   const join = useServerFn(joinGroup);
   const preview = useServerFn(previewInvite);
   const mine = useServerFn(listMyGroups);
+  const openGroupFn = useServerFn(getMyOpenGroup);
 
   const [duration, setDuration] = useState(60);
   const [value, setValue] = useState(MIN_COMMIT);
@@ -62,19 +63,39 @@ function GroupIndex() {
   const [terms, setTerms] = useState<InvitePreviewDTO | null>(null);
   const [accepted, setAccepted] = useState(false);
   const [groups, setGroups] = useState<GroupDTO[]>([]);
+  const [openGroup, setOpenGroup] = useState<{
+    id: string;
+    code: string;
+    status: string;
+    isHost: boolean;
+  } | null>(null);
 
   const refresh = useCallback(() => {
     mine({})
       .then((rows) => setGroups(rows))
       .catch(() => {});
-  }, [mine]);
+    openGroupFn({})
+      .then((g) => setOpenGroup(g))
+      .catch(() => {});
+  }, [mine, openGroupFn]);
 
   useEffect(() => {
     refresh();
   }, [refresh]);
 
+  /** A blocked create/join always means one open group — surface the way back. */
+  const recoverOpenGroup = useCallback(async () => {
+    try {
+      const g = await openGroupFn({});
+      setOpenGroup(g);
+      return g;
+    } catch {
+      return null;
+    }
+  }, [openGroupFn]);
+
   async function onCreate() {
-    if (busy) return;
+    if (busy || openGroup) return;
     setBusy(true);
     setError(null);
     try {
@@ -83,11 +104,13 @@ function GroupIndex() {
       });
       if ("error" in res) {
         setError(res.error);
+        await recoverOpenGroup();
         return;
       }
       navigate({ to: "/group/$id", params: { id: res.id } });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not create the group.");
+      await recoverOpenGroup();
     } finally {
       setBusy(false);
     }
@@ -120,12 +143,16 @@ function GroupIndex() {
       const res = await join({ data: { code: code.trim(), acceptedTerms: true } });
       if ("error" in res) {
         setError(res.error);
+        const g = await recoverOpenGroup();
+        if (g) setTerms(null);
         return;
       }
       setTerms(null);
       navigate({ to: "/group/$id", params: { id: res.id } });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not join this group.");
+      const g = await recoverOpenGroup();
+      if (g) setTerms(null);
     } finally {
       setBusy(false);
     }
