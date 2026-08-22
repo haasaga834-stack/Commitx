@@ -444,8 +444,109 @@ function GroupSession() {
     );
   }
 
+  if (isTablet) {
+    return (
+      <div className="relative flex min-h-dvh flex-col bg-background px-10 pb-10 pt-12 lg:px-16">
+        <WindScape fixed={false} className="z-0" />
+        <div className="relative z-10 mx-auto flex w-full max-w-5xl items-center justify-between">
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+            Group {isVerified ? "verified" : "standard"} session
+          </p>
+          <button
+            onClick={() => setConfirmLeave(true)}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-card shadow-soft"
+            aria-label="Leave session"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="relative z-10 mx-auto grid w-full max-w-5xl flex-1 grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)] items-center gap-14">
+          <div className="flex flex-col items-center">
+            <Hourglass size={300} state="running" progress={progress} />
+            <p className="mt-10 w-full text-center font-display text-7xl font-semibold tabular-nums tracking-tight">
+              {fmt((remainingMs ?? 0) / 1000)}
+            </p>
+            <p className="mt-4 w-full text-center text-sm text-muted-foreground">
+              {group.goal}
+            </p>
+            <p className="mt-1 w-full text-center text-xs text-muted-foreground">
+              {formatINR(group.commit_value)} committed each
+            </p>
+          </div>
+
+          <div className="grid gap-5">
+            {isVerified && (
+              <p className="flex items-center gap-2 rounded-3xl bg-foreground/5 px-5 py-3 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                <ShieldCheck className="h-4 w-4" />
+                Leaving CommitX fails you
+              </p>
+            )}
+            <div className="rounded-4xl border border-hairline bg-card p-7 shadow-soft">
+              <h2 className="font-display text-lg font-semibold">Focusing together</h2>
+              <ul className="mt-5 grid gap-3.5">
+                {data!.members.map((m) => (
+                  <li key={m.user_id} className="flex items-center gap-3">
+                    <span
+                      className={`h-2.5 w-2.5 shrink-0 rounded-full ${
+                        m.status === "joined"
+                          ? "bg-primary"
+                          : m.status === "completed"
+                            ? "bg-accent"
+                            : "bg-muted-foreground/40"
+                      }`}
+                    />
+                    <span className="min-w-0 flex-1 truncate text-sm text-foreground">
+                      {m.display_name}
+                      {m.role === "creator" ? " · host" : ""}
+                    </span>
+                    <span className="shrink-0 text-[11px] text-muted-foreground">
+                      {memberStatusLabel(m.status)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {offline && (
+              <p className="text-[11px] text-muted-foreground">
+                Reconnecting… the shared timer keeps running.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {confirmLeave && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-8 backdrop-blur-sm">
+            <div className="w-full max-w-md rounded-4xl bg-card p-8 shadow-lift">
+              <h2 className="font-display text-xl font-semibold">Leave the group?</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Leaving before the shared timer finishes loses your{" "}
+                {formatINR(group.commit_value)} commitment. Your friends keep going.
+              </p>
+              <div className="mt-6 grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => setConfirmLeave(false)}
+                  className="rounded-2xl bg-secondary px-4 py-3 text-sm font-medium text-secondary-foreground"
+                >
+                  Keep focusing
+                </button>
+                <button
+                  onClick={() => settle("failed", "quit")}
+                  className="rounded-2xl bg-destructive px-4 py-3 text-sm font-medium text-destructive-foreground"
+                >
+                  Leave anyway
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="relative flex min-h-dvh flex-col bg-background px-6 pb-10 pt-14">
+
       <WindScape fixed={false} className="z-0" />
       <div className="relative z-10 flex items-center justify-center">
         <p className="text-xs uppercase tracking-widest text-muted-foreground">
