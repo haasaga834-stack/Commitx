@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface HourglassProps {
@@ -45,7 +44,7 @@ export function Hourglass({
   return (
     <div
       className={cn(
-        "relative inline-flex items-center justify-center",
+        "relative inline-flex shrink-0 items-center justify-center",
         state === "success" && "animate-soft-glow",
         floating && (state === "idle" || state === "running") && "animate-gentle-float",
         className,
@@ -149,36 +148,30 @@ export function Hourglass({
   );
 }
 
-/** Continuous grain stream through the neck (visual continuity only). */
+/** Continuous grain stream isolated inside the SVG, with no React frame updates. */
 function FallingStream({ color }: { color: string }) {
-  const [t, setT] = useState(0);
-  useEffect(() => {
-    let raf = 0;
-    const start = performance.now();
-    const tick = (now: number) => {
-      setT((now - start) / 1000);
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, []);
-
-  const grains = [0, 0.2, 0.4, 0.6, 0.8];
-  const period = 0.9;
-  const yStart = 84;
-  const yEnd = 142;
-
   return (
     <g>
       <rect x="59.4" y="84" width="1.2" height="58" fill={color} opacity="0.5" />
-      {grains.map((phase, i) => {
-        const local = (t / period + phase) % 1;
-        const y = yStart + (yEnd - yStart) * local;
-        const opacity = local < 0.08 ? local / 0.08 : local > 0.92 ? (1 - local) / 0.08 : 1;
-        return (
-          <circle key={i} cx="60" cy={y} r="1.1" fill={color} opacity={0.9 * opacity} />
-        );
-      })}
+      {[0, 0.18, 0.36, 0.54, 0.72].map((delay, index) => (
+        <circle key={index} cx="60" cy="84" r="1.1" fill={color} opacity="0">
+          <animate
+            attributeName="cy"
+            values="84;142"
+            dur="0.9s"
+            begin={`-${delay}s`}
+            repeatCount="indefinite"
+          />
+          <animate
+            attributeName="opacity"
+            values="0;0.9;0.9;0"
+            keyTimes="0;0.08;0.92;1"
+            dur="0.9s"
+            begin={`-${delay}s`}
+            repeatCount="indefinite"
+          />
+        </circle>
+      ))}
     </g>
   );
 }
