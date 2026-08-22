@@ -1,15 +1,26 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { ChevronLeft, Check, Clock, ShieldCheck, Users, ArrowRight } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  ChevronLeft,
+  Clock,
+  LogOut,
+  ShieldCheck,
+  Trash2,
+  Users,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TabletShell } from "@/components/TabletShell";
 import { useIsTablet } from "@/lib/use-tablet";
 import { formatINR, MIN_COMMIT, MAX_COMMIT, useAppState } from "@/lib/commitx-store";
 import {
   createGroup,
+  cancelGroup,
   getMyOpenGroup,
   joinGroup,
+  leaveLobby,
   listMyGroups,
   previewInvite,
 } from "@/lib/group-study.functions";
@@ -48,7 +59,9 @@ function GroupIndex() {
   const navigate = useNavigate();
   const { state, hydrated } = useAppState();
   const create = useServerFn(createGroup);
+  const cancel = useServerFn(cancelGroup);
   const join = useServerFn(joinGroup);
+  const leave = useServerFn(leaveLobby);
   const preview = useServerFn(previewInvite);
   const mine = useServerFn(listMyGroups);
   const openGroupFn = useServerFn(getMyOpenGroup);
@@ -69,6 +82,7 @@ function GroupIndex() {
     status: string;
     isHost: boolean;
   } | null>(null);
+  const [removingOpenGroup, setRemovingOpenGroup] = useState(false);
 
   const refresh = useCallback(() => {
     mine({})
@@ -158,6 +172,38 @@ function GroupIndex() {
     }
   }
 
+  async function onRemoveOpenGroup() {
+    if (!openGroup || busy || removingOpenGroup || openGroup.status === "active") return;
+    setRemovingOpenGroup(true);
+    setError(null);
+    try {
+      if (openGroup.isHost) {
+        await cancel({ data: { id: openGroup.id } });
+      } else {
+        await leave({ data: { id: openGroup.id } });
+      }
+      setOpenGroup(null);
+      setGroups((current) => current.filter((group) => group.id !== openGroup.id));
+      setTerms(null);
+      setAccepted(false);
+      await Promise.all([
+        mine({}).then((rows) => setGroups(rows)),
+        openGroupFn({}).then((group) => setOpenGroup(group)),
+      ]);
+    } catch (e) {
+      setError(
+        e instanceof Error
+          ? e.message
+          : openGroup.isHost
+            ? "Could not cancel the group."
+            : "Could not leave the group.",
+      );
+      await recoverOpenGroup();
+    } finally {
+      setRemovingOpenGroup(false);
+    }
+  }
+
   const header = (
     <div>
       <div className="flex items-center justify-between">
@@ -191,16 +237,41 @@ function GroupIndex() {
           : `Waiting in the lobby · code ${openGroup.code}`}
         {openGroup.isHost ? " · you're the host" : ""}
       </p>
-      <Link
-        to="/group/$id"
-        params={{ id: openGroup.id }}
-        className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-medium text-primary-foreground shadow-soft"
-      >
-        {openGroup.status === "active" ? "Rejoin session" : "Open lobby"}
-        <ArrowRight className="h-4 w-4" />
-      </Link>
+      <div className="mt-4 grid gap-2.5">
+        <Link
+          to="/group/$id"
+          params={{ id: openGroup.id }}
+          className="flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-soft"
+        >
+          {openGroup.status === "active" ? "Rejoin session" : "Open lobby"}
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+        {openGroup.status !== "active" && (
+          <button
+            type="button"
+            onClick={() => void onRemoveOpenGroup()}
+            disabled={busy || removingOpenGroup}
+            className="flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-hairline bg-background px-5 py-3 text-sm font-medium text-foreground disabled:opacity-60"
+          >
+            {openGroup.isHost ? (
+              <Trash2 className="h-4 w-4 text-destructive" />
+            ) : (
+              <LogOut className="h-4 w-4 text-destructive" />
+            )}
+            {removingOpenGroup
+              ? openGroup.isHost
+                ? "Cancelling…"
+                : "Leaving…"
+              : openGroup.isHost
+                ? "Cancel unfinished group"
+                : "Leave unfinished group"}
+          </button>
+        )}
+      </div>
       <p className="mt-3 text-[11px] text-muted-foreground">
-        One group at a time — finish, leave or cancel this one before starting another.
+        {openGroup.status === "active"
+          ? "One group at a time — finish this running session before starting another."
+          : "Cancel or leave this lobby to create or join a different group."}
       </p>
     </section>
   ) : null;
