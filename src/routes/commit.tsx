@@ -18,7 +18,7 @@ import { usePlans, upcomingPlan } from "@/lib/planner";
 import { claimActiveDbSession, releaseActiveDbSession } from "@/lib/active-session";
 import { clearEndedSession, writeActiveVerifiedSession } from "@/lib/verified-mode";
 import { ThemePicker } from "@/components/ThemePicker";
-import { DEFAULT_SESSION_THEME, type SessionThemeId } from "@/lib/session-themes";
+import type { SessionThemeId } from "@/lib/session-themes";
 
 const commitSearch = z.object({
   /** "1" when arriving from Swipe to Start — duration is preloaded from the plan. */
@@ -444,9 +444,10 @@ function Commit() {
             </Link>
           )}
 
-          {duration > 120 && (
+          {duration > 60 && (
             <p className="mt-3 rounded-2xl bg-accent/10 px-4 py-3 text-xs text-primary">
-              You'll receive one complimentary 10 minute break reminder.
+              Sessions over an hour include a mandatory 5-minute wellness break after every
+              60 minutes of study. Your timer pauses during it.
             </p>
           )}
         </section>
