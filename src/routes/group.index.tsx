@@ -10,6 +10,8 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TabletShell } from "@/components/TabletShell";
+import { useIsTablet } from "@/lib/use-tablet";
 import { formatINR, MIN_COMMIT, MAX_COMMIT, useAppState } from "@/lib/commitx-store";
 import {
   createGroup,
@@ -48,6 +50,7 @@ function fmtDuration(min: number) {
 }
 
 function GroupIndex() {
+  const isTablet = useIsTablet();
   const navigate = useNavigate();
   const { state, hydrated } = useAppState();
   const create = useServerFn(createGroup);
@@ -122,9 +125,10 @@ function GroupIndex() {
     }
   }
 
-  return (
-    <div className="min-h-screen pb-16">
-      <div className="mx-auto max-w-md px-6 pt-14">
+  const page = (
+    <div className={cn("min-h-screen pb-16", isTablet && "min-h-0 pb-0")}>
+      <div className={cn("mx-auto max-w-md px-6 pt-14", isTablet && "grid max-w-none grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] items-start gap-x-8 px-0 pt-0")}>
+        <div className={cn(isTablet && "col-span-2")}>
         <div className="flex items-center justify-between">
           <Link
             to="/"
@@ -144,10 +148,11 @@ function GroupIndex() {
         <p className="mt-2 text-sm text-muted-foreground">
           Pick a time, commit together, and see who makes it to the finish.
         </p>
+        </div>
 
         {/* Open groups */}
         {groups.length > 0 && (
-          <section className="mt-7 rounded-3xl border border-hairline bg-card p-5 shadow-soft">
+          <section className={cn("mt-7 rounded-3xl border border-hairline bg-card p-5 shadow-soft", isTablet && "col-start-1")}>
             <h2 className="font-display text-base font-semibold">Your groups</h2>
             <ul className="mt-3 divide-y divide-hairline">
               {groups.map((g) => (
@@ -176,7 +181,7 @@ function GroupIndex() {
         )}
 
         {/* Create */}
-        <section className="mt-5 rounded-3xl border border-hairline bg-card p-5 shadow-soft">
+        <section className={cn("mt-5 rounded-3xl border border-hairline bg-card p-5 shadow-soft", isTablet && "col-start-2 row-start-2 row-span-2 mt-7 p-7")}>
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/15 text-primary">
               <Users className="h-4.5 w-4.5" />
@@ -286,7 +291,7 @@ function GroupIndex() {
         </section>
 
         {/* Join */}
-        <section className="mt-5 rounded-3xl border border-hairline bg-card p-5 shadow-soft">
+        <section className={cn("mt-5 rounded-3xl border border-hairline bg-card p-5 shadow-soft", isTablet && "col-start-1")}>
           <h2 className="font-display text-base font-semibold">Join with a code</h2>
           <p className="mt-1 text-xs text-muted-foreground">
             Got an invite? Enter the 6-character code to see the terms.
@@ -311,8 +316,8 @@ function GroupIndex() {
 
       {/* Terms sheet — a friend must accept and commit before joining */}
       {terms && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 backdrop-blur-sm">
-          <div className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-4xl bg-card p-6 pb-10 shadow-lift">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 backdrop-blur-sm md:items-center md:p-8">
+          <div className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-4xl bg-card p-6 pb-10 shadow-lift md:rounded-4xl md:p-8">
             <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-accent/15 text-primary">
               <Users className="h-5 w-5" />
             </span>
@@ -407,6 +412,8 @@ function GroupIndex() {
       )}
     </div>
   );
+
+  return isTablet ? <TabletShell>{page}</TabletShell> : page;
 }
 
 function Row({ label, value }: { label: string; value: string }) {
