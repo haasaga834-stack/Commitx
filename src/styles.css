@@ -368,3 +368,44 @@ body {
     display: none;
   }
 }
+
+/* Session ambience themes (Firefly Garden, Growing Tree, Moonlit Sky, Lotus Pond) */
+@keyframes firefly-drift {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(18px, -14px); }
+  50% { transform: translate(-12px, -26px); }
+  75% { transform: translate(-22px, -8px); }
+  100% { transform: translate(0, 0); }
+}
+@keyframes firefly-glow {
+  0%, 100% { opacity: 0.15; transform: scale(0.7); }
+  50% { opacity: 1; transform: scale(1.9); }
+}
+@keyframes star-twinkle {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 0.95; }
+}
+@keyframes canopy-sway {
+  0%, 100% { transform: rotate(-1.2deg); }
+  50% { transform: rotate(1.2deg); }
+}
+@keyframes ripple-out {
+  0% { transform: translateX(-50%) scale(0.4); opacity: 0.55; }
+  100% { transform: translateX(-50%) scale(3.2); opacity: 0; }
+}
+
+@utility animate-firefly-drift {
+  animation: firefly-drift 12s ease-in-out infinite;
+}
+@utility animate-firefly-glow {
+  animation: firefly-glow 3s ease-in-out infinite;
+}
+@utility animate-star-twinkle {
+  animation: star-twinkle 4s ease-in-out infinite;
+}
+@utility animate-canopy-sway {
+  animation: canopy-sway 9s ease-in-out infinite;
+}
+@utility animate-ripple-out {
+  animation: ripple-out 7s ease-out infinite;
+}

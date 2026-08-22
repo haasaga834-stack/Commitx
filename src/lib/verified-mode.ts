@@ -18,10 +18,19 @@ export type VerifiedFailureReason =
 /** Persisted session phase — timestamps remain the source of truth. */
 export type SessionPhase = "focus" | "recovery_break" | "awaiting_confirmation";
 
-/** Mandatory recovery break cadence & windows. */
+/** Mandatory wellness break cadence & windows. */
 export const FOCUS_HOUR_MS = 60 * 60 * 1000;
 export const RECOVERY_BREAK_MS = 5 * 60 * 1000;
-export const RECOVERY_CONFIRM_MS = 30 * 1000;
+/** Grace period to tap "Continue Session" once the break has finished. */
+export const RECOVERY_CONFIRM_MS = 60 * 1000;
+
+/**
+ * Wellness breaks only apply to sessions longer than one hour. A 60-minute
+ * (or shorter) commitment finishes without ever being interrupted.
+ */
+export function wellnessBreaksApply(durationMinutes: number) {
+  return durationMinutes > 60;
+}
 
 
 export interface ActiveVerifiedSession {
@@ -49,6 +58,8 @@ export interface ActiveVerifiedSession {
   breaksTaken?: number;
   /** Total wall-clock time spent outside focus (breaks + confirmation). */
   nonFocusMs?: number;
+  /** Visual ambience theme chosen before the session started. */
+  theme?: string;
 }
 
 

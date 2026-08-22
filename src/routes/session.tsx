@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Hourglass } from "@/components/Hourglass";
-import { WindScape } from "@/components/WindScape";
+import { SessionScene } from "@/components/SessionScene";
 import { setState, formatINR, planDeduction, getState, type Mode } from "@/lib/commitx-store";
 import {
   clearActiveVerifiedSession,
@@ -13,10 +13,13 @@ import {
   FOCUS_HOUR_MS,
   RECOVERY_BREAK_MS,
   RECOVERY_CONFIRM_MS,
+  wellnessBreaksApply,
   type SessionPhase,
   type VerifiedFailureReason,
 } from "@/lib/verified-mode";
 import { releaseActiveDbSession } from "@/lib/active-session";
+import { normalizeTheme, type SessionThemeId } from "@/lib/session-themes";
+import { announceWellnessBreak, announceBreakOver } from "@/lib/wellness-chime";
 
 
 import {
@@ -46,6 +49,7 @@ const search = z.object({
   duration: z.coerce.number().min(1).default(30),
   value: z.coerce.number().min(0).default(10),
   mode: z.enum(["standard", "verified"]).default("standard"),
+  theme: z.string().optional(),
   preferReal: z
     .union([z.string(), z.number(), z.boolean()])
     .optional()
@@ -135,9 +139,11 @@ function Session() {
 }
 
 function LiveSession() {
-  const { goal, duration, value, mode, preferReal } = Route.useSearch();
+  const { goal, duration, value, mode, preferReal, theme } = Route.useSearch();
   const navigate = useNavigate();
   const totalMs = duration * 60 * 1000;
+  // Sessions longer than an hour get a mandatory wellness break every 60 min.
+  const breaksApply = wellnessBreaksApply(duration);
   const preferRealBool = preferReal === "1";
   const isVerified = mode === "verified";
 
@@ -178,6 +184,11 @@ function LiveSession() {
           if ((prev.phase ?? "focus") === "focus" && banked >= duration * 60 * 1000) return null;
           return prev;
         })(),
+  ).current;
+
+  // Theme is fixed for the whole session: search param first, then the ticket.
+  const sessionTheme = useRef<SessionThemeId>(
+    normalizeTheme(theme ?? restored?.theme),
   ).current;
 
   const startedAt = useRef<number>(restored?.startedAt ?? Date.now()).current;
@@ -223,9 +234,10 @@ function LiveSession() {
       confirmSince: confirmSinceRef.current,
       breaksTaken: breaksTakenRef.current,
       nonFocusMs: nonFocusMsRef.current,
+      theme: sessionTheme,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [goal, duration, value, mode, preferRealBool, startedAt]);
+  }, [goal, duration, value, mode, preferRealBool, startedAt, sessionTheme]);
 
   /** Wall-clock time spent outside focus (recovery breaks + confirmations). */
   const nonFocusTotal = useCallback(() => {
@@ -300,7 +312,8 @@ function LiveSession() {
       setPhase("recovery_break");
       persist();
       setNow(Date.now());
-      log("Recovery Break Started", { at, breaksTaken: breaksTakenRef.current });
+      announceWellnessBreak();
+      log("Wellness Break Started", { at, breaksTaken: breaksTakenRef.current });
     },
     [elapsedNow, persist, setPhase],
   );
@@ -312,7 +325,8 @@ function LiveSession() {
       setPhase("awaiting_confirmation");
       persist();
       setNow(Date.now());
-      log("Recovery Break Finished", { confirmSince: at });
+      announceBreakOver();
+      log("Wellness Break Finished", { confirmSince: at });
     },
     [persist, setPhase],
   );
@@ -344,6 +358,7 @@ function LiveSession() {
         complete("completed");
         return;
       }
+      if (!breaksApply) return;
       const elapsed = elapsedNow();
       const nextBreakAt = (breaksTakenRef.current + 1) * FOCUS_HOUR_MS;
       if (elapsed >= nextBreakAt && elapsed < totalMs) {
@@ -368,6 +383,7 @@ function LiveSession() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     dndBlocked,
+    breaksApply,
     canCompleteNow,
     elapsedNow,
     totalMs,
@@ -457,9 +473,8 @@ function LiveSession() {
   // the foreground re-reads the clock and persists state, so the display picks
   // up exactly where real time is — never a stale frame or a jump.
   useEffect(() => {
-    // Also used by Verified sessions while a recovery break / confirmation is
-    // pending, since leaving the app is explicitly allowed then.
-    if (isVerified && phase === "focus") return;
+    // Verified sessions handle their own lifecycle listeners (breaks included).
+    if (isVerified) return;
 
 
     const resync = () => {
@@ -493,9 +508,9 @@ function LiveSession() {
 
   // Verified mode: foreground-only, with a 60s emergency grace window.
   useEffect(() => {
-    // Verified restrictions are suspended (only) during a recovery break and
-    // its confirmation window, then immediately resume.
-    if (!isVerified || dndBlocked || phase !== "focus") return;
+    // Verified restrictions stay enforced for the entire session — including the
+    // wellness break, which is an in-app pause, not permission to leave.
+    if (!isVerified || dndBlocked) return;
     log("Verified Mode Armed", { startedAt, totalMs });
     setNativeVerifiedModeActive(true);
 
@@ -572,7 +587,7 @@ function LiveSession() {
       window.removeEventListener("commitx:android-multi-window", onNativeMultiWindow);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVerified, dndBlocked, phase]);
+  }, [isVerified, dndBlocked]);
 
   const elapsedMs = Math.min(totalMs, accumulatedRef.current + (runningSinceRef.current ? now - runningSinceRef.current : 0));
   const progress = totalMs > 0 ? elapsedMs / totalMs : 0;
@@ -598,12 +613,28 @@ function LiveSession() {
   useEffect(() => {
     if (doneRef.current) return;
     const label = mode === "verified" ? "Verified session" : "Standard session";
+    if (phase === "recovery_break") {
+      showSessionProgress(
+        `Wellness break \u00B7 ${fmt(breakRemaining)} left`,
+        "Breathe, stretch, walk. Study time is paused.",
+        progress * 100,
+      );
+      return;
+    }
+    if (phase === "awaiting_confirmation") {
+      showSessionProgress(
+        `Break finished \u00B7 ${confirmRemaining}s to continue`,
+        "Return to CommitX and tap Continue Session.",
+        progress * 100,
+      );
+      return;
+    }
     showSessionProgress(
       `${label} \u00B7 ${fmt(remaining)} left`,
       `${goal} \u00B7 ${Math.round(progress * 100)}% of ${duration} min complete`,
       progress * 100,
     );
-  }, [remaining, progress, goal, duration, mode]);
+  }, [remaining, progress, goal, duration, mode, phase, breakRemaining, confirmRemaining]);
 
   useEffect(() => () => hideSessionProgress(), []);
 
@@ -685,7 +716,12 @@ function LiveSession() {
 
   return (
     <div className="relative flex min-h-dvh flex-col bg-background px-6 pb-10 pt-14">
-      <WindScape fixed={false} className="z-0 md:top-28 lg:top-32" />
+      <SessionScene
+        theme={sessionTheme}
+        progress={progress}
+        paused={onBreak}
+        className="z-0 md:top-28 lg:top-32"
+      />
       <div className="relative z-10 flex items-center justify-center">
 
         <p className="text-xs uppercase tracking-widest text-muted-foreground">
@@ -723,7 +759,7 @@ function LiveSession() {
           )}
           {onBreak && (
             <p className="mt-6 rounded-full bg-primary/10 px-4 py-1.5 text-[11px] uppercase tracking-widest text-primary">
-              Recovery break · timer paused
+              Wellness break · timer paused
             </p>
           )}
         </div>
@@ -752,7 +788,10 @@ function LiveSession() {
 
             {phase === "recovery_break" ? (
               <>
-                <p className="mt-5 font-display text-xl font-semibold">Recovery break</p>
+                <p className="mt-5 font-display text-xl font-semibold">
+                  Time to breathe, relax, walk &amp; stretch 🌿
+                </p>
+                <p className="mt-2 text-sm text-muted-foreground">Take 5 minutes for yourself.</p>
                 <p className="mt-6 font-display text-5xl font-semibold tabular-nums tracking-tight text-primary">
                   {fmt(breakRemaining)}
                 </p>
@@ -765,17 +804,20 @@ function LiveSession() {
                   />
                 </div>
                 <p className="mt-6 text-sm leading-relaxed text-muted-foreground">
-                  Breathe. Stretch. Take a short walk. Rest your eyes.
+                  Your study time is paused — the sand timer is frozen and resumes exactly
+                  where it stopped.
                 </p>
                 <p className="mt-3 text-[11px] uppercase tracking-widest text-muted-foreground">
-                  You may use your phone freely · nothing fails now
+                  {isVerified
+                    ? "Stay inside CommitX · verified rules still apply"
+                    : "You may leave the app · the break keeps counting"}
                 </p>
               </>
             ) : (
               <>
-                <p className="mt-5 font-display text-xl font-semibold">Are you refreshed?</p>
+                <p className="mt-5 font-display text-xl font-semibold">Break finished</p>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Confirm within {confirmRemaining}s to resume your commitment.
+                  Tap Continue Session within {confirmRemaining}s to resume your commitment.
                 </p>
                 <p className="mt-5 font-display text-4xl font-semibold tabular-nums text-primary">
                   0:{confirmRemaining.toString().padStart(2, "0")}
@@ -784,10 +826,10 @@ function LiveSession() {
                   onClick={confirmRefreshed}
                   className="mt-6 w-full rounded-full bg-primary px-6 py-4 text-sm font-medium text-primary-foreground"
                 >
-                  Yes, I&rsquo;m refreshed
+                  Continue Session
                 </button>
                 <p className="mt-3 text-[11px] uppercase tracking-widest text-muted-foreground">
-                  Not confirming ends the commitment
+                  Not continuing within 1 minute fails the commitment
                 </p>
               </>
             )}

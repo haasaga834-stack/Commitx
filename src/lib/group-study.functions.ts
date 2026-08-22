@@ -30,6 +30,7 @@ export const createGroup = createServerFn({ method: "POST" })
         duration: z.number().int().min(10).max(360),
         value: z.number().int().min(50).max(500),
         mode: z.enum(["standard", "verified"]),
+        theme: z.enum(["leaves", "fireflies", "tree", "moon", "lotus"]).default("leaves"),
       })
       .parse(data),
   )
@@ -42,6 +43,7 @@ export const createGroup = createServerFn({ method: "POST" })
         _duration: data.duration,
         _value: data.value,
         _mode: data.mode,
+        _theme: data.theme,
       });
       const row = Array.isArray(rows) ? rows[0] : null;
       if (error || !row) return { error: error?.message || "Could not create the group." };

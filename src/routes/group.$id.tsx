@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Hourglass } from "@/components/Hourglass";
-import { WindScape } from "@/components/WindScape";
+import { SessionScene } from "@/components/SessionScene";
 import { formatINR } from "@/lib/commitx-store";
 import {
   cancelGroup,
@@ -594,7 +594,7 @@ function GroupSession() {
   if (isTablet) {
     return (
       <div className="relative flex min-h-dvh flex-col bg-background px-10 pb-10 pt-12 lg:px-16">
-        <WindScape fixed={false} className="z-0" />
+        <SessionScene theme={group.theme} progress={progress} className="z-0" />
         <div className="relative z-10 mx-auto flex w-full max-w-5xl items-center justify-between">
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
             Group {isVerified ? "verified" : "standard"} session
@@ -691,7 +691,7 @@ function GroupSession() {
 
   return (
     <div className="relative flex min-h-dvh flex-col bg-background px-6 pb-10 pt-14">
-      <WindScape fixed={false} className="z-0" />
+      <SessionScene theme={group.theme} progress={progress} className="z-0" />
       <div className="relative z-10 flex items-center justify-center">
         <p className="text-xs uppercase tracking-widest text-muted-foreground">
           Group {isVerified ? "verified" : "standard"} session

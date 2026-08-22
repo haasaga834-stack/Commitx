@@ -257,6 +257,7 @@ export type Database = {
           mode: string
           started_at: string | null
           status: string
+          theme: string
           updated_at: string
         }
         Insert: {
@@ -271,6 +272,7 @@ export type Database = {
           mode?: string
           started_at?: string | null
           status?: string
+          theme?: string
           updated_at?: string
         }
         Update: {
@@ -285,6 +287,7 @@ export type Database = {
           mode?: string
           started_at?: string | null
           status?: string
+          theme?: string
           updated_at?: string
         }
         Relationships: []
@@ -436,6 +439,7 @@ export type Database = {
           _duration: number
           _goal: string
           _mode: string
+          _theme?: string
           _user_id: string
           _value: number
         }

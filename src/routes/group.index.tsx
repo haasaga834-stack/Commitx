@@ -14,6 +14,8 @@ import {
 import { cn } from "@/lib/utils";
 import { TabletShell } from "@/components/TabletShell";
 import { useIsTablet } from "@/lib/use-tablet";
+import { ThemePicker } from "@/components/ThemePicker";
+import type { SessionThemeId } from "@/lib/session-themes";
 import { formatINR, MIN_COMMIT, MAX_COMMIT, useAppState } from "@/lib/commitx-store";
 import {
   createGroup,
@@ -70,6 +72,7 @@ function GroupIndex() {
   const [value, setValue] = useState(MIN_COMMIT);
   const [mode, setMode] = useState<"standard" | "verified">("standard");
   const [busy, setBusy] = useState(false);
+  const [themeOpen, setThemeOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [code, setCode] = useState("");
@@ -108,13 +111,20 @@ function GroupIndex() {
     }
   }, [openGroupFn]);
 
-  async function onCreate() {
+  /** Hosts pick the shared ambience before the group is created. */
+  function onCreate() {
+    if (busy || openGroup) return;
+    setError(null);
+    setThemeOpen(true);
+  }
+
+  async function createWithTheme(theme: SessionThemeId) {
     if (busy || openGroup) return;
     setBusy(true);
     setError(null);
     try {
       const res = await create({
-        data: { goal: "Group Study", duration, value, mode },
+        data: { goal: "Group Study", duration, value, mode, theme },
       });
       if ("error" in res) {
         setError(res.error);
@@ -127,6 +137,7 @@ function GroupIndex() {
       await recoverOpenGroup();
     } finally {
       setBusy(false);
+      setThemeOpen(false);
     }
   }
 
@@ -556,6 +567,15 @@ function GroupIndex() {
           </div>
         </div>
       )}
+      <ThemePicker
+        open={themeOpen}
+        starting={busy}
+        confirmLabel="Create group"
+        title="Choose the group's mood"
+        subtitle="Everyone in this group studies inside the scene you pick."
+        onCancel={() => setThemeOpen(false)}
+        onConfirm={(theme) => void createWithTheme(theme)}
+      />
     </div>
   );
 
