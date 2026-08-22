@@ -55,13 +55,14 @@ export const previewInvite = createServerFn({ method: "GET" })
   .inputValidator((data: unknown) =>
     z.object({ code: z.string().trim().min(4).max(12) }).parse(data),
   )
-  .handler(async ({ data, context }): Promise<InvitePreviewDTO> => {
+  .handler(async ({ data, context }): Promise<InvitePreviewDTO | { error: string }> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: rows, error } = await supabaseAdmin.rpc("group_invite_preview", {
       _code: data.code.toUpperCase(),
     });
     const row = (rows as InvitePreviewRow[] | null)?.[0];
-    if (error || !row) throw new Error("That invite code doesn't exist.");
+    if (error || !row) return { error: "That invite code doesn't exist." };
+
 
     const { data: mine } = await supabaseAdmin
       .from("group_members")
