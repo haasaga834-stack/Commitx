@@ -122,10 +122,12 @@ export type Database = {
           created_at: string
           display_name: string
           group_id: string
+          held_amount: number
           id: string
           joined_at: string | null
           left_at: string | null
           role: string
+          settled_at: string | null
           status: string
           user_id: string
         }
@@ -134,10 +136,12 @@ export type Database = {
           created_at?: string
           display_name?: string
           group_id: string
+          held_amount?: number
           id?: string
           joined_at?: string | null
           left_at?: string | null
           role?: string
+          settled_at?: string | null
           status?: string
           user_id: string
         }
@@ -146,10 +150,12 @@ export type Database = {
           created_at?: string
           display_name?: string
           group_id?: string
+          held_amount?: number
           id?: string
           joined_at?: string | null
           left_at?: string | null
           role?: string
+          settled_at?: string | null
           status?: string
           user_id?: string
         }
@@ -395,18 +401,21 @@ export type Database = {
         Row: {
           demo_balance: number
           real_balance: number
+          reserved_demo: number
           updated_at: string
           user_id: string
         }
         Insert: {
           demo_balance?: number
           real_balance?: number
+          reserved_demo?: number
           updated_at?: string
           user_id: string
         }
         Update: {
           demo_balance?: number
           real_balance?: number
+          reserved_demo?: number
           updated_at?: string
           user_id?: string
         }
@@ -417,8 +426,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cancel_study_group: {
+        Args: { _group_id: string; _user_id: string }
+        Returns: boolean
+      }
       community_food_coins: { Args: never; Returns: number }
+      create_study_group: {
+        Args: {
+          _duration: number
+          _goal: string
+          _mode: string
+          _user_id: string
+          _value: number
+        }
+        Returns: {
+          code: string
+          id: string
+        }[]
+      }
       generate_referral_code: { Args: never; Returns: string }
+      group_display_name: { Args: { _user_id: string }; Returns: string }
       group_invite_preview: {
         Args: { _code: string }
         Returns: {
@@ -432,12 +459,31 @@ export type Database = {
           status: string
         }[]
       }
+      join_study_group: {
+        Args: { _code: string; _user_id: string }
+        Returns: string
+      }
       leaderboard_top: {
         Args: { _limit?: number }
         Returns: {
           display_name: string
           total_minutes: number
           user_id: string
+        }[]
+      }
+      settle_expired_study_group: {
+        Args: { _group_id: string; _user_id: string }
+        Returns: boolean
+      }
+      settle_study_group_member: {
+        Args: { _group_id: string; _status: string; _user_id: string }
+        Returns: string
+      }
+      start_study_group: {
+        Args: { _group_id: string; _user_id: string }
+        Returns: {
+          ends_at: string
+          started_at: string
         }[]
       }
     }

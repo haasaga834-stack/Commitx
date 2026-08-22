@@ -52,11 +52,9 @@ export function GroupLobbyTablet({
           </p>
         </div>
 
-        <header className="mt-10 flex flex-wrap items-end justify-between gap-6">
+        <header className="mt-10 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-6">
           <div className="min-w-0">
-            <h1 className="font-display text-5xl font-semibold leading-tight">
-              {group.goal}
-            </h1>
+            <h1 className="font-display text-5xl font-semibold leading-tight">{group.goal}</h1>
             <p className="mt-3 text-sm text-muted-foreground">
               {group.duration_minutes} minutes · {formatINR(group.commit_value)} each ·{" "}
               {group.mode === "verified" ? "Verified" : "Standard"}
@@ -72,7 +70,7 @@ export function GroupLobbyTablet({
           </div>
         </header>
 
-        <div className="mt-10 grid grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] items-start gap-8">
+        <div className="mt-10 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
           {/* Participants */}
           <section className="rounded-4xl border border-hairline bg-card p-8 shadow-soft">
             <h2 className="font-display text-xl font-semibold">Participants</h2>
@@ -99,17 +97,15 @@ export function GroupLobbyTablet({
                   </span>
                 </li>
               ))}
-              {Array.from({ length: Math.max(0, MAX_GROUP_SIZE - members.length) }).map(
-                (_, i) => (
-                  <li
-                    key={`empty-${i}`}
-                    className="flex items-center gap-4 rounded-3xl border border-dashed border-hairline px-5 py-4 text-xs text-muted-foreground"
-                  >
-                    <span className="h-11 w-11 shrink-0 rounded-full border border-dashed border-hairline" />
-                    Open seat
-                  </li>
-                ),
-              )}
+              {Array.from({ length: Math.max(0, MAX_GROUP_SIZE - members.length) }).map((_, i) => (
+                <li
+                  key={`empty-${i}`}
+                  className="flex items-center gap-4 rounded-3xl border border-dashed border-hairline px-5 py-4 text-xs text-muted-foreground"
+                >
+                  <span className="h-11 w-11 shrink-0 rounded-full border border-dashed border-hairline" />
+                  Open seat
+                </li>
+              ))}
             </ul>
           </section>
 
@@ -118,8 +114,8 @@ export function GroupLobbyTablet({
             <section className="rounded-4xl border border-hairline bg-card p-8 shadow-soft">
               <h2 className="font-display text-xl font-semibold">Invite friends</h2>
               <p className="mt-1 text-xs text-muted-foreground">
-                Share this code. Friends accept the terms and commit the same amount to
-                join. Max {MAX_GROUP_SIZE} people.
+                Share this code. Friends accept the terms and commit the same amount to join. Max{" "}
+                {MAX_GROUP_SIZE} people.
               </p>
               <button
                 onClick={onCopy}
@@ -174,8 +170,7 @@ export function GroupLobbyTablet({
                 </>
               ) : (
                 <p className="rounded-3xl bg-accent/10 px-5 py-4 text-sm text-primary">
-                  You're committed. The host starts the shared timer — keep this screen
-                  open.
+                  You're committed. The host starts the shared timer — keep this screen open.
                 </p>
               )}
             </section>
