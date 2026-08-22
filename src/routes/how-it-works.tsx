@@ -228,3 +228,40 @@ function PolicyCard({
   );
 }
 
+function Section({
+  icon,
+  title,
+  points,
+  delay,
+  children,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  points: string[];
+  delay: number;
+  children?: React.ReactNode;
+}) {
+  return (
+    <section
+      className="rounded-3xl bg-card p-5 shadow-soft animate-fade-up"
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      <div className="flex items-center gap-3">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/15 text-primary">
+          {icon}
+        </span>
+        <h2 className="min-w-0 text-sm font-semibold text-foreground">{title}</h2>
+      </div>
+      <ul className="mt-3 space-y-2">
+        {points.map((p) => (
+          <li key={p} className="flex gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary/60" />
+            <span className="min-w-0">{p}</span>
+          </li>
+        ))}
+      </ul>
+      {children}
+    </section>
+  );
+}
+
