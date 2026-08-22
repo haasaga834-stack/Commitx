@@ -473,9 +473,8 @@ function LiveSession() {
   // the foreground re-reads the clock and persists state, so the display picks
   // up exactly where real time is — never a stale frame or a jump.
   useEffect(() => {
-    // Also used by Verified sessions while a recovery break / confirmation is
-    // pending, since leaving the app is explicitly allowed then.
-    if (isVerified && phase === "focus") return;
+    // Verified sessions handle their own lifecycle listeners (breaks included).
+    if (isVerified) return;
 
 
     const resync = () => {
@@ -509,9 +508,9 @@ function LiveSession() {
 
   // Verified mode: foreground-only, with a 60s emergency grace window.
   useEffect(() => {
-    // Verified restrictions are suspended (only) during a recovery break and
-    // its confirmation window, then immediately resume.
-    if (!isVerified || dndBlocked || phase !== "focus") return;
+    // Verified restrictions stay enforced for the entire session — including the
+    // wellness break, which is an in-app pause, not permission to leave.
+    if (!isVerified || dndBlocked) return;
     log("Verified Mode Armed", { startedAt, totalMs });
     setNativeVerifiedModeActive(true);
 
@@ -588,7 +587,7 @@ function LiveSession() {
       window.removeEventListener("commitx:android-multi-window", onNativeMultiWindow);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVerified, dndBlocked, phase]);
+  }, [isVerified, dndBlocked]);
 
   const elapsedMs = Math.min(totalMs, accumulatedRef.current + (runningSinceRef.current ? now - runningSinceRef.current : 0));
   const progress = totalMs > 0 ? elapsedMs / totalMs : 0;
@@ -744,7 +743,7 @@ function LiveSession() {
           )}
           {onBreak && (
             <p className="mt-6 rounded-full bg-primary/10 px-4 py-1.5 text-[11px] uppercase tracking-widest text-primary">
-              Recovery break · timer paused
+              Wellness break · timer paused
             </p>
           )}
         </div>
@@ -773,7 +772,10 @@ function LiveSession() {
 
             {phase === "recovery_break" ? (
               <>
-                <p className="mt-5 font-display text-xl font-semibold">Recovery break</p>
+                <p className="mt-5 font-display text-xl font-semibold">
+                  Time to breathe, relax, walk &amp; stretch 🌿
+                </p>
+                <p className="mt-2 text-sm text-muted-foreground">Take 5 minutes for yourself.</p>
                 <p className="mt-6 font-display text-5xl font-semibold tabular-nums tracking-tight text-primary">
                   {fmt(breakRemaining)}
                 </p>
@@ -786,17 +788,20 @@ function LiveSession() {
                   />
                 </div>
                 <p className="mt-6 text-sm leading-relaxed text-muted-foreground">
-                  Breathe. Stretch. Take a short walk. Rest your eyes.
+                  Your study time is paused — the sand timer is frozen and resumes exactly
+                  where it stopped.
                 </p>
                 <p className="mt-3 text-[11px] uppercase tracking-widest text-muted-foreground">
-                  You may use your phone freely · nothing fails now
+                  {isVerified
+                    ? "Stay inside CommitX · verified rules still apply"
+                    : "You may leave the app · the break keeps counting"}
                 </p>
               </>
             ) : (
               <>
-                <p className="mt-5 font-display text-xl font-semibold">Are you refreshed?</p>
+                <p className="mt-5 font-display text-xl font-semibold">Break finished</p>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Confirm within {confirmRemaining}s to resume your commitment.
+                  Tap Continue Session within {confirmRemaining}s to resume your commitment.
                 </p>
                 <p className="mt-5 font-display text-4xl font-semibold tabular-nums text-primary">
                   0:{confirmRemaining.toString().padStart(2, "0")}
@@ -805,10 +810,10 @@ function LiveSession() {
                   onClick={confirmRefreshed}
                   className="mt-6 w-full rounded-full bg-primary px-6 py-4 text-sm font-medium text-primary-foreground"
                 >
-                  Yes, I&rsquo;m refreshed
+                  Continue Session
                 </button>
                 <p className="mt-3 text-[11px] uppercase tracking-widest text-muted-foreground">
-                  Not confirming ends the commitment
+                  Not continuing within 1 minute fails the commitment
                 </p>
               </>
             )}
