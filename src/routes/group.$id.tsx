@@ -347,13 +347,7 @@ function GroupSession() {
               join. Max {MAX_GROUP_SIZE} people.
             </p>
             <button
-              onClick={() => {
-                try {
-                  void navigator.clipboard?.writeText(group.code);
-                  setCopied(true);
-                  window.setTimeout(() => setCopied(false), 1500);
-                } catch {}
-              }}
+              onClick={copyCode}
               className="mt-3 flex w-full items-center justify-between rounded-2xl border border-hairline bg-background px-4 py-3.5"
             >
               <span className="font-display text-2xl font-semibold tracking-[0.3em] text-foreground">
