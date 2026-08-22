@@ -46,7 +46,10 @@ const search = z.object({
   duration: z.coerce.number().min(1).default(30),
   value: z.coerce.number().min(0).default(10),
   mode: z.enum(["standard", "verified"]).default("standard"),
-  preferReal: z.string().optional(),
+  preferReal: z
+    .union([z.string(), z.number(), z.boolean()])
+    .optional()
+    .transform((v) => (v === undefined ? undefined : String(v).replace(/"/g, ""))),
 });
 
 export const Route = createFileRoute("/session")({
