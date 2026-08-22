@@ -28,6 +28,8 @@ import {
 } from "@/lib/group-study";
 import { setNativeSessionLock } from "@/lib/native-session";
 import { showSessionProgress, hideSessionProgress } from "@/lib/native-notifications";
+import { useIsTablet } from "@/lib/use-tablet";
+import { GroupLobbyTablet } from "@/components/GroupLobbyTablet";
 
 export const Route = createFileRoute("/group/$id")({
   head: () => ({
@@ -82,6 +84,7 @@ const VERIFIED_GRACE_MS = 60_000;
 function GroupSession() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
+  const isTablet = useIsTablet();
   const fetchState = useServerFn(getGroupState);
   const start = useServerFn(startGroup);
   const finish = useServerFn(setMyGroupOutcome);
@@ -89,6 +92,8 @@ function GroupSession() {
 
   const [data, setData] = useState<GroupStateDTO | null>(null);
   const [error, setError] = useState<string | null>(null);
+  /** Errors from lobby actions stay inline; they must not replace the screen. */
+  const [actionError, setActionError] = useState<string | null>(null);
   const [offline, setOffline] = useState(false);
   const [busy, setBusy] = useState(false);
   const [confirmLeave, setConfirmLeave] = useState(false);
@@ -100,30 +105,37 @@ function GroupSession() {
   const doneRef = useRef(false);
   const graceRef = useRef<number | null>(null);
 
+  const hasDataRef = useRef(false);
+
   const load = useCallback(async () => {
     try {
       const next = await fetchState({ data: { id } });
       skewRef.current = next.serverNow - Date.now();
+      hasDataRef.current = true;
       setData(next);
       setOffline(false);
       setError(null);
+      return next;
     } catch (e) {
       // A temporary disconnect must never kill the timer — keep the last
       // known state and keep retrying.
-      if (data) setOffline(true);
+      if (hasDataRef.current) setOffline(true);
       else setError(e instanceof Error ? e.message : "Group not found.");
+      return null;
     }
-  }, [fetchState, id, data]);
+  }, [fetchState, id]);
+
+  const loadRef = useRef(load);
+  loadRef.current = load;
 
   useEffect(() => {
-    void load();
-    const poll = window.setInterval(() => void load(), 3000);
+    void loadRef.current();
+    const poll = window.setInterval(() => void loadRef.current(), 3000);
     const tick = window.setInterval(() => setNow(Date.now()), 250);
     return () => {
       window.clearInterval(poll);
       window.clearInterval(tick);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const group = data?.group ?? null;
@@ -234,9 +246,77 @@ function GroupSession() {
   }
 
   const active = data!.members.filter((m) => m.status !== "left");
+  const canStart = active.length >= 2;
+
+  const copyCode = () => {
+    try {
+      void navigator.clipboard?.writeText(group.code);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch {}
+  };
+
+  const onStart = async () => {
+    if (busy) return;
+    setBusy(true);
+    setActionError(null);
+    try {
+      const res = await start({ data: { id } });
+      // Flip locally right away so the shared timer shows without waiting
+      // for the next poll, then reconcile with the server.
+      setData((prev) =>
+        prev
+          ? {
+              ...prev,
+              group: {
+                ...prev.group,
+                status: "active",
+                started_at: res.started_at,
+                ends_at: res.ends_at,
+              },
+              members: prev.members.map((m) =>
+                m.status === "committed" ? { ...m, status: "joined" } : m,
+              ),
+              me:
+                prev.me && prev.me.status === "committed"
+                  ? { ...prev.me, status: "joined" }
+                  : prev.me,
+            }
+          : prev,
+      );
+      await load();
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : "Could not start.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onCancel = async () => {
+    try {
+      await drop({ data: { id } });
+    } catch {}
+    navigate({ to: "/group" });
+  };
 
   /* ------------------------------- Lobby ------------------------------- */
   if (!isActive) {
+    if (isTablet) {
+      return (
+        <GroupLobbyTablet
+          group={group}
+          members={data!.members}
+          isCreator={data!.isCreator}
+          copied={copied}
+          onCopy={copyCode}
+          busy={busy}
+          canStart={canStart}
+          onStart={onStart}
+          onCancel={onCancel}
+          actionError={actionError}
+        />
+      );
+    }
     return (
       <div className="min-h-screen pb-16">
         <div className="mx-auto max-w-md px-6 pt-14">
@@ -267,13 +347,7 @@ function GroupSession() {
               join. Max {MAX_GROUP_SIZE} people.
             </p>
             <button
-              onClick={() => {
-                try {
-                  void navigator.clipboard?.writeText(group.code);
-                  setCopied(true);
-                  window.setTimeout(() => setCopied(false), 1500);
-                } catch {}
-              }}
+              onClick={copyCode}
               className="mt-3 flex w-full items-center justify-between rounded-2xl border border-hairline bg-background px-4 py-3.5"
             >
               <span className="font-display text-2xl font-semibold tracking-[0.3em] text-foreground">
@@ -320,30 +394,26 @@ function GroupSession() {
             </p>
           ) : data!.isCreator ? (
             <>
+              {!canStart && (
+                <p className="mt-6 rounded-2xl bg-foreground/5 px-4 py-3 text-xs text-muted-foreground">
+                  At least one friend must join before you can start.
+                </p>
+              )}
+              {actionError && (
+                <p className="mt-4 rounded-2xl bg-destructive/10 px-4 py-2.5 text-xs text-destructive">
+                  {actionError}
+                </p>
+              )}
               <button
-                onClick={async () => {
-                  if (busy) return;
-                  setBusy(true);
-                  try {
-                    await start({ data: { id } });
-                    await load();
-                  } catch (e) {
-                    setError(e instanceof Error ? e.message : "Could not start.");
-                  } finally {
-                    setBusy(false);
-                  }
-                }}
-                disabled={busy}
-                className="mt-7 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-base font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.98] disabled:opacity-60"
+                onClick={onStart}
+                disabled={busy || !canStart}
+                className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-base font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.98] disabled:opacity-60"
               >
                 <Play className="h-4 w-4" />
                 {busy ? "Starting…" : "Start group session"}
               </button>
               <button
-                onClick={async () => {
-                  await drop({ data: { id } });
-                  navigate({ to: "/group" });
-                }}
+                onClick={onCancel}
                 className="mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-secondary px-6 py-3.5 text-sm font-medium text-secondary-foreground"
               >
                 <Trash2 className="h-4 w-4" />
@@ -374,8 +444,109 @@ function GroupSession() {
     );
   }
 
+  if (isTablet) {
+    return (
+      <div className="relative flex min-h-dvh flex-col bg-background px-10 pb-10 pt-12 lg:px-16">
+        <WindScape fixed={false} className="z-0" />
+        <div className="relative z-10 mx-auto flex w-full max-w-5xl items-center justify-between">
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+            Group {isVerified ? "verified" : "standard"} session
+          </p>
+          <button
+            onClick={() => setConfirmLeave(true)}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-card shadow-soft"
+            aria-label="Leave session"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="relative z-10 mx-auto grid w-full max-w-5xl flex-1 grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)] items-center gap-14">
+          <div className="flex flex-col items-center">
+            <Hourglass size={300} state="running" progress={progress} />
+            <p className="mt-10 w-full text-center font-display text-7xl font-semibold tabular-nums tracking-tight">
+              {fmt((remainingMs ?? 0) / 1000)}
+            </p>
+            <p className="mt-4 w-full text-center text-sm text-muted-foreground">
+              {group.goal}
+            </p>
+            <p className="mt-1 w-full text-center text-xs text-muted-foreground">
+              {formatINR(group.commit_value)} committed each
+            </p>
+          </div>
+
+          <div className="grid gap-5">
+            {isVerified && (
+              <p className="flex items-center gap-2 rounded-3xl bg-foreground/5 px-5 py-3 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                <ShieldCheck className="h-4 w-4" />
+                Leaving CommitX fails you
+              </p>
+            )}
+            <div className="rounded-4xl border border-hairline bg-card p-7 shadow-soft">
+              <h2 className="font-display text-lg font-semibold">Focusing together</h2>
+              <ul className="mt-5 grid gap-3.5">
+                {data!.members.map((m) => (
+                  <li key={m.user_id} className="flex items-center gap-3">
+                    <span
+                      className={`h-2.5 w-2.5 shrink-0 rounded-full ${
+                        m.status === "joined"
+                          ? "bg-primary"
+                          : m.status === "completed"
+                            ? "bg-accent"
+                            : "bg-muted-foreground/40"
+                      }`}
+                    />
+                    <span className="min-w-0 flex-1 truncate text-sm text-foreground">
+                      {m.display_name}
+                      {m.role === "creator" ? " · host" : ""}
+                    </span>
+                    <span className="shrink-0 text-[11px] text-muted-foreground">
+                      {memberStatusLabel(m.status)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {offline && (
+              <p className="text-[11px] text-muted-foreground">
+                Reconnecting… the shared timer keeps running.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {confirmLeave && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-8 backdrop-blur-sm">
+            <div className="w-full max-w-md rounded-4xl bg-card p-8 shadow-lift">
+              <h2 className="font-display text-xl font-semibold">Leave the group?</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Leaving before the shared timer finishes loses your{" "}
+                {formatINR(group.commit_value)} commitment. Your friends keep going.
+              </p>
+              <div className="mt-6 grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => setConfirmLeave(false)}
+                  className="rounded-2xl bg-secondary px-4 py-3 text-sm font-medium text-secondary-foreground"
+                >
+                  Keep focusing
+                </button>
+                <button
+                  onClick={() => settle("failed", "quit")}
+                  className="rounded-2xl bg-destructive px-4 py-3 text-sm font-medium text-destructive-foreground"
+                >
+                  Leave anyway
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="relative flex min-h-dvh flex-col bg-background px-6 pb-10 pt-14">
+
       <WindScape fixed={false} className="z-0" />
       <div className="relative z-10 flex items-center justify-center">
         <p className="text-xs uppercase tracking-widest text-muted-foreground">
