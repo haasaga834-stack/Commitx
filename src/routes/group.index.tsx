@@ -289,8 +289,9 @@ function GroupIndex() {
                     {g.goal} · {fmtDuration(g.duration_minutes)}
                   </span>
                   <span className="block text-[11px] text-muted-foreground">
-                    {formatINR(g.commit_value)} each · {g.mode === "verified" ? "Verified" : "Standard"}{" "}
-                    · {g.status === "active" ? "Running" : "Waiting"}
+                    {formatINR(g.commit_value)} each ·{" "}
+                    {g.mode === "verified" ? "Verified" : "Standard"} ·{" "}
+                    {g.status === "active" ? "Running" : "Waiting"}
                   </span>
                 </span>
                 <ArrowRight className="h-4 w-4 shrink-0 text-primary" />
@@ -463,7 +464,6 @@ function GroupIndex() {
           {joinCard}
         </div>
       )}
-
 
       {/* Terms sheet — a friend must accept and commit before joining */}
       {terms && (

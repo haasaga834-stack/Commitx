@@ -103,6 +103,8 @@ function GroupSession() {
   const skewRef = useRef(0);
   const doneRef = useRef(false);
   const graceRef = useRef<number | null>(null);
+  const activeRef = useRef(false);
+  const participatingRef = useRef(false);
   /** Set once this user cancels/leaves, so polling stops instead of erroring. */
   const leftRef = useRef(false);
 
@@ -124,7 +126,6 @@ function GroupSession() {
       setOffline(false);
       setError(null);
       return next;
-
     } catch (e) {
       // A temporary disconnect must never kill the timer — keep the last
       // known state and keep retrying.
@@ -185,7 +186,6 @@ function GroupSession() {
     };
   }, [id]);
 
-
   const group = data?.group ?? null;
   const me = data?.me ?? null;
   const isActive = group?.status === "active";
@@ -196,13 +196,51 @@ function GroupSession() {
   const totalMs = (group?.duration_minutes ?? 0) * 60_000;
   const progress = remainingMs !== null && totalMs > 0 ? 1 - remainingMs / totalMs : 0;
   const stillIn = me?.status === "committed" || me?.status === "joined";
+  activeRef.current = Boolean(isActive);
+  participatingRef.current = stillIn;
 
-  /** Native lock + progress notification while the shared timer runs. */
+  /**
+   * Android/system back must never silently abandon a group. In a lobby it
+   * returns to the Group dashboard, where the unfinished card always exposes
+   * Cancel/Leave. During a running session it opens the existing penalty
+   * confirmation instead of navigating away.
+   */
   useEffect(() => {
-    if (!isActive || !stillIn) return;
-    setNativeSessionLock(isVerified);
-    return () => setNativeSessionLock(false);
-  }, [isActive, stillIn, isVerified]);
+    const pushLock = () => {
+      try {
+        window.history.pushState({ commitxGroupLock: Date.now() }, "");
+      } catch {
+        // Native back interception still protects the Android app.
+      }
+    };
+
+    const handleBack = () => {
+      if (!participatingRef.current || doneRef.current) return;
+      if (activeRef.current) {
+        setConfirmLeave(true);
+        return;
+      }
+      void navigate({ to: "/group", replace: true });
+    };
+
+    pushLock();
+    setNativeSessionLock(true);
+    const previousBridge = window.CommitXSession;
+    window.CommitXSession = { ...previousBridge, onAndroidBack: handleBack };
+
+    const onPopState = () => {
+      if (!participatingRef.current || doneRef.current) return;
+      pushLock();
+      handleBack();
+    };
+    window.addEventListener("popstate", onPopState);
+
+    return () => {
+      setNativeSessionLock(false);
+      window.CommitXSession = previousBridge;
+      window.removeEventListener("popstate", onPopState);
+    };
+  }, [navigate]);
 
   useEffect(() => {
     if (!isActive || !stillIn || remainingMs === null || !group) return;
