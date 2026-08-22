@@ -7,6 +7,7 @@ interface HourglassProps {
   /** 0 = full top / just started, 1 = fully drained. When omitted, idle shows full top. */
   progress?: number;
   className?: string;
+  floating?: boolean;
 }
 
 /**
@@ -19,6 +20,7 @@ export function Hourglass({
   state = "idle",
   progress,
   className,
+  floating = true,
 }: HourglassProps) {
   const p = Math.min(1, Math.max(0, progress ?? (state === "success" ? 1 : 0)));
 
@@ -45,7 +47,7 @@ export function Hourglass({
       className={cn(
         "relative inline-flex items-center justify-center",
         state === "success" && "animate-soft-glow",
-        (state === "idle" || state === "running") && "animate-gentle-float",
+        floating && (state === "idle" || state === "running") && "animate-gentle-float",
         className,
       )}
       style={{ width: size, height: size }}
