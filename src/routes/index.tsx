@@ -24,21 +24,20 @@ import {
   priorityLabel,
 } from "@/lib/planner";
 
+const HOME_TITLE = "CommitX Dashboard — Focus Commitments & Study Streaks";
+const HOME_DESCRIPTION =
+  "Your CommitX dashboard: start a focused study commitment, track streaks, Cx Coins and today's plan in one calm place.";
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "CommitX — Home" },
-      {
-        name: "description",
-        content:
-          "Start a focused commitment. One promise at a time, kept beautifully.",
-      },
-      { property: "og:title", content: "CommitX — Home" },
-      {
-        property: "og:description",
-        content: "Start a focused commitment. One promise at a time, kept beautifully.",
-      },
+      { title: HOME_TITLE },
+      { name: "description", content: HOME_DESCRIPTION },
+      { property: "og:title", content: HOME_TITLE },
+      { property: "og:description", content: HOME_DESCRIPTION },
+      { property: "og:url", content: "https://commitx.site/" },
     ],
+    links: [{ rel: "canonical", href: "https://commitx.site/" }],
   }),
   component: Home,
 });
