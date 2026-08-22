@@ -132,7 +132,7 @@ function GroupSession() {
       else setError(e instanceof Error ? e.message : "Group not found.");
       return null;
     }
-  }, [fetchState, id]);
+  }, [fetchState, id, navigate]);
 
   const loadRef = useRef(load);
   loadRef.current = load;
