@@ -94,6 +94,10 @@ function GroupIndex() {
     setAccepted(false);
     try {
       const res = await preview({ data: { code: code.trim() } });
+      if ("error" in res) {
+        setError(res.error);
+        return;
+      }
       setTerms(res);
     } catch (e) {
       setError(e instanceof Error ? e.message : "That invite code doesn't exist.");
