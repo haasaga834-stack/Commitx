@@ -156,21 +156,21 @@ function HowItWorks() {
           />
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <Link
+        <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+          <PolicyCard
             to="/privacy"
-            className="inline-flex items-center gap-1.5 rounded-full bg-card px-3.5 py-2 text-[11px] font-medium text-muted-foreground shadow-soft transition-transform active:scale-[0.97]"
-          >
-            <Lock className="h-3.5 w-3.5 text-primary" />
-            Privacy Policy
-          </Link>
-          <Link
+            icon={<Lock className="h-4 w-4" />}
+            title="Privacy Policy"
+            description="How we collect, use, and protect your data."
+            delay={420}
+          />
+          <PolicyCard
             to="/terms"
-            className="inline-flex items-center gap-1.5 rounded-full bg-card px-3.5 py-2 text-[11px] font-medium text-muted-foreground shadow-soft transition-transform active:scale-[0.97]"
-          >
-            <ScrollText className="h-3.5 w-3.5 text-primary" />
-            Terms of Service
-          </Link>
+            icon={<ScrollText className="h-4 w-4" />}
+            title="Terms of Service"
+            description="The rules and responsibilities of using CommitX."
+            delay={480}
+          />
         </div>
 
 
@@ -192,6 +192,39 @@ function HowItWorks() {
         </div>
       </div>
     </MobileShell>
+  );
+}
+
+function PolicyCard({
+  to,
+  icon,
+  title,
+  description,
+  delay,
+}: {
+  to: string;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  delay: number;
+}) {
+  return (
+    <Link
+      to={to}
+      className="group flex items-center gap-4 rounded-3xl bg-card p-5 shadow-soft transition-transform animate-fade-up active:scale-[0.98]"
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/15 text-primary transition-colors group-hover:bg-accent/25">
+        {icon}
+      </span>
+      <div className="min-w-0 flex-1">
+        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+        <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+          {description}
+        </p>
+      </div>
+      <ArrowLeft className="h-4 w-4 shrink-0 rotate-180 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+    </Link>
   );
 }
 
@@ -231,3 +264,4 @@ function Section({
     </section>
   );
 }
+
