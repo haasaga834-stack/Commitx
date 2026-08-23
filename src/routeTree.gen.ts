@@ -17,6 +17,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SessionRouteImport } from './routes/session'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PlannerRouteImport } from './routes/planner'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
@@ -70,6 +71,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
+  id: '/privacy-policy',
+  path: '/privacy-policy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -156,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/how-it-works': typeof HowItWorksRoute
   '/planner': typeof PlannerRoute
   '/privacy': typeof PrivacyRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/session': typeof SessionRoute
@@ -180,6 +187,7 @@ export interface FileRoutesByTo {
   '/how-it-works': typeof HowItWorksRoute
   '/planner': typeof PlannerRoute
   '/privacy': typeof PrivacyRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/session': typeof SessionRoute
@@ -205,6 +213,7 @@ export interface FileRoutesById {
   '/how-it-works': typeof HowItWorksRoute
   '/planner': typeof PlannerRoute
   '/privacy': typeof PrivacyRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/session': typeof SessionRoute
@@ -231,6 +240,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/planner'
     | '/privacy'
+    | '/privacy-policy'
     | '/profile'
     | '/reset-password'
     | '/session'
@@ -255,6 +265,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/planner'
     | '/privacy'
+    | '/privacy-policy'
     | '/profile'
     | '/reset-password'
     | '/session'
@@ -279,6 +290,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/planner'
     | '/privacy'
+    | '/privacy-policy'
     | '/profile'
     | '/reset-password'
     | '/session'
@@ -304,6 +316,7 @@ export interface RootRouteChildren {
   HowItWorksRoute: typeof HowItWorksRoute
   PlannerRoute: typeof PlannerRoute
   PrivacyRoute: typeof PrivacyRoute
+  PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SessionRoute: typeof SessionRoute
@@ -372,6 +385,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy-policy': {
+      id: '/privacy-policy'
+      path: '/privacy-policy'
+      fullPath: '/privacy-policy'
+      preLoaderRoute: typeof PrivacyPolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -488,6 +508,7 @@ const rootRouteChildren: RootRouteChildren = {
   HowItWorksRoute: HowItWorksRoute,
   PlannerRoute: PlannerRoute,
   PrivacyRoute: PrivacyRoute,
+  PrivacyPolicyRoute: PrivacyPolicyRoute,
   ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SessionRoute: SessionRoute,

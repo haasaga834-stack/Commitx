@@ -188,24 +188,39 @@ function VerifiedRecovery() {
   return null;
 }
 
+const PUBLIC_PATHS = [
+  "/auth",
+  "/privacy",
+  "/privacy-policy",
+  "/terms",
+  "/about",
+  "/contact",
+  "/how-it-works",
+  "/reset-password",
+];
+
+function isPublicPath(path: string) {
+  return PUBLIC_PATHS.includes(path);
+}
+
 function AuthGate({ children }: { children: ReactNode }) {
   const router = useRouter();
   const { user, loading } = useAuth();
   const pathname = router.state.location.pathname;
   const { needsOnboarding, complete } = useOnboarding(user?.id ?? null);
-
+  const isPublic = isPublicPath(pathname);
 
   useEffect(() => {
     if (loading) return;
-    if (!user && pathname !== "/auth") {
+    if (!user && !isPublic && pathname !== "/auth") {
       router.navigate({ to: "/auth" });
     }
     if (user && pathname === "/auth") {
       router.navigate({ to: "/" });
     }
-  }, [user, loading, pathname, router]);
+  }, [user, loading, pathname, router, isPublic]);
 
-  if (loading) {
+  if (loading && !isPublic) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="h-6 w-6 animate-spin rounded-full border-2 border-hairline border-t-primary" />
@@ -213,7 +228,7 @@ function AuthGate({ children }: { children: ReactNode }) {
     );
   }
 
-  if (!user && pathname !== "/auth") return null;
+  if (!user && !isPublic && pathname !== "/auth") return null;
   return (
     <>
       {children}

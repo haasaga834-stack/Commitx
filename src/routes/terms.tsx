@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { MobileShell } from "@/components/BottomNav";
 import { ArrowLeft, ScrollText } from "lucide-react";
+import { PublicFooter } from "@/components/PublicFooter";
 
 export const Route = createFileRoute("/terms")({
   head: () => ({
@@ -124,7 +125,7 @@ const SECTIONS: { title: string; body: string[] }[] = [
   {
     title: "15. Contact",
     body: [
-      "Questions about these terms? Email us at support@commitx.site.",
+      "Questions about these terms? Email us at commitx07@gmail.com.",
     ],
   },
 ];
@@ -170,6 +171,7 @@ function TermsPage() {
           ))}
         </div>
       </div>
+      <PublicFooter />
     </MobileShell>
   );
 }
