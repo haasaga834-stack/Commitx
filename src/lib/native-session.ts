@@ -23,6 +23,8 @@ declare global {
       syncTodos?: (itemsJson: string) => void;
       clearTodoNotification?: () => void;
       syncStudyPlans?: (plansJson: string) => void;
+      setMotivationNotifications?: (on: boolean) => void;
+      reconcileMotivationNotifications?: () => void;
 
       showSessionProgress?: (title: string, text: string, progress: number) => void;
       hideSessionProgress?: () => void;

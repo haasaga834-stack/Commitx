@@ -25,6 +25,22 @@ export function setNotificationsAllowed(allowed: boolean) {
       bridge()?.syncStudyPlans?.("[]");
     } catch {}
   }
+  try {
+    bridge()?.setMotivationNotifications?.(allowed);
+  } catch {}
+}
+
+/**
+ * Re-arms the native daily motivation alarms (8:00 AM / 7:00 PM local time)
+ * without ever creating duplicates. Safe to call on every app start.
+ */
+export function reconcileMotivationNotifications() {
+  try {
+    const b = bridge();
+    if (!b) return;
+    if (notificationsAllowed()) b.reconcileMotivationNotifications?.();
+    else b.setMotivationNotifications?.(false);
+  } catch {}
 }
 
 /* --------------------------- Permission handling ------------------------- */
@@ -115,6 +131,7 @@ export function syncStudyPlanReminders(
   plans: {
     id: string;
     subject: string;
+    topic?: string;
     time: string;
     durationMinutes: number;
     repeat: string;
