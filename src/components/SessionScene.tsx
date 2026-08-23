@@ -347,64 +347,52 @@ function LotusPond({ progress }: { progress: number }) {
   const petalsOuter = [-78, -52, -26, 0, 26, 52, 78];
   const petalsInner = [-42, -14, 14, 42];
 
-  const motes = useSeeded(() =>
-    Array.from({ length: 14 }, (_, i) => ({
-      left: `${(i * 31) % 92 + 4}%`,
-      top: `${(i * 47) % 52 + 6}%`,
-      size: 2 + (i % 3),
-      delay: `-${(i * 1.7) % 11}s`,
-      duration: `${13 + ((i * 5) % 9)}s`,
-      glow: `${3 + ((i * 3) % 4) * 0.5}s`,
+  // Soft dawn mist wisps — no moon, no fireflies (those belong to other themes).
+  const mist = useSeeded(() =>
+    Array.from({ length: 5 }, (_, i) => ({
+      top: `${18 + i * 9}%`,
+      width: `${52 + ((i * 17) % 34)}%`,
+      left: `${(i * 23) % 40}%`,
+      delay: `-${(i * 3.1) % 14}s`,
+      duration: `${18 + ((i * 4) % 8)}s`,
+      opacity: 0.1 + (i % 3) * 0.05,
     })),
   );
 
   return (
-    <div className="absolute inset-0 bg-[radial-gradient(120%_95%_at_50%_6%,oklch(0.36_0.045_255)_0%,oklch(0.24_0.04_235)_48%,oklch(0.16_0.035_225)_100%)]">
-      {/* Moon and its soft haze */}
-      <div
-        className="absolute left-1/2 top-[8%] h-14 w-14 -translate-x-1/2 rounded-full"
-        style={{
-          background:
-            "radial-gradient(circle at 38% 34%, oklch(0.98 0.02 95) 0%, oklch(0.93 0.03 95) 60%, oklch(0.86 0.04 95) 100%)",
-          boxShadow: "0 0 70px 24px oklch(0.95 0.03 95 / 0.18)",
-        }}
-      />
-
-      {/* Drifting light motes / fireflies */}
-      {motes.map((m, i) => (
+    <div className="absolute inset-0 bg-[radial-gradient(120%_95%_at_50%_4%,oklch(0.86_0.05_120)_0%,oklch(0.74_0.06_160)_46%,oklch(0.55_0.07_185)_100%)]">
+      {/* Drifting dawn mist */}
+      {mist.map((m, i) => (
         <span
           key={i}
-          className="absolute rounded-full animate-firefly-drift"
+          className="absolute h-10 rounded-full animate-lotus-drift"
           style={{
-            left: m.left,
             top: m.top,
-            width: m.size,
-            height: m.size,
+            left: m.left,
+            width: m.width,
+            opacity: m.opacity,
             animationDelay: m.delay,
             animationDuration: m.duration,
-            background: "oklch(0.96 0.05 95)",
-            boxShadow: "0 0 8px 2px oklch(0.94 0.06 95 / 0.4)",
+            background:
+              "linear-gradient(to right, transparent, oklch(0.99 0.01 120), transparent)",
+            filter: "blur(10px)",
           }}
-        >
-          <span
-            className="absolute inset-0 rounded-full animate-firefly-glow"
-            style={{ animationDuration: m.glow, background: "inherit" }}
-          />
-        </span>
+        />
       ))}
 
       {/* Water body */}
-      <div className="absolute inset-x-0 bottom-0 h-[52%] bg-[linear-gradient(to_bottom,oklch(0.32_0.05_225_/_0.85)_0%,oklch(0.22_0.045_228)_45%,oklch(0.15_0.035_230)_100%)]">
-        {/* Moon reflection column */}
+      <div className="absolute inset-x-0 bottom-0 h-[52%] bg-[linear-gradient(to_bottom,oklch(0.66_0.07_185_/_0.9)_0%,oklch(0.5_0.07_195)_48%,oklch(0.38_0.06_200)_100%)]">
+        {/* Gentle light sheen on the water */}
         <div
-          className="absolute left-1/2 top-0 h-full w-16 -translate-x-1/2 animate-lotus-shimmer"
+          className="absolute left-1/2 top-0 h-full w-28 -translate-x-1/2 animate-lotus-shimmer"
           style={{
             background:
-              "linear-gradient(to bottom, oklch(0.95 0.03 95 / 0.22) 0%, oklch(0.9 0.03 95 / 0.08) 45%, transparent 100%)",
-            filter: "blur(6px)",
+              "linear-gradient(to bottom, oklch(0.98 0.02 130 / 0.2) 0%, oklch(0.95 0.02 150 / 0.06) 50%, transparent 100%)",
+            filter: "blur(8px)",
           }}
         />
       </div>
+
 
       {/* Ripples radiating from the flower */}
       {[0, 1, 2, 3].map((i) => (
