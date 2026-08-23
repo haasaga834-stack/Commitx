@@ -9,6 +9,12 @@ import {
   type InvitePreviewDTO,
 } from "./group-study.shared";
 
+/**
+ * Lobby reads run over POST so no browser or proxy cache can replay a stale
+ * waiting room: a cached response is exactly how a host ends up staring at an
+ * empty lobby while friends have already joined.
+ */
+
 interface InvitePreviewRow {
   id: string;
   goal: string;
@@ -50,7 +56,7 @@ export const createGroup = createServerFn({ method: "POST" })
   });
 
 /** Terms a friend sees before accepting — read through a trusted server path. */
-export const previewInvite = createServerFn({ method: "GET" })
+export const previewInvite = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) =>
     z.object({ code: z.string().trim().min(4).max(12) }).parse(data),
@@ -107,7 +113,7 @@ export const joinGroup = createServerFn({ method: "POST" })
   });
 
 /** Everything a participant needs, including the authoritative server clock. */
-export const getGroupState = createServerFn({ method: "GET" })
+export const getGroupState = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => z.object({ id: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }): Promise<GroupStateDTO | { gone: true }> => {
@@ -189,7 +195,7 @@ export const setMyGroupOutcome = createServerFn({ method: "POST" })
  * inside their window. Anything expired is settled first and then dropped, so
  * finished sessions never linger in the list.
  */
-export const listMyGroups = createServerFn({ method: "GET" })
+export const listMyGroups = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<GroupDTO[]> => {
     const { supabase, userId } = context;
@@ -248,13 +254,13 @@ export const listMyGroups = createServerFn({ method: "GET" })
  * window — are settled first and never reported, so a stale row can't block a
  * new group.
  */
-export const getMyOpenGroup = createServerFn({ method: "GET" })
+export const getMyOpenGroup = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(
     async ({
       context,
     }): Promise<{ id: string; code: string; status: string; isHost: boolean } | null> => {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const quiet = (p: PromiseLike<unknown>) => p.then(() => undefined, () => undefined);
 
       await quiet(supabaseAdmin.rpc("release_stale_commitments", { _user_id: context.userId }));
