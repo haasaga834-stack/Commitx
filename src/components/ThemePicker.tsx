@@ -7,11 +7,11 @@ import {
   rememberTheme,
   type SessionThemeId,
 } from "@/lib/session-themes";
-import { ThemePreview } from "@/components/SessionScene";
 
 /**
- * Calm theme selector shown right before a session starts. Exactly one theme
- * must be selected; the session only begins on explicit confirmation.
+ * Calm theme selector shown right before a session starts. Compact rows, all
+ * five themes visible without scrolling. Exactly one theme must be selected;
+ * the session only begins on explicit confirmation.
  */
 export function ThemePicker({
   open,
@@ -36,25 +36,25 @@ export function ThemePicker({
 
   return (
     <div className="fixed inset-0 z-[80] flex items-end justify-center bg-foreground/40 backdrop-blur-sm sm:items-center sm:p-6">
-      <div className="max-h-[92dvh] w-full max-w-3xl overflow-y-auto rounded-t-[28px] bg-card p-6 shadow-lift sm:rounded-[28px] sm:p-8">
+      <div className="w-full max-w-md rounded-t-[28px] bg-card p-5 shadow-lift sm:rounded-[28px] sm:p-7">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
               Session theme
             </p>
-            <h2 className="mt-1 font-display text-2xl font-semibold sm:text-3xl">{title}</h2>
-            <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
+            <h2 className="mt-1 font-display text-xl font-semibold sm:text-2xl">{title}</h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>
           </div>
           <button
             onClick={onCancel}
             aria-label="Close theme selection"
-            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-hairline bg-background"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-hairline bg-background"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-4 space-y-2">
           {SESSION_THEMES.map((t) => {
             const active = selected === t.id;
             return (
@@ -63,33 +63,33 @@ export function ThemePicker({
                 onClick={() => setSelected(t.id)}
                 aria-pressed={active}
                 className={cn(
-                  "group relative overflow-hidden rounded-3xl border p-4 text-left transition-all",
+                  "flex w-full items-center gap-3 rounded-2xl border px-3.5 py-3 text-left transition-colors",
                   active
-                    ? "border-primary shadow-lift"
-                    : "border-hairline shadow-soft hover:border-muted-foreground/40",
+                    ? "border-primary bg-primary/5"
+                    : "border-hairline hover:border-muted-foreground/40",
                 )}
               >
-                <ThemePreview theme={t.id} />
-                <div className="mt-3 flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="font-display text-base font-semibold">
-                      <span className="mr-1.5">{t.emoji}</span>
-                      {t.name}
-                    </p>
-                    <p className="mt-1 text-xs text-muted-foreground">{t.tagline}</p>
-                    <p className="mt-1 text-[11px] text-muted-foreground/80">{t.detail}</p>
-                  </div>
-                  <span
-                    className={cn(
-                      "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition-colors",
-                      active
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-hairline",
-                    )}
-                  >
-                    {active && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
+                <span className="text-lg leading-none" aria-hidden>
+                  {t.emoji}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-display text-sm font-semibold">
+                    {t.name}
                   </span>
-                </div>
+                  <span className="block truncate text-xs text-muted-foreground">
+                    {t.tagline}
+                  </span>
+                </span>
+                <span
+                  className={cn(
+                    "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors",
+                    active
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-hairline",
+                  )}
+                >
+                  {active && <Check className="h-3 w-3" strokeWidth={3} />}
+                </span>
               </button>
             );
           })}
@@ -102,11 +102,11 @@ export function ThemePicker({
             rememberTheme(selected);
             onConfirm(selected);
           }}
-          className="mt-7 w-full rounded-full bg-primary px-8 py-4.5 text-base font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.99] disabled:opacity-50"
+          className="mt-5 w-full rounded-full bg-primary px-8 py-4 text-base font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.99] disabled:opacity-50"
         >
           {starting ? "Starting…" : selected ? confirmLabel : "Select a theme to continue"}
         </button>
-        <p className="mt-3 text-center text-[11px] uppercase tracking-widest text-muted-foreground">
+        <p className="mt-2.5 text-center text-[11px] uppercase tracking-widest text-muted-foreground">
           Themes are visual only · your session rules never change
         </p>
       </div>

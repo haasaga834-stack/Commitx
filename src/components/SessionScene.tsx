@@ -36,7 +36,7 @@ export function SessionScene({
       )}
     >
       {id === "fireflies" && <FireflyGarden />}
-      {id === "tree" && <GrowingTree progress={p} />}
+      {id === "tree" && <GrowingPlant progress={p} />}
       {id === "moon" && <MoonlitSky />}
       {id === "lotus" && <LotusPond progress={p} />}
     </div>
@@ -112,43 +112,169 @@ function FireflyGarden() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Growing Tree                                                        */
+/* Growing Plant                                                       */
 /* ------------------------------------------------------------------ */
 
-function GrowingTree({ progress }: { progress: number }) {
-  // Canopy grows smoothly with real progress; no independent animation state.
-  const grow = 0.28 + 0.72 * progress;
+const SOIL_Y = 250;
+const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+/** Continuous ramp so stages blend instead of popping in. */
+const ramp = (p: number, from: number, span = 0.12) => clamp01((p - from) / span);
+
+function GrowingPlant({ progress }: { progress: number }) {
+  const p = clamp01(progress);
+
+  // Seedling -> young plant -> herb -> shrub -> mature, all interpolated from
+  // the one authoritative progress value. No internal growth timer exists.
+  const stemH = 10 + 170 * p;
+  const tipY = SOIL_Y - stemH;
+  const stemW = 2.2 + 4.6 * p;
+
+  const leaves = Array.from({ length: 8 }, (_, i) => {
+    const at = 0.05 + i * 0.108;
+    const g = ramp(p, at, 0.14);
+    const along = 0.2 + (i / 8) * 0.74; // position up the stem
+    return {
+      key: i,
+      g,
+      x: 200,
+      y: SOIL_Y - stemH * along,
+      side: i % 2 === 0 ? 1 : -1,
+      len: 16 + (i % 3) * 5,
+    };
+  });
+
+  const branches = [
+    { at: 0.5, side: -1, y: 0.5, len: 44 },
+    { at: 0.62, side: 1, y: 0.62, len: 48 },
+    { at: 0.76, side: -1, y: 0.78, len: 38 },
+  ].map((b, i) => ({ ...b, key: i, g: ramp(p, b.at, 0.16) }));
+
+  const bloom = ramp(p, 0.86, 0.14);
+
   return (
     <div className="absolute inset-0 bg-[linear-gradient(to_bottom,oklch(0.96_0.02_120)_0%,oklch(0.93_0.03_120)_60%,oklch(0.9_0.04_120)_100%)] dark:bg-[linear-gradient(to_bottom,oklch(0.22_0.02_150)_0%,oklch(0.18_0.02_150)_100%)]">
       <svg
         viewBox="0 0 400 260"
         preserveAspectRatio="xMidYEnd slice"
-        className="absolute inset-x-0 bottom-0 h-[62%] w-full"
+        className="absolute inset-x-0 bottom-0 h-[64%] w-full"
       >
-        <ellipse cx="200" cy="248" rx="120" ry="9" fill="oklch(0.72 0.05 120 / 0.35)" />
-        <g
-          style={{
-            transform: `translate(200px, 248px) scale(${grow}) translate(-200px, -248px)`,
-            transformOrigin: "200px 248px",
-            transition: "transform 600ms linear",
-          }}
-        >
+        {/* Soil */}
+        <ellipse cx="200" cy={SOIL_Y} rx="120" ry="12" fill="oklch(0.52 0.05 60 / 0.35)" />
+        <ellipse cx="200" cy={SOIL_Y - 2} rx="74" ry="8" fill="oklch(0.42 0.06 55 / 0.5)" />
+
+        <g className="animate-canopy-sway" style={{ transformOrigin: `200px ${SOIL_Y}px` }}>
+          {/* Stem */}
           <path
-            d="M197 248 L197 160 Q188 140 176 128 M203 248 L203 150 Q214 132 228 122 M200 200 Q186 186 172 178 M200 176 Q216 164 230 158"
-            stroke="oklch(0.42 0.05 60)"
-            strokeWidth="6"
+            d={`M200 ${SOIL_Y} Q ${200 + 7 * p} ${SOIL_Y - stemH * 0.55} 200 ${tipY}`}
+            stroke="oklch(0.5 0.11 140)"
+            strokeWidth={stemW}
             strokeLinecap="round"
             fill="none"
+            style={{ transition: "d 600ms linear, stroke-width 600ms linear" }}
           />
-          <g className="animate-canopy-sway" style={{ transformOrigin: "200px 150px" }}>
-            <circle cx="200" cy="118" r="46" fill="oklch(0.68 0.13 145 / 0.85)" />
-            <circle cx="164" cy="140" r="30" fill="oklch(0.62 0.13 150 / 0.8)" />
-            <circle cx="238" cy="138" r="32" fill="oklch(0.72 0.12 140 / 0.8)" />
-            <circle cx="200" cy="88" r="26" fill="oklch(0.76 0.12 135 / 0.75)" />
-          </g>
+
+          {/* Branches (shrub stage) */}
+          {branches.map((b) => {
+            const by = SOIL_Y - stemH * b.y;
+            return (
+              <g
+                key={`b${b.key}`}
+                style={{
+                  transform: `scale(${b.g})`,
+                  transformOrigin: `200px ${by}px`,
+                  transition: "transform 700ms linear",
+                  opacity: b.g,
+                }}
+              >
+                <path
+                  d={`M200 ${by} Q ${200 + b.side * b.len * 0.6} ${by - 8} ${200 + b.side * b.len} ${by - 22}`}
+                  stroke="oklch(0.48 0.1 140)"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  fill="none"
+                />
+                <Leaf x={200 + b.side * b.len} y={by - 22} side={b.side} len={16} grow={1} />
+              </g>
+            );
+          })}
+
+          {/* Leaves along the stem */}
+          {leaves.map((l) => (
+            <Leaf
+              key={`l${l.key}`}
+              x={l.x}
+              y={l.y}
+              side={l.side}
+              len={l.len}
+              grow={l.g}
+            />
+          ))}
+
+          {/* Tip shoot */}
+          <ellipse
+            cx="200"
+            cy={tipY - 3}
+            rx={3 + 2 * p}
+            ry={6 + 3 * p}
+            fill="oklch(0.7 0.14 140)"
+            style={{ transition: "cy 600ms linear" }}
+          />
+
+          {/* Optional blossoms near completion */}
+          {bloom > 0.01 &&
+            [-1, 1].map((side) => (
+              <circle
+                key={side}
+                cx={200 + side * (26 + 6 * bloom)}
+                cy={tipY + 26}
+                r={5 * bloom}
+                fill="oklch(0.88 0.09 350)"
+                style={{ transition: "r 700ms linear" }}
+              />
+            ))}
         </g>
       </svg>
     </div>
+  );
+}
+
+function Leaf({
+  x,
+  y,
+  side,
+  len,
+  grow,
+}: {
+  x: number;
+  y: number;
+  side: number;
+  len: number;
+  grow: number;
+}) {
+  if (grow <= 0.005) return null;
+  return (
+    <g
+      style={{
+        transform: `translate(${x}px, ${y}px) rotate(${side * 42}deg) scale(${grow})`,
+        transformOrigin: "0px 0px",
+        transition: "transform 700ms linear",
+        opacity: 0.35 + 0.65 * grow,
+      }}
+    >
+      <ellipse
+        cx={side * len * 0.55}
+        cy={0}
+        rx={len * 0.55}
+        ry={len * 0.26}
+        fill="oklch(0.62 0.13 145)"
+      />
+      <path
+        d={`M0 0 L ${side * len} 0`}
+        stroke="oklch(0.72 0.1 140)"
+        strokeWidth="1"
+        opacity="0.7"
+      />
+    </g>
   );
 }
 
