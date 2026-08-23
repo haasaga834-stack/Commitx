@@ -7,12 +7,20 @@ export function PublicFooter() {
     <footer className="mt-10 border-t border-hairline bg-card/30 px-6 py-6 text-center text-xs text-muted-foreground">
       <div className="flex flex-wrap items-center justify-center gap-3">
         <Link
+          to="/study-tracker"
+          className="transition-colors hover:text-foreground"
+        >
+          Study Tracker
+        </Link>
+        <span aria-hidden="true" className="h-3 w-px bg-hairline" />
+        <Link
           to="/privacy-policy"
           className="transition-colors hover:text-foreground"
         >
           Privacy Policy
         </Link>
         <span aria-hidden="true" className="h-3 w-px bg-hairline" />
+
         <Link to="/terms" className="transition-colors hover:text-foreground">
           Terms of Service
         </Link>
