@@ -419,8 +419,8 @@ body {
   50% { transform: translateX(5px) rotate(0.4deg); }
 }
 @keyframes lotus-shimmer {
-  0%, 100% { opacity: 0.18; transform: scaleX(1); }
-  50% { opacity: 0.34; transform: scaleX(1.06); }
+  0%, 100% { opacity: 0.16; }
+  50% { opacity: 0.34; }
 }
 
 @utility animate-lotus-sway {
