@@ -491,7 +491,7 @@ function GroupIndex() {
           {header}
           <div className="mt-8 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start gap-6">
             <div className="flex flex-col gap-6">
-              {unfinishedCard}
+              {statusCard}
               {joinCard}
               {groupsCard}
             </div>
@@ -501,7 +501,7 @@ function GroupIndex() {
       ) : (
         <div className="mx-auto flex max-w-md flex-col gap-5 px-6 pt-14">
           {header}
-          {unfinishedCard}
+          {statusCard}
           {groupsCard}
           {createCard}
           {joinCard}
