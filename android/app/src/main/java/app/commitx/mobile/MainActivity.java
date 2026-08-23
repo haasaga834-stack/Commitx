@@ -120,6 +120,7 @@ public class MainActivity extends Activity {
         requestNotificationPermissionIfNeeded();
         ScreenTimeTracker.scheduleChecks(this);
         PlanStore.scheduleAll(this);
+        MotivationStore.reconcile(this);
         CommitXNotifications.showTodos(this);
 
 
@@ -863,6 +864,20 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void syncStudyPlans(String plansJson) {
             PlanStore.save(MainActivity.this, plansJson);
+        }
+
+        /* ----------------------- Daily motivation ---------------------------- */
+
+        /** Master toggle: arms or cancels the 8:00 AM / 7:00 PM motivation alarms. */
+        @JavascriptInterface
+        public void setMotivationNotifications(boolean on) {
+            MotivationStore.setEnabled(MainActivity.this, on);
+        }
+
+        /** Re-arms without duplicating; safe to call on every app start. */
+        @JavascriptInterface
+        public void reconcileMotivationNotifications() {
+            MotivationStore.reconcile(MainActivity.this);
         }
 
 

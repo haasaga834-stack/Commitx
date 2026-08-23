@@ -17,11 +17,13 @@ final class CommitXNotifications {
     static final String CHANNEL_SESSION = "commitx_session";
     static final String CHANNEL_SCREEN_TIME = "commitx_screen_time";
     static final String CHANNEL_PLANS = "commitx_plans";
+    static final String CHANNEL_MOTIVATION = "commitx_motivation";
 
     static final int ID_TODOS = 1001;
     static final int ID_SESSION = 1002;
     static final int ID_SCREEN_TIME = 1003;
     static final int ID_PLAN_BASE = 1100;
+    static final int ID_MOTIVATION_BASE = 1200;
 
 
     private CommitXNotifications() {}
@@ -56,7 +58,12 @@ final class CommitXNotifications {
         nm.createNotificationChannel(todos);
         nm.createNotificationChannel(session);
         nm.createNotificationChannel(limit);
+        NotificationChannel motivation = new NotificationChannel(
+                CHANNEL_MOTIVATION, "CommitX Motivation", NotificationManager.IMPORTANCE_DEFAULT);
+        motivation.setDescription("A short motivational note every morning and evening.");
+
         nm.createNotificationChannel(plans);
+        nm.createNotificationChannel(motivation);
     }
 
 
@@ -267,7 +274,7 @@ final class CommitXNotifications {
 
     /* --------------------------- Study plan reminder ------------------------ */
 
-    static void showPlanReminder(Context ctx, String subject, String time,
+    static void showPlanReminder(Context ctx, String subject, String topic, String time,
                                  int durationMinutes, String id) {
         NotificationManager nm = manager(ctx);
         if (nm == null) return;
@@ -277,12 +284,16 @@ final class CommitXNotifications {
                 ? new Notification.Builder(ctx, CHANNEL_PLANS)
                 : new Notification.Builder(ctx);
 
-        String text = subject + " \u00B7 " + prettyTime(time)
-                + " \u00B7 " + durationMinutes + " min";
+        String heading = (subject == null || subject.trim().isEmpty()) ? "Study" : subject.trim();
+        if (topic != null && !topic.trim().isEmpty()) {
+            heading = heading + " \u2014 " + topic.trim();
+        }
+        String text = heading + "\nStarts at " + prettyTime(time)
+                + ". Get ready to focus. \u00B7 " + durationMinutes + " min";
 
         b.setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle("Study session in 10 minutes")
-                .setContentText(text)
+                .setContentTitle("\uD83D\uDCDA Study Session in 10 Minutes")
+                .setContentText(heading)
                 .setStyle(new Notification.BigTextStyle().bigText(text))
                 .setAutoCancel(true)
                 .setContentIntent(openApp(ctx, "planner", 13));
@@ -293,6 +304,33 @@ final class CommitXNotifications {
 
         int slot = id == null ? 0 : Math.abs(id.hashCode() % 100);
         nm.notify(ID_PLAN_BASE + slot, b.build());
+    }
+
+    /* --------------------------- Daily motivation --------------------------- */
+
+    /** One motivational note; `key` is the unique per-day/slot id. */
+    static void showMotivation(Context ctx, String title, String body, String key) {
+        NotificationManager nm = manager(ctx);
+        if (nm == null) return;
+        ensureChannels(ctx);
+
+        Notification.Builder b = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                ? new Notification.Builder(ctx, CHANNEL_MOTIVATION)
+                : new Notification.Builder(ctx);
+
+        b.setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle(title)
+                .setContentText(body)
+                .setStyle(new Notification.BigTextStyle().bigText(body))
+                .setAutoCancel(true)
+                .setContentIntent(openApp(ctx, "", 14));
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            b.setDefaults(Notification.DEFAULT_SOUND);
+        }
+
+        int slot = key == null ? 0 : Math.abs(key.hashCode() % 50);
+        nm.notify(ID_MOTIVATION_BASE + slot, b.build());
     }
 
     private static String prettyTime(String time) {
