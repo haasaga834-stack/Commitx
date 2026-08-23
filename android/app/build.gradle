@@ -14,12 +14,13 @@ def googleWebClientId = System.getenv("GOOGLE_WEB_CLIENT_ID") ?: defaultGoogleWe
 
 android {
     namespace "app.commitx.mobile"
-    compileSdk 35
+    compileSdk 36
 
     defaultConfig {
         applicationId "app.commitx.mobile"
         minSdk 23
-        targetSdk 35
+        targetSdk 36
+
         versionCode Integer.parseInt(System.getenv("COMMITX_VERSION_CODE") ?: "1")
         versionName System.getenv("COMMITX_VERSION_NAME") ?: "1.0.0"
         resourceConfigurations += ["en"]

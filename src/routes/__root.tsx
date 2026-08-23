@@ -152,11 +152,14 @@ function VerifiedRecovery() {
         reason: failure.reason,
       });
       void releaseActiveDbSession();
-      // eslint-disable-next-line no-console
-      console.log("[CommitX lifecycle] Session Failed", {
-        reason: failure.reason,
-        recovered: true,
-      });
+      if (import.meta.env.DEV) {
+        // eslint-disable-next-line no-console
+        console.log("[CommitX lifecycle] Session Failed", {
+          reason: failure.reason,
+          recovered: true,
+        });
+      }
+
       if (router.state.location.pathname !== "/failed") {
         router.navigate({
           to: "/failed",

@@ -47,12 +47,13 @@ jobs:
         run: |
           set -eux
           yes | sdkmanager --licenses > /dev/null || true
-          sdkmanager --install "platforms;android-35" "build-tools;35.0.0" < /dev/null
+          sdkmanager --install "platforms;android-36" "build-tools;36.0.0" < /dev/null
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: 8.10.2
+          gradle-version: 8.11.1
+
 
       # Keep one signing identity across CI runs so a newly downloaded APK can
       # update the previous build instead of requiring a fresh uninstall.
