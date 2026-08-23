@@ -707,7 +707,7 @@ function GroupSession() {
 
       <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center gap-8 md:landscape:flex-row md:landscape:gap-14">
         <div className="shrink-0">
-          <Hourglass size={260} state="running" progress={progress} />
+          <Hourglass size={226} state="running" progress={progress} />
         </div>
         <div className="flex min-w-0 flex-col items-center md:landscape:items-start">
           <p className="font-display text-6xl font-semibold tabular-nums tracking-tight">
