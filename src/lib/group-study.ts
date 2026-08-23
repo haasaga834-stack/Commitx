@@ -57,6 +57,8 @@ export function memberStatusLabel(status: string) {
       return "Lost commitment";
     case "left":
       return "Left early";
+    case "expired":
+      return "Timed out";
     default:
       return status;
   }

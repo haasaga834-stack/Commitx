@@ -86,18 +86,39 @@ function GroupIndex() {
     isHost: boolean;
   } | null>(null);
   const [removingOpenGroup, setRemovingOpenGroup] = useState(false);
+  const [checking, setChecking] = useState(true);
 
-  const refresh = useCallback(() => {
-    mine({})
-      .then((rows) => setGroups(rows))
-      .catch(() => {});
-    openGroupFn({})
-      .then((g) => setOpenGroup(g))
-      .catch(() => {});
+  const refresh = useCallback(async () => {
+    try {
+      const [rows, g] = await Promise.all([
+        mine({}).catch(() => [] as GroupDTO[]),
+        openGroupFn({}).catch(() => null),
+      ]);
+      setGroups(rows);
+      // The backend is the single source of truth — never let a stale local
+      // reference keep the "unfinished group" card alive.
+      setOpenGroup(g);
+    } finally {
+      setChecking(false);
+    }
   }, [mine, openGroupFn]);
 
   useEffect(() => {
-    refresh();
+    void refresh();
+    // Keep in sync when the host cancels from another device, or on resume.
+    const poll = window.setInterval(() => void refresh(), 15000);
+    const resync = () => {
+      if (document.visibilityState === "visible") void refresh();
+    };
+    document.addEventListener("visibilitychange", resync);
+    window.addEventListener("focus", resync);
+    window.addEventListener("online", resync);
+    return () => {
+      window.clearInterval(poll);
+      document.removeEventListener("visibilitychange", resync);
+      window.removeEventListener("focus", resync);
+      window.removeEventListener("online", resync);
+    };
   }, [refresh]);
 
   /** A blocked create/join always means one open group — surface the way back. */
@@ -110,6 +131,7 @@ function GroupIndex() {
       return null;
     }
   }, [openGroupFn]);
+
 
   /** Hosts pick the shared ambience before the group is created. */
   function onCreate() {
@@ -185,35 +207,35 @@ function GroupIndex() {
 
   async function onRemoveOpenGroup() {
     if (!openGroup || busy || removingOpenGroup || openGroup.status === "active") return;
+    const target = openGroup;
     setRemovingOpenGroup(true);
     setError(null);
+    // Optimistic: the card disappears at once, so Create Group is usable again.
+    setOpenGroup(null);
+    setGroups((current) => current.filter((group) => group.id !== target.id));
+    setTerms(null);
+    setAccepted(false);
     try {
-      if (openGroup.isHost) {
-        await cancel({ data: { id: openGroup.id } });
+      if (target.isHost) {
+        await cancel({ data: { id: target.id } });
       } else {
-        await leave({ data: { id: openGroup.id } });
+        await leave({ data: { id: target.id } });
       }
-      setOpenGroup(null);
-      setGroups((current) => current.filter((group) => group.id !== openGroup.id));
-      setTerms(null);
-      setAccepted(false);
-      await Promise.all([
-        mine({}).then((rows) => setGroups(rows)),
-        openGroupFn({}).then((group) => setOpenGroup(group)),
-      ]);
     } catch (e) {
       setError(
         e instanceof Error
           ? e.message
-          : openGroup.isHost
+          : target.isHost
             ? "Could not cancel the group."
             : "Could not leave the group.",
       );
-      await recoverOpenGroup();
     } finally {
+      // Whatever happened, the backend decides what still blocks the user.
+      await refresh();
       setRemovingOpenGroup(false);
     }
   }
+
 
   const header = (
     <div>
@@ -240,7 +262,10 @@ function GroupIndex() {
   );
 
   const unfinishedCard = openGroup ? (
-    <section className="rounded-3xl border border-primary/40 bg-card p-5 shadow-soft">
+    <section
+      key={openGroup.id}
+      className="rounded-3xl border border-primary/40 bg-card p-5 shadow-soft"
+    >
       <h2 className="font-display text-base font-semibold">You have an unfinished group</h2>
       <p className="mt-1 text-xs text-muted-foreground">
         {openGroup.status === "active"
@@ -452,14 +477,21 @@ function GroupIndex() {
     </section>
   );
 
+  const statusCard =
+    unfinishedCard ??
+    (checking ? (
+      <p className="text-[11px] text-muted-foreground">Checking your groups…</p>
+    ) : null);
+
   const page = (
+
     <div className={cn("min-h-screen pb-16", isTablet && "min-h-0 pb-0")}>
       {isTablet ? (
         <div className="mx-auto w-full max-w-5xl">
           {header}
           <div className="mt-8 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start gap-6">
             <div className="flex flex-col gap-6">
-              {unfinishedCard}
+              {statusCard}
               {joinCard}
               {groupsCard}
             </div>
@@ -469,7 +501,7 @@ function GroupIndex() {
       ) : (
         <div className="mx-auto flex max-w-md flex-col gap-5 px-6 pt-14">
           {header}
-          {unfinishedCard}
+          {statusCard}
           {groupsCard}
           {createCard}
           {joinCard}
