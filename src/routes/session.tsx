@@ -720,7 +720,7 @@ function LiveSession() {
         theme={sessionTheme}
         progress={progress}
         paused={onBreak}
-        className="z-0 md:top-28 lg:top-32"
+        className="z-0"
       />
       <div className="relative z-10 flex items-center justify-center">
 
