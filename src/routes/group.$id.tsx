@@ -610,7 +610,7 @@ function GroupSession() {
 
         <div className="relative z-10 mx-auto grid w-full max-w-5xl flex-1 grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)] items-center gap-14">
           <div className="flex flex-col items-center">
-            <Hourglass size={300} state="running" progress={progress} />
+            <Hourglass size={262} state="running" progress={progress} />
             <p className="mt-10 w-full text-center font-display text-7xl font-semibold tabular-nums tracking-tight">
               {fmt((remainingMs ?? 0) / 1000)}
             </p>
@@ -707,7 +707,7 @@ function GroupSession() {
 
       <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center gap-8 md:landscape:flex-row md:landscape:gap-14">
         <div className="shrink-0">
-          <Hourglass size={260} state="running" progress={progress} />
+          <Hourglass size={226} state="running" progress={progress} />
         </div>
         <div className="flex min-w-0 flex-col items-center md:landscape:items-start">
           <p className="font-display text-6xl font-semibold tabular-nums tracking-tight">

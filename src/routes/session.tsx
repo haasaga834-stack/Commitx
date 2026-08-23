@@ -739,9 +739,9 @@ function LiveSession() {
       {/* Everything stays on one centred axis; the countdown reserves fixed
           space so changing digits never shift the hourglass sideways. */}
       <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center gap-8 md:justify-start md:gap-8 md:pt-16 lg:pt-20">
-        <div className="mx-auto grid h-[260px] w-[260px] shrink-0 place-items-center overflow-visible">
+        <div className="mx-auto grid h-[226px] w-[226px] shrink-0 place-items-center overflow-visible">
           <Hourglass
-            size={260}
+            size={226}
             state={onBreak ? "idle" : "running"}
             progress={progress}
           />

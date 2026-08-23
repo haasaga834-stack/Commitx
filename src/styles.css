@@ -409,3 +409,26 @@ body {
 @utility animate-ripple-out {
   animation: ripple-out 7s ease-out infinite;
 }
+
+@keyframes lotus-sway {
+  0%, 100% { transform: rotate(-1.1deg) translateY(0); }
+  50% { transform: rotate(1.1deg) translateY(-2px); }
+}
+@keyframes lotus-drift {
+  0%, 100% { transform: translateX(0) rotate(-0.4deg); }
+  50% { transform: translateX(5px) rotate(0.4deg); }
+}
+@keyframes lotus-shimmer {
+  0%, 100% { opacity: 0.16; }
+  50% { opacity: 0.34; }
+}
+
+@utility animate-lotus-sway {
+  animation: lotus-sway 9s ease-in-out infinite;
+}
+@utility animate-lotus-drift {
+  animation: lotus-drift 14s ease-in-out infinite;
+}
+@utility animate-lotus-shimmer {
+  animation: lotus-shimmer 7s ease-in-out infinite;
+}
