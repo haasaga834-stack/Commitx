@@ -1,14 +1,15 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { createFileRoute } from "@tanstack/react-router";
+import type {} from "@tanstack/react-start";
 
 export const Route = createFileRoute("/privacy")({
-  component: PrivacyRedirect,
+  server: {
+    handlers: {
+      GET: async () => {
+        return new Response(null, {
+          status: 301,
+          headers: { Location: "/privacy-policy" },
+        });
+      },
+    },
+  },
 });
-
-function PrivacyRedirect() {
-  const navigate = useNavigate();
-  useEffect(() => {
-    navigate({ to: "/privacy-policy", replace: true });
-  }, [navigate]);
-  return null;
-}
