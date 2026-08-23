@@ -477,7 +477,14 @@ function GroupIndex() {
     </section>
   );
 
+  const statusCard =
+    unfinishedCard ??
+    (checking ? (
+      <p className="text-[11px] text-muted-foreground">Checking your groups…</p>
+    ) : null);
+
   const page = (
+
     <div className={cn("min-h-screen pb-16", isTablet && "min-h-0 pb-0")}>
       {isTablet ? (
         <div className="mx-auto w-full max-w-5xl">
