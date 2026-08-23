@@ -36,12 +36,11 @@ export function Hourglass({
   const BOT_Y_BASE = 148;
   const BOT_H = 56;
 
-  // Both bulbs are cones (widest at the caps, pinched at the neck), so sand
-  // AREA — what the eye reads — grows with the square of its height. Map the
-  // linear time progress through sqrt so the visible sand volume stays exactly
-  // proportional to remaining/total time (2h session, 30m left => 25% visible).
-  const topFill = Math.sqrt(1 - p); // fraction of the top cone's height still holding sand
-  const botFill = Math.sqrt(p); // fraction of the bottom cone's height filled
+  // Sand levels are read directly off the authoritative session progress:
+  // upper = 1 - progress, lower = progress. At 50% elapsed both chambers
+  // sit at exactly half, and they always sum to a full hourglass.
+  const topFill = 1 - p; // fraction of the top chamber still holding sand
+  const botFill = p; // fraction of the bottom chamber filled
 
   const topSandH = TOP_H * topFill;
   const topSandY = TOP_Y + TOP_H - topSandH;
