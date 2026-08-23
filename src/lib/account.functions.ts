@@ -104,8 +104,16 @@ export const deleteAccount = createServerFn({ method: "POST" })
     await supabaseAdmin.from("referrals").delete().eq("referred_id", userId);
     await supabaseAdmin.from("referrals").delete().eq("referrer_id", userId);
     await supabaseAdmin.from("profiles").update({ referred_by: null }).eq("referred_by", userId);
+    await supabaseAdmin.from("study_plans").delete().eq("user_id", userId);
+    await supabaseAdmin.from("todos").delete().eq("user_id", userId);
+    await supabaseAdmin.from("academic_subjects").delete().eq("user_id", userId);
+    await supabaseAdmin.from("user_settings").delete().eq("user_id", userId);
+    await supabaseAdmin.from("active_sessions").delete().eq("user_id", userId);
+    await supabaseAdmin.from("group_members").delete().eq("user_id", userId);
+    await supabaseAdmin.from("study_groups").delete().eq("creator_id", userId);
     await supabaseAdmin.from("wallets").delete().eq("user_id", userId);
     await supabaseAdmin.from("profiles").delete().eq("id", userId);
+
 
     const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
     if (error) throw new Error(error.message);
