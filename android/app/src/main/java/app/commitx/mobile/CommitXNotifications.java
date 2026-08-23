@@ -16,7 +16,7 @@ final class CommitXNotifications {
     static final String CHANNEL_TODOS = "commitx_todos";
     static final String CHANNEL_SESSION = "commitx_session";
     static final String CHANNEL_SCREEN_TIME = "commitx_screen_time";
-    static final String CHANNEL_PLANS = "commitx_plans";
+    static final String CHANNEL_PLANS = "commitx_plans_v2";
     static final String CHANNEL_MOTIVATION = "commitx_motivation";
 
     static final int ID_TODOS = 1001;
@@ -54,6 +54,12 @@ final class CommitXNotifications {
         NotificationChannel plans = new NotificationChannel(
                 CHANNEL_PLANS, "Study reminders", NotificationManager.IMPORTANCE_HIGH);
         plans.setDescription("Reminds you 10 minutes before a planned study session.");
+        plans.enableVibration(true);
+        plans.setSound(android.provider.Settings.System.DEFAULT_NOTIFICATION_URI,
+                new android.media.AudioAttributes.Builder()
+                        .setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION_EVENT)
+                        .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build());
 
         nm.createNotificationChannel(todos);
         nm.createNotificationChannel(session);
@@ -301,9 +307,11 @@ final class CommitXNotifications {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             b.setPriority(Notification.PRIORITY_HIGH);
         }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            b.setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE);
+        }
 
-        int slot = id == null ? 0 : Math.abs(id.hashCode() % 100);
-        nm.notify(ID_PLAN_BASE + slot, b.build());
+        nm.notify(PlanStore.notificationId(ctx, id == null ? "" : id), b.build());
     }
 
     /* --------------------------- Daily motivation --------------------------- */

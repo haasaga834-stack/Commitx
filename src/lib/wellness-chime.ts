@@ -58,13 +58,43 @@ export function playWellnessChime() {
 }
 
 /** Break start: chime + a gentle double buzz. */
-export function announceWellnessBreak() {
+function nativeBridge() {
+  return typeof window === "undefined" ? undefined : window.CommitXAndroid;
+}
+
+export function scheduleWellnessSound(eventKey: string, kind: "start" | "end", fireAt: number) {
+  try {
+    nativeBridge()?.scheduleWellnessSound?.(eventKey, kind, fireAt);
+  } catch {}
+}
+
+export function cancelWellnessSounds(sessionPrefix: string) {
+  try {
+    nativeBridge()?.cancelWellnessSounds?.(sessionPrefix);
+  } catch {}
+}
+
+export function announceWellnessBreak(eventKey?: string) {
+  const native = nativeBridge();
+  if (native?.playWellnessSound && eventKey) {
+    try {
+      native.playWellnessSound(eventKey, "start");
+      return;
+    } catch {}
+  }
   playWellnessChime();
   vibrate([0, 220, 140, 220]);
 }
 
 /** Break finished: chime + a shorter nudge to come back to CommitX. */
-export function announceBreakOver() {
+export function announceBreakOver(eventKey?: string) {
+  const native = nativeBridge();
+  if (native?.playWellnessSound && eventKey) {
+    try {
+      native.playWellnessSound(eventKey, "end");
+      return;
+    } catch {}
+  }
   playWellnessChime();
   vibrate([0, 320, 180, 320, 180, 320]);
 }

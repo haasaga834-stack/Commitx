@@ -22,11 +22,12 @@ export function setNotificationsAllowed(allowed: boolean) {
     clearTodoNotification();
     hideSessionProgress();
     try {
-      bridge()?.syncStudyPlans?.("[]");
+      bridge()?.setPlanRemindersEnabled?.(false);
     } catch {}
   }
   try {
     bridge()?.setMotivationNotifications?.(allowed);
+    bridge()?.setPlanRemindersEnabled?.(allowed);
   } catch {}
 }
 
@@ -140,7 +141,16 @@ export function syncStudyPlanReminders(
   }[],
 ) {
   try {
-    bridge()?.syncStudyPlans?.(JSON.stringify(notificationsAllowed() ? plans : []));
+    bridge()?.syncStudyPlans?.(JSON.stringify(plans));
+    bridge()?.setPlanRemindersEnabled?.(notificationsAllowed());
+  } catch {}
+}
+
+/** Requests Android's special exact-alarm access only when a plan needs it. */
+export function requestExactAlarmAccess() {
+  try {
+    const b = bridge();
+    if (b?.canScheduleExactAlarms?.() === false) b.requestExactAlarmAccess?.();
   } catch {}
 }
 
