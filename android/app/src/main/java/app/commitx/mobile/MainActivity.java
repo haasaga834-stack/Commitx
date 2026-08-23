@@ -467,6 +467,8 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         injectPendingFailureIfNeeded();
+        PlanStore.scheduleAll(this);
+        WellnessSoundStore.reconcile(this);
     }
 
     @Override
@@ -864,6 +866,47 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void syncStudyPlans(String plansJson) {
             PlanStore.save(MainActivity.this, plansJson);
+        }
+
+        @JavascriptInterface
+        public void setPlanRemindersEnabled(boolean on) {
+            PlanStore.setEnabled(MainActivity.this, on);
+        }
+
+        @JavascriptInterface
+        public boolean canScheduleExactAlarms() {
+            return PlanStore.canScheduleExact(MainActivity.this);
+        }
+
+        @JavascriptInterface
+        public void requestExactAlarmAccess() {
+            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S
+                    || PlanStore.canScheduleExact(MainActivity.this)) return;
+            runOnUiThread(() -> {
+                try {
+                    startActivity(new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                            Uri.parse("package:" + getPackageName())));
+                } catch (Throwable ignored) {
+                    openAppNotificationSettings();
+                }
+            });
+        }
+
+        /* ----------------------- Wellness break sounds ----------------------- */
+
+        @JavascriptInterface
+        public void scheduleWellnessSound(String eventKey, String kind, double fireAtMs) {
+            WellnessSoundStore.schedule(MainActivity.this, eventKey, kind, (long) fireAtMs);
+        }
+
+        @JavascriptInterface
+        public void playWellnessSound(String eventKey, String kind) {
+            WellnessSoundStore.playNowOnce(MainActivity.this, eventKey, kind);
+        }
+
+        @JavascriptInterface
+        public void cancelWellnessSounds(String sessionPrefix) {
+            WellnessSoundStore.cancelPrefix(MainActivity.this, sessionPrefix);
         }
 
         /* ----------------------- Daily motivation ---------------------------- */

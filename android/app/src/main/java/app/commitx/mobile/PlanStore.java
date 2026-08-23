@@ -19,6 +19,9 @@ import java.util.Calendar;
 final class PlanStore {
     private static final String PREFS = "commitx_plans";
     private static final String KEY_ITEMS = "items_json";
+    private static final String KEY_CODES = "request_codes";
+    private static final String KEY_NEXT_CODE = "next_request_code";
+    private static final String KEY_ENABLED = "enabled";
     static final long LEAD_MS = 10 * 60 * 1000L;
 
     private PlanStore() {}
@@ -38,13 +41,26 @@ final class PlanStore {
 
     /** Store the plan list pushed by the web layer and (re)schedule reminders. */
     static void save(Context ctx, String json) {
+        JSONArray previous = items(ctx);
+        JSONArray incoming;
         try {
-            new JSONArray(json == null ? "[]" : json);
+            incoming = new JSONArray(json == null ? "[]" : json);
+            cancelAll(ctx, previous);
             prefs(ctx).edit().putString(KEY_ITEMS, json == null ? "[]" : json).apply();
         } catch (Throwable ignored) {
             return;
         }
-        scheduleAll(ctx);
+        if (enabled(ctx)) scheduleAll(ctx);
+    }
+
+    static boolean enabled(Context ctx) {
+        return prefs(ctx).getBoolean(KEY_ENABLED, true);
+    }
+
+    static void setEnabled(Context ctx, boolean enabled) {
+        prefs(ctx).edit().putBoolean(KEY_ENABLED, enabled).apply();
+        cancelAll(ctx, items(ctx));
+        if (enabled) scheduleAll(ctx);
     }
 
     static JSONObject find(Context ctx, String id) {
@@ -107,6 +123,7 @@ final class PlanStore {
     }
 
     static void scheduleAll(Context ctx) {
+        if (!enabled(ctx)) return;
         JSONArray arr = items(ctx);
         for (int i = 0; i < arr.length(); i++) {
             JSONObject o = arr.optJSONObject(i);
@@ -139,13 +156,82 @@ final class PlanStore {
                     | (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
                     ? PendingIntent.FLAG_IMMUTABLE : 0);
             PendingIntent pi = PendingIntent.getBroadcast(
-                    ctx, 3000 + Math.abs(id.hashCode() % 1000), intent, flags);
+                    ctx, requestCode(ctx, id), intent, flags);
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !am.canScheduleExactAlarms()) {
+                am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, fireAt, pi);
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, fireAt, pi);
             } else {
                 am.setExact(AlarmManager.RTC_WAKEUP, fireAt, pi);
             }
         } catch (Throwable ignored) {}
+    }
+
+    static boolean canScheduleExact(Context ctx) {
+        try {
+            AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+            return am != null && (Build.VERSION.SDK_INT < Build.VERSION_CODES.S
+                    || am.canScheduleExactAlarms());
+        } catch (Throwable ignored) {
+            return false;
+        }
+    }
+
+    static int notificationId(Context ctx, String id) {
+        return 100_000 + requestCode(ctx, id);
+    }
+
+    private static synchronized int requestCode(Context ctx, String id) {
+        try {
+            JSONObject codes = new JSONObject(prefs(ctx).getString(KEY_CODES, "{}"));
+            if (codes.has(id)) return codes.getInt(id);
+            int next = prefs(ctx).getInt(KEY_NEXT_CODE, 3000);
+            codes.put(id, next);
+            prefs(ctx).edit()
+                    .putString(KEY_CODES, codes.toString())
+                    .putInt(KEY_NEXT_CODE, next + 1)
+                    .apply();
+            return next;
+        } catch (Throwable ignored) {
+            return 3000 + (id.hashCode() & 0x3fffffff);
+        }
+    }
+
+    private static PendingIntent pending(Context ctx, String id, int flags) {
+        Intent intent = new Intent(ctx, PlanReminderReceiver.class)
+                .setAction(PlanReminderReceiver.ACTION_REMIND)
+                .putExtra(PlanReminderReceiver.EXTRA_ID, id);
+        int immutable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                ? PendingIntent.FLAG_IMMUTABLE : 0;
+        return PendingIntent.getBroadcast(ctx, requestCode(ctx, id), intent, flags | immutable);
+    }
+
+    private static void cancelAll(Context ctx, JSONArray plans) {
+        try {
+            AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+            if (am == null) return;
+            for (int i = 0; i < plans.length(); i++) {
+                JSONObject plan = plans.optJSONObject(i);
+                if (plan == null) continue;
+                String id = plan.optString("id");
+                if (id.isEmpty()) continue;
+                PendingIntent pi = pending(ctx, id, PendingIntent.FLAG_NO_CREATE);
+                if (pi != null) {
+                    am.cancel(pi);
+                    pi.cancel();
+                }
+                NotificationManagerCompat.cancel(ctx, notificationId(ctx, id));
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    /** Tiny adapter keeps notification cancellation out of scheduling call sites. */
+    private static final class NotificationManagerCompat {
+        static void cancel(Context ctx, int id) {
+            android.app.NotificationManager nm = (android.app.NotificationManager)
+                    ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm != null) nm.cancel(id);
+        }
     }
 }

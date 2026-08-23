@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { DurationWheel } from "@/components/DurationWheel";
 import { TodoList } from "@/components/TodoList";
+import { requestExactAlarmAccess } from "@/lib/native-notifications";
 
 export const Route = createFileRoute("/planner")({
   head: () => ({
@@ -75,6 +76,7 @@ function Planner() {
       monthday: repeat === "monthly" ? monthday : undefined,
     });
     await requestNotificationPermission();
+    requestExactAlarmAccess();
     setSubject("");
     setOpen(false);
   }

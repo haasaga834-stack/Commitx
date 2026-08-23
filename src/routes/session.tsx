@@ -19,7 +19,12 @@ import {
 } from "@/lib/verified-mode";
 import { releaseActiveDbSession } from "@/lib/active-session";
 import { normalizeTheme, type SessionThemeId } from "@/lib/session-themes";
-import { announceWellnessBreak, announceBreakOver } from "@/lib/wellness-chime";
+import {
+  announceWellnessBreak,
+  announceBreakOver,
+  cancelWellnessSounds,
+  scheduleWellnessSound,
+} from "@/lib/wellness-chime";
 
 
 import {
@@ -194,6 +199,7 @@ function LiveSession() {
   ).current;
 
   const startedAt = useRef<number>(restored?.startedAt ?? Date.now()).current;
+  const wellnessSessionKey = useRef(`session_${startedAt}`).current;
   const accumulatedRef = useRef<number>(restored?.accumulatedMs ?? 0);
   const runningSinceRef = useRef<number | null>(
     restored ? (restored.runningSince ?? null) : Date.now(),
@@ -314,10 +320,10 @@ function LiveSession() {
       setPhase("recovery_break");
       persist();
       setNow(Date.now());
-      announceWellnessBreak();
+      announceWellnessBreak(`${wellnessSessionKey}_break_${breaksTakenRef.current}_start`);
       log("Wellness Break Started", { at, breaksTaken: breaksTakenRef.current });
     },
-    [elapsedNow, persist, setPhase],
+    [elapsedNow, persist, setPhase, wellnessSessionKey],
   );
 
   const enterAwaitingConfirmation = useCallback(
@@ -327,10 +333,10 @@ function LiveSession() {
       setPhase("awaiting_confirmation");
       persist();
       setNow(Date.now());
-      announceBreakOver();
+      announceBreakOver(`${wellnessSessionKey}_break_${breaksTakenRef.current}_end`);
       log("Wellness Break Finished", { confirmSince: at });
     },
-    [persist, setPhase],
+    [persist, setPhase, wellnessSessionKey],
   );
 
   const confirmRefreshed = useCallback(() => {
@@ -640,6 +646,38 @@ function LiveSession() {
 
   useEffect(() => () => hideSessionProgress(), []);
 
+  // Native one-shot alarms keep both sound cues reliable while the WebView is
+  // minimized or suspended. Event keys make native alarms and foreground
+  // transitions converge on one playback rather than duplicating it.
+  useEffect(() => {
+    if (!breaksApply || doneRef.current) return;
+    const index = breaksTakenRef.current;
+    if (phase === "focus") {
+      const nextBreakAt = (index + 1) * FOCUS_HOUR_MS;
+      const fireAt = Date.now() + Math.max(0, nextBreakAt - elapsedNow());
+      scheduleWellnessSound(`${wellnessSessionKey}_break_${index}_start`, "start", fireAt);
+      scheduleWellnessSound(
+        `${wellnessSessionKey}_break_${index}_end`,
+        "end",
+        fireAt + RECOVERY_BREAK_MS,
+      );
+    } else {
+      const anchor = breakStartedAtRef.current;
+      if (anchor) {
+        scheduleWellnessSound(
+          `${wellnessSessionKey}_break_${index}_end`,
+          "end",
+          anchor + RECOVERY_BREAK_MS,
+        );
+      }
+    }
+  }, [breaksApply, elapsedNow, phase, wellnessSessionKey]);
+
+  useEffect(
+    () => () => cancelWellnessSounds(wellnessSessionKey),
+    [wellnessSessionKey],
+  );
+
   function complete(status: "completed" | "failed", reason?: string) {
     // Idempotent: prevents duplicate deductions and duplicate session rows.
     if (doneRef.current) return;
@@ -651,6 +689,7 @@ function LiveSession() {
     setNativeVerifiedModeActive(false);
     clearActiveVerifiedSession();
     hideSessionProgress();
+    cancelWellnessSounds(wellnessSessionKey);
     // Permanent end marker + server slot release: the timer can never be
     // restarted or resurrected by back navigation, refresh or app restart.
     markSessionEnded({
