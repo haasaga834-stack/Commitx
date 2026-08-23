@@ -207,35 +207,35 @@ function GroupIndex() {
 
   async function onRemoveOpenGroup() {
     if (!openGroup || busy || removingOpenGroup || openGroup.status === "active") return;
+    const target = openGroup;
     setRemovingOpenGroup(true);
     setError(null);
+    // Optimistic: the card disappears at once, so Create Group is usable again.
+    setOpenGroup(null);
+    setGroups((current) => current.filter((group) => group.id !== target.id));
+    setTerms(null);
+    setAccepted(false);
     try {
-      if (openGroup.isHost) {
-        await cancel({ data: { id: openGroup.id } });
+      if (target.isHost) {
+        await cancel({ data: { id: target.id } });
       } else {
-        await leave({ data: { id: openGroup.id } });
+        await leave({ data: { id: target.id } });
       }
-      setOpenGroup(null);
-      setGroups((current) => current.filter((group) => group.id !== openGroup.id));
-      setTerms(null);
-      setAccepted(false);
-      await Promise.all([
-        mine({}).then((rows) => setGroups(rows)),
-        openGroupFn({}).then((group) => setOpenGroup(group)),
-      ]);
     } catch (e) {
       setError(
         e instanceof Error
           ? e.message
-          : openGroup.isHost
+          : target.isHost
             ? "Could not cancel the group."
             : "Could not leave the group.",
       );
-      await recoverOpenGroup();
     } finally {
+      // Whatever happened, the backend decides what still blocks the user.
+      await refresh();
       setRemovingOpenGroup(false);
     }
   }
+
 
   const header = (
     <div>
