@@ -262,6 +262,11 @@ function GroupIndex() {
   );
 
   const unfinishedCard = openGroup ? (
+    <section
+      key={openGroup.id}
+      className="rounded-3xl border border-primary/40 bg-card p-5 shadow-soft"
+    >
+
     <section className="rounded-3xl border border-primary/40 bg-card p-5 shadow-soft">
       <h2 className="font-display text-base font-semibold">You have an unfinished group</h2>
       <p className="mt-1 text-xs text-muted-foreground">
