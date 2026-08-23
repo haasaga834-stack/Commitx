@@ -86,18 +86,39 @@ function GroupIndex() {
     isHost: boolean;
   } | null>(null);
   const [removingOpenGroup, setRemovingOpenGroup] = useState(false);
+  const [checking, setChecking] = useState(true);
 
-  const refresh = useCallback(() => {
-    mine({})
-      .then((rows) => setGroups(rows))
-      .catch(() => {});
-    openGroupFn({})
-      .then((g) => setOpenGroup(g))
-      .catch(() => {});
+  const refresh = useCallback(async () => {
+    try {
+      const [rows, g] = await Promise.all([
+        mine({}).catch(() => [] as GroupDTO[]),
+        openGroupFn({}).catch(() => null),
+      ]);
+      setGroups(rows);
+      // The backend is the single source of truth — never let a stale local
+      // reference keep the "unfinished group" card alive.
+      setOpenGroup(g);
+    } finally {
+      setChecking(false);
+    }
   }, [mine, openGroupFn]);
 
   useEffect(() => {
-    refresh();
+    void refresh();
+    // Keep in sync when the host cancels from another device, or on resume.
+    const poll = window.setInterval(() => void refresh(), 15000);
+    const resync = () => {
+      if (document.visibilityState === "visible") void refresh();
+    };
+    document.addEventListener("visibilitychange", resync);
+    window.addEventListener("focus", resync);
+    window.addEventListener("online", resync);
+    return () => {
+      window.clearInterval(poll);
+      document.removeEventListener("visibilitychange", resync);
+      window.removeEventListener("focus", resync);
+      window.removeEventListener("online", resync);
+    };
   }, [refresh]);
 
   /** A blocked create/join always means one open group — surface the way back. */
@@ -110,6 +131,7 @@ function GroupIndex() {
       return null;
     }
   }, [openGroupFn]);
+
 
   /** Hosts pick the shared ambience before the group is created. */
   function onCreate() {
