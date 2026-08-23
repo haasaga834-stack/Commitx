@@ -36,7 +36,7 @@ export function SessionScene({
       )}
     >
       {id === "fireflies" && <FireflyGarden />}
-      {id === "tree" && <GrowingTree progress={p} />}
+      {id === "tree" && <GrowingPlant progress={p} />}
       {id === "moon" && <MoonlitSky />}
       {id === "lotus" && <LotusPond progress={p} />}
     </div>
