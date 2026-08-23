@@ -340,49 +340,174 @@ function MoonlitSky() {
 /* ------------------------------------------------------------------ */
 
 function LotusPond({ progress }: { progress: number }) {
-  // Petals open gradually as the session progresses.
-  const open = 0.25 + 0.75 * progress;
-  const petals = [-72, -46, -22, 0, 22, 46, 72];
+  const p = clamp01(progress);
+  // Petals open gradually as the session progresses; bloom peaks at completion.
+  const open = 0.28 + 0.72 * p;
+  const glow = 0.35 + 0.65 * p;
+  const petalsOuter = [-78, -52, -26, 0, 26, 52, 78];
+  const petalsInner = [-42, -14, 14, 42];
+
+  const motes = useSeeded(() =>
+    Array.from({ length: 14 }, (_, i) => ({
+      left: `${(i * 31) % 92 + 4}%`,
+      top: `${(i * 47) % 52 + 6}%`,
+      size: 2 + (i % 3),
+      delay: `-${(i * 1.7) % 11}s`,
+      duration: `${13 + ((i * 5) % 9)}s`,
+      glow: `${3 + ((i * 3) % 4) * 0.5}s`,
+    })),
+  );
+
   return (
-    <div className="absolute inset-0 bg-[linear-gradient(to_bottom,oklch(0.94_0.03_200)_0%,oklch(0.86_0.05_205)_55%,oklch(0.72_0.07_215)_100%)] dark:bg-[linear-gradient(to_bottom,oklch(0.24_0.03_215)_0%,oklch(0.17_0.03_220)_100%)]">
-      {[0, 1, 2].map((i) => (
+    <div className="absolute inset-0 bg-[radial-gradient(120%_95%_at_50%_6%,oklch(0.36_0.045_255)_0%,oklch(0.24_0.04_235)_48%,oklch(0.16_0.035_225)_100%)]">
+      {/* Moon and its soft haze */}
+      <div
+        className="absolute left-1/2 top-[8%] h-14 w-14 -translate-x-1/2 rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle at 38% 34%, oklch(0.98 0.02 95) 0%, oklch(0.93 0.03 95) 60%, oklch(0.86 0.04 95) 100%)",
+          boxShadow: "0 0 70px 24px oklch(0.95 0.03 95 / 0.18)",
+        }}
+      />
+
+      {/* Drifting light motes / fireflies */}
+      {motes.map((m, i) => (
         <span
           key={i}
-          className="absolute left-1/2 bottom-[16%] -translate-x-1/2 rounded-full border animate-ripple-out"
+          className="absolute rounded-full animate-firefly-drift"
           style={{
-            width: 60,
-            height: 22,
-            borderColor: "oklch(0.98 0.01 210 / 0.35)",
-            animationDuration: "7s",
-            animationDelay: `-${i * 2.3}s`,
+            left: m.left,
+            top: m.top,
+            width: m.size,
+            height: m.size,
+            animationDelay: m.delay,
+            animationDuration: m.duration,
+            background: "oklch(0.96 0.05 95)",
+            boxShadow: "0 0 8px 2px oklch(0.94 0.06 95 / 0.4)",
+          }}
+        >
+          <span
+            className="absolute inset-0 rounded-full animate-firefly-glow"
+            style={{ animationDuration: m.glow, background: "inherit" }}
+          />
+        </span>
+      ))}
+
+      {/* Water body */}
+      <div className="absolute inset-x-0 bottom-0 h-[52%] bg-[linear-gradient(to_bottom,oklch(0.32_0.05_225_/_0.85)_0%,oklch(0.22_0.045_228)_45%,oklch(0.15_0.035_230)_100%)]">
+        {/* Moon reflection column */}
+        <div
+          className="absolute left-1/2 top-0 h-full w-16 -translate-x-1/2 animate-lotus-shimmer"
+          style={{
+            background:
+              "linear-gradient(to bottom, oklch(0.95 0.03 95 / 0.22) 0%, oklch(0.9 0.03 95 / 0.08) 45%, transparent 100%)",
+            filter: "blur(6px)",
+          }}
+        />
+      </div>
+
+      {/* Ripples radiating from the flower */}
+      {[0, 1, 2, 3].map((i) => (
+        <span
+          key={i}
+          className="absolute left-1/2 bottom-[19%] -translate-x-1/2 rounded-full border animate-ripple-out"
+          style={{
+            width: 72,
+            height: 24,
+            borderColor: "oklch(0.96 0.02 210 / 0.28)",
+            animationDuration: "9s",
+            animationDelay: `-${i * 2.25}s`,
           }}
         />
       ))}
+
       <svg
         viewBox="0 0 400 200"
         preserveAspectRatio="xMidYEnd slice"
-        className="absolute inset-x-0 bottom-0 h-[48%] w-full"
+        className="absolute inset-x-0 bottom-0 h-[50%] w-full"
       >
-        <ellipse cx="118" cy="176" rx="40" ry="11" fill="oklch(0.55 0.11 150 / 0.6)" />
-        <ellipse cx="292" cy="160" rx="32" ry="9" fill="oklch(0.5 0.1 150 / 0.55)" />
-        <g style={{ transform: "translate(200px,168px)" }}>
-          {petals.map((deg) => (
+        <defs>
+          <linearGradient id="cxPetal" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="oklch(0.95 0.05 340)" />
+            <stop offset="100%" stopColor="oklch(0.8 0.09 345)" />
+          </linearGradient>
+          <linearGradient id="cxPad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="oklch(0.5 0.09 155 / 0.85)" />
+            <stop offset="100%" stopColor="oklch(0.34 0.07 160 / 0.85)" />
+          </linearGradient>
+          <radialGradient id="cxLotusGlow" cx="50%" cy="50%">
+            <stop offset="0%" stopColor="oklch(0.95 0.05 340 / 0.35)" />
+            <stop offset="100%" stopColor="oklch(0.95 0.05 340 / 0)" />
+          </radialGradient>
+        </defs>
+
+        {/* Lily pads */}
+        <g className="animate-lotus-drift" style={{ transformOrigin: "200px 170px" }}>
+          <ellipse cx="104" cy="178" rx="42" ry="11" fill="url(#cxPad)" />
+          <ellipse cx="300" cy="164" rx="34" ry="9" fill="url(#cxPad)" />
+          <ellipse cx="256" cy="188" rx="26" ry="7" fill="url(#cxPad)" opacity="0.7" />
+          <ellipse cx="148" cy="192" rx="22" ry="6" fill="url(#cxPad)" opacity="0.6" />
+        </g>
+
+        {/* Soft halo behind the lotus */}
+        <circle cx="200" cy="150" r={52} fill="url(#cxLotusGlow)" opacity={glow} />
+
+        {/* Lotus reflection on the water */}
+        <g
+          className="animate-lotus-shimmer"
+          style={{ transform: "translate(200px,182px) scale(1,-0.45)", opacity: 0.28 }}
+        >
+          {petalsOuter.map((deg) => (
             <ellipse
-              key={deg}
+              key={`r${deg}`}
               cx="0"
               cy="-24"
-              rx="11"
-              ry="30"
-              fill="oklch(0.9 0.07 350 / 0.9)"
-              stroke="oklch(0.82 0.1 345 / 0.7)"
-              style={{
-                transform: `rotate(${deg * open}deg)`,
-                transformOrigin: "0px 0px",
-                transition: "transform 700ms linear",
-              }}
+              rx="10"
+              ry="28"
+              fill="url(#cxPetal)"
+              style={{ transform: `rotate(${deg * open}deg)`, transformOrigin: "0px 0px" }}
             />
           ))}
-          <circle cx="0" cy="-18" r="7" fill="oklch(0.92 0.12 95)" />
+        </g>
+
+        {/* Lotus flower */}
+        <g className="animate-lotus-sway" style={{ transformOrigin: "200px 172px" }}>
+          <g style={{ transform: "translate(200px,168px)" }}>
+            {petalsOuter.map((deg) => (
+              <ellipse
+                key={deg}
+                cx="0"
+                cy="-24"
+                rx="10.5"
+                ry="29"
+                fill="url(#cxPetal)"
+                stroke="oklch(0.86 0.07 345 / 0.55)"
+                strokeWidth="0.8"
+                style={{
+                  transform: `rotate(${deg * open}deg)`,
+                  transformOrigin: "0px 0px",
+                  transition: "transform 700ms linear",
+                }}
+              />
+            ))}
+            {petalsInner.map((deg) => (
+              <ellipse
+                key={`i${deg}`}
+                cx="0"
+                cy="-18"
+                rx="7"
+                ry="20"
+                fill="oklch(0.97 0.035 340 / 0.95)"
+                style={{
+                  transform: `rotate(${deg * open * 0.75}deg)`,
+                  transformOrigin: "0px 0px",
+                  transition: "transform 700ms linear",
+                }}
+              />
+            ))}
+            <circle cx="0" cy="-16" r={6 + 1.5 * p} fill="oklch(0.93 0.11 95)" />
+            <circle cx="0" cy="-16" r={2.4} fill="oklch(0.98 0.06 95)" />
+          </g>
         </g>
       </svg>
     </div>
