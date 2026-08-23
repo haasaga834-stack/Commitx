@@ -35,8 +35,12 @@ export function ScreenTimeCard() {
           <div>
             <p className="text-sm font-medium">Screen time</p>
             <p className="text-xs text-muted-foreground">
-              Allow usage access to track your daily phone time.
+              CommitX needs Usage Access to read how long your apps were on
+              screen today, so it can show your daily totals and warn you when
+              you pass your own limit. The data stays on this device and is
+              never uploaded.
             </p>
+
           </div>
         </div>
         <button
