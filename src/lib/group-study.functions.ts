@@ -10,6 +10,19 @@ import {
   type InvitePreviewDTO,
 } from "./group-study.shared";
 
+/**
+ * Lobby state must never be replayed from a browser/proxy cache: a cached
+ * response is exactly how a host ends up staring at an empty waiting room
+ * while friends have already joined.
+ */
+function noStore() {
+  try {
+    setResponseHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+  } catch {
+    // Header sink unavailable (e.g. during prerender) — nothing to do.
+  }
+}
+
 interface InvitePreviewRow {
   id: string;
   goal: string;
@@ -57,6 +70,7 @@ export const previewInvite = createServerFn({ method: "POST" })
     z.object({ code: z.string().trim().min(4).max(12) }).parse(data),
   )
   .handler(async ({ data, context }): Promise<InvitePreviewDTO | { error: string }> => {
+    noStore();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: rows, error } = await supabaseAdmin.rpc("group_invite_preview", {
       _code: data.code.toUpperCase(),
@@ -112,6 +126,7 @@ export const getGroupState = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => z.object({ id: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }): Promise<GroupStateDTO | { gone: true }> => {
+    noStore();
     const { supabase, userId } = context;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin.rpc("settle_expired_study_group", {
@@ -193,6 +208,7 @@ export const setMyGroupOutcome = createServerFn({ method: "POST" })
 export const listMyGroups = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<GroupDTO[]> => {
+    noStore();
     const { supabase, userId } = context;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // Drop leftovers from finished / cancelled / expired sessions first, so
@@ -255,6 +271,7 @@ export const getMyOpenGroup = createServerFn({ method: "POST" })
     async ({
       context,
     }): Promise<{ id: string; code: string; status: string; isHost: boolean } | null> => {
+      noStore();
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const quiet = (p: PromiseLike<unknown>) => p.then(() => undefined, () => undefined);
 
