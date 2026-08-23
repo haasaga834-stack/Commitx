@@ -18,6 +18,7 @@ import {
 import { releaseActiveDbSession } from "../lib/active-session";
 import { useAuth } from "../lib/use-auth";
 import { useStudyReminders } from "../lib/planner";
+import { reconcileMotivationNotifications } from "../lib/native-notifications";
 import { AmbientNature } from "../components/AmbientNature";
 import { Onboarding } from "../components/Onboarding";
 import { useOnboarding } from "../lib/onboarding";
@@ -225,6 +226,16 @@ function AuthGate({ children }: { children: ReactNode }) {
 
 function StudyReminders() {
   useStudyReminders();
+  // Re-arms the native 8:00 AM / 7:00 PM motivation alarms; idempotent, so a
+  // restart or a foreground return never schedules a duplicate.
+  useEffect(() => {
+    reconcileMotivationNotifications();
+    const onVisible = () => {
+      if (document.visibilityState === "visible") reconcileMotivationNotifications();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, []);
   return null;
 }
 

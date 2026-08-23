@@ -62,6 +62,16 @@
         </receiver>
 
         <receiver
+            android:name=".MotivationReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="app.commitx.mobile.MOTIVATION" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+
+        <receiver
             android:name=".ScreenTimeReceiver"
             android:exported="false">
             <intent-filter>

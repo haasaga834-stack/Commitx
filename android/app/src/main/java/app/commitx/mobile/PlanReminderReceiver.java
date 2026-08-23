@@ -29,6 +29,7 @@ public class PlanReminderReceiver extends BroadcastReceiver {
         CommitXNotifications.showPlanReminder(
                 context,
                 plan.optString("subject", "Study"),
+                plan.optString("topic", ""),
                 plan.optString("time", ""),
                 plan.optInt("durationMinutes", 60),
                 id);

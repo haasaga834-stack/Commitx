@@ -72,6 +72,7 @@ function write(plans: StudyPlan[]) {
     plans.map((p) => ({
       id: p.id,
       subject: p.subject,
+      topic: p.topic ?? "",
       time: p.time,
       durationMinutes: p.durationMinutes,
       repeat: p.repeat,
