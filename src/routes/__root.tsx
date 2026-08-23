@@ -199,6 +199,7 @@ const PUBLIC_PATHS = [
   "/about",
   "/contact",
   "/how-it-works",
+  "/study-tracker",
   "/reset-password",
 ];
 

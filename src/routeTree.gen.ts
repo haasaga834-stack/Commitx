@@ -27,6 +27,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SessionRouteImport } from './routes/session'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as StudyTrackerRouteImport } from './routes/study-tracker'
 import { Route as SuccessRouteImport } from './routes/success'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as WalletRouteImport } from './routes/wallet'
@@ -123,6 +124,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StudyTrackerRoute = StudyTrackerRouteImport.update({
+  id: '/study-tracker',
+  path: '/study-tracker',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SuccessRoute = SuccessRouteImport.update({
   id: '/success',
   path: '/success',
@@ -168,6 +174,7 @@ export interface FileRoutesByFullPath {
   '/session': typeof SessionRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/study-tracker': typeof StudyTrackerRoute
   '/success': typeof SuccessRoute
   '/terms': typeof TermsRoute
   '/wallet': typeof WalletRoute
@@ -193,6 +200,7 @@ export interface FileRoutesByTo {
   '/session': typeof SessionRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/study-tracker': typeof StudyTrackerRoute
   '/success': typeof SuccessRoute
   '/terms': typeof TermsRoute
   '/wallet': typeof WalletRoute
@@ -219,6 +227,7 @@ export interface FileRoutesById {
   '/session': typeof SessionRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/study-tracker': typeof StudyTrackerRoute
   '/success': typeof SuccessRoute
   '/terms': typeof TermsRoute
   '/wallet': typeof WalletRoute
@@ -246,6 +255,7 @@ export interface FileRouteTypes {
     | '/session'
     | '/settings'
     | '/sitemap.xml'
+    | '/study-tracker'
     | '/success'
     | '/terms'
     | '/wallet'
@@ -271,6 +281,7 @@ export interface FileRouteTypes {
     | '/session'
     | '/settings'
     | '/sitemap.xml'
+    | '/study-tracker'
     | '/success'
     | '/terms'
     | '/wallet'
@@ -296,6 +307,7 @@ export interface FileRouteTypes {
     | '/session'
     | '/settings'
     | '/sitemap.xml'
+    | '/study-tracker'
     | '/success'
     | '/terms'
     | '/wallet'
@@ -322,6 +334,7 @@ export interface RootRouteChildren {
   SessionRoute: typeof SessionRoute
   SettingsRoute: typeof SettingsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  StudyTrackerRoute: typeof StudyTrackerRoute
   SuccessRoute: typeof SuccessRoute
   TermsRoute: typeof TermsRoute
   WalletRoute: typeof WalletRoute
@@ -457,6 +470,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/study-tracker': {
+      id: '/study-tracker'
+      path: '/study-tracker'
+      fullPath: '/study-tracker'
+      preLoaderRoute: typeof StudyTrackerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/success': {
       id: '/success'
       path: '/success'
@@ -514,6 +534,7 @@ const rootRouteChildren: RootRouteChildren = {
   SessionRoute: SessionRoute,
   SettingsRoute: SettingsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  StudyTrackerRoute: StudyTrackerRoute,
   SuccessRoute: SuccessRoute,
   TermsRoute: TermsRoute,
   WalletRoute: WalletRoute,
