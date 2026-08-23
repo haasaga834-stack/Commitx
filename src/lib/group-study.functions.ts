@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { setResponseHeader } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
@@ -11,17 +10,10 @@ import {
 } from "./group-study.shared";
 
 /**
- * Lobby state must never be replayed from a browser/proxy cache: a cached
- * response is exactly how a host ends up staring at an empty waiting room
- * while friends have already joined.
+ * Lobby reads run over POST so no browser or proxy cache can replay a stale
+ * waiting room: a cached response is exactly how a host ends up staring at an
+ * empty lobby while friends have already joined.
  */
-function noStore() {
-  try {
-    setResponseHeader("Cache-Control", "no-store, no-cache, must-revalidate");
-  } catch {
-    // Header sink unavailable (e.g. during prerender) — nothing to do.
-  }
-}
 
 interface InvitePreviewRow {
   id: string;
@@ -70,7 +62,6 @@ export const previewInvite = createServerFn({ method: "POST" })
     z.object({ code: z.string().trim().min(4).max(12) }).parse(data),
   )
   .handler(async ({ data, context }): Promise<InvitePreviewDTO | { error: string }> => {
-    noStore();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: rows, error } = await supabaseAdmin.rpc("group_invite_preview", {
       _code: data.code.toUpperCase(),
@@ -126,7 +117,6 @@ export const getGroupState = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => z.object({ id: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }): Promise<GroupStateDTO | { gone: true }> => {
-    noStore();
     const { supabase, userId } = context;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin.rpc("settle_expired_study_group", {
@@ -208,7 +198,6 @@ export const setMyGroupOutcome = createServerFn({ method: "POST" })
 export const listMyGroups = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<GroupDTO[]> => {
-    noStore();
     const { supabase, userId } = context;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // Drop leftovers from finished / cancelled / expired sessions first, so
@@ -271,8 +260,7 @@ export const getMyOpenGroup = createServerFn({ method: "POST" })
     async ({
       context,
     }): Promise<{ id: string; code: string; status: string; isHost: boolean } | null> => {
-      noStore();
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const quiet = (p: PromiseLike<unknown>) => p.then(() => undefined, () => undefined);
 
       await quiet(supabaseAdmin.rpc("release_stale_commitments", { _user_id: context.userId }));
