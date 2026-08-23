@@ -243,9 +243,10 @@ export const listMyGroups = createServerFn({ method: "GET" })
   });
 
 /**
- * The single group this user still owes an outcome to (lobby or running).
- * This is exactly what blocks creating/joining another one, so the UI can
- * always offer a way back into it instead of a dead end.
+ * The single group this user still owes an outcome to (waiting or genuinely
+ * running). Terminal records — cancelled, completed, expired, or past their
+ * window — are settled first and never reported, so a stale row can't block a
+ * new group.
  */
 export const getMyOpenGroup = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -254,34 +255,65 @@ export const getMyOpenGroup = createServerFn({ method: "GET" })
       context,
     }): Promise<{ id: string; code: string; status: string; isHost: boolean } | null> => {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      await supabaseAdmin
-        .rpc("release_stale_commitments", { _user_id: context.userId })
-        .then(() => undefined, () => undefined);
+      const quiet = (p: PromiseLike<unknown>) => p.then(() => undefined, () => undefined);
 
-      const { data: rows } = await supabaseAdmin
-        .from("group_members")
-        .select("group_id, role")
-        .eq("user_id", context.userId)
-        .in("status", ["committed", "joined"])
-        .order("created_at", { ascending: false })
-        .limit(1);
-      const m = rows?.[0];
-      if (!m) return null;
+      await quiet(supabaseAdmin.rpc("release_stale_commitments", { _user_id: context.userId }));
 
-      const { data: g } = await supabaseAdmin
+      const openMemberships = async () => {
+        const { data } = await supabaseAdmin
+          .from("group_members")
+          .select("group_id, role, settled_at, status")
+          .eq("user_id", context.userId)
+          .is("settled_at", null)
+          .in("status", ["committed", "joined"])
+          .order("created_at", { ascending: false })
+          .limit(5);
+        return data ?? [];
+      };
+
+      let rows = await openMemberships();
+      if (rows.length === 0) return null;
+
+      // Settle anything whose shared window has already elapsed, then re-read.
+      await Promise.all(
+        rows.map((m) =>
+          quiet(
+            supabaseAdmin.rpc("settle_expired_study_group", {
+              _user_id: context.userId,
+              _group_id: m.group_id,
+            }),
+          ),
+        ),
+      );
+      await quiet(supabaseAdmin.rpc("release_stale_commitments", { _user_id: context.userId }));
+      rows = await openMemberships();
+      if (rows.length === 0) return null;
+
+      const { data: groups } = await supabaseAdmin
         .from("study_groups")
-        .select("id, code, status, creator_id")
-        .eq("id", m.group_id)
-        .maybeSingle();
-      if (!g || g.status === "ended") return null;
+        .select("id, code, status, creator_id, ends_at")
+        .in(
+          "id",
+          rows.map((m) => m.group_id),
+        )
+        .in("status", ["lobby", "active"])
+        .order("created_at", { ascending: false });
+
+      const now = Date.now();
+      const valid = (groups ?? []).find(
+        (g) => !g.ends_at || new Date(g.ends_at as string).getTime() > now,
+      );
+      if (!valid) return null;
+
       return {
-        id: g.id as string,
-        code: g.code as string,
-        status: g.status as string,
-        isHost: g.creator_id === context.userId,
+        id: valid.id as string,
+        code: valid.code as string,
+        status: valid.status as string,
+        isHost: valid.creator_id === context.userId,
       };
     },
   );
+
 
 
 /** Creator cancels a group that hasn't started. */
