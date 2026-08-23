@@ -200,7 +200,9 @@ const PUBLIC_PATHS = [
 ];
 
 function isPublicPath(path: string) {
-  return PUBLIC_PATHS.includes(path);
+  const normalized =
+    path.length > 1 && path.endsWith("/") ? path.replace(/\/+$/, "") : path;
+  return PUBLIC_PATHS.includes(normalized.toLowerCase());
 }
 
 function AuthGate({ children }: { children: ReactNode }) {
