@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { MobileShell } from "@/components/BottomNav";
 import { ArrowLeft, Mail } from "lucide-react";
+import { PublicFooter } from "@/components/PublicFooter";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -25,6 +26,8 @@ export const Route = createFileRoute("/contact")({
   component: Contact,
 });
 
+const SUPPORT_EMAIL = "commitx07@gmail.com";
+
 function Contact() {
   return (
     <MobileShell>
@@ -46,11 +49,11 @@ function Contact() {
             message and usually reply within two working days.
           </p>
           <a
-            href="mailto:support@commitx.app"
+            href={`mailto:${SUPPORT_EMAIL}`}
             className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground"
           >
             <Mail className="h-4 w-4" />
-            support@commitx.app
+            {SUPPORT_EMAIL}
           </a>
           <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
             For account deletion requests you can also use Settings → Delete
@@ -58,6 +61,7 @@ function Contact() {
           </p>
         </div>
       </div>
+      <PublicFooter />
     </MobileShell>
   );
 }

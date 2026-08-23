@@ -11,10 +11,10 @@ import {
   FlaskConical,
   Lock,
   ScrollText,
-
 } from "lucide-react";
 import { formatINR, MIN_COMMIT, MAX_COMMIT } from "@/lib/commitx-store";
 import { CxCoin } from "@/components/CxCoin";
+import { PublicFooter } from "@/components/PublicFooter";
 
 export const Route = createFileRoute("/how-it-works")({
   head: () => ({
@@ -160,7 +160,7 @@ function HowItWorks() {
 
         <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
           <PolicyCard
-            to="/privacy"
+            to="/privacy-policy"
             icon={<Lock className="h-4 w-4" />}
             title="Privacy Policy"
             description="How we collect, use, and protect your data."
@@ -174,7 +174,6 @@ function HowItWorks() {
             delay={480}
           />
         </div>
-
 
         <div className="mt-6 mb-4 rounded-3xl bg-card p-5 shadow-soft">
           <div className="flex items-center gap-2">
@@ -193,6 +192,7 @@ function HowItWorks() {
           </Link>
         </div>
       </div>
+      <PublicFooter />
     </MobileShell>
   );
 }
@@ -266,4 +266,3 @@ function Section({
     </section>
   );
 }
-

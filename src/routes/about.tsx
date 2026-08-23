@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { MobileShell } from "@/components/BottomNav";
 import { ArrowLeft } from "lucide-react";
+import { PublicFooter } from "@/components/PublicFooter";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
@@ -61,6 +62,7 @@ function About() {
           </p>
         </div>
       </div>
+      <PublicFooter />
     </MobileShell>
   );
 }
