@@ -12,11 +12,11 @@ export function GroupStudyCard({ compact = false }: { compact?: boolean }) {
         compact ? "p-4" : "p-5"
       }`}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col items-center text-center">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/15 text-primary">
           <Users className="h-4.5 w-4.5" />
         </span>
-        <div className="min-w-0">
+        <div className="mt-2 min-w-0">
           <h2 className="font-display text-base font-semibold text-foreground">
             Group Study
           </h2>
