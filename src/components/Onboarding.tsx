@@ -460,6 +460,18 @@ export function Onboarding({ onDone }: OnboardingProps) {
                   className="mt-1.5 w-full rounded-2xl bg-background px-4 py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground"
                 />
               </label>
+              <label className="block">
+                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                  Start time
+                </span>
+                <input
+                  type="time"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  className="mt-1.5 w-full rounded-2xl bg-background px-4 py-3 text-sm text-foreground outline-none"
+                />
+              </label>
+
 
               <div>
                 <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
