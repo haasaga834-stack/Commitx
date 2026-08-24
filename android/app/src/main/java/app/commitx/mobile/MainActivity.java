@@ -57,6 +57,8 @@ public class MainActivity extends Activity {
     private static volatile MainActivity current;
 
     private WebView webView;
+    private View splashOverlay;
+    private volatile boolean splashHidden = false;
     private Dialog authDialog;
     private WebView authWebView;
     private SharedPreferences preferences;
@@ -64,6 +66,7 @@ public class MainActivity extends Activity {
     private volatile boolean sessionLockActive = false;
     private volatile boolean atRootScreen = true;
     private volatile String pendingOAuthCallback = null;
+
 
     private static final int REQUEST_FILE_CHOOSER = 8021;
     private ValueCallback<Uri[]> fileChooserCallback;
@@ -216,11 +219,67 @@ public class MainActivity extends Activity {
             }
         });
 
-        setContentView(webView);
+        FrameLayout root = new FrameLayout(this);
+        root.addView(webView, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        splashOverlay = buildSplashOverlay();
+        root.addView(splashOverlay, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        setContentView(root);
+
         webView.loadUrl(startUrlFor(getIntent()));
+        // Safety net: never trap the user behind the splash if the signal is missed.
+        webView.postDelayed(this::hideSplash, 12000);
         // A cold start from the OAuth deep link: replay it once the page is ready.
         pendingOAuthCallback = oauthCallbackFrom(getIntent());
     }
+
+    /**
+     * Branded startup screen drawn on top of the WebView so a cold start shows
+     * the CommitX logo instead of an empty page while the app boots.
+     */
+    private View buildSplashOverlay() {
+        FrameLayout overlay = new FrameLayout(this);
+        overlay.setBackgroundColor(Color.parseColor("#F8F9F6"));
+        overlay.setClickable(true);
+
+        android.widget.LinearLayout column = new android.widget.LinearLayout(this);
+        column.setOrientation(android.widget.LinearLayout.VERTICAL);
+        column.setGravity(android.view.Gravity.CENTER);
+
+        android.widget.ImageView logo = new android.widget.ImageView(this);
+        logo.setImageResource(R.drawable.splash_logo);
+        int size = Math.round(getResources().getDisplayMetrics().density * 108);
+        column.addView(logo, new android.widget.LinearLayout.LayoutParams(size, size));
+
+        android.widget.ProgressBar spinner = new android.widget.ProgressBar(this);
+        spinner.setIndeterminate(true);
+        android.widget.LinearLayout.LayoutParams spinnerParams =
+                new android.widget.LinearLayout.LayoutParams(
+                        android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
+                        android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
+        spinnerParams.topMargin = Math.round(getResources().getDisplayMetrics().density * 28);
+        column.addView(spinner, spinnerParams);
+
+        FrameLayout.LayoutParams columnParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+        columnParams.gravity = android.view.Gravity.CENTER;
+        overlay.addView(column, columnParams);
+        return overlay;
+    }
+
+    /** Fades the startup screen out once the web app reports it is interactive. */
+    private void hideSplash() {
+        if (splashHidden || splashOverlay == null) return;
+        splashHidden = true;
+        final View overlay = splashOverlay;
+        overlay.animate().alpha(0f).setDuration(220).withEndAction(() -> {
+            overlay.setVisibility(View.GONE);
+            ViewGroup parent = (ViewGroup) overlay.getParent();
+            if (parent != null) parent.removeView(overlay);
+        }).start();
+    }
+
 
     /**
      * Keep every CommitX navigation in this activity, including redirects from
