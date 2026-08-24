@@ -57,6 +57,8 @@ public class MainActivity extends Activity {
     private static volatile MainActivity current;
 
     private WebView webView;
+    private View splashOverlay;
+    private volatile boolean splashHidden = false;
     private Dialog authDialog;
     private WebView authWebView;
     private SharedPreferences preferences;
@@ -64,6 +66,7 @@ public class MainActivity extends Activity {
     private volatile boolean sessionLockActive = false;
     private volatile boolean atRootScreen = true;
     private volatile String pendingOAuthCallback = null;
+
 
     private static final int REQUEST_FILE_CHOOSER = 8021;
     private ValueCallback<Uri[]> fileChooserCallback;
