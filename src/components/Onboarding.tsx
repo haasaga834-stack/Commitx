@@ -225,7 +225,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
       await savePrimaryPlan({
         subject: subject.trim(),
         topic: topic.trim(),
-        time: soonTime(),
+        time: /^\d{2}:\d{2}$/.test(time) ? time : soonTime(),
         durationMinutes: clampDuration(durationMinutes),
         repeat: "daily",
         priority,
