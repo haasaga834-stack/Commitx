@@ -201,6 +201,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
   const [durationMinutes, setDurationMinutes] = useState(
     existing?.durationMinutes ?? 120,
   );
+  const [time, setTime] = useState(existing?.time ?? soonTime());
   const [priority, setPriority] = useState<Priority>(existing?.priority ?? "high");
   const [commitValue, setCommitValue] = useState<string>(
     existing?.commitValue ? String(existing.commitValue) : "",
@@ -224,7 +225,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
       await savePrimaryPlan({
         subject: subject.trim(),
         topic: topic.trim(),
-        time: soonTime(),
+        time: /^\d{2}:\d{2}$/.test(time) ? time : soonTime(),
         durationMinutes: clampDuration(durationMinutes),
         repeat: "daily",
         priority,
@@ -459,6 +460,18 @@ export function Onboarding({ onDone }: OnboardingProps) {
                   className="mt-1.5 w-full rounded-2xl bg-background px-4 py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground"
                 />
               </label>
+              <label className="block">
+                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                  Start time
+                </span>
+                <input
+                  type="time"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  className="mt-1.5 w-full rounded-2xl bg-background px-4 py-3 text-sm text-foreground outline-none"
+                />
+              </label>
+
 
               <div>
                 <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
