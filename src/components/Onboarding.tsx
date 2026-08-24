@@ -201,6 +201,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
   const [durationMinutes, setDurationMinutes] = useState(
     existing?.durationMinutes ?? 120,
   );
+  const [time, setTime] = useState(existing?.time ?? soonTime());
   const [priority, setPriority] = useState<Priority>(existing?.priority ?? "high");
   const [commitValue, setCommitValue] = useState<string>(
     existing?.commitValue ? String(existing.commitValue) : "",
