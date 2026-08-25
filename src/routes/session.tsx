@@ -206,6 +206,8 @@ function LiveSession() {
   const phaseRef = useRef<SessionPhase>(restoredPhase);
   const breakStartedAtRef = useRef<number | null>(restored?.breakStartedAt ?? null);
   const confirmSinceRef = useRef<number | null>(restored?.confirmSince ?? null);
+  const lastEvalAtRef = useRef<number | null>(null);
+
   const breaksTakenRef = useRef<number>(restored?.breaksTaken ?? 0);
   const nonFocusMsRef = useRef<number>(restored?.nonFocusMs ?? 0);
   const setPhase = useCallback((next: SessionPhase) => {
