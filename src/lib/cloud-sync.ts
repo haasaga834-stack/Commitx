@@ -94,6 +94,8 @@ function sessionSignature(s: Session) {
 /** Pull profile, wallet and sessions from the cloud into the local store. */
 export async function pullFromCloud(userId: string) {
   if (!isOnline()) return null;
+  const localState = getState();
+  const keepLocalChanges = pendingPush;
   const [profileRes, walletRes, sessionsRes] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
     supabase.from("wallets").select("*").eq("user_id", userId).maybeSingle(),
@@ -120,7 +122,7 @@ export async function pullFromCloud(userId: string) {
     const sig = sessionSignature(session);
     remoteSignatures.set(sig, (remoteSignatures.get(sig) ?? 0) + 1);
   }
-  const localUnsynced = getState().sessions.filter((s) => {
+  const localUnsynced = localState.sessions.filter((s) => {
     if (remoteIds.has(s.id) || syncedSessionIds.has(s.id)) return false;
     const sig = sessionSignature(s);
     const matchingRemoteCount = remoteSignatures.get(sig) ?? 0;
@@ -136,20 +138,29 @@ export async function pullFromCloud(userId: string) {
   if (localUnsynced.length > 0) pendingPush = true;
 
   const next: AppState = {
-    coins: wallet?.coin_balance ?? 0,
+    coins: keepLocalChanges ? localState.coins : (wallet?.coin_balance ?? localState.coins),
     sessions: [...localUnsynced, ...remoteSessions],
     profile: {
-      name: profile?.display_name ?? "New User",
-      age: profile?.age ?? "",
-      sex: profile?.sex ?? "",
-      education: profile?.education ?? "",
-      photo: (profile as { avatar_url?: string | null } | null)?.avatar_url ?? "",
+      name: keepLocalChanges ? localState.profile.name : (profile?.display_name ?? localState.profile.name),
+      age: keepLocalChanges ? localState.profile.age : (profile?.age ?? localState.profile.age),
+      sex: keepLocalChanges ? localState.profile.sex : (profile?.sex ?? localState.profile.sex),
+      education: keepLocalChanges
+        ? localState.profile.education
+        : (profile?.education ?? localState.profile.education),
+      photo: keepLocalChanges
+        ? localState.profile.photo
+        : ((profile as { avatar_url?: string | null } | null)?.avatar_url ?? localState.profile.photo),
 
     },
-    referralCredited: Boolean(profile?.referred_by),
+    referralCredited: keepLocalChanges
+      ? localState.referralCredited
+      : Boolean(profile?.referred_by ?? localState.referralCredited),
     notificationsEnabled:
+      keepLocalChanges
+        ? localState.notificationsEnabled
+        :
       (profile as { notifications_enabled?: boolean | null } | null)
-        ?.notifications_enabled ?? true,
+        ?.notifications_enabled ?? localState.notificationsEnabled ?? true,
   };
 
   applyingRemote = true;
@@ -300,6 +311,8 @@ export function startCloudSync(userId: string) {
 export function stopCloudSync() {
   if (unsubscribe) unsubscribe();
   unsubscribe = null;
+  if (stopReconnect) stopReconnect();
+  stopReconnect = null;
   currentUserId = null;
   if (pushTimer) clearTimeout(pushTimer);
   pushTimer = null;
