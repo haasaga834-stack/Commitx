@@ -17,6 +17,7 @@ import { CxCoin } from "@/components/CxCoin";
 import { WindScape } from "@/components/WindScape";
 import {
   coinLabel,
+  COINS_PER_HOUR,
   stats,
   useAppState,
   REFERRAL_REWARD,
@@ -378,7 +379,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
               </Halo>
             }
             title="Grow With Cx Coins"
-            text="1 completed hour = 1 Cx Coin."
+            text={`${coinLabel(COINS_PER_HOUR)} for each completed hour.`}
             cta="Next"
             onCta={next}
             footer={

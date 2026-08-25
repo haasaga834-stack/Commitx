@@ -96,6 +96,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     scripts: [
       {
+        children:
+          "try{var m=localStorage.getItem('commitx-theme-v1');if(m==='dark'){document.documentElement.classList.add('dark');document.documentElement.style.colorScheme='dark';}}catch(e){}",
+      },
+      {
         type: "module",
         children:
           "if(\"serviceWorker\"in navigator){window.addEventListener(\"load\",()=>{navigator.serviceWorker.register(\"/sw.js\").catch(()=>{})});}",
@@ -120,13 +124,6 @@ function RootShell({ children }: { children: ReactNode }) {
           crossOrigin="anonymous"
         />
         <HeadContent />
-        <script
-
-          dangerouslySetInnerHTML={{
-            __html:
-              "try{var m=localStorage.getItem('commitx-theme-v1');if(m==='dark'){document.documentElement.classList.add('dark');document.documentElement.style.colorScheme='dark';}}catch(e){}",
-          }}
-        />
       </head>
       <body>
         {children}
