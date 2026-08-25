@@ -111,11 +111,6 @@ function MobileHome() {
                 clickable
               />
             </CxCoinPopup>
-            <TopChip
-              icon={<Flame className="h-4 w-4 text-accent" />}
-              value={hydrated ? String(s.streak) : "—"}
-              srLabel="Day streak"
-            />
             <Link
               to="/settings"
               hash="notifications"
