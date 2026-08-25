@@ -39,8 +39,9 @@ function CxCoinsScreen() {
   return (
     <MobileShell>
       <div className="px-6 pt-14">
-        <p className="text-xs uppercase tracking-widest text-muted-foreground">Cx Coins</p>
-        <h1 className="mt-2 text-3xl font-semibold">Your Cx Coins</h1>
+        <p className="text-center text-xs uppercase tracking-widest text-muted-foreground">Cx Coins</p>
+        <h1 className="mt-2 text-center text-3xl font-semibold">Your Cx Coins</h1>
+
 
         {/* Balance */}
         <div className="mt-6 rounded-3xl border border-hairline bg-card p-6 shadow-soft">
