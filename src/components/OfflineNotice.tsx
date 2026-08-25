@@ -51,10 +51,10 @@ export function OfflineNotice() {
   return (
     <>
       {showOffline ? (
-        <div className="pointer-events-none fixed inset-0 z-[70] flex items-end justify-center px-5 pb-8 sm:items-center sm:pb-0">
+        <div className="pointer-events-none fixed inset-0 z-[70] flex items-end justify-center bg-foreground/10 px-5 pb-8 sm:items-center sm:pb-0">
           <div
             role="status"
-            className="pointer-events-auto w-full max-w-sm animate-[offline-in_260ms_ease-out] rounded-3xl border border-hairline bg-card/95 p-6 text-center shadow-xl backdrop-blur-md"
+            className="pointer-events-auto w-full max-w-sm animate-[offline-in_260ms_ease-out] rounded-3xl border border-hairline bg-card p-6 text-center shadow-2xl"
           >
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-muted">
               <CloudOff className="h-6 w-6 text-muted-foreground" />
@@ -79,7 +79,7 @@ export function OfflineNotice() {
 
       {showBackOnline ? (
         <div className="pointer-events-none fixed inset-x-0 top-4 z-[70] flex justify-center px-5">
-          <div className="animate-[offline-in_220ms_ease-out] flex items-center gap-2 rounded-full border border-hairline bg-card/95 px-4 py-2 shadow-lg backdrop-blur-md">
+          <div className="animate-[offline-in_220ms_ease-out] flex items-center gap-2 rounded-full border border-hairline bg-card px-4 py-2 shadow-lg">
             <Wifi className="h-4 w-4 text-primary" />
             <span className="text-xs font-medium text-foreground">Back online</span>
           </div>
