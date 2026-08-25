@@ -115,7 +115,7 @@ function HowItWorks() {
             title="Cx Coins & Cx Coupons"
             delay={240}
             points={[
-              "1 successfully completed hour of focus = 1 Cx Coin. A 30-minute session earns 0, two hours earn 2.",
+              `${coinLabel(COINS_PER_HOUR)} for each successfully completed hour of focus. A 30-minute session earns 0, two hours earn ${coinLabel(COINS_PER_HOUR * 2)}.`,
               "Cancelled, failed or incomplete sessions earn nothing.",
               "Cx Coins are not cash and cannot be transferred.",
               "They accumulate on your account, so you can save them up over time.",

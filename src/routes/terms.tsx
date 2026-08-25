@@ -73,7 +73,7 @@ const SECTIONS: { title: string; body: string[] }[] = [
   {
     title: "7. Cx Coins & rewards",
     body: [
-      "You earn 1 Cx Coin for each fully completed hour of focus. Partial hours earn nothing, and cancelled or failed sessions earn nothing.",
+      "You earn 25 Cx Coins for each fully completed hour of focus. Partial hours earn nothing, and cancelled or failed sessions earn nothing.",
       "Cx Coins are not currency. They have no cash value, cannot be bought, withdrawn, transferred, sold or exchanged, and may be adjusted or reset while CommitX is in beta.",
       "Cx Coupons are not available yet. Any future rewards or partner benefits will be announced in the app and may come with their own conditions.",
     ],

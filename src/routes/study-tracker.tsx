@@ -11,6 +11,7 @@ import {
   ListChecks,
   Users,
 } from "lucide-react";
+import { coinLabel, COINS_PER_HOUR } from "@/lib/commitx-store";
 
 const TITLE = "Study Tracker App — Track Study Hours & Streaks | CommitX";
 const DESCRIPTION =
@@ -81,7 +82,7 @@ const features = [
     icon: Coins,
     title: "Cx Coins for consistency",
     body:
-      "Every completed hour of focus earns one Cx Coin — a simple, non-cash reward for showing up.",
+      `Every completed hour of focus earns ${coinLabel(COINS_PER_HOUR)} — a simple, non-cash reward for showing up.`,
   },
 ];
 

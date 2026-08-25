@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { MobileShell } from "@/components/BottomNav";
 import { ArrowLeft } from "lucide-react";
 import { PublicFooter } from "@/components/PublicFooter";
+import { coinLabel, COINS_PER_HOUR } from "@/lib/commitx-store";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
@@ -52,7 +53,7 @@ function About() {
             wallet. Walk away, and it doesn't.
           </p>
           <p>
-            Every completed hour also earns a Cx Coin — a simple reward for
+            Every completed hour also earns {coinLabel(COINS_PER_HOUR)} — a simple reward for
             consistency, which will become redeemable for Cx Coupons as CommitX
             grows.<span className="text-foreground"> Turning discipline into progress.</span>
           </p>
