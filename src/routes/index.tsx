@@ -58,6 +58,7 @@ function Home() {
 function MobileHome() {
   const navigate = useNavigate();
   const { state, hydrated } = useAppState();
+  const s = useMemo(() => stats(state.sessions), [state.sessions]);
   const { plans, hydrated: plansHydrated } = usePlans();
   const { todos } = useTodos();
   const firstName = state.profile.name.split(" ")[0];
