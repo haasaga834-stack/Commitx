@@ -9,6 +9,27 @@ import {
 import { recordSessions } from "./wallet.functions";
 import { isOnline, onReconnect, startConnectivityWatch } from "./connectivity";
 
+const syncedKey = (userId: string) => `commitx-synced-session-ids-v1:${userId}`;
+
+function readSyncedIds(userId: string) {
+  if (typeof window === "undefined") return new Set<string>();
+  try {
+    const raw = window.localStorage.getItem(syncedKey(userId));
+    return new Set<string>(raw ? JSON.parse(raw) : []);
+  } catch {
+    return new Set<string>();
+  }
+}
+
+function writeSyncedIds(userId: string) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(syncedKey(userId), JSON.stringify([...syncedSessionIds]));
+  } catch {}
+}
+
+const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 let syncedSessionIds = new Set<string>();
 let applyingRemote = false;
 let unsubscribe: (() => void) | null = null;
@@ -68,7 +89,8 @@ function toSession(row: any): Session {
 
 /** Pull profile, wallet and sessions from the cloud into the local store. */
 export async function pullFromCloud(userId: string) {
-  const [{ data: profile }, { data: wallet }, { data: sessions }] = await Promise.all([
+  if (!isOnline()) return null;
+  const [profileRes, walletRes, sessionsRes] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
     supabase.from("wallets").select("*").eq("user_id", userId).maybeSingle(),
     supabase
@@ -78,13 +100,25 @@ export async function pullFromCloud(userId: string) {
       .order("created_at", { ascending: false })
       .limit(200),
   ]);
+  if (profileRes.error || walletRes.error || sessionsRes.error) {
+    throw profileRes.error ?? walletRes.error ?? sessionsRes.error;
+  }
+
+  const profile = profileRes.data;
+  const wallet = walletRes.data;
+  const sessions = sessionsRes.data;
 
   const rows = sessions ?? [];
-  syncedSessionIds = new Set(rows.map((r: any) => r.id));
+  const remoteSessions = rows.map(toSession);
+  const remoteIds = new Set(remoteSessions.map((s) => s.id));
+  const localUnsynced = getState().sessions.filter((s) => !remoteIds.has(s.id) && !syncedSessionIds.has(s.id));
+  syncedSessionIds = new Set([...remoteIds, ...syncedSessionIds]);
+  if (currentUserId === userId) writeSyncedIds(userId);
+  if (localUnsynced.length > 0) pendingPush = true;
 
   const next: AppState = {
     coins: wallet?.coin_balance ?? 0,
-    sessions: rows.map(toSession),
+    sessions: [...localUnsynced, ...remoteSessions],
     profile: {
       name: profile?.display_name ?? "New User",
       age: profile?.age ?? "",
@@ -107,10 +141,14 @@ export async function pullFromCloud(userId: string) {
 }
 
 async function push(userId: string) {
+  if (!isOnline()) {
+    pendingPush = true;
+    return;
+  }
   const state = getState();
 
   // Profile fields are user-owned preferences and stay a direct write.
-  await supabase
+  const { error: profileError } = await supabase
     .from("profiles")
     .update({
       display_name: state.profile.name,
@@ -121,16 +159,17 @@ async function push(userId: string) {
       notifications_enabled: state.notificationsEnabled ?? true,
     })
     .eq("id", userId);
+  if (profileError) throw profileError;
 
   // Balances and session rewards are recomputed server-side; the client only
   // reports what happened and then adopts the authoritative result.
   const unsynced = state.sessions.filter((s) => !syncedSessionIds.has(s.id));
   if (unsynced.length === 0) return;
-  for (const s of unsynced) syncedSessionIds.add(s.id);
 
   const result = await recordSessions({
     data: {
       sessions: unsynced.slice(0, 20).map((s) => ({
+        ...(uuidRe.test(s.id) ? { id: s.id } : {}),
         goal: s.goal || "Focus",
         durationMinutes: Math.max(0, Math.round(s.durationMinutes)),
         value: Math.max(0, Math.round(s.value)),
@@ -140,7 +179,9 @@ async function push(userId: string) {
     },
   });
 
+  for (const s of unsynced.slice(0, 20)) syncedSessionIds.add(s.id);
   for (const id of result.ids) syncedSessionIds.add(id);
+  writeSyncedIds(userId);
 
   applyingRemote = true;
   hydrateState({
@@ -157,6 +198,7 @@ export function startCloudSync(userId: string) {
   stopCloudSync();
   startConnectivityWatch();
   currentUserId = userId;
+  syncedSessionIds = readSyncedIds(userId);
   if (!stopReconnect) {
     stopReconnect = onReconnect(() => {
       const uid = currentUserId;
@@ -166,13 +208,27 @@ export function startCloudSync(userId: string) {
         pendingPush = false;
         lastPushAt = Date.now();
         void push(uid)
-          .catch(() => {})
+          .catch(() => {
+            pendingPush = true;
+          })
           .finally(() => {
             lastPushAt = Date.now();
             schedulePull(uid);
           });
       } else {
-        schedulePull(uid);
+        void pullFromCloud(uid)
+          .then(() => {
+            if (!pendingPush) return;
+            pendingPush = false;
+            lastPushAt = Date.now();
+            return push(uid);
+          })
+          .catch(() => {
+            pendingPush = true;
+          })
+          .finally(() => {
+            lastPushAt = Date.now();
+          });
       }
     });
   }
@@ -188,7 +244,9 @@ export function startCloudSync(userId: string) {
       }
       lastPushAt = Date.now();
       void push(currentUserId!)
-        .catch(() => {})
+        .catch(() => {
+          pendingPush = true;
+        })
         .finally(() => {
           lastPushAt = Date.now();
         });

@@ -6,44 +6,62 @@ import { resetState } from "./commitx-store";
 import { clearPlannerLocal, setPlannerUser } from "./planner";
 import { clearAcademicsLocal, setAcademicsUser } from "./academics";
 import { claimPendingReferral } from "./pending-referral";
+import { clearCachedUser, readCachedUser, writeCachedUser } from "./auth-cache";
+import { isOnline, onReconnect, startConnectivityWatch } from "./connectivity";
 
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const cachedAtMount = readCachedUser();
+  const [user, setUser] = useState<User | null>(cachedAtMount);
+  const [loading, setLoading] = useState(!cachedAtMount);
 
   useEffect(() => {
     let mounted = true;
 
-    const handle = (session: SupabaseSession | null) => {
+    const handle = (session: SupabaseSession | null, allowCached = false) => {
       if (!mounted) return;
-      setUser(session?.user ?? null);
+      const cached = allowCached ? readCachedUser() : null;
+      const nextUser = session?.user ?? cached;
+      setUser(nextUser ?? null);
       setLoading(false);
-      if (session?.user) {
-        startCloudSync(session.user.id);
-        setPlannerUser(session.user.id);
-        setAcademicsUser(session.user.id);
-        const uid = session.user.id;
-        void claimPendingReferral()
-          .then(() => pullFromCloud(uid))
-          .catch(() => {});
+      if (nextUser) {
+        writeCachedUser(nextUser);
+        startCloudSync(nextUser.id);
+        setPlannerUser(nextUser.id);
+        setAcademicsUser(nextUser.id);
+        if (session?.user && isOnline()) {
+          const uid = session.user.id;
+          void claimPendingReferral()
+            .then(() => pullFromCloud(uid))
+            .catch(() => {});
+        }
       } else {
+        clearCachedUser();
         stopCloudSync();
         setPlannerUser(null);
         setAcademicsUser(null);
       }
     };
 
+    startConnectivityWatch();
+
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
+      if (event === "SIGNED_IN" || event === "USER_UPDATED") {
         handle(session);
       }
+      if (event === "SIGNED_OUT") handle(null, !isOnline());
+    });
+
+    const stopReconnect = onReconnect(() => {
+      void supabase.auth.getSession()
+        .then(({ data }) => handle(data.session))
+        .catch(() => {});
     });
 
     supabase.auth.getSession()
-      .then(({ data }) => handle(data.session))
+      .then(({ data }) => handle(data.session, !isOnline()))
       .catch(() => {
-        // Offline / unreachable backend: fall through to the local session.
-        if (mounted) setLoading(false);
+        // Offline / unreachable backend: keep the last known signed-in user.
+        handle(null, true);
       });
 
     // Safety net so a stalled network request can never leave the app on the
@@ -55,6 +73,7 @@ export function useAuth() {
     return () => {
       mounted = false;
       clearTimeout(failsafe);
+      stopReconnect();
       sub.subscription.unsubscribe();
     };
   }, []);
@@ -64,6 +83,7 @@ export function useAuth() {
 
 export async function signOutEverywhere() {
   stopCloudSync();
+  clearCachedUser();
   const { nativeGoogleSignOut } = await import("@/lib/native-auth");
   nativeGoogleSignOut();
   await supabase.auth.signOut();

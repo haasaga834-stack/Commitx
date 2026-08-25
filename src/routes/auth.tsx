@@ -7,7 +7,7 @@ import { Loader2 } from "lucide-react";
 import { lovable } from "@/integrations/lovable/index";
 import { setPendingReferral } from "@/lib/pending-referral";
 import { WELCOME_COINS, REFERRAL_REWARD, coinLabel } from "@/lib/commitx-store";
-import { isOnline, OFFLINE_ACTION_MESSAGE } from "@/lib/connectivity";
+import { actionErrorMessage, isOnline, OFFLINE_ACTION_MESSAGE } from "@/lib/connectivity";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -79,7 +79,7 @@ function Auth() {
         router.navigate({ to: "/" });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+      setError(actionErrorMessage(err, err instanceof Error ? err.message : "Sign-in failed."));
     } finally {
       setBusy(false);
     }
@@ -109,9 +109,12 @@ function Auth() {
       );
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "Could not send the reset email. Please try again.",
+        actionErrorMessage(
+          err,
+          err instanceof Error
+            ? err.message
+            : "Could not send the reset email. Please try again.",
+        ),
       );
     } finally {
       setBusy(false);
@@ -150,7 +153,7 @@ function Auth() {
       if (result.redirected) return;
       router.navigate({ to: "/" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Google sign-in failed.");
+      setError(actionErrorMessage(err, err instanceof Error ? err.message : "Google sign-in failed."));
     } finally {
       setBusy(false);
     }

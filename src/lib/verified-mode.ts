@@ -1,4 +1,4 @@
-import { setState } from "./commitx-store";
+import { createLocalSessionId, setState } from "./commitx-store";
 import type { Mode } from "./commitx-store";
 
 export const ACTIVE_VERIFIED_SESSION_KEY = "commitx-active-session-v1";
@@ -129,7 +129,7 @@ export function finalizePendingVerifiedFailure(): VerifiedFailureOutcome | null 
       ...state,
       sessions: [
         {
-          id: `${Date.now()}`,
+          id: createLocalSessionId(),
           goal: active.goal || "Focus",
           durationMinutes: active.duration || 0,
           value: active.value || 0,

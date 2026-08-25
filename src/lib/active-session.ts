@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { isOnline } from "./connectivity";
 
 /**
  * Server-side single-session guard. One row per user in `active_sessions`
@@ -39,6 +40,7 @@ function isStale(row: ActiveDbSession) {
 
 /** Returns the live active session for this user, cleaning up stale rows. */
 export async function getActiveDbSession(): Promise<ActiveDbSession | null> {
+  if (!isOnline()) return null;
   const userId = await currentUserId();
   if (!userId) return null;
   const { data } = await supabase
@@ -66,6 +68,7 @@ export async function claimActiveDbSession(input: {
   value: number;
   mode: string;
 }): Promise<ClaimResult> {
+  if (!isOnline()) return { ok: true };
   const userId = await currentUserId();
   // Signed out / offline: local guards still apply.
   if (!userId) return { ok: true };
@@ -95,6 +98,7 @@ export async function claimActiveDbSession(input: {
 
 /** Frees the slot — called whenever a session ends (completed or failed). */
 export async function releaseActiveDbSession() {
+  if (!isOnline()) return;
   const userId = await currentUserId();
   if (!userId) return;
   try {
