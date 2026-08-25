@@ -483,7 +483,7 @@ function Commit() {
             className="mt-4 w-full accent-[color:var(--color-primary)]"
           />
 
-          {/* Demo balance preview */}
+          {/* Cx Coin balance preview */}
           <div className="mt-4 rounded-2xl bg-card px-4 py-3 shadow-soft">
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">Your Cx Coins</span>

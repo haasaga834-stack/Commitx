@@ -37,8 +37,8 @@ const SECTIONS: { title: string; body: string[] }[] = [
   {
     title: "2. Description of CommitX",
     body: [
-      "CommitX is a focus and accountability app. You commit to a block of focused time, put a virtual demo amount behind it, and get that amount back when you complete the session.",
-      "CommitX is not a bank, wallet, payment service, investment product or game of chance. No real money is deposited, charged or withdrawn.",
+      "CommitX is a focus and accountability app. You commit to a block of focused time, put Cx Coins behind it, and get those Cx Coins back when you complete the session.",
+      "CommitX is not a bank, wallet, payment service, investment product or game of chance. Cx Coins are in-app points only: they cannot be bought, charged for, cashed out or exchanged for anything of value.",
     ],
   },
   {
@@ -58,7 +58,7 @@ const SECTIONS: { title: string; body: string[] }[] = [
   {
     title: "5. Commitments & sessions",
     body: [
-      "When you start a commitment, the amount is held from your demo balance for the duration of the session. Complete the session and it is returned in full.",
+      "When you start a commitment, the Cx Coins are held from your balance for the duration of the session. Complete the session and they are returned in full, plus 25 Cx Coins for each completed study hour.",
       "If you end a session early, or fail the focus rules of Verified Mode, the committed amount is forfeited within the app. Session timing is based on real clock time and is settled on our servers.",
       "Verified Mode requires Do Not Disturb and fails if you intentionally leave the app, with a short grace window for emergency calls. Only one active session is allowed at a time.",
     ],
@@ -74,7 +74,7 @@ const SECTIONS: { title: string; body: string[] }[] = [
     title: "7. Cx Coins & rewards",
     body: [
       "You earn 1 Cx Coin for each fully completed hour of focus. Partial hours earn nothing, and cancelled or failed sessions earn nothing.",
-      "Cx Coins are not money. They have no cash value, cannot be withdrawn, transferred, sold or exchanged, and may be adjusted or reset while CommitX is in beta.",
+      "Cx Coins are not currency. They have no cash value, cannot be bought, withdrawn, transferred, sold or exchanged, and may be adjusted or reset while CommitX is in beta.",
       "Cx Coupons are not available yet. Any future rewards or partner benefits will be announced in the app and may come with their own conditions.",
     ],
   },
@@ -88,7 +88,7 @@ const SECTIONS: { title: string; body: string[] }[] = [
     title: "9. Beta-phase limitations",
     body: [
       "CommitX is in open beta. Features, rules, balances and rewards may change, break or be reset without notice, and data loss is possible.",
-      "All amounts inside the app are virtual demo money. Real-money deposits and withdrawals are disabled.",
+      "Every balance inside the app is measured in Cx Coins. CommitX has no deposits, no top-ups and no cash-outs of any kind.",
     ],
   },
   {
@@ -113,7 +113,7 @@ const SECTIONS: { title: string; body: string[] }[] = [
   {
     title: "13. Limitation of liability",
     body: [
-      "CommitX is provided \u201cas is\u201d, without warranties of any kind. To the extent permitted by law, we are not liable for lost focus time, forfeited demo amounts, lost coins or streaks, data loss, or any indirect or consequential damages arising from your use of the app.",
+      "CommitX is provided \u201cas is\u201d, without warranties of any kind. To the extent permitted by law, we are not liable for lost focus time, forfeited Cx Coins, lost coins or streaks, data loss, or any indirect or consequential damages arising from your use of the app.",
     ],
   },
   {

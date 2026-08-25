@@ -23,13 +23,13 @@ export const Route = createFileRoute("/how-it-works")({
       {
         name: "description",
         content:
-          "Understand CommitX commitments, Standard and Verified Mode, demo money, Cx Coins & Cx Coupons, success and failure rules, and the beta phase.",
+          "Understand CommitX commitments, Standard and Verified Mode, Cx Coins & Cx Coupons, success and failure rules, and the beta phase.",
       },
       { property: "og:title", content: "How CommitX Works" },
       {
         property: "og:description",
         content:
-          "Commitments, Standard vs Verified Mode, demo money, Cx Coins & Cx Coupons and what happens on success or failure.",
+          "Commitments, Standard vs Verified Mode, Cx Coins & Cx Coupons and what happens on success or failure.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -153,7 +153,7 @@ function HowItWorks() {
             delay={360}
             points={[
               "CommitX is in open beta: features and rules may still change.",
-              "Everything runs on virtual demo money, so it is safe to experiment.",
+              "Everything runs on Cx Coins — in-app points only, so it is safe to experiment.",
               "Your data syncs to your account, so it follows you across devices.",
             ]}
           />

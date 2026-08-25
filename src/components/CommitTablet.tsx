@@ -239,7 +239,7 @@ export function CommitTablet(p: CommitTabletProps) {
               className="mt-4 w-full accent-[color:var(--color-primary)]"
             />
             <div className="mt-4 flex items-center justify-between rounded-2xl bg-background px-4 py-3 text-xs">
-              <span className="text-muted-foreground">Demo balance</span>
+              <span className="text-muted-foreground">Your Cx Coins</span>
               <span className="tabular-nums">
                 {p.hydrated ? coinLabel(p.coinBalance) : "—"}
               </span>
@@ -275,7 +275,7 @@ export function CommitTablet(p: CommitTabletProps) {
                   : "Commit Now"}
             </button>
             <p className="mt-3 text-center text-[11px] text-muted-foreground">
-              Demo money only · virtual balance
+              Cx Coins only · in-app points, no cash value
             </p>
           </Panel>
         </div>

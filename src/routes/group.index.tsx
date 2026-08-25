@@ -519,7 +519,7 @@ function GroupIndex() {
               {terms.creator_name} invited you
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Review the terms carefully. Joining commits your money.
+              Review the terms carefully. Joining commits your Cx Coins.
             </p>
 
             <dl className="mt-4 divide-y divide-hairline rounded-2xl border border-hairline bg-background px-4">

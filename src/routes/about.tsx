@@ -10,7 +10,7 @@ export const Route = createFileRoute("/about")({
       {
         name: "description",
         content:
-          "CommitX is an accountability app: commit money to a focus session, complete it, and get it back. Learn who we are and why we built it.",
+          "CommitX is an accountability app: commit Cx Coins to a focus session, complete it, and get them back. Learn who we are and why we built it.",
       },
       { property: "og:title", content: "About CommitX" },
       {
@@ -57,8 +57,8 @@ function About() {
             grows.<span className="text-foreground"> Turning discipline into progress.</span>
           </p>
           <p>
-            CommitX runs entirely on virtual demo money — every balance in the
-            app is demo money used only to back your commitments.
+            CommitX runs entirely on Cx Coins — in-app points with no cash value,
+            used only to back your commitments inside the app.
           </p>
         </div>
       </div>

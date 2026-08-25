@@ -268,7 +268,7 @@ function Settings() {
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
             When a friend signs up with your code, you receive{" "}
             {coinLabel(REFERRAL_REWARD)} — once per referred friend.
-            Demo money is virtual and can only be used for commitments.
+            Cx Coins are in-app points and can only be used for commitments.
           </p>
           <button
             onClick={copyReferral}

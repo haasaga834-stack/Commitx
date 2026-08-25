@@ -103,7 +103,7 @@ function NavRail() {
       </nav>
 
       <div className="mt-auto px-3 pt-6 text-[10px] text-muted-foreground">
-        Demo money only · virtual balance
+        Cx Coins only · in-app points, no cash value
       </div>
     </aside>
   );
