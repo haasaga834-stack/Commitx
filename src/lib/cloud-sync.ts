@@ -7,6 +7,7 @@ import {
   type Session,
 } from "./commitx-store";
 import { recordSessions } from "./wallet.functions";
+import { isOnline, onReconnect, startConnectivityWatch } from "./connectivity";
 
 let syncedSessionIds = new Set<string>();
 let applyingRemote = false;
@@ -18,6 +19,9 @@ let lastPushAt = 0;
 /** Coalesce concurrent pulls: one network round-trip at a time. */
 let pullInFlight: Promise<unknown> | null = null;
 let pullQueued = false;
+/** A local write happened while offline and still needs pushing. */
+let pendingPush = false;
+let stopReconnect: (() => void) | null = null;
 
 /**
  * Pull at most once per burst. Realtime fires several events for a single
@@ -25,6 +29,9 @@ let pullQueued = false;
  * queries per event and re-render the whole tree each time.
  */
 function schedulePull(userId: string) {
+  // Offline: the local store is already the source of truth, so skip the
+  // round-trip entirely and let the reconnect hook catch up later.
+  if (!isOnline()) return;
   if (pullInFlight) {
     pullQueued = true;
     return;
@@ -148,11 +155,37 @@ let channel: ReturnType<typeof supabase.channel> | null = null;
 /** Start mirroring local store changes to the cloud for this user. */
 export function startCloudSync(userId: string) {
   stopCloudSync();
+  startConnectivityWatch();
   currentUserId = userId;
+  if (!stopReconnect) {
+    stopReconnect = onReconnect(() => {
+      const uid = currentUserId;
+      if (!uid) return;
+      // Push first (dedup guarded), then pull the authoritative result.
+      if (pendingPush) {
+        pendingPush = false;
+        lastPushAt = Date.now();
+        void push(uid)
+          .catch(() => {})
+          .finally(() => {
+            lastPushAt = Date.now();
+            schedulePull(uid);
+          });
+      } else {
+        schedulePull(uid);
+      }
+    });
+  }
   unsubscribe = subscribe(() => {
     if (applyingRemote || !currentUserId) return;
     if (pushTimer) clearTimeout(pushTimer);
     pushTimer = setTimeout(() => {
+      if (!isOnline()) {
+        // Nothing is lost: unsynced sessions stay unsynced (and de-duplicated
+        // by `syncedSessionIds`) until connectivity returns.
+        pendingPush = true;
+        return;
+      }
       lastPushAt = Date.now();
       void push(currentUserId!)
         .catch(() => {})
@@ -190,6 +223,7 @@ export function stopCloudSync() {
   pushTimer = null;
   syncedSessionIds = new Set();
   pullQueued = false;
+  pendingPush = false;
   lastPushAt = 0;
   if (channel) {
     supabase.removeChannel(channel);

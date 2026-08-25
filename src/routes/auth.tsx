@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 import { lovable } from "@/integrations/lovable/index";
 import { setPendingReferral } from "@/lib/pending-referral";
 import { WELCOME_COINS, REFERRAL_REWARD, coinLabel } from "@/lib/commitx-store";
+import { isOnline, OFFLINE_ACTION_MESSAGE } from "@/lib/connectivity";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -33,6 +34,11 @@ function Auth() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (!isOnline()) {
+      setNotice(null);
+      setError(OFFLINE_ACTION_MESSAGE);
+      return;
+    }
     setBusy(true);
     setError(null);
     setNotice(null);
@@ -82,6 +88,10 @@ function Auth() {
   async function forgotPassword() {
     setError(null);
     setNotice(null);
+    if (!isOnline()) {
+      setError(OFFLINE_ACTION_MESSAGE);
+      return;
+    }
     const target = email.trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(target)) {
       setError("Enter your registered email above, then tap Forgot password.");
@@ -111,6 +121,10 @@ function Auth() {
   async function googleSignIn() {
     setError(null);
     setNotice(null);
+    if (!isOnline()) {
+      setError(OFFLINE_ACTION_MESSAGE);
+      return;
+    }
     setBusy(true);
     try {
       const { hasNativeGoogleSignIn, nativeGoogleSignIn } = await import("@/lib/native-auth");
