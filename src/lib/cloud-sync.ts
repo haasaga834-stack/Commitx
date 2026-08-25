@@ -235,7 +235,6 @@ export function startCloudSync(userId: string) {
       if (!uid) return;
       // Push first (dedup guarded), then pull the authoritative result.
       if (pendingPush) {
-        pendingPush = false;
         void pullFromCloud(uid)
           .then(() => {
             if (!pendingPush) return undefined;
@@ -253,7 +252,7 @@ export function startCloudSync(userId: string) {
       } else {
         void pullFromCloud(uid)
           .then(() => {
-          if (!pendingPush) return undefined;
+            if (!pendingPush) return undefined;
             pendingPush = false;
             lastPushAt = Date.now();
             return push(uid);
