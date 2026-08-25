@@ -210,7 +210,11 @@ function computeStats(sessions: Session[]) {
     .filter((s) => new Date(s.date).toDateString() === new Date().toDateString())
     .reduce((sum, s) => sum + s.durationMinutes, 0);
 
-  const cxCoins = Math.floor(totalMinutes / 60);
+  // Cx Coins earned from completed sessions (whole hours only).
+  const coinsEarned = completed.reduce(
+    (sum, s) => sum + (s.coinsEarned ?? coinsForMinutes(s.durationMinutes)),
+    0,
+  );
 
   return {
     completed: completed.length,
@@ -220,7 +224,7 @@ function computeStats(sessions: Session[]) {
     streak,
     longest,
     todayMinutes,
-    cxCoins,
+    coinsEarned,
   };
 }
 
@@ -241,5 +245,5 @@ export function hydrateState(next: AppState) {
 
 /** Reset to a clean slate (used after account deletion / sign-out). */
 export function resetState() {
-  hydrateState({ ...initial, balances: { real: 0, demo: 0 }, sessions: [] });
+  hydrateState({ ...initial, coins: 0, sessions: [] });
 }
