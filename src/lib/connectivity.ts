@@ -9,6 +9,10 @@ import { useEffect, useState } from "react";
  * backend is reachable right now.
  */
 
+/** Friendly copy for actions that genuinely need the network. */
+export const OFFLINE_ACTION_MESSAGE =
+  "You're offline. Please connect to the internet and try again.";
+
 type Listener = (online: boolean) => void;
 
 const listeners = new Set<Listener>();

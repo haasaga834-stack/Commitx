@@ -223,6 +223,7 @@ export function stopCloudSync() {
   pushTimer = null;
   syncedSessionIds = new Set();
   pullQueued = false;
+  pendingPush = false;
   lastPushAt = 0;
   if (channel) {
     supabase.removeChannel(channel);

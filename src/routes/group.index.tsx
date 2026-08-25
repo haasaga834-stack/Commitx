@@ -27,6 +27,7 @@ import {
   previewInvite,
 } from "@/lib/group-study.functions";
 import { MAX_GROUP_SIZE, type GroupDTO, type InvitePreviewDTO } from "@/lib/group-study.shared";
+import { isOnline, OFFLINE_ACTION_MESSAGE } from "@/lib/connectivity";
 
 export const Route = createFileRoute("/group/")({
   head: () => ({
@@ -136,6 +137,10 @@ function GroupIndex() {
   /** Hosts pick the shared ambience before the group is created. */
   function onCreate() {
     if (busy || openGroup) return;
+    if (!isOnline()) {
+      setError(OFFLINE_ACTION_MESSAGE);
+      return;
+    }
     setError(null);
     setThemeOpen(true);
   }
@@ -165,6 +170,10 @@ function GroupIndex() {
 
   async function onPreview() {
     if (busy || code.trim().length < 4) return;
+    if (!isOnline()) {
+      setError(OFFLINE_ACTION_MESSAGE);
+      return;
+    }
     setBusy(true);
     setError(null);
     setAccepted(false);
@@ -184,6 +193,10 @@ function GroupIndex() {
 
   async function onAcceptAndCommit() {
     if (busy || !terms || !accepted) return;
+    if (!isOnline()) {
+      setError(OFFLINE_ACTION_MESSAGE);
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
