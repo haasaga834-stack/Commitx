@@ -748,10 +748,17 @@ public class MainActivity extends Activity {
     }
 
     public class CommitXAndroidBridge {
+        /** The web layer reports that the first screen is painted and usable. */
+        @JavascriptInterface
+        public void appReady() {
+            runOnUiThread(MainActivity.this::hideSplash);
+        }
+
         @JavascriptInterface
         public void setVerifiedModeActive(boolean active) {
             verifiedModeActive = active;
         }
+
 
         /** Locks out hardware/gesture back navigation while a session is active. */
         @JavascriptInterface

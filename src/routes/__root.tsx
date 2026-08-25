@@ -86,6 +86,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "manifest", href: "/manifest.json" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      // Warms the backend connection so the session check starts immediately.
+      { rel: "preconnect", href: "https://ldnjfjmwzqczjmewzdai.supabase.co", crossOrigin: "anonymous" },
+
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap",
@@ -225,6 +228,20 @@ function AuthGate({ children }: { children: ReactNode }) {
       router.navigate({ to: "/" });
     }
   }, [user, loading, pathname, router, isPublic]);
+
+  // Dismiss the native Android startup screen only once the first real screen
+  // can be shown, so a cold start never flashes an empty page.
+  useEffect(() => {
+    if (loading && !isPublic) return;
+    const frame = requestAnimationFrame(() => {
+      try {
+        (window as unknown as { CommitXAndroid?: { appReady?: () => void } })
+          .CommitXAndroid?.appReady?.();
+      } catch {}
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [loading, isPublic]);
+
 
   if (loading && !isPublic) {
     return (
