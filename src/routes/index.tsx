@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Bell, CalendarDays, Clock, Flame, Hourglass as HourglassIcon, Leaf, Sparkles } from "lucide-react";
+import { Bell, CalendarDays, Clock, Hourglass as HourglassIcon, Leaf, Sparkles } from "lucide-react";
 import { MobileShell } from "@/components/BottomNav";
 import { CxCoin } from "@/components/CxCoin";
 import { CxCoinPopup } from "@/components/CxCoinPopup";
@@ -59,7 +59,6 @@ function MobileHome() {
   const navigate = useNavigate();
   const { state, hydrated } = useAppState();
   const s = useMemo(() => stats(state.sessions), [state.sessions]);
-  
   const { plans, hydrated: plansHydrated } = usePlans();
   const { todos } = useTodos();
   const firstName = state.profile.name.split(" ")[0];
@@ -111,11 +110,6 @@ function MobileHome() {
                 clickable
               />
             </CxCoinPopup>
-            <TopChip
-              icon={<Flame className="h-4 w-4 text-accent" />}
-              value={hydrated ? String(s.streak) : "—"}
-              srLabel="Day streak"
-            />
             <Link
               to="/settings"
               hash="notifications"
