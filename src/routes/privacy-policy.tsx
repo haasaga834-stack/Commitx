@@ -71,8 +71,9 @@ const SECTIONS: { title: string; body: string[] }[] = [
   {
     title: "7. Third-party services",
     body: [
-      "CommitX relies on a small number of service providers: our cloud hosting and database provider for accounts and app data, and Google for optional Google Sign-In. These providers process data only to deliver their service to us.",
-      "We do not share your personal information with third parties for marketing purposes.",
+      "CommitX relies on a small number of service providers: our cloud hosting and database provider for accounts and app data, Google for optional Google Sign-In, and Google Fonts for typography. These providers process data only to deliver their service to us.",
+      "Our public web pages include Google AdSense, which may set cookies or use device identifiers to show and measure ads. Google acts as an independent controller for that data; you can review and change your ad settings at https://myadcenter.google.com. We never send Google your study data, plans, sessions or Cx Coin balance.",
+      "We never sell your personal information, and we do not share your study data with anyone for marketing purposes.",
     ],
   },
   {
@@ -143,7 +144,7 @@ function PrivacyPage() {
 
         <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
           <ShieldCheck className="h-4 w-4 text-primary" />
-          <span>Your data stays yours. Nothing is sold or used for ads.</span>
+          <span>Your data stays yours. Your study data is never sold or used for ads.</span>
         </div>
 
         <div className="mt-6 space-y-3 pb-6 md:grid md:grid-cols-2 md:gap-3 md:space-y-0">
