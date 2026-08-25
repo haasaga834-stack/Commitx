@@ -665,7 +665,7 @@ export function useTodos() {
 export async function pullPlannerFromCloud(userId: string) {
   if (!isOnline()) return null;
   const today = todayKey();
-  const [{ data: plans }, { data: todos }, { data: settings }] = await Promise.all([
+  const [plansRes, todosRes, settingsRes] = await Promise.all([
     supabase
       .from("study_plans")
       .select("*")
@@ -674,6 +674,13 @@ export async function pullPlannerFromCloud(userId: string) {
     supabase.from("todos").select("*").eq("user_id", userId).eq("day", today),
     supabase.from("user_settings").select("*").eq("user_id", userId).maybeSingle(),
   ]);
+  if (plansRes.error || todosRes.error || settingsRes.error) {
+    throw plansRes.error ?? todosRes.error ?? settingsRes.error;
+  }
+
+  const plans = plansRes.data;
+  const todos = todosRes.data;
+  const settings = settingsRes.data;
 
   write(
     (plans ?? []).map((r) => ({

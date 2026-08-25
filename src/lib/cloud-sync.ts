@@ -87,6 +87,10 @@ function toSession(row: any): Session {
   };
 }
 
+function sessionSignature(s: Session) {
+  return [s.goal, s.durationMinutes, s.value, s.mode, s.status].join("|");
+}
+
 /** Pull profile, wallet and sessions from the cloud into the local store. */
 export async function pullFromCloud(userId: string) {
   if (!isOnline()) return null;
@@ -111,7 +115,22 @@ export async function pullFromCloud(userId: string) {
   const rows = sessions ?? [];
   const remoteSessions = rows.map(toSession);
   const remoteIds = new Set(remoteSessions.map((s) => s.id));
-  const localUnsynced = getState().sessions.filter((s) => !remoteIds.has(s.id) && !syncedSessionIds.has(s.id));
+  const remoteSignatures = new Map<string, number>();
+  for (const session of remoteSessions) {
+    const sig = sessionSignature(session);
+    remoteSignatures.set(sig, (remoteSignatures.get(sig) ?? 0) + 1);
+  }
+  const localUnsynced = getState().sessions.filter((s) => {
+    if (remoteIds.has(s.id) || syncedSessionIds.has(s.id)) return false;
+    const sig = sessionSignature(s);
+    const matchingRemoteCount = remoteSignatures.get(sig) ?? 0;
+    if (matchingRemoteCount > 0) {
+      remoteSignatures.set(sig, matchingRemoteCount - 1);
+      syncedSessionIds.add(s.id);
+      return false;
+    }
+    return true;
+  });
   syncedSessionIds = new Set([...remoteIds, ...syncedSessionIds]);
   if (currentUserId === userId) writeSyncedIds(userId);
   if (localUnsynced.length > 0) pendingPush = true;
@@ -206,8 +225,13 @@ export function startCloudSync(userId: string) {
       // Push first (dedup guarded), then pull the authoritative result.
       if (pendingPush) {
         pendingPush = false;
-        lastPushAt = Date.now();
-        void push(uid)
+        void pullFromCloud(uid)
+          .then(() => {
+            if (!pendingPush) return undefined;
+            pendingPush = false;
+            lastPushAt = Date.now();
+            return push(uid);
+          })
           .catch(() => {
             pendingPush = true;
           })
@@ -218,7 +242,7 @@ export function startCloudSync(userId: string) {
       } else {
         void pullFromCloud(uid)
           .then(() => {
-            if (!pendingPush) return;
+          if (!pendingPush) return undefined;
             pendingPush = false;
             lastPushAt = Date.now();
             return push(uid);

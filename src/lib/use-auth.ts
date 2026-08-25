@@ -10,9 +10,8 @@ import { clearCachedUser, readCachedUser, writeCachedUser } from "./auth-cache";
 import { isOnline, onReconnect, startConnectivityWatch } from "./connectivity";
 
 export function useAuth() {
-  const cachedAtMount = readCachedUser();
-  const [user, setUser] = useState<User | null>(cachedAtMount);
-  const [loading, setLoading] = useState(!cachedAtMount);
+  const [user, setUser] = useState<User | null>(() => readCachedUser());
+  const [loading, setLoading] = useState(() => !readCachedUser());
 
   useEffect(() => {
     let mounted = true;
