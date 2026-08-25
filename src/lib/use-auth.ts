@@ -63,11 +63,11 @@ export function useAuth() {
         handle(null, true);
       });
 
-    // Safety net so a stalled network request can never leave the app on the
-    // startup spinner; the stored session resolves the UI either way.
+    // Safety net so a stalled network request can never leave first-time users
+    // on the blank startup spinner. Returning users skip this through the cache.
     const failsafe = setTimeout(() => {
       if (mounted) setLoading(false);
-    }, 6000);
+    }, 1200);
 
     return () => {
       mounted = false;
