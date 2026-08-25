@@ -206,6 +206,8 @@ function LiveSession() {
   const phaseRef = useRef<SessionPhase>(restoredPhase);
   const breakStartedAtRef = useRef<number | null>(restored?.breakStartedAt ?? null);
   const confirmSinceRef = useRef<number | null>(restored?.confirmSince ?? null);
+  const lastEvalAtRef = useRef<number | null>(null);
+
   const breaksTakenRef = useRef<number>(restored?.breaksTaken ?? 0);
   const nonFocusMsRef = useRef<number>(restored?.nonFocusMs ?? 0);
   const setPhase = useCallback((next: SessionPhase) => {
@@ -375,13 +377,25 @@ function LiveSession() {
       }
       return;
     }
-    // awaiting_confirmation
-    const since = confirmSinceRef.current ?? t;
+    // awaiting_confirmation — the 60s window is only allowed to run down while
+    // the app is actually in the foreground. Users are told they may leave
+    // during the break, so a backgrounded/suspended app must never burn it.
+    const gap = t - (lastEvalAtRef.current ?? t);
+    lastEvalAtRef.current = t;
+    const hidden = typeof document !== "undefined" && document.visibilityState !== "visible";
+    if (hidden || gap > 5000 || confirmSinceRef.current === null) {
+      // Restart the window from this moment (or hold it while hidden).
+      confirmSinceRef.current = t;
+      persist();
+      return;
+    }
+    const since = confirmSinceRef.current;
     if (t - since > RECOVERY_CONFIRM_MS) {
       log("Recovery Confirmation Missed", { since });
       if (isVerified) markActiveVerifiedSessionPendingFailure("recovery_timeout");
       complete("failed", "recovery_timeout");
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     dndBlocked,
@@ -392,6 +406,8 @@ function LiveSession() {
     startRecoveryBreak,
     enterAwaitingConfirmation,
     isVerified,
+    persist,
+
   ]);
 
   const evaluateRef = useRef(evaluate);
