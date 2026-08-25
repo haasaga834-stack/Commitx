@@ -4,7 +4,7 @@ import { NotificationsCard } from "@/components/NotificationsCard";
 import { ScreenTimeCard } from "@/components/ScreenTimeCard";
 
 import { useTheme } from "@/lib/theme";
-import { formatINR, REFERRAL_BONUS } from "@/lib/commitx-store";
+import { coinLabel, REFERRAL_REWARD } from "@/lib/commitx-store";
 import { ACTIVE_VERIFIED_SESSION_KEY } from "@/lib/verified-mode";
 import { supabase } from "@/integrations/supabase/client";
 import { claimReferral, deleteAccount as deleteAccountFn } from "@/lib/account.functions";
@@ -267,7 +267,7 @@ function Settings() {
           <p className="text-sm font-medium">Invite friends</p>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
             When a friend signs up with your code, you receive{" "}
-            {formatINR(REFERRAL_BONUS)} demo balance — once per referred friend.
+            {coinLabel(REFERRAL_REWARD)} — once per referred friend.
             Demo money is virtual and can only be used for commitments.
           </p>
           <button
@@ -354,7 +354,7 @@ function Settings() {
           <div className="w-full max-w-md rounded-t-4xl bg-card p-6 pb-10 shadow-lift">
             <h2 className="font-display text-xl font-semibold">Delete account?</h2>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              This permanently removes your profile, wallet balances, session
+              This permanently removes your profile, Cx Coins, session
               history, streaks, Cx Coins and referral records. It cannot be
               undone.
             </p>

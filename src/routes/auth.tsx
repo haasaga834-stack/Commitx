@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 
 import { lovable } from "@/integrations/lovable/index";
 import { setPendingReferral } from "@/lib/pending-referral";
-import { WELCOME_DEMO, REFERRAL_BONUS, formatINR } from "@/lib/commitx-store";
+import { WELCOME_COINS, REFERRAL_REWARD, coinLabel } from "@/lib/commitx-store";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -174,8 +174,8 @@ function Auth() {
                 className="w-full rounded-2xl border border-hairline bg-background px-4 py-3 font-mono text-sm tracking-widest outline-none focus:border-primary"
               />
               <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
-                Start with {formatINR(WELCOME_DEMO)} demo balance — add a friend's code
-                and you both get {formatINR(REFERRAL_BONUS)} more.
+                Start with {coinLabel(WELCOME_COINS)} — add a friend's code and you
+                both get {coinLabel(REFERRAL_REWARD)} more.
               </p>
             </div>
           )}

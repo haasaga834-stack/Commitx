@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Check, ChevronLeft, Copy, LogOut, Play, ShieldCheck, Trash2, Users } from "lucide-react";
-import { formatINR } from "@/lib/commitx-store";
+import { coinLabel } from "@/lib/commitx-store";
 import { MAX_GROUP_SIZE, memberStatusLabel } from "@/lib/group-study";
 import type { GroupDTO, GroupMemberDTO } from "@/lib/group-study.shared";
 import { cn } from "@/lib/utils";
@@ -67,7 +67,7 @@ export function GroupLobbyTablet({
         <header className="mt-7 text-center">
           <h1 className="truncate font-display text-3xl font-semibold">{group.goal}</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            {group.duration_minutes} minutes · {formatINR(group.commit_value)} each ·{" "}
+            {group.duration_minutes} minutes · {coinLabel(group.commit_value)} each ·{" "}
             {group.mode === "verified" ? "Verified" : "Standard"}
           </p>
         </header>
