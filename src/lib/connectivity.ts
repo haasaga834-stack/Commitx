@@ -91,13 +91,17 @@ export function startConnectivityWatch() {
 /** Subscribe to connectivity changes. Returns an unsubscribe function. */
 export function subscribeConnectivity(listener: Listener) {
   listeners.add(listener);
-  return () => listeners.delete(listener);
+  return () => {
+    listeners.delete(listener);
+  };
 }
 
 /** Runs when connectivity is restored — used to flush pending cloud writes. */
 export function onReconnect(listener: () => void) {
   reconnectListeners.add(listener);
-  return () => reconnectListeners.delete(listener);
+  return () => {
+    reconnectListeners.delete(listener);
+  };
 }
 
 /** React binding for the current connectivity state. */
