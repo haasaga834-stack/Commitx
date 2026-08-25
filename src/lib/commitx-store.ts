@@ -2,7 +2,6 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 
 export type Mode = "standard" | "verified";
 export type Status = "completed" | "failed";
-export type Pool = "demo" | "real";
 
 export interface Session {
   id: string;
@@ -12,9 +11,10 @@ export interface Session {
   mode: Mode;
   status: Status;
   date: number;
-  /** How much of `value` was pulled from each pool at commit time. */
-  demoUsed?: number;
-  realUsed?: number;
+  /** Cx Coins forfeited when a commitment was not kept. */
+  coinsSpent?: number;
+  /** Cx Coins rewarded for completed study hours. */
+  coinsEarned?: number;
 }
 
 export interface Profile {
@@ -26,14 +26,9 @@ export interface Profile {
   photo?: string;
 }
 
-
-export interface Balances {
-  real: number;
-  demo: number;
-}
-
 export interface AppState {
-  balances: Balances;
+  /** Cx Coin balance. Cx Coins are in-app points with no cash value. */
+  coins: number;
   sessions: Session[];
   profile: Profile;
   referralCredited?: boolean;
@@ -44,17 +39,23 @@ export interface AppState {
 const KEY = "commitx-state-v2";
 const LEGACY_KEY = "commitx-state-v1";
 
-/** Deposit + wallet rules. */
-export const MIN_DEPOSIT = 50;
-export const MAX_REAL_WALLET = 1000;
+/** Cx Coin rules. Cx Coins are in-app points: not cash, not withdrawable. */
 export const MIN_COMMIT = 50;
 export const MAX_COMMIT = 500;
-export const REFERRAL_BONUS = 100;
-/** Demo balance granted on sign-up (a referral code adds REFERRAL_BONUS on top). */
-export const WELCOME_DEMO = 300;
+/** Cx Coins granted to both sides of a successful referral. */
+export const REFERRAL_REWARD = 100;
+/** Cx Coins granted on sign-up (a referral code adds REFERRAL_REWARD on top). */
+export const WELCOME_COINS = 300;
+/** Cx Coins earned per fully completed study hour. */
+export const COINS_PER_HOUR = 25;
+
+/** Cx Coins earned for a completed session of `minutes` (whole hours only). */
+export function coinsForMinutes(minutes: number) {
+  return COINS_PER_HOUR * Math.floor(Math.max(0, minutes) / 60);
+}
 
 const initial: AppState = {
-  balances: { real: 0, demo: WELCOME_DEMO },
+  coins: WELCOME_COINS,
   sessions: [],
   profile: {
     name: "Arjun Mehta",
@@ -68,20 +69,18 @@ const initial: AppState = {
 
 function migrate(raw: any): AppState {
   if (!raw) return initial;
-  // v2 shape
-  if (raw.balances && typeof raw.balances.demo === "number") {
-    return { ...initial, ...raw, balances: { ...initial.balances, ...raw.balances } };
-  }
-  // v1 shape: single `balance` -> treat as demo
-  if (typeof raw.balance === "number") {
-    return {
-      ...initial,
-      ...raw,
-      balances: { real: 0, demo: raw.balance },
-    };
-  }
-  return { ...initial, ...raw };
+  if (typeof raw.coins === "number") return { ...initial, ...raw };
+  // Older shapes stored a demo/real split or a single `balance`.
+  const legacy =
+    typeof raw?.balances?.demo === "number"
+      ? raw.balances.demo
+      : typeof raw?.balance === "number"
+        ? raw.balance
+        : WELCOME_COINS;
+  const { balances: _drop, balance: _drop2, ...rest } = raw;
+  return { ...initial, ...rest, coins: Math.max(0, Math.round(legacy)) };
 }
+
 
 function read(): AppState {
   if (typeof window === "undefined") return initial;
