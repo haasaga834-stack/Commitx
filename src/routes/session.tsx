@@ -406,6 +406,8 @@ function LiveSession() {
     startRecoveryBreak,
     enterAwaitingConfirmation,
     isVerified,
+    persist,
+
   ]);
 
   const evaluateRef = useRef(evaluate);
