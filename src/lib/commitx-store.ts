@@ -141,30 +141,24 @@ export function useAppState() {
   return { state, hydrated };
 }
 
-/** Indian rupee formatting: ₹1,00,000 style grouping. */
-const inrFmt = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 });
-export function formatINR(n: number) {
-  return `₹${inrFmt.format(Math.max(0, Math.round(n)))}`;
+const coinFmt = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 });
+
+/** Plain coin count, e.g. "1,250". */
+export function formatCoins(n: number) {
+  return coinFmt.format(Math.max(0, Math.round(n)));
 }
 
-/**
- * Plan how to split a commitment amount across pools.
- * Preference: demo first (unless preferReal), then real.
- */
-export function planDeduction(
-  value: number,
-  balances: Balances,
-  preferReal = false,
-): { demoUsed: number; realUsed: number; ok: boolean } {
-  const total = balances.demo + balances.real;
-  if (value > total) return { demoUsed: 0, realUsed: 0, ok: false };
-  if (preferReal) {
-    const realUsed = Math.min(value, balances.real);
-    return { demoUsed: value - realUsed, realUsed, ok: true };
-  }
-  const demoUsed = Math.min(value, balances.demo);
-  return { demoUsed, realUsed: value - demoUsed, ok: true };
+/** Coin count with unit, e.g. "50 Cx Coins". */
+export function coinLabel(n: number) {
+  const v = Math.max(0, Math.round(n));
+  return `${coinFmt.format(v)} Cx Coin${v === 1 ? "" : "s"}`;
 }
+
+/** Whether the user holds enough Cx Coins for a commitment. */
+export function canAfford(value: number, coins: number) {
+  return value <= coins;
+}
+
 
 let statsCacheKey: Session[] | null = null;
 let statsCacheDay = "";
