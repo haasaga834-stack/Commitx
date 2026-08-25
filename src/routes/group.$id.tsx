@@ -15,7 +15,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { Hourglass } from "@/components/Hourglass";
 import { SessionScene } from "@/components/SessionScene";
-import { formatINR } from "@/lib/commitx-store";
+import { coinLabel } from "@/lib/commitx-store";
 import {
   cancelGroup,
   getGroupState,
@@ -458,7 +458,7 @@ function GroupSession() {
             {group.goal}
           </h1>
           <p className="mt-1.5 text-center text-xs text-muted-foreground">
-            {group.duration_minutes} minutes · {formatINR(group.commit_value)} each ·{" "}
+            {group.duration_minutes} minutes · {coinLabel(group.commit_value)} each ·{" "}
             {group.mode === "verified" ? "Verified" : "Standard"}
           </p>
 
@@ -616,7 +616,7 @@ function GroupSession() {
             </p>
             <p className="mt-4 w-full text-center text-sm text-muted-foreground">{group.goal}</p>
             <p className="mt-1 w-full text-center text-xs text-muted-foreground">
-              {formatINR(group.commit_value)} committed each
+              {coinLabel(group.commit_value)} committed each
             </p>
           </div>
 
@@ -665,7 +665,7 @@ function GroupSession() {
             <div className="w-full max-w-md rounded-4xl bg-card p-8 shadow-lift">
               <h2 className="font-display text-xl font-semibold">Leave the group?</h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                Leaving before the shared timer finishes loses your {formatINR(group.commit_value)}{" "}
+                Leaving before the shared timer finishes loses your {coinLabel(group.commit_value)}{" "}
                 commitment. Your friends keep going.
               </p>
               <div className="mt-6 grid grid-cols-2 gap-3">
@@ -715,7 +715,7 @@ function GroupSession() {
           </p>
           <p className="mt-3 text-sm text-muted-foreground">{group.goal}</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            {formatINR(group.commit_value)} committed each
+            {coinLabel(group.commit_value)} committed each
           </p>
           {isVerified && (
             <p className="mt-5 flex items-center gap-1.5 rounded-full bg-foreground/5 px-4 py-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">
@@ -762,7 +762,7 @@ function GroupSession() {
           <div className="w-full max-w-md rounded-t-4xl bg-card p-6 pb-10 shadow-lift">
             <h2 className="font-display text-xl font-semibold">Leave the group?</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Leaving before the shared timer finishes loses your {formatINR(group.commit_value)}{" "}
+              Leaving before the shared timer finishes loses your {coinLabel(group.commit_value)}{" "}
               commitment. Your friends keep going.
             </p>
             <div className="mt-6 grid grid-cols-2 gap-3">

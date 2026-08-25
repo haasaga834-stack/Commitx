@@ -12,7 +12,7 @@ import {
   Lock,
   ScrollText,
 } from "lucide-react";
-import { formatINR, MIN_COMMIT, MAX_COMMIT } from "@/lib/commitx-store";
+import { coinLabel, MIN_COMMIT, MAX_COMMIT, WELCOME_COINS, REFERRAL_REWARD, COINS_PER_HOUR } from "@/lib/commitx-store";
 import { CxCoin } from "@/components/CxCoin";
 import { PublicFooter } from "@/components/PublicFooter";
 
@@ -58,8 +58,8 @@ function HowItWorks() {
         </div>
 
         <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-          Commit. Complete. Get it back. You promise a block of focused time and put a
-          small amount behind it — finish, and it comes straight back to you.
+          Commit. Complete. Get it back. You promise a block of focused time and put
+          Cx Coins behind it — finish, and they come straight back to you.
         </p>
 
         <div className="mt-8 space-y-3 md:grid md:grid-cols-2 md:gap-3 md:space-y-0">
@@ -68,9 +68,9 @@ function HowItWorks() {
             title="Commitments"
             delay={0}
             points={[
-              "Pick a goal, a duration and an amount to put behind it.",
-              `Commitments range from ${formatINR(MIN_COMMIT)} to ${formatINR(MAX_COMMIT)}.`,
-              "The amount is set aside while the session runs — not spent.",
+              "Pick a goal, a duration and the Cx Coins to put behind it.",
+              `Commitments range from ${coinLabel(MIN_COMMIT)} to ${coinLabel(MAX_COMMIT)}.`,
+              "Your Cx Coins are set aside while the session runs — not spent.",
               "The hourglass shows real elapsed time, so you always know where you stand.",
             ]}
           />
@@ -100,12 +100,13 @@ function HowItWorks() {
 
           <Section
             icon={<Wallet className="h-4 w-4" />}
-            title="Demo money"
+            title="Cx Coins"
             delay={180}
             points={[
-              "CommitX runs entirely on virtual demo money — nothing is charged.",
-              "New accounts start with ₹300 demo money, and a valid referral code adds ₹100.",
-              "Demo money is used only to back your commitments inside the app.",
+              "CommitX runs entirely on Cx Coins — in-app points with no cash value.",
+              `New accounts start with ${coinLabel(WELCOME_COINS)}, and a valid referral code adds ${coinLabel(REFERRAL_REWARD)}.`,
+              `Every completed study hour earns ${coinLabel(COINS_PER_HOUR)}.`,
+              "Cx Coins cannot be bought, withdrawn or transferred.",
             ]}
           />
 

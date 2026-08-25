@@ -16,11 +16,11 @@ import { Hourglass } from "@/components/Hourglass";
 import { CxCoin } from "@/components/CxCoin";
 import { WindScape } from "@/components/WindScape";
 import {
-  formatINR,
+  coinLabel,
   stats,
   useAppState,
-  REFERRAL_BONUS,
-  WELCOME_DEMO,
+  REFERRAL_REWARD,
+  WELCOME_COINS,
   MIN_COMMIT,
   MAX_COMMIT,
 } from "@/lib/commitx-store";
@@ -348,8 +348,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
                   {firstName}, your streak is {s.streak} day{s.streak === 1 ? "" : "s"}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {s.completed} completed · {s.cxCoins} Cx Coin
-                  {s.cxCoins === 1 ? "" : "s"}
+                  {s.completed} completed · {coinLabel(s.coinsEarned)} earned
                 </p>
               </div>
             </div>
@@ -404,12 +403,12 @@ export function Onboarding({ onDone }: OnboardingProps) {
 
             <FactList
               icon={<Sparkles className="h-4 w-4 text-primary" />}
-              title="Demo Money"
+              title="Getting started"
               items={[
-                `${formatINR(WELCOME_DEMO)} to start · ${formatINR(REFERRAL_BONUS)} per referral.`,
-                "Virtual only — no cash value.",
+                `${coinLabel(WELCOME_COINS)} to start · ${coinLabel(REFERRAL_REWARD)} per referral.`,
+                "In-app points only — no cash value.",
               ]}
-              footer={`Your demo balance: ${formatINR(state.balances.demo)}`}
+              footer={`Your Cx Coins: ${coinLabel(state.coins)}`}
             />
           </Screen>
         )}
@@ -519,13 +518,13 @@ export function Onboarding({ onDone }: OnboardingProps) {
 
               <label className="block">
                 <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                  Commitment amount (optional)
+                  Commitment in Cx Coins (optional)
                 </span>
                 <input
                   value={commitValue}
                   onChange={(e) => setCommitValue(e.target.value.replace(/\D/g, ""))}
                   inputMode="numeric"
-                  placeholder={`₹${MIN_COMMIT} – ₹${MAX_COMMIT}`}
+                  placeholder={`${MIN_COMMIT} – ${MAX_COMMIT} Cx Coins`}
                   className="mt-1.5 w-full rounded-2xl bg-background px-4 py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground"
                 />
               </label>

@@ -81,10 +81,10 @@ export function TabletHome() {
         </div>
 
         <div className="flex shrink-0 items-center gap-3">
-          <CxCoinPopup coins={s.cxCoins} hydrated={hydrated}>
+          <CxCoinPopup coins={state.coins} hydrated={hydrated}>
             <Stat
               icon={<CxCoin className="h-5 w-5" />}
-              value={hydrated ? String(s.cxCoins) : "—"}
+              value={hydrated ? String(state.coins) : "—"}
               label="Cx Coins"
               clickable
             />

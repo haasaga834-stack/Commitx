@@ -103,10 +103,10 @@ function MobileHome() {
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
-            <CxCoinPopup coins={s.cxCoins} hydrated={hydrated}>
+            <CxCoinPopup coins={state.coins} hydrated={hydrated}>
               <TopChip
                 icon={<CxCoin className="h-4 w-4" />}
-                value={hydrated ? String(s.cxCoins) : "—"}
+                value={hydrated ? String(state.coins) : "—"}
                 srLabel="Cx Coins"
                 clickable
               />
