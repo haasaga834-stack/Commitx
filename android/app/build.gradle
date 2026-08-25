@@ -32,9 +32,10 @@ android {
         release {
             if (keystoreFile.exists()) {
                 storeFile keystoreFile
-                storePassword System.getenv("COMMITX_KEYSTORE_PASSWORD") ?: "commitx"
-                keyAlias System.getenv("COMMITX_KEY_ALIAS") ?: "commitx"
-                keyPassword System.getenv("COMMITX_KEY_PASSWORD") ?: "commitx"
+                // Release credentials must come from the build environment only.
+                storePassword System.getenv("COMMITX_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("COMMITX_KEY_ALIAS")
+                keyPassword System.getenv("COMMITX_KEY_PASSWORD")
             }
         }
     }
