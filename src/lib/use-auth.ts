@@ -39,10 +39,22 @@ export function useAuth() {
       }
     });
 
-    supabase.auth.getSession().then(({ data }) => handle(data.session));
+    supabase.auth.getSession()
+      .then(({ data }) => handle(data.session))
+      .catch(() => {
+        // Offline / unreachable backend: fall through to the local session.
+        if (mounted) setLoading(false);
+      });
+
+    // Safety net so a stalled network request can never leave the app on the
+    // startup spinner; the stored session resolves the UI either way.
+    const failsafe = setTimeout(() => {
+      if (mounted) setLoading(false);
+    }, 6000);
 
     return () => {
       mounted = false;
+      clearTimeout(failsafe);
       sub.subscription.unsubscribe();
     };
   }, []);

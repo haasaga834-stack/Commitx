@@ -20,6 +20,7 @@ import { useAuth } from "../lib/use-auth";
 import { useStudyReminders } from "../lib/planner";
 import { reconcileMotivationNotifications } from "../lib/native-notifications";
 import { AmbientNature } from "../components/AmbientNature";
+import { OfflineNotice } from "../components/OfflineNotice";
 import { Onboarding } from "../components/Onboarding";
 import { useOnboarding } from "../lib/onboarding";
 
@@ -279,6 +280,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AmbientNature />
+      <OfflineNotice />
       <VerifiedRecovery />
       <StudyReminders />
       <AuthGate>
