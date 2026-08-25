@@ -4,8 +4,9 @@ import { ChevronLeft, Check, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   useAppState,
-  formatINR,
-  planDeduction,
+  coinLabel,
+  formatCoins,
+  canAfford,
   MIN_COMMIT,
   MAX_COMMIT,
 } from "@/lib/commitx-store";
@@ -99,7 +100,7 @@ function Commit() {
 
   const finalGoal = goal === "Custom" ? customGoal.trim() || "Custom" : goal;
 
-  const plan = useMemo(() => planDeduction(value, state.balances), [value, state.balances]);
+  const affordable = useMemo(() => canAfford(value, state.coins), [value, state.coins]);
 
   /** Validates the terms, then opens the theme selector. */
   function begin() {
@@ -128,11 +129,13 @@ function Commit() {
       return false;
     }
     if (value < MIN_COMMIT || value > MAX_COMMIT) {
-      setError(`Commitment must be between ${formatINR(MIN_COMMIT)} and ${formatINR(MAX_COMMIT)}.`);
+      setError(
+        `Commitment must be between ${formatCoins(MIN_COMMIT)} and ${coinLabel(MAX_COMMIT)}.`,
+      );
       return false;
     }
-    if (!plan.ok) {
-      setError("Not enough demo money for this commitment. Lower the amount and try again.");
+    if (!affordable) {
+      setError("Not enough Cx Coins for this commitment. Lower the amount and try again.");
       return false;
     }
     setError(null);
@@ -182,7 +185,6 @@ function Commit() {
         duration,
         value,
         mode,
-        preferReal: false,
         startedAt: Date.now(),
         accumulatedMs: 0,
         runningSince: Date.now(),
@@ -201,7 +203,6 @@ function Commit() {
           duration: String(duration),
           value: String(value),
           mode,
-          preferReal: "0",
           theme,
         } as Record<string, string>,
       });
@@ -329,7 +330,7 @@ function Commit() {
         fmtDuration={fmtDuration}
         value={value}
         onValue={clampValue}
-        demoBalance={state.balances.demo}
+        coinBalance={state.coins}
         hydrated={hydrated}
         error={error}
         mode={mode}
@@ -456,13 +457,13 @@ function Commit() {
         {/* Value */}
         <section className="mt-8">
           <div className="flex items-baseline justify-between">
-            <Label>Commitment value</Label>
+            <Label>Commitment</Label>
             <span className="text-[11px] text-muted-foreground">
-              {formatINR(MIN_COMMIT)} – {formatINR(MAX_COMMIT)}
+              {formatCoins(MIN_COMMIT)} – {coinLabel(MAX_COMMIT)}
             </span>
           </div>
           <div className="mt-3 flex items-center rounded-2xl border border-hairline bg-card px-4 py-3">
-            <span className="text-muted-foreground">₹</span>
+            <span className="text-xs font-semibold text-muted-foreground">Cx</span>
             <input
               type="number"
               min={MIN_COMMIT}
@@ -482,12 +483,12 @@ function Commit() {
             className="mt-4 w-full accent-[color:var(--color-primary)]"
           />
 
-          {/* Demo balance preview */}
+          {/* Cx Coin balance preview */}
           <div className="mt-4 rounded-2xl bg-card px-4 py-3 shadow-soft">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Demo balance</span>
+              <span className="text-muted-foreground">Your Cx Coins</span>
               <span className="tabular-nums">
-                {hydrated ? formatINR(state.balances.demo) : "—"}
+                {hydrated ? coinLabel(state.coins) : "—"}
               </span>
             </div>
           </div>

@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Hourglass } from "@/components/Hourglass";
 import { SessionScene } from "@/components/SessionScene";
-import { setState, formatINR, planDeduction, getState, type Mode } from "@/lib/commitx-store";
+import { setState, coinLabel, coinsForMinutes, getState, type Mode } from "@/lib/commitx-store";
 import {
   clearActiveVerifiedSession,
   markActiveVerifiedSessionPendingFailure,
@@ -55,10 +55,6 @@ const search = z.object({
   value: z.coerce.number().min(0).default(10),
   mode: z.enum(["standard", "verified"]).default("standard"),
   theme: z.string().optional(),
-  preferReal: z
-    .union([z.string(), z.number(), z.boolean()])
-    .optional()
-    .transform((v) => (v === undefined ? undefined : String(v).replace(/"/g, ""))),
 });
 
 export const Route = createFileRoute("/session")({
@@ -146,12 +142,11 @@ function Session() {
 }
 
 function LiveSession() {
-  const { goal, duration, value, mode, preferReal, theme } = Route.useSearch();
+  const { goal, duration, value, mode, theme } = Route.useSearch();
   const navigate = useNavigate();
   const totalMs = duration * 60 * 1000;
   // Sessions longer than an hour get a mandatory wellness break every 60 min.
   const breaksApply = wellnessBreaksApply(duration);
-  const preferRealBool = preferReal === "1";
   const isVerified = mode === "verified";
 
   // Verified sessions require Do Not Disturb before the timer may start.
@@ -233,7 +228,6 @@ function LiveSession() {
       duration,
       value,
       mode,
-      preferReal: preferRealBool,
       startedAt,
       accumulatedMs: accumulatedRef.current,
       runningSince: runningSinceRef.current,
@@ -245,7 +239,7 @@ function LiveSession() {
       theme: sessionTheme,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [goal, duration, value, mode, preferRealBool, startedAt, sessionTheme]);
+  }, [goal, duration, value, mode, startedAt, sessionTheme]);
 
   /** Wall-clock time spent outside focus (recovery breaks + confirmations). */
   const nonFocusTotal = useCallback(() => {
@@ -702,9 +696,8 @@ function LiveSession() {
     });
     void releaseActiveDbSession();
     const current = getState();
-    const plan = planDeduction(value, current.balances, preferRealBool);
-    const demoUsed = plan.ok ? plan.demoUsed : 0;
-    const realUsed = plan.ok ? plan.realUsed : 0;
+    const coinsSpent = status === "failed" ? Math.min(value, current.coins) : 0;
+    const coinsEarned = status === "completed" ? coinsForMinutes(duration) : 0;
     const session = {
       id: `${Date.now()}`,
       goal,
@@ -713,23 +706,16 @@ function LiveSession() {
       mode: mode as Mode,
       status,
       date: Date.now(),
-      demoUsed,
-      realUsed,
+      coinsSpent,
+      coinsEarned,
     };
-    setState((s) => {
-      if (status === "completed") {
-        // No net change: value was earmarked and now returned.
-        return { ...s, sessions: [session, ...s.sessions] };
-      }
-      return {
-        ...s,
-        sessions: [session, ...s.sessions],
-        balances: {
-          demo: Math.max(0, s.balances.demo - demoUsed),
-          real: Math.max(0, s.balances.real - realUsed),
-        },
-      };
-    });
+    // Completing returns the committed coins untouched and adds the hourly
+    // reward; failing forfeits the committed coins.
+    setState((s) => ({
+      ...s,
+      sessions: [session, ...s.sessions],
+      coins: Math.max(0, s.coins - coinsSpent + coinsEarned),
+    }));
     if (status === "completed") {
       log("Session Completed");
       if (typeof navigator !== "undefined" && "vibrate" in navigator) {
@@ -792,7 +778,7 @@ function LiveSession() {
             {fmt(remaining)}
           </p>
           <p className="mt-3 block w-full text-center text-sm text-muted-foreground">{goal}</p>
-          <p className="mt-1 block w-full text-center text-xs text-muted-foreground">{formatINR(value)} committed</p>
+          <p className="mt-1 block w-full text-center text-xs text-muted-foreground">{coinLabel(value)} committed</p>
           {isVerified && !onBreak && (
             <p className="mt-6 rounded-full bg-foreground/5 px-4 py-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">
               Leaving CommitX fails this session

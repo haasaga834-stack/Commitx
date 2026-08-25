@@ -1,4 +1,4 @@
-import { planDeduction, setState } from "./commitx-store";
+import { setState } from "./commitx-store";
 import type { Mode } from "./commitx-store";
 
 export const ACTIVE_VERIFIED_SESSION_KEY = "commitx-active-session-v1";
@@ -38,7 +38,6 @@ export interface ActiveVerifiedSession {
   duration: number;
   value: number;
   mode: Mode;
-  preferReal: boolean | "1" | "0";
   startedAt: number;
   pendingFail?: boolean;
   reason?: VerifiedFailureReason;
@@ -124,10 +123,7 @@ export function finalizePendingVerifiedFailure(): VerifiedFailureOutcome | null 
   clearActiveVerifiedSession();
 
   setState((state) => {
-    const preferReal = active.preferReal === true || active.preferReal === "1";
-    const plan = planDeduction(active.value || 0, state.balances, preferReal);
-    const demoUsed = plan.ok ? plan.demoUsed : 0;
-    const realUsed = plan.ok ? plan.realUsed : 0;
+    const coinsSpent = Math.min(active.value || 0, state.coins);
 
     return {
       ...state,
@@ -140,15 +136,11 @@ export function finalizePendingVerifiedFailure(): VerifiedFailureOutcome | null 
           mode: "verified",
           status: "failed",
           date: Date.now(),
-          demoUsed,
-          realUsed,
+          coinsSpent,
         },
         ...state.sessions,
       ],
-      balances: {
-        demo: Math.max(0, state.balances.demo - demoUsed),
-        real: Math.max(0, state.balances.real - realUsed),
-      },
+      coins: Math.max(0, state.coins - coinsSpent),
     };
   });
 

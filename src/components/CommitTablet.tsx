@@ -3,7 +3,7 @@ import { Check, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DurationWheel } from "@/components/DurationWheel";
 import { TabletShell } from "@/components/TabletShell";
-import { formatINR, MIN_COMMIT, MAX_COMMIT } from "@/lib/commitx-store";
+import { coinLabel, formatCoins, MIN_COMMIT, MAX_COMMIT } from "@/lib/commitx-store";
 import { openDndSettings } from "@/lib/native-session";
 
 export type CommitTabletProps = {
@@ -23,7 +23,7 @@ export type CommitTabletProps = {
 
   value: number;
   onValue: (n: number) => void;
-  demoBalance: number;
+  coinBalance: number;
   hydrated: boolean;
   error: string | null;
 
@@ -214,12 +214,12 @@ export function CommitTablet(p: CommitTabletProps) {
             title="Commitment value"
             aside={
               <span className="text-[11px] text-muted-foreground">
-                {formatINR(MIN_COMMIT)} – {formatINR(MAX_COMMIT)}
+                {formatCoins(MIN_COMMIT)} – {coinLabel(MAX_COMMIT)}
               </span>
             }
           >
             <div className="flex items-center rounded-2xl border border-hairline bg-background px-4 py-3">
-              <span className="text-muted-foreground">₹</span>
+              <span className="text-xs font-semibold text-muted-foreground">Cx</span>
               <input
                 type="number"
                 min={MIN_COMMIT}
@@ -239,9 +239,9 @@ export function CommitTablet(p: CommitTabletProps) {
               className="mt-4 w-full accent-[color:var(--color-primary)]"
             />
             <div className="mt-4 flex items-center justify-between rounded-2xl bg-background px-4 py-3 text-xs">
-              <span className="text-muted-foreground">Demo balance</span>
+              <span className="text-muted-foreground">Your Cx Coins</span>
               <span className="tabular-nums">
-                {p.hydrated ? formatINR(p.demoBalance) : "—"}
+                {p.hydrated ? coinLabel(p.coinBalance) : "—"}
               </span>
             </div>
           </Panel>
@@ -253,7 +253,7 @@ export function CommitTablet(p: CommitTabletProps) {
                 label="Duration"
                 value={p.duration ? p.fmtDuration(p.duration) : "Not set"}
               />
-              <Row label="Value" value={formatINR(p.value)} />
+              <Row label="Commitment" value={coinLabel(p.value)} />
               <Row label="Mode" value={p.mode === "verified" ? "Verified" : "Standard"} />
             </dl>
 
@@ -275,7 +275,7 @@ export function CommitTablet(p: CommitTabletProps) {
                   : "Commit Now"}
             </button>
             <p className="mt-3 text-center text-[11px] text-muted-foreground">
-              Demo money only · virtual balance
+              Cx Coins only · in-app points, no cash value
             </p>
           </Panel>
         </div>

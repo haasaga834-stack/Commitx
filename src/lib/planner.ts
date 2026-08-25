@@ -21,7 +21,7 @@ export interface StudyPlan {
   durationMinutes: number;
   repeat: Repeat;
   priority: Priority;
-  /** Optional commitment amount in ₹ */
+  /** Optional commitment in Cx Coins */
   commitValue?: number;
   /** 0=Sun..6=Sat — used when repeat = weekly */
   weekday?: number;

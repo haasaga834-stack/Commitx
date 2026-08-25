@@ -1,11 +1,11 @@
-import { getState, planDeduction, setState, type Mode } from "./commitx-store";
+import { coinsForMinutes, getState, setState, type Mode } from "./commitx-store";
 
 export * from "./group-study.shared";
 
 /**
  * Record a group session outcome using the exact same commitment rules as an
- * individual session: completing returns the earmarked value, leaving early or
- * failing deducts it (demo first, then real).
+ * individual session: completing returns the committed Cx Coins and awards the
+ * hourly reward, leaving early or failing forfeits the committed Cx Coins.
  */
 export function recordGroupOutcome(input: {
   goal: string;
@@ -15,9 +15,10 @@ export function recordGroupOutcome(input: {
   status: "completed" | "failed";
 }) {
   const current = getState();
-  const plan = planDeduction(input.value, current.balances, false);
-  const demoUsed = plan.ok ? plan.demoUsed : 0;
-  const realUsed = plan.ok ? plan.realUsed : 0;
+  const coinsSpent =
+    input.status === "failed" ? Math.min(input.value, current.coins) : 0;
+  const coinsEarned =
+    input.status === "completed" ? coinsForMinutes(input.duration) : 0;
   const session = {
     id: `${Date.now()}`,
     goal: input.goal,
@@ -26,22 +27,14 @@ export function recordGroupOutcome(input: {
     mode: input.mode,
     status: input.status,
     date: Date.now(),
-    demoUsed,
-    realUsed,
+    coinsSpent,
+    coinsEarned,
   };
-  setState((s) => {
-    if (input.status === "completed") {
-      return { ...s, sessions: [session, ...s.sessions] };
-    }
-    return {
-      ...s,
-      sessions: [session, ...s.sessions],
-      balances: {
-        demo: Math.max(0, s.balances.demo - demoUsed),
-        real: Math.max(0, s.balances.real - realUsed),
-      },
-    };
-  });
+  setState((s) => ({
+    ...s,
+    sessions: [session, ...s.sessions],
+    coins: Math.max(0, s.coins - coinsSpent + coinsEarned),
+  }));
 }
 
 /** Human label for a participant's state. */

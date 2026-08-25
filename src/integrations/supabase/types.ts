@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -79,37 +79,37 @@ export type Database = {
       }
       focus_sessions: {
         Row: {
+          coins_earned: number
+          coins_spent: number
           created_at: string
-          demo_used: number
           duration_minutes: number
           goal: string
           id: string
           mode: string
-          real_used: number
           status: string
           user_id: string
           value: number
         }
         Insert: {
+          coins_earned?: number
+          coins_spent?: number
           created_at?: string
-          demo_used?: number
           duration_minutes?: number
           goal?: string
           id?: string
           mode?: string
-          real_used?: number
           status?: string
           user_id: string
           value?: number
         }
         Update: {
+          coins_earned?: number
+          coins_spent?: number
           created_at?: string
-          demo_used?: number
           duration_minutes?: number
           goal?: string
           id?: string
           mode?: string
-          real_used?: number
           status?: string
           user_id?: string
           value?: number
@@ -402,23 +402,20 @@ export type Database = {
       }
       wallets: {
         Row: {
-          demo_balance: number
-          real_balance: number
-          reserved_demo: number
+          coin_balance: number
+          coins_reserved: number
           updated_at: string
           user_id: string
         }
         Insert: {
-          demo_balance?: number
-          real_balance?: number
-          reserved_demo?: number
+          coin_balance?: number
+          coins_reserved?: number
           updated_at?: string
           user_id: string
         }
         Update: {
-          demo_balance?: number
-          real_balance?: number
-          reserved_demo?: number
+          coin_balance?: number
+          coins_reserved?: number
           updated_at?: string
           user_id?: string
         }

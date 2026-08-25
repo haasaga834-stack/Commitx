@@ -4,7 +4,7 @@ import { Check, Flame, Clock, Target } from "lucide-react";
 import { CxCoin } from "@/components/CxCoin";
 import { z } from "zod";
 import { useEffect, useState } from "react";
-import { useAppState, stats, formatINR } from "@/lib/commitx-store";
+import { useAppState, stats, coinLabel } from "@/lib/commitx-store";
 
 const search = z.object({
   goal: z.string().default("Focus"),
@@ -54,7 +54,7 @@ function Success() {
   const s = stats(state.sessions);
 
   const coinsEarned = Math.floor(duration / 60);
-  const coins = Math.round(useCountUp(s.cxCoins, 1100, 500));
+  const coins = Math.round(useCountUp(s.coinsEarned, 1100, 500));
   const streakValue = Math.round(useCountUp(s.streak, 800, 380));
   const focusMinutes = Math.round(useCountUp(s.totalMinutes, 1000, 460));
   const successRate = Math.round(useCountUp(s.successRate, 1000, 540));
@@ -142,7 +142,7 @@ function Success() {
         style={{ animationDelay: "460ms" }}
       >
         <Row label="Duration" value={`${duration} min`} />
-        <Row label="Commitment returned" value={formatINR(value)} />
+        <Row label="Commitment returned" value={coinLabel(value)} />
       </div>
 
       <Link

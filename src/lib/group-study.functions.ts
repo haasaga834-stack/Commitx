@@ -333,7 +333,7 @@ export const cancelGroup = createServerFn({ method: "POST" })
       _group_id: data.id,
     });
     if (error) throw new Error(error.message || "Could not cancel the group.");
-    // Nothing may keep holding this user's demo money afterwards.
+    // Nothing may keep holding this user's Cx Coins afterwards.
     await supabaseAdmin
       .rpc("release_stale_commitments", { _user_id: context.userId })
       .then(() => undefined, () => undefined);

@@ -10,7 +10,7 @@ const items = [
   { to: "/", label: "Home", icon: Home },
   { to: "/planner", label: "Planner", icon: CalendarDays },
   { to: "/analytics", label: "Stats", icon: BarChart3 },
-  { to: "/wallet", label: "Wallet", icon: Wallet },
+  { to: "/wallet", label: "Cx Coins", icon: Wallet },
   { to: "/profile", label: "Profile", icon: User },
 ] as const;
 

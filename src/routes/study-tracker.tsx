@@ -86,7 +86,7 @@ const features = [
 ];
 
 const steps = [
-  "Set your goal, duration and a demo commitment amount.",
+  "Set your goal, duration and a Cx Coin commitment.",
   "Choose Standard mode, or Verified mode to block app switching.",
   "Focus while the sand timer runs — with a wellness break every hour.",
   "Complete the session, get your commitment back, and log the hours.",
@@ -116,7 +116,7 @@ function StudyTracker() {
           <ArrowRight className="h-4 w-4" />
         </Link>
         <p className="mt-3 text-center text-xs text-muted-foreground">
-          Free to use · runs entirely on virtual demo money
+          Free to use · runs entirely on Cx Coins, no cash value
         </p>
 
         <h2 className="mt-10 font-display text-xl font-semibold">

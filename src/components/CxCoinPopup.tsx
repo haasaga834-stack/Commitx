@@ -113,7 +113,8 @@ export function CxCoinPopup({ children, coins, hydrated = true }: CxCoinPopupPro
             </div>
 
             <p className="mt-3 max-w-[14rem] text-sm leading-relaxed text-muted-foreground">
-              Keep earning to unlock rewards and coupons in the future!
+              Earn 25 Cx Coins for every completed study hour. Cx Coins are in-app
+              points only — no cash value, not withdrawable or transferable.
             </p>
 
             <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-accent/15 px-3.5 py-1.5 text-xs font-medium text-primary">

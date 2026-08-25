@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 export const REFERRAL_REWARD = 100;
 
 /**
- * Claim a referral code. Rewards the referrer with ₹100 demo balance,
+ * Claim a referral code. Rewards the referrer with 100 Cx Coins,
  * exactly once per referred user. Enforces:
  *  - caller must not already be referred
  *  - code must exist and belong to another account (no self-referral)
@@ -70,26 +70,26 @@ export const claimReferral = createServerFn({ method: "POST" })
       .update({ referred_by: referrer.id, device_hash: data.deviceHash || null })
       .eq("id", context.userId);
 
-    // Both sides earn ₹100 demo balance, once.
+    // Both sides earn 100 Cx Coins, once.
     const { data: wallets } = await supabaseAdmin
       .from("wallets")
-      .select("user_id, demo_balance")
+      .select("user_id, coin_balance")
       .in("user_id", [referrer.id, context.userId]);
 
     const balanceOf = (id: string) =>
-      wallets?.find((w) => w.user_id === id)?.demo_balance ?? 0;
+      wallets?.find((w) => w.user_id === id)?.coin_balance ?? 0;
 
     await supabaseAdmin.from("wallets").upsert(
       [
-        { user_id: referrer.id, demo_balance: balanceOf(referrer.id) + REFERRAL_REWARD },
-        { user_id: context.userId, demo_balance: balanceOf(context.userId) + REFERRAL_REWARD },
+        { user_id: referrer.id, coin_balance: balanceOf(referrer.id) + REFERRAL_REWARD },
+        { user_id: context.userId, coin_balance: balanceOf(context.userId) + REFERRAL_REWARD },
       ],
       { onConflict: "user_id" },
     );
 
     return {
       ok: true as const,
-      message: "Referral applied. You and your friend each earned ₹100 demo balance.",
+      message: "Referral applied. You and your friend each earned 100 Cx Coins.",
     };
   });
 

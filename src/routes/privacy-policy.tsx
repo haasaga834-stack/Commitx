@@ -51,7 +51,7 @@ const SECTIONS: { title: string; body: string[] }[] = [
   {
     title: "4. App usage information",
     body: [
-      "To make the app work we store the things you create inside it: commitments and focus sessions (goal, duration, mode, committed amount, outcome), study plans and to-dos, subjects and exam dates, revision progress, streaks, Cx Coin balance, demo money balance and group study membership.",
+      "To make the app work we store the things you create inside it: commitments and focus sessions (goal, duration, mode, committed amount, outcome), study plans and to-dos, subjects and exam dates, revision progress, streaks, Cx Coin balance and group study membership.",
       "On Android, optional screen-time features read device usage statistics only after you grant permission. That information stays on your device and is used to show your own limits and totals.",
     ],
   },

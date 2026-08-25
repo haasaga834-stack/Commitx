@@ -54,8 +54,8 @@ function toSession(row: any): Session {
     mode: row.mode,
     status: row.status,
     date: new Date(row.created_at).getTime(),
-    demoUsed: row.demo_used,
-    realUsed: row.real_used,
+    coinsSpent: row.coins_spent,
+    coinsEarned: row.coins_earned,
   };
 }
 
@@ -76,10 +76,7 @@ export async function pullFromCloud(userId: string) {
   syncedSessionIds = new Set(rows.map((r: any) => r.id));
 
   const next: AppState = {
-    balances: {
-      real: wallet?.real_balance ?? 0,
-      demo: wallet?.demo_balance ?? 0,
-    },
+    coins: wallet?.coin_balance ?? 0,
     sessions: rows.map(toSession),
     profile: {
       name: profile?.display_name ?? "New User",
@@ -141,7 +138,7 @@ async function push(userId: string) {
   applyingRemote = true;
   hydrateState({
     ...getState(),
-    balances: { real: result.real, demo: result.demo },
+    coins: result.coins,
   });
   applyingRemote = false;
 }

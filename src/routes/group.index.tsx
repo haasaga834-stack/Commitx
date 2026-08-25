@@ -16,7 +16,7 @@ import { TabletShell } from "@/components/TabletShell";
 import { useIsTablet } from "@/lib/use-tablet";
 import { ThemePicker } from "@/components/ThemePicker";
 import type { SessionThemeId } from "@/lib/session-themes";
-import { formatINR, MIN_COMMIT, MAX_COMMIT, useAppState } from "@/lib/commitx-store";
+import { coinLabel, formatCoins, MIN_COMMIT, MAX_COMMIT, useAppState } from "@/lib/commitx-store";
 import {
   createGroup,
   cancelGroup,
@@ -325,7 +325,7 @@ function GroupIndex() {
                     {g.goal} · {fmtDuration(g.duration_minutes)}
                   </span>
                   <span className="block text-[11px] text-muted-foreground">
-                    {formatINR(g.commit_value)} each ·{" "}
+                    {coinLabel(g.commit_value)} each ·{" "}
                     {g.mode === "verified" ? "Verified" : "Standard"} ·{" "}
                     {g.status === "active" ? "Running" : "Waiting"}
                   </span>
@@ -379,11 +379,11 @@ function GroupIndex() {
         <div className="flex items-baseline justify-between gap-3">
           <Label>Commitment each</Label>
           <span className="text-[11px] text-muted-foreground">
-            {formatINR(MIN_COMMIT)} – {formatINR(MAX_COMMIT)}
+            {formatCoins(MIN_COMMIT)} – {coinLabel(MAX_COMMIT)}
           </span>
         </div>
         <div className="mt-3 flex items-center rounded-2xl border border-hairline bg-background px-4 py-3">
-          <span className="text-muted-foreground">₹</span>
+          <span className="text-xs font-semibold text-muted-foreground">Cx</span>
           <input
             type="number"
             min={MIN_COMMIT}
@@ -398,7 +398,7 @@ function GroupIndex() {
           />
         </div>
         <p className="mt-2 text-[11px] text-muted-foreground">
-          Demo balance: {hydrated ? formatINR(state.balances.demo) : "—"}
+          Your Cx Coins: {hydrated ? coinLabel(state.coins) : "—"}
         </p>
       </div>
 
@@ -519,12 +519,12 @@ function GroupIndex() {
               {terms.creator_name} invited you
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Review the terms carefully. Joining commits your money.
+              Review the terms carefully. Joining commits your Cx Coins.
             </p>
 
             <dl className="mt-4 divide-y divide-hairline rounded-2xl border border-hairline bg-background px-4">
               <Row label="Duration" value={fmtDuration(terms.duration_minutes)} />
-              <Row label="Commitment" value={formatINR(terms.commit_value)} />
+              <Row label="Commitment" value={coinLabel(terms.commit_value)} />
               <Row
                 label="Session type"
                 value={terms.mode === "verified" ? "Verified" : "Standard"}
@@ -534,7 +534,7 @@ function GroupIndex() {
 
             <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
               {[
-                `You commit exactly ${formatINR(terms.commit_value)} — the same as everyone else.`,
+                `You commit exactly ${coinLabel(terms.commit_value)} — the same as everyone else.`,
                 "One shared timer runs for the whole group.",
                 "If you leave, exit or abandon before the timer finishes, you lose your commitment.",
                 terms.mode === "verified"
@@ -564,7 +564,7 @@ function GroupIndex() {
                 {accepted && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
               </span>
               <span className="text-sm text-foreground">
-                I accept the terms and commit {formatINR(terms.commit_value)}.
+                I accept the terms and commit {coinLabel(terms.commit_value)}.
               </span>
             </button>
 
