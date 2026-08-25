@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { MobileShell } from "@/components/BottomNav";
-import { useAppState, stats, setState, formatINR } from "@/lib/commitx-store";
+import { useAppState, stats, setState } from "@/lib/commitx-store";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Pencil, Check, Trophy, Clock, Camera, Settings as SettingsIcon } from "lucide-react";
 import { fileToProfilePhoto } from "@/lib/profile-photo";
@@ -343,5 +343,4 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-// Silence unused-import lint for formatINR (kept for future extension).
-void formatINR;
+
