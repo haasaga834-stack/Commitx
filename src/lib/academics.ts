@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session } from "./commitx-store";
 import { getPlans, type StudyPlan } from "./planner";
+import { isOnline, onReconnect, startConnectivityWatch } from "./connectivity";
 
 /**
  * Academic layer — deliberately tiny: a per-user subject list with an optional
@@ -23,6 +24,8 @@ const KEY = "commitx-academics-v1";
 
 let cloudUserId: string | null = null;
 let cache: Subject[] | null = null;
+let pendingCloudPush = false;
+let stopReconnect: (() => void) | null = null;
 const listeners = new Set<() => void>();
 
 function newId() {
@@ -66,6 +69,22 @@ function toRow(s: Subject, userId: string) {
   };
 }
 
+async function pushSubjects(userId: string) {
+  if (!isOnline()) {
+    pendingCloudPush = true;
+    return;
+  }
+  const { error: deleteError } = await supabase
+    .from("academic_subjects")
+    .delete()
+    .eq("user_id", userId);
+  if (deleteError) throw deleteError;
+  const rows = getSubjects().map((subject) => toRow(subject, userId));
+  if (rows.length === 0) return;
+  const { error } = await supabase.from("academic_subjects").insert(rows);
+  if (error) throw error;
+}
+
 export async function addSubject(name: string, examDate?: string): Promise<Subject> {
   const row: Subject = {
     id: newId(),
@@ -75,9 +94,11 @@ export async function addSubject(name: string, examDate?: string): Promise<Subje
     createdAt: Date.now(),
   };
   write([...getSubjects(), row]);
-  if (cloudUserId) {
+  if (cloudUserId && isOnline()) {
     const { error } = await supabase.from("academic_subjects").insert(toRow(row, cloudUserId));
-    if (error) throw error;
+    if (error) pendingCloudPush = true;
+  } else if (cloudUserId) {
+    pendingCloudPush = true;
   }
   return row;
 }
@@ -86,11 +107,13 @@ export async function updateSubject(id: string, patch: Partial<Omit<Subject, "id
   const next = getSubjects().map((s) => (s.id === id ? { ...s, ...patch } : s));
   write(next);
   const row = next.find((s) => s.id === id);
-  if (row && cloudUserId) {
+  if (row && cloudUserId && isOnline()) {
     const { error } = await supabase
       .from("academic_subjects")
       .upsert(toRow(row, cloudUserId), { onConflict: "id" });
-    if (error) throw error;
+    if (error) pendingCloudPush = true;
+  } else if (row && cloudUserId) {
+    pendingCloudPush = true;
   }
 }
 
@@ -103,8 +126,11 @@ export async function toggleRevised(id: string) {
 
 export async function removeSubject(id: string) {
   write(getSubjects().filter((s) => s.id !== id));
-  if (cloudUserId) {
-    await supabase.from("academic_subjects").delete().eq("id", id);
+  if (cloudUserId && isOnline()) {
+    const { error } = await supabase.from("academic_subjects").delete().eq("id", id);
+    if (error) pendingCloudPush = true;
+  } else if (cloudUserId) {
+    pendingCloudPush = true;
   }
 }
 
@@ -127,20 +153,41 @@ export function useSubjects() {
 export function setAcademicsUser(userId: string | null) {
   cloudUserId = userId;
   if (!userId) return;
+  startConnectivityWatch();
+  if (!stopReconnect) {
+    stopReconnect = onReconnect(() => {
+      const uid = cloudUserId;
+      if (!uid) return;
+      const shouldPush = pendingCloudPush;
+      pendingCloudPush = false;
+      const task = shouldPush ? pushSubjects(uid) : Promise.resolve();
+      void task
+        .then(() => pullSubjects(uid))
+        .catch(() => {
+          pendingCloudPush = true;
+        });
+    });
+  }
+  if (!isOnline()) return;
   void pullSubjects(userId).catch(() => {});
 }
 
 export function clearAcademicsLocal() {
   cloudUserId = null;
+  pendingCloudPush = false;
+  if (stopReconnect) stopReconnect();
+  stopReconnect = null;
   write([]);
 }
 
 async function pullSubjects(userId: string) {
-  const { data } = await supabase
+  if (!isOnline()) return null;
+  const { data, error } = await supabase
     .from("academic_subjects")
     .select("*")
     .eq("user_id", userId)
     .order("created_at", { ascending: true });
+  if (error) throw error;
   if (!data) return;
   write(
     data.map((r) => ({

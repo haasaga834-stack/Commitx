@@ -13,6 +13,21 @@ import { useEffect, useState } from "react";
 export const OFFLINE_ACTION_MESSAGE =
   "You're offline. Please connect to the internet and try again.";
 
+/** True for browser/backend failures caused by missing connectivity. */
+export function isNetworkError(error: unknown) {
+  if (!isOnline()) return true;
+  const message =
+    error instanceof Error ? error.message : typeof error === "string" ? error : "";
+  return /failed to fetch|networkerror|network request failed|load failed|fetch failed|timeout|abort/i.test(
+    message,
+  );
+}
+
+/** User-facing copy for actions that cannot be completed while offline. */
+export function actionErrorMessage(error: unknown, fallback: string) {
+  return isNetworkError(error) ? OFFLINE_ACTION_MESSAGE : fallback;
+}
+
 type Listener = (online: boolean) => void;
 
 const listeners = new Set<Listener>();

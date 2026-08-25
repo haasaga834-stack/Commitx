@@ -28,6 +28,7 @@ import { setNativeSessionLock } from "@/lib/native-session";
 import { showSessionProgress, hideSessionProgress } from "@/lib/native-notifications";
 import { useIsTablet } from "@/lib/use-tablet";
 import { GroupLobbyTablet } from "@/components/GroupLobbyTablet";
+import { actionErrorMessage, OFFLINE_ACTION_MESSAGE } from "@/lib/connectivity";
 
 export const Route = createFileRoute("/group/$id")({
   head: () => ({
@@ -130,7 +131,7 @@ function GroupSession() {
       // A temporary disconnect must never kill the timer — keep the last
       // known state and keep retrying.
       if (hasDataRef.current) setOffline(true);
-      else setError(e instanceof Error ? e.message : "Group not found.");
+      else setError(actionErrorMessage(e, OFFLINE_ACTION_MESSAGE));
       return null;
     }
   }, [fetchState, id, navigate]);
@@ -265,7 +266,7 @@ function GroupSession() {
         });
       } catch (e) {
         doneRef.current = false;
-        setActionError(e instanceof Error ? e.message : "Could not finish the session.");
+        setActionError(actionErrorMessage(e, "Could not finish the session."));
         return;
       }
       navigate({

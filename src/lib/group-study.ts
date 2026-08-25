@@ -1,4 +1,4 @@
-import { coinsForMinutes, getState, setState, type Mode } from "./commitx-store";
+import { coinsForMinutes, createLocalSessionId, getState, setState, type Mode } from "./commitx-store";
 
 export * from "./group-study.shared";
 
@@ -20,7 +20,7 @@ export function recordGroupOutcome(input: {
   const coinsEarned =
     input.status === "completed" ? coinsForMinutes(input.duration) : 0;
   const session = {
-    id: `${Date.now()}`,
+    id: createLocalSessionId(),
     goal: input.goal,
     durationMinutes: input.duration,
     value: input.value,

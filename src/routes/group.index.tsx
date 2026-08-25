@@ -27,7 +27,7 @@ import {
   previewInvite,
 } from "@/lib/group-study.functions";
 import { MAX_GROUP_SIZE, type GroupDTO, type InvitePreviewDTO } from "@/lib/group-study.shared";
-import { isOnline, OFFLINE_ACTION_MESSAGE } from "@/lib/connectivity";
+import { actionErrorMessage, isOnline, OFFLINE_ACTION_MESSAGE } from "@/lib/connectivity";
 
 export const Route = createFileRoute("/group/")({
   head: () => ({
@@ -160,7 +160,7 @@ function GroupIndex() {
       }
       navigate({ to: "/group/$id", params: { id: res.id } });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not create the group.");
+      setError(actionErrorMessage(e, "Could not create the group."));
       await recoverOpenGroup();
     } finally {
       setBusy(false);
@@ -185,7 +185,7 @@ function GroupIndex() {
       }
       setTerms(res);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "That invite code doesn't exist.");
+      setError(actionErrorMessage(e, "That invite code doesn't exist."));
     } finally {
       setBusy(false);
     }
@@ -210,7 +210,7 @@ function GroupIndex() {
       setTerms(null);
       navigate({ to: "/group/$id", params: { id: res.id } });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not join this group.");
+      setError(actionErrorMessage(e, "Could not join this group."));
       const g = await recoverOpenGroup();
       if (g) setTerms(null);
     } finally {
@@ -236,11 +236,10 @@ function GroupIndex() {
       }
     } catch (e) {
       setError(
-        e instanceof Error
-          ? e.message
-          : target.isHost
-            ? "Could not cancel the group."
-            : "Could not leave the group.",
+        actionErrorMessage(
+          e,
+          target.isHost ? "Could not cancel the group." : "Could not leave the group.",
+        ),
       );
     } finally {
       // Whatever happened, the backend decides what still blocks the user.

@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Hourglass } from "@/components/Hourglass";
 import { SessionScene } from "@/components/SessionScene";
-import { setState, coinLabel, coinsForMinutes, getState, type Mode } from "@/lib/commitx-store";
+import { setState, coinLabel, coinsForMinutes, createLocalSessionId, getState, type Mode } from "@/lib/commitx-store";
 import {
   clearActiveVerifiedSession,
   markActiveVerifiedSessionPendingFailure,
@@ -715,7 +715,7 @@ function LiveSession() {
     const coinsSpent = status === "failed" ? Math.min(value, current.coins) : 0;
     const coinsEarned = status === "completed" ? coinsForMinutes(duration) : 0;
     const session = {
-      id: `${Date.now()}`,
+      id: createLocalSessionId(),
       goal,
       durationMinutes: duration,
       value,

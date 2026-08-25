@@ -20,6 +20,7 @@ import { claimActiveDbSession, releaseActiveDbSession } from "@/lib/active-sessi
 import { clearEndedSession, writeActiveVerifiedSession } from "@/lib/verified-mode";
 import { ThemePicker } from "@/components/ThemePicker";
 import type { SessionThemeId } from "@/lib/session-themes";
+import { actionErrorMessage } from "@/lib/connectivity";
 
 const commitSearch = z.object({
   /** "1" when arriving from Swipe to Start — duration is preloaded from the plan. */
@@ -206,6 +207,8 @@ function Commit() {
           theme,
         } as Record<string, string>,
       });
+    } catch (e) {
+      setError(actionErrorMessage(e, "Could not start the commitment."));
     } finally {
       setStarting(false);
       setThemeOpen(false);
