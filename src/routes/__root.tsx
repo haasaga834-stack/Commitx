@@ -226,6 +226,20 @@ function AuthGate({ children }: { children: ReactNode }) {
     }
   }, [user, loading, pathname, router, isPublic]);
 
+  // Dismiss the native Android startup screen only once the first real screen
+  // can be shown, so a cold start never flashes an empty page.
+  useEffect(() => {
+    if (loading && !isPublic) return;
+    const frame = requestAnimationFrame(() => {
+      try {
+        (window as unknown as { CommitXAndroid?: { appReady?: () => void } })
+          .CommitXAndroid?.appReady?.();
+      } catch {}
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [loading, isPublic]);
+
+
   if (loading && !isPublic) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
