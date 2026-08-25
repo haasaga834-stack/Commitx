@@ -38,7 +38,6 @@ export interface ActiveVerifiedSession {
   duration: number;
   value: number;
   mode: Mode;
-  preferReal: boolean | "1" | "0";
   startedAt: number;
   pendingFail?: boolean;
   reason?: VerifiedFailureReason;

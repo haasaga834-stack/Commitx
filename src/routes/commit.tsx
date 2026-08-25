@@ -185,7 +185,6 @@ function Commit() {
         duration,
         value,
         mode,
-        preferReal: false,
         startedAt: Date.now(),
         accumulatedMs: 0,
         runningSince: Date.now(),
@@ -204,7 +203,6 @@ function Commit() {
           duration: String(duration),
           value: String(value),
           mode,
-          preferReal: "0",
           theme,
         } as Record<string, string>,
       });
