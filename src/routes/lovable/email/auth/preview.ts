@@ -18,7 +18,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "Commit \u0026 Conquer"
+const SITE_NAME = "CommitX"
 const ROOT_DOMAIN = "commitx.site"
 
 // Sample data for preview mode ONLY (not used in actual email sending).
