@@ -10,6 +10,7 @@ import { recordSessions } from "./wallet.functions";
 import { isOnline, onReconnect, startConnectivityWatch } from "./connectivity";
 
 const syncedKey = (userId: string) => `commitx-synced-session-ids-v1:${userId}`;
+const pendingKey = (userId: string) => `commitx-cloud-pending-v1:${userId}`;
 
 function readSyncedIds(userId: string) {
   if (typeof window === "undefined") return new Set<string>();
@@ -25,6 +26,24 @@ function writeSyncedIds(userId: string) {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(syncedKey(userId), JSON.stringify([...syncedSessionIds]));
+  } catch {}
+}
+
+function readPendingPush(userId: string) {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.localStorage.getItem(pendingKey(userId)) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function setPendingPush(value: boolean, userId = currentUserId) {
+  pendingPush = value;
+  if (typeof window === "undefined" || !userId) return;
+  try {
+    if (value) window.localStorage.setItem(pendingKey(userId), "1");
+    else window.localStorage.removeItem(pendingKey(userId));
   } catch {}
 }
 
@@ -95,7 +114,6 @@ function sessionSignature(s: Session) {
 export async function pullFromCloud(userId: string) {
   if (!isOnline()) return null;
   const localState = getState();
-  const keepLocalChanges = pendingPush;
   const [profileRes, walletRes, sessionsRes] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
     supabase.from("wallets").select("*").eq("user_id", userId).maybeSingle(),
@@ -133,9 +151,13 @@ export async function pullFromCloud(userId: string) {
     }
     return true;
   });
+  // Detect durable local writes before choosing the wallet balance. On a fresh
+  // app process the in-memory flag may be false even though offline sessions
+  // are still waiting in localStorage.
+  const keepLocalChanges = pendingPush || localUnsynced.length > 0;
   syncedSessionIds = new Set([...remoteIds, ...syncedSessionIds]);
   if (currentUserId === userId) writeSyncedIds(userId);
-  if (localUnsynced.length > 0) pendingPush = true;
+  if (localUnsynced.length > 0) setPendingPush(true, userId);
 
   const next: AppState = {
     coins: keepLocalChanges ? localState.coins : (wallet?.coin_balance ?? localState.coins),
@@ -167,12 +189,16 @@ export async function pullFromCloud(userId: string) {
   hydrateState(next);
   applyingRemote = false;
 
+  // A startup pull can be the first moment an interrupted offline write is
+  // discovered. Flush it without waiting for an unrelated store mutation.
+  if (localUnsynced.length > 0 && currentUserId === userId) schedulePush(userId);
+
   return profile;
 }
 
 async function push(userId: string) {
   if (!isOnline()) {
-    pendingPush = true;
+    setPendingPush(true, userId);
     return;
   }
   const state = getState();
@@ -221,6 +247,28 @@ async function push(userId: string) {
   applyingRemote = false;
 }
 
+function schedulePush(userId: string) {
+  if (pushTimer) clearTimeout(pushTimer);
+  pushTimer = setTimeout(() => {
+    if (!isOnline()) {
+      setPendingPush(true, userId);
+      return;
+    }
+    lastPushAt = Date.now();
+    void push(userId)
+      .then(() => {
+        const hasUnsynced = getState().sessions.some((s) => !syncedSessionIds.has(s.id));
+        setPendingPush(hasUnsynced, userId);
+      })
+      .catch(() => {
+        setPendingPush(true, userId);
+      })
+      .finally(() => {
+        lastPushAt = Date.now();
+      });
+  }, 400);
+}
+
 let channel: ReturnType<typeof supabase.channel> | null = null;
 
 /** Start mirroring local store changes to the cloud for this user. */
@@ -229,6 +277,7 @@ export function startCloudSync(userId: string) {
   startConnectivityWatch();
   currentUserId = userId;
   syncedSessionIds = readSyncedIds(userId);
+  pendingPush = readPendingPush(userId);
   if (!stopReconnect) {
     stopReconnect = onReconnect(() => {
       const uid = currentUserId;
@@ -238,12 +287,12 @@ export function startCloudSync(userId: string) {
         void pullFromCloud(uid)
           .then(() => {
             if (!pendingPush) return undefined;
-            pendingPush = false;
+            setPendingPush(false, uid);
             lastPushAt = Date.now();
             return push(uid);
           })
           .catch(() => {
-            pendingPush = true;
+            setPendingPush(true, uid);
           })
           .finally(() => {
             lastPushAt = Date.now();
@@ -253,12 +302,12 @@ export function startCloudSync(userId: string) {
         void pullFromCloud(uid)
           .then(() => {
             if (!pendingPush) return undefined;
-            pendingPush = false;
+            setPendingPush(false, uid);
             lastPushAt = Date.now();
             return push(uid);
           })
           .catch(() => {
-            pendingPush = true;
+            setPendingPush(true, uid);
           })
           .finally(() => {
             lastPushAt = Date.now();
@@ -268,23 +317,11 @@ export function startCloudSync(userId: string) {
   }
   unsubscribe = subscribe(() => {
     if (applyingRemote || !currentUserId) return;
-    if (pushTimer) clearTimeout(pushTimer);
-    pushTimer = setTimeout(() => {
-      if (!isOnline()) {
-        // Nothing is lost: unsynced sessions stay unsynced (and de-duplicated
-        // by `syncedSessionIds`) until connectivity returns.
-        pendingPush = true;
-        return;
-      }
-      lastPushAt = Date.now();
-      void push(currentUserId!)
-        .catch(() => {
-          pendingPush = true;
-        })
-        .finally(() => {
-          lastPushAt = Date.now();
-        });
-    }, 400);
+    const uid = currentUserId;
+    // Persist immediately so an app kill before the debounce fires cannot
+    // erase knowledge of an offline balance/session update.
+    setPendingPush(true, uid);
+    schedulePush(uid);
   });
 
   // Keep other devices in step: any cloud change to this user's rows re-pulls.
