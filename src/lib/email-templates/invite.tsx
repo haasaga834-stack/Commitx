@@ -81,7 +81,9 @@ const button = {
   backgroundColor: '#2E7D32',
   color: '#ffffff',
   fontSize: '14px',
-  borderRadius: '8px',
+  borderRadius: '16px',
+  fontWeight: 'bold' as const,
+  display: 'inline-block' as const,
   padding: '12px 20px',
   textDecoration: 'none',
 }
