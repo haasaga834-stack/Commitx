@@ -191,7 +191,7 @@ export async function pullFromCloud(userId: string) {
 
   // A startup pull can be the first moment an interrupted offline write is
   // discovered. Flush it without waiting for an unrelated store mutation.
-  if (localUnsynced.length > 0 && currentUserId === userId) schedulePush(userId);
+  if (keepLocalChanges && currentUserId === userId) schedulePush(userId);
 
   return profile;
 }
