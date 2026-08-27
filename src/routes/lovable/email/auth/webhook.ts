@@ -9,7 +9,7 @@ import { EmailChangeEmail } from '@/lib/email-templates/email-change'
 import { ReauthenticationEmail } from '@/lib/email-templates/reauthentication'
 
 // Configuration
-const SITE_NAME = "Commit \u0026 Conquer"
+const SITE_NAME = "CommitX"
 const SENDER_DOMAIN = "notify.commitx.site"
 const ROOT_DOMAIN = "commitx.site"
 const FROM_DOMAIN = "commitx.site"
