@@ -92,7 +92,12 @@ export async function claimActiveDbSession(input: {
     value: input.value,
     mode: input.mode,
     started_at: new Date().toISOString(),
+    status: "active",
+    last_heartbeat: new Date().toISOString(),
+    failure_reason: null,
+    platform: hasNativeBridge() ? "native" : "web",
   });
+
 
   if (error) {
     // Unique violation === another session was claimed a moment ago.
