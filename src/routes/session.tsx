@@ -804,7 +804,18 @@ function LiveSession() {
       status,
       ...(reason ? { reason } : {}),
     });
+    // Web verified sessions settle atomically on the backend: a failure is
+    // recorded as 'failed', a completion only releases a still-active slot.
+    if (isVerified && isWebRuntime()) {
+      clearWebSessionTab();
+      if (status === "failed") {
+        void failWebSession(reason ?? "failed");
+      } else {
+        void finishWebSession();
+      }
+    }
     void releaseActiveDbSession();
+
     const current = getState();
     const coinsSpent = status === "failed" ? Math.min(value, current.coins) : 0;
     const coinsEarned = status === "completed" ? coinsForMinutes(duration) : 0;
