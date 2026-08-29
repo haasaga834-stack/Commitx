@@ -18,7 +18,18 @@ import {
   type VerifiedFailureReason,
 } from "@/lib/verified-mode";
 import { releaseActiveDbSession } from "@/lib/active-session";
+import {
+  claimWebSessionTab,
+  clearWebSessionTab,
+  failWebSession,
+  failWebSessionBeacon,
+  finishWebSession,
+  heartbeatWebSession,
+  isWebRuntime,
+  WEB_HEARTBEAT_MS,
+} from "@/lib/web-verified-session";
 import { normalizeTheme, type SessionThemeId } from "@/lib/session-themes";
+
 import {
   announceWellnessBreak,
   announceBreakOver,
