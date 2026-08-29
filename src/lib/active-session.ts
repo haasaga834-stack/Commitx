@@ -56,11 +56,14 @@ export async function getActiveDbSession(): Promise<ActiveDbSession | null> {
     .maybeSingle();
   const row = (data as ActiveDbSession | null) ?? null;
   if (!row) return null;
-  if (isStale(row)) {
+  // A failed row (web heartbeat timeout, lifecycle failure) is dead: it must
+  // never block a new commitment.
+  if (row.status === "failed" || isStale(row)) {
     await releaseActiveDbSession();
     return null;
   }
   return row;
+
 }
 
 export type ClaimResult =
