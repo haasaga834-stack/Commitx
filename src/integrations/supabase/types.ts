@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.17"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -51,27 +51,39 @@ export type Database = {
         Row: {
           created_at: string
           duration_minutes: number
+          failure_reason: string | null
           goal: string
+          last_heartbeat: string
           mode: string
+          platform: string
           started_at: string
+          status: string
           user_id: string
           value: number
         }
         Insert: {
           created_at?: string
           duration_minutes?: number
+          failure_reason?: string | null
           goal?: string
+          last_heartbeat?: string
           mode?: string
+          platform?: string
           started_at?: string
+          status?: string
           user_id: string
           value?: number
         }
         Update: {
           created_at?: string
           duration_minutes?: number
+          failure_reason?: string | null
           goal?: string
+          last_heartbeat?: string
           mode?: string
+          platform?: string
           started_at?: string
+          status?: string
           user_id?: string
           value?: number
         }
@@ -445,6 +457,8 @@ export type Database = {
           id: string
         }[]
       }
+      fail_web_session: { Args: { _reason: string }; Returns: string }
+      finish_web_session: { Args: never; Returns: boolean }
       generate_referral_code: { Args: never; Returns: string }
       group_display_name: { Args: { _user_id: string }; Returns: string }
       group_invite_preview: {
@@ -496,6 +510,7 @@ export type Database = {
           started_at: string
         }[]
       }
+      web_session_heartbeat: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never

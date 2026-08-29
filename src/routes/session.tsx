@@ -18,7 +18,18 @@ import {
   type VerifiedFailureReason,
 } from "@/lib/verified-mode";
 import { releaseActiveDbSession } from "@/lib/active-session";
+import {
+  claimWebSessionTab,
+  clearWebSessionTab,
+  failWebSession,
+  failWebSessionBeacon,
+  finishWebSession,
+  heartbeatWebSession,
+  isWebRuntime,
+  WEB_HEARTBEAT_MS,
+} from "@/lib/web-verified-session";
 import { normalizeTheme, type SessionThemeId } from "@/lib/session-themes";
+
 import {
   announceWellnessBreak,
   announceBreakOver,
@@ -558,6 +569,9 @@ function LiveSession() {
     const onVisibility = () => {
       if (doneRef.current) return;
       if (document.visibilityState === "hidden") {
+        // On the web, leaving the page fails immediately (handled by the
+        // web-only effect below) — no grace window there.
+        if (isWebRuntime()) return;
         startGrace("hidden");
       } else {
         const away = hiddenAtRef.current ? Date.now() - hiddenAtRef.current : 0;
@@ -568,6 +582,7 @@ function LiveSession() {
         evaluateRef.current();
       }
     };
+
     const onPageHide = (event: PageTransitionEvent) => {
       if (doneRef.current) return;
       if (event.persisted) return;
@@ -606,6 +621,85 @@ function LiveSession() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVerified, dndBlocked]);
+
+  /* ------------------------------------------------------------------ *
+   * WEB ONLY — strict Verified Session enforcement.
+   * The Android APK keeps its existing native behaviour: every listener
+   * here is skipped whenever the native bridge is present.
+   * ------------------------------------------------------------------ */
+  useEffect(() => {
+    if (!isVerified || dndBlocked || !isWebRuntime()) return;
+
+    let stopped = false;
+
+    /** Single idempotent failure handler for web verified sessions. */
+    const failWeb = (reason: VerifiedFailureReason) => {
+      if (doneRef.current || stopped) return;
+      stopped = true;
+      log("Web Verified Failure", { reason });
+      markActiveVerifiedSessionPendingFailure(reason);
+      void failWebSession(reason);
+      clearWebSessionTab();
+      // Stops the timer, records the failure locally, blocks any resume and
+      // shows the existing Verified Session Failed screen.
+      complete("failed", reason);
+    };
+
+    // Reload / reopen protection: a live verified session may never resume.
+    if (claimWebSessionTab(startedAt).reloaded) {
+      failWeb("web_reload");
+      return;
+    }
+
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") failWeb("web_page_hidden");
+    };
+
+    // Focus loss (other app, other window, minimised browser). Confirmed after
+    // a short delay so re-renders, scrolling and rotation never trigger it.
+    const onBlur = () => {
+      if (doneRef.current || stopped) return;
+      window.setTimeout(() => {
+        if (doneRef.current || stopped) return;
+        if (!document.hasFocus()) failWeb("web_window_blur");
+      }, 400);
+    };
+
+    const markUnload = () => {
+      if (doneRef.current || stopped) return;
+      markActiveVerifiedSessionPendingFailure("web_unload");
+      failWebSessionBeacon("web_unload");
+    };
+
+    const onPageHide = () => markUnload();
+    const onBeforeUnload = () => markUnload();
+
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("blur", onBlur);
+    window.addEventListener("pagehide", onPageHide);
+    window.addEventListener("beforeunload", onBeforeUnload);
+
+    // Heartbeat: the backend is authoritative. If check-ins stop, the server
+    // marks the session failed; if the server says failed, we stop locally.
+    const beat = async () => {
+      if (doneRef.current || stopped) return;
+      const status = await heartbeatWebSession();
+      if (status === "failed") failWeb("web_heartbeat_timeout");
+    };
+    void beat();
+    const heartbeatId = setInterval(() => void beat(), WEB_HEARTBEAT_MS);
+
+    return () => {
+      clearInterval(heartbeatId);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("blur", onBlur);
+      window.removeEventListener("pagehide", onPageHide);
+      window.removeEventListener("beforeunload", onBeforeUnload);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVerified, dndBlocked, startedAt]);
+
+
 
   const elapsedMs = Math.min(totalMs, accumulatedRef.current + (runningSinceRef.current ? now - runningSinceRef.current : 0));
   const progress = totalMs > 0 ? elapsedMs / totalMs : 0;
@@ -710,7 +804,18 @@ function LiveSession() {
       status,
       ...(reason ? { reason } : {}),
     });
+    // Web verified sessions settle atomically on the backend: a failure is
+    // recorded as 'failed', a completion only releases a still-active slot.
+    if (isVerified && isWebRuntime()) {
+      clearWebSessionTab();
+      if (status === "failed") {
+        void failWebSession(reason ?? "failed");
+      } else {
+        void finishWebSession();
+      }
+    }
     void releaseActiveDbSession();
+
     const current = getState();
     const coinsSpent = status === "failed" ? Math.min(value, current.coins) : 0;
     const coinsEarned = status === "completed" ? coinsForMinutes(duration) : 0;

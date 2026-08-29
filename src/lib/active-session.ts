@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { isOnline } from "./connectivity";
+import { hasNativeBridge } from "./native-session";
 
 /**
  * Server-side single-session guard. One row per user in `active_sessions`
@@ -13,7 +14,12 @@ export interface ActiveDbSession {
   value: number;
   mode: string;
   started_at: string;
+  status?: string | null;
+  failure_reason?: string | null;
+  platform?: string | null;
+  last_heartbeat?: string | null;
 }
+
 
 async function currentUserId() {
   try {
@@ -50,11 +56,14 @@ export async function getActiveDbSession(): Promise<ActiveDbSession | null> {
     .maybeSingle();
   const row = (data as ActiveDbSession | null) ?? null;
   if (!row) return null;
-  if (isStale(row)) {
+  // A failed row (web heartbeat timeout, lifecycle failure) is dead: it must
+  // never block a new commitment.
+  if (row.status === "failed" || isStale(row)) {
     await releaseActiveDbSession();
     return null;
   }
   return row;
+
 }
 
 export type ClaimResult =
@@ -83,7 +92,12 @@ export async function claimActiveDbSession(input: {
     value: input.value,
     mode: input.mode,
     started_at: new Date().toISOString(),
+    status: "active",
+    last_heartbeat: new Date().toISOString(),
+    failure_reason: null,
+    platform: hasNativeBridge() ? "native" : "web",
   });
+
 
   if (error) {
     // Unique violation === another session was claimed a moment ago.
