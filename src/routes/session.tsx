@@ -569,6 +569,9 @@ function LiveSession() {
     const onVisibility = () => {
       if (doneRef.current) return;
       if (document.visibilityState === "hidden") {
+        // On the web, leaving the page fails immediately (handled by the
+        // web-only effect below) — no grace window there.
+        if (isWebRuntime()) return;
         startGrace("hidden");
       } else {
         const away = hiddenAtRef.current ? Date.now() - hiddenAtRef.current : 0;
@@ -579,6 +582,7 @@ function LiveSession() {
         evaluateRef.current();
       }
     };
+
     const onPageHide = (event: PageTransitionEvent) => {
       if (doneRef.current) return;
       if (event.persisted) return;
