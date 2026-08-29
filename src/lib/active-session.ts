@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { isOnline } from "./connectivity";
+import { hasNativeBridge } from "./native-session";
 
 /**
  * Server-side single-session guard. One row per user in `active_sessions`
@@ -13,7 +14,12 @@ export interface ActiveDbSession {
   value: number;
   mode: string;
   started_at: string;
+  status?: string | null;
+  failure_reason?: string | null;
+  platform?: string | null;
+  last_heartbeat?: string | null;
 }
+
 
 async function currentUserId() {
   try {
