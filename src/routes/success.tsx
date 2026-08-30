@@ -5,6 +5,7 @@ import { CxCoin } from "@/components/CxCoin";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 import { useAppState, stats, coinLabel } from "@/lib/commitx-store";
+import { useAuth } from "@/lib/use-auth";
 
 const search = z.object({
   goal: z.string().default("Focus"),
@@ -52,6 +53,8 @@ function Success() {
   const { goal, duration, value } = Route.useSearch();
   const { state } = useAppState();
   const s = stats(state.sessions);
+  const { user, loading: authLoading } = useAuth();
+  const guest = !authLoading && !user;
 
   const coinsEarned = Math.floor(duration / 60);
   const coins = Math.round(useCountUp(s.coinsEarned, 1100, 500));

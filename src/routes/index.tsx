@@ -27,9 +27,9 @@ import {
   priorityLabel,
 } from "@/lib/planner";
 
-const HOME_TITLE = "CommitX Dashboard — Focus Commitments & Study Streaks";
+const HOME_TITLE = "CommitX — For the things you said you'd do.";
 const HOME_DESCRIPTION =
-  "Your CommitX dashboard: start a focused study commitment, track streaks, Cx Coins and today's plan in one calm place.";
+  "Decide. Commit. Complete. Start a Standard or Verified focus session with CommitX — no account required to start.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
