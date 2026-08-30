@@ -148,6 +148,27 @@ function Success() {
         <Row label="Commitment returned" value={coinLabel(value)} />
       </div>
 
+      {guest ? (
+        <div
+          className="mt-6 w-full max-w-md rounded-3xl border border-hairline bg-card p-5 text-center shadow-soft animate-fade-up"
+          style={{ animationDelay: "500ms" }}
+        >
+          <h2 className="font-display text-lg font-semibold">
+            Keep your progress with CommitX
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Create an account or sign in to save this session and track your progress.
+          </p>
+          <Link
+            to="/auth"
+            className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-primary px-6 py-3.5 text-sm font-medium text-primary-foreground"
+          >
+            Continue with Google or Email
+          </Link>
+        </div>
+      ) : null}
+
+
       <Link
         to="/"
         replace
