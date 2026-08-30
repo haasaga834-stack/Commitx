@@ -193,6 +193,12 @@ function VerifiedRecovery() {
 }
 
 const PUBLIC_PATHS = [
+  // Public front door + guest session flow (no account required to start).
+  "/",
+  "/commit",
+  "/session",
+  "/success",
+  "/failed",
   "/auth",
   "/privacy",
   "/privacy-policy",

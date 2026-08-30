@@ -13,6 +13,9 @@ import { cn } from "@/lib/utils";
 import cozyStudy from "@/assets/cozy-study.jpg";
 
 import { useAppState, stats } from "@/lib/commitx-store";
+import { Landing } from "@/components/Landing";
+import { hasNativeBridge } from "@/lib/native-session";
+import { useAuth } from "@/lib/use-auth";
 import { dailyMessage } from "@/lib/daily-message";
 import {
   usePlans,
@@ -51,6 +54,28 @@ function greeting() {
 
 function Home() {
   const isTablet = useIsTablet();
+  const navigate = useNavigate();
+  const { user, loading } = useAuth();
+  // The Android app keeps its existing behaviour: signed-out users go to /auth.
+  const native = hasNativeBridge();
+
+  useEffect(() => {
+    if (loading || user || !native) return;
+    navigate({ to: "/auth" });
+  }, [loading, user, native, navigate]);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-background">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-hairline border-t-primary" />
+      </div>
+    );
+  }
+
+  // Signed-out web visitors see the public landing page.
+  if (!user && !native) return <Landing />;
+  if (!user) return null;
+
   if (isTablet) return <TabletHome />;
   return <MobileHome />;
 }
