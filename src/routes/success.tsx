@@ -5,6 +5,7 @@ import { CxCoin } from "@/components/CxCoin";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 import { useAppState, stats, coinLabel } from "@/lib/commitx-store";
+import { useAuth } from "@/lib/use-auth";
 
 const search = z.object({
   goal: z.string().default("Focus"),
@@ -52,6 +53,8 @@ function Success() {
   const { goal, duration, value } = Route.useSearch();
   const { state } = useAppState();
   const s = stats(state.sessions);
+  const { user, loading: authLoading } = useAuth();
+  const guest = !authLoading && !user;
 
   const coinsEarned = Math.floor(duration / 60);
   const coins = Math.round(useCountUp(s.coinsEarned, 1100, 500));
@@ -144,6 +147,27 @@ function Success() {
         <Row label="Duration" value={`${duration} min`} />
         <Row label="Commitment returned" value={coinLabel(value)} />
       </div>
+
+      {guest ? (
+        <div
+          className="mt-6 w-full max-w-md rounded-3xl border border-hairline bg-card p-5 text-center shadow-soft animate-fade-up"
+          style={{ animationDelay: "500ms" }}
+        >
+          <h2 className="font-display text-lg font-semibold">
+            Keep your progress with CommitX
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Create an account or sign in to save this session and track your progress.
+          </p>
+          <Link
+            to="/auth"
+            className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-primary px-6 py-3.5 text-sm font-medium text-primary-foreground"
+          >
+            Continue with Google or Email
+          </Link>
+        </div>
+      ) : null}
+
 
       <Link
         to="/"

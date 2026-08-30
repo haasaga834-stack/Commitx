@@ -13,6 +13,9 @@ import { cn } from "@/lib/utils";
 import cozyStudy from "@/assets/cozy-study.jpg";
 
 import { useAppState, stats } from "@/lib/commitx-store";
+import { Landing } from "@/components/Landing";
+import { hasNativeBridge } from "@/lib/native-session";
+import { useAuth } from "@/lib/use-auth";
 import { dailyMessage } from "@/lib/daily-message";
 import {
   usePlans,
@@ -24,9 +27,9 @@ import {
   priorityLabel,
 } from "@/lib/planner";
 
-const HOME_TITLE = "CommitX Dashboard — Focus Commitments & Study Streaks";
+const HOME_TITLE = "CommitX — For the things you said you'd do.";
 const HOME_DESCRIPTION =
-  "Your CommitX dashboard: start a focused study commitment, track streaks, Cx Coins and today's plan in one calm place.";
+  "Decide. Commit. Complete. Start a Standard or Verified focus session with CommitX — no account required to start.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -51,6 +54,29 @@ function greeting() {
 
 function Home() {
   const isTablet = useIsTablet();
+  const navigate = useNavigate();
+  const { user, loading } = useAuth();
+  // The Android app keeps its existing behaviour: signed-out users go to /auth.
+  const native = hasNativeBridge();
+
+  useEffect(() => {
+    if (loading || user || !native) return;
+    navigate({ to: "/auth" });
+  }, [loading, user, native, navigate]);
+
+  // Signed-out web visitors see the public landing page immediately — the
+  // cached-session read is synchronous, so returning users never see it flash.
+  if (!user && !native) return <Landing />;
+  if (!user) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-background">
+        {loading ? (
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-hairline border-t-primary" />
+        ) : null}
+      </div>
+    );
+  }
+
   if (isTablet) return <TabletHome />;
   return <MobileHome />;
 }
