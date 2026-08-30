@@ -25,6 +25,8 @@ import { actionErrorMessage } from "@/lib/connectivity";
 const commitSearch = z.object({
   /** "1" when arriving from Swipe to Start — duration is preloaded from the plan. */
   plan: z.coerce.number().optional(),
+  /** Mode preselected from the public landing page. */
+  mode: z.enum(["standard", "verified"]).optional(),
 });
 
 export const Route = createFileRoute("/commit")({
@@ -52,14 +54,14 @@ function fmtDuration(min: number) {
 function Commit() {
   const navigate = useNavigate();
   const isTablet = useIsTablet();
-  const { plan: fromPlan } = Route.useSearch();
+  const { plan: fromPlan, mode: fromMode } = Route.useSearch();
   const usePlanDuration = fromPlan === 1;
   const { state, hydrated } = useAppState();
   const { plans, hydrated: plansHydrated } = usePlans();
   const [goal, setGoal] = useState("Study");
   const [customGoal, setCustomGoal] = useState("");
   const [value, setValue] = useState(MIN_COMMIT);
-  const [mode, setMode] = useState<"standard" | "verified">("standard");
+  const [mode, setMode] = useState<"standard" | "verified">(fromMode ?? "standard");
   const [confirmVerified, setConfirmVerified] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [verifiedWarn, setVerifiedWarn] = useState(false);
