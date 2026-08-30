@@ -64,17 +64,18 @@ function Home() {
     navigate({ to: "/auth" });
   }, [loading, user, native, navigate]);
 
-  if (loading) {
+  // Signed-out web visitors see the public landing page immediately — the
+  // cached-session read is synchronous, so returning users never see it flash.
+  if (!user && !native) return <Landing />;
+  if (!user) {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-background">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-hairline border-t-primary" />
+        {loading ? (
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-hairline border-t-primary" />
+        ) : null}
       </div>
     );
   }
-
-  // Signed-out web visitors see the public landing page.
-  if (!user && !native) return <Landing />;
-  if (!user) return null;
 
   if (isTablet) return <TabletHome />;
   return <MobileHome />;
