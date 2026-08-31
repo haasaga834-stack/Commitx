@@ -43,6 +43,11 @@ function Reveal({
       setShown(true);
       return;
     }
+    // Anything already on screen shows straight away.
+    if (el.getBoundingClientRect().top < window.innerHeight * 0.95) {
+      setShown(true);
+      return;
+    }
     const io = new IntersectionObserver(
       (entries) => {
         if (entries.some((e) => e.isIntersecting)) {
@@ -50,7 +55,7 @@ function Reveal({
           io.disconnect();
         }
       },
-      { rootMargin: "-8% 0px -12% 0px" },
+      { rootMargin: "0px 0px -10% 0px", threshold: 0 },
     );
     io.observe(el);
     return () => io.disconnect();
