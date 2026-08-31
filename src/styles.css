@@ -481,3 +481,10 @@ body {
 @utility animate-landing-modal {
   animation: landing-modal-in 0.32s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
+
+/* Landing headings use the modern sans, not the app's display serif. */
+.landing-root h1,
+.landing-root h2,
+.landing-root h3 {
+  font-family: var(--font-sans);
+}
