@@ -22,6 +22,8 @@ export type CommitTabletProps = {
   fmtDuration: (m: number) => string;
 
   value: number;
+  /** Guest visitors focus without staking Cx Coins. */
+  guest?: boolean;
   onValue: (n: number) => void;
   coinBalance: number;
   hydrated: boolean;
@@ -210,6 +212,18 @@ export function CommitTablet(p: CommitTabletProps) {
 
         {/* RIGHT — value + summary + action */}
         <div className="grid gap-6 lg:sticky lg:top-10">
+          {p.guest ? (
+            <Panel title="No coins needed">
+              <p className="text-xs text-muted-foreground">
+                You're focusing as a guest — nothing is staked and this session isn't
+                saved.{" "}
+                <Link to="/auth" className="font-medium text-primary">
+                  Sign in
+                </Link>{" "}
+                to keep your streaks, history and Cx Coins.
+              </p>
+            </Panel>
+          ) : (
           <Panel
             title="Commitment value"
             aside={
@@ -245,6 +259,7 @@ export function CommitTablet(p: CommitTabletProps) {
               </span>
             </div>
           </Panel>
+          )}
 
           <Panel title="Summary">
             <dl className="grid gap-2 text-sm">
@@ -253,7 +268,7 @@ export function CommitTablet(p: CommitTabletProps) {
                 label="Duration"
                 value={p.duration ? p.fmtDuration(p.duration) : "Not set"}
               />
-              <Row label="Commitment" value={coinLabel(p.value)} />
+              {!p.guest && <Row label="Commitment" value={coinLabel(p.value)} />}
               <Row label="Mode" value={p.mode === "verified" ? "Verified" : "Standard"} />
             </dl>
 
