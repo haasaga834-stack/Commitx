@@ -21,6 +21,7 @@ import { clearEndedSession, writeActiveVerifiedSession } from "@/lib/verified-mo
 import { ThemePicker } from "@/components/ThemePicker";
 import type { SessionThemeId } from "@/lib/session-themes";
 import { actionErrorMessage } from "@/lib/connectivity";
+import { useAuth } from "@/lib/use-auth";
 
 const commitSearch = z.object({
   /** "1" when arriving from Swipe to Start — duration is preloaded from the plan. */
@@ -57,10 +58,13 @@ function Commit() {
   const { plan: fromPlan, mode: fromMode } = Route.useSearch();
   const usePlanDuration = fromPlan === 1;
   const { state, hydrated } = useAppState();
+  const { user, loading: authLoading } = useAuth();
+  // Visitors can focus without an account: no Cx Coins are staked or required.
+  const guest = !authLoading && !user;
   const { plans, hydrated: plansHydrated } = usePlans();
   const [goal, setGoal] = useState("Study");
   const [customGoal, setCustomGoal] = useState("");
-  const [value, setValue] = useState(MIN_COMMIT);
+  const [rawValue, setValue] = useState(MIN_COMMIT);
   const [mode, setMode] = useState<"standard" | "verified">(fromMode ?? "standard");
   const [confirmVerified, setConfirmVerified] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -101,6 +105,8 @@ function Commit() {
   // a bridge that can't report it) blocks the Verified session.
   const dndReady = native ? dndOn === true : true;
 
+  const value = guest ? 0 : rawValue;
+
   const finalGoal = goal === "Custom" ? customGoal.trim() || "Custom" : goal;
 
   const affordable = useMemo(() => canAfford(value, state.coins), [value, state.coins]);
@@ -130,6 +136,10 @@ function Commit() {
           : "Choose a duration first.",
       );
       return false;
+    }
+    if (guest) {
+      setError(null);
+      return true;
     }
     if (value < MIN_COMMIT || value > MAX_COMMIT) {
       setError(
@@ -335,6 +345,7 @@ function Commit() {
         fmtDuration={fmtDuration}
         value={value}
         onValue={clampValue}
+        guest={guest}
         coinBalance={state.coins}
         hydrated={hydrated}
         error={error}
@@ -459,7 +470,26 @@ function Commit() {
         </section>
 
 
-        {/* Value */}
+        {/* Value — signed-in only; guests focus without staking coins */}
+        {guest ? (
+          <section className="mt-8">
+            <div className="rounded-2xl bg-card px-4 py-3.5 shadow-soft">
+              <p className="text-sm font-medium text-foreground">No coins needed</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                You're focusing as a guest — nothing is staked and this session isn't saved.{" "}
+                <Link to="/auth" className="font-medium text-primary">
+                  Sign in
+                </Link>{" "}
+                to keep your streaks, history and Cx Coins.
+              </p>
+            </div>
+            {error && (
+              <p className="mt-3 rounded-2xl bg-destructive/10 px-4 py-2 text-xs text-destructive">
+                {error}
+              </p>
+            )}
+          </section>
+        ) : (
         <section className="mt-8">
           <div className="flex items-baseline justify-between">
             <Label>Commitment</Label>
@@ -503,6 +533,7 @@ function Commit() {
             </p>
           )}
         </section>
+        )}
 
         {/* Mode */}
         <section className="mt-8">
