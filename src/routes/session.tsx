@@ -49,6 +49,7 @@ import { BellOff, Leaf, X } from "lucide-react";
 
 import { showSessionProgress, hideSessionProgress } from "@/lib/native-notifications";
 import { z } from "zod";
+import { useAuth } from "@/lib/use-auth";
 
 declare global {
   interface Window {
@@ -154,6 +155,10 @@ function Session() {
 
 function LiveSession() {
   const { goal, duration, value, mode, theme } = Route.useSearch();
+  // Guests can run a full session; nothing is staked, stored or synced.
+  const { user, loading: authLoading } = useAuth();
+  const guestRef = useRef(false);
+  guestRef.current = !authLoading && !user;
   const navigate = useNavigate();
   const totalMs = duration * 60 * 1000;
   // Sessions longer than an hour get a mandatory wellness break every 60 min.
@@ -816,6 +821,25 @@ function LiveSession() {
     }
     void releaseActiveDbSession();
 
+    if (guestRef.current) {
+      // No account: no coin movement and no saved history.
+      if (status === "completed") {
+        log("Session Completed");
+      } else {
+        log("Session Failed", { reason: reason ?? "unknown" });
+      }
+      navigate({
+        to: status === "completed" ? "/success" : "/failed",
+        search: {
+          goal,
+          duration: String(duration),
+          value: "0",
+          ...(reason ? { reason } : {}),
+        } as Record<string, string>,
+      });
+      return;
+    }
+
     const current = getState();
     const coinsSpent = status === "failed" ? Math.min(value, current.coins) : 0;
     const coinsEarned = status === "completed" ? coinsForMinutes(duration) : 0;
@@ -899,7 +923,11 @@ function LiveSession() {
             {fmt(remaining)}
           </p>
           <p className="mt-3 block w-full text-center text-sm text-muted-foreground">{goal}</p>
-          <p className="mt-1 block w-full text-center text-xs text-muted-foreground">{coinLabel(value)} committed</p>
+          {value > 0 && (
+            <p className="mt-1 block w-full text-center text-xs text-muted-foreground">
+              {coinLabel(value)} committed
+            </p>
+          )}
           {isVerified && !onBreak && (
             <p className="mt-6 rounded-full bg-foreground/5 px-4 py-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">
               Leaving CommitX fails this session
