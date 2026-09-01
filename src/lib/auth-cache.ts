@@ -48,3 +48,21 @@ export function clearCachedUser() {
     window.localStorage.removeItem(KEY);
   } catch {}
 }
+/**
+ * True when this browser holds a Supabase auth token, even if the lightweight
+ * user cache is missing. Used to show a quiet splash instead of flashing the
+ * public landing page while the session is being restored.
+ */
+export function hasStoredAuthSession() {
+  if (!canUseStorage()) return false;
+  try {
+    if (window.localStorage.getItem(KEY)) return true;
+    for (let i = 0; i < window.localStorage.length; i += 1) {
+      const k = window.localStorage.key(i);
+      if (k && /^sb-.*-auth-token$/.test(k)) return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}

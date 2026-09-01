@@ -4,7 +4,7 @@ import { Check, Flame, Clock, Target } from "lucide-react";
 import { CxCoin } from "@/components/CxCoin";
 import { z } from "zod";
 import { useEffect, useState } from "react";
-import { useAppState, stats, coinLabel } from "@/lib/commitx-store";
+import { useAppState, stats, coinLabel, coinsForMinutes } from "@/lib/commitx-store";
 import { useAuth } from "@/lib/use-auth";
 
 const search = z.object({
@@ -56,7 +56,7 @@ function Success() {
   const { user, loading: authLoading } = useAuth();
   const guest = !authLoading && !user;
 
-  const coinsEarned = Math.floor(duration / 60);
+  const coinsEarned = coinsForMinutes(duration);
   const coins = Math.round(useCountUp(s.coinsEarned, 1100, 500));
   const streakValue = Math.round(useCountUp(s.streak, 800, 380));
   const focusMinutes = Math.round(useCountUp(s.totalMinutes, 1000, 460));
@@ -116,7 +116,7 @@ function Success() {
         >
           <span className="text-xl">🪙</span>
           <p className="text-sm font-medium text-foreground">
-            +{coinsEarned} Cx {coinsEarned === 1 ? "Coin" : "Coins"} earned
+            +{coinLabel(coinsEarned)} earned
           </p>
           <span
             aria-hidden
