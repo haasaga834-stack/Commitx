@@ -16,6 +16,7 @@ import { useAppState, stats } from "@/lib/commitx-store";
 import { Landing } from "@/components/Landing";
 import { hasNativeBridge } from "@/lib/native-session";
 import { useAuth } from "@/lib/use-auth";
+import { hasStoredAuthSession } from "@/lib/auth-cache";
 import { dailyMessage } from "@/lib/daily-message";
 import {
   usePlans,
@@ -64,8 +65,18 @@ function Home() {
     navigate({ to: "/auth" });
   }, [loading, user, native, navigate]);
 
-  // Signed-out web visitors see the public landing page immediately — the
-  // cached-session read is synchronous, so returning users never see it flash.
+  // Returning visitors whose session is still being restored see a quiet
+  // splash rather than a flash of the public landing page.
+  const restoring = loading && !user && hasStoredAuthSession();
+  if (restoring) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-background">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-hairline border-t-primary" />
+      </div>
+    );
+  }
+
+  // Signed-out web visitors see the public landing page immediately.
   if (!user && !native) return <Landing />;
   if (!user) {
     return (
