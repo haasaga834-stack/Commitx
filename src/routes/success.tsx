@@ -116,7 +116,7 @@ function Success() {
         >
           <span className="text-xl">🪙</span>
           <p className="text-sm font-medium text-foreground">
-            +{coinsEarned} Cx {coinsEarned === 1 ? "Coin" : "Coins"} earned
+            +{coinLabel(coinsEarned)} earned
           </p>
           <span
             aria-hidden
