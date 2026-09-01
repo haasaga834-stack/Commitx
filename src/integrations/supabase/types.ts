@@ -52,6 +52,11 @@ export type Database = {
           created_at: string
           duration_minutes: number
           failure_reason: string | null
+          focus_shield_enabled: boolean
+          focus_shield_ends_at: string | null
+          focus_shield_packages: string[]
+          focus_shield_started_at: string | null
+          focus_shield_status: string
           goal: string
           last_heartbeat: string
           mode: string
@@ -65,6 +70,11 @@ export type Database = {
           created_at?: string
           duration_minutes?: number
           failure_reason?: string | null
+          focus_shield_enabled?: boolean
+          focus_shield_ends_at?: string | null
+          focus_shield_packages?: string[]
+          focus_shield_started_at?: string | null
+          focus_shield_status?: string
           goal?: string
           last_heartbeat?: string
           mode?: string
@@ -78,6 +88,11 @@ export type Database = {
           created_at?: string
           duration_minutes?: number
           failure_reason?: string | null
+          focus_shield_enabled?: boolean
+          focus_shield_ends_at?: string | null
+          focus_shield_packages?: string[]
+          focus_shield_started_at?: string | null
+          focus_shield_status?: string
           goal?: string
           last_heartbeat?: string
           mode?: string
