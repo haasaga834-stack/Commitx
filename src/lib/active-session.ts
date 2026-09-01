@@ -93,7 +93,8 @@ export async function claimActiveDbSession(input: {
     mode: input.mode,
     started_at: new Date().toISOString(),
     status: "active",
-    last_heartbeat: new Date().toISOString(),
+    // last_heartbeat is seeded by the server clock (column default) — a skewed
+    // device clock must never look like a missed check-in.
     failure_reason: null,
     platform: hasNativeBridge() ? "native" : "web",
   });
