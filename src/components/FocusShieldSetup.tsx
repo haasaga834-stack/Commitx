@@ -1,0 +1,362 @@
+import { useEffect, useMemo, useState } from "react";
+import { Shield, ShieldCheck, Check, ChevronLeft } from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  FOCUS_SHIELD_GROUPS,
+  openUsageAccess,
+  requestShieldOverlayAccess,
+  shieldApps,
+  shieldHasOverlayAccess,
+  shieldHasUsageAccess,
+  shieldSupported,
+  type ShieldAppOption,
+} from "@/lib/focus-shield";
+
+type Step = "intro" | "apps" | "permissions" | "ready";
+
+export interface FocusShieldResult {
+  enabled: boolean;
+  packages: string[];
+  labels: string[];
+}
+
+/**
+ * Optional Focus Shield flow shown after Standard → Continue.
+ * Skipping keeps the existing Standard flow untouched.
+ */
+export function FocusShieldSetup({
+  open,
+  durationLabel,
+  starting,
+  onCancel,
+  onDone,
+}: {
+  open: boolean;
+  durationLabel: string;
+  starting?: boolean;
+  onCancel: () => void;
+  onDone: (result: FocusShieldResult) => void;
+}) {
+  const [step, setStep] = useState<Step>("intro");
+  const [selected, setSelected] = useState<string[]>([]);
+  const [apps, setApps] = useState<ShieldAppOption[]>([]);
+  const [usage, setUsage] = useState(false);
+  const [overlay, setOverlay] = useState(false);
+
+  const supported = shieldSupported();
+
+  useEffect(() => {
+    if (!open) {
+      setStep("intro");
+      setSelected([]);
+      return;
+    }
+    setApps(shieldApps());
+  }, [open]);
+
+  // Re-verify permissions whenever the user comes back from Android settings.
+  useEffect(() => {
+    if (!open || !supported) return;
+    const check = () => {
+      setUsage(shieldHasUsageAccess());
+      setOverlay(shieldHasOverlayAccess());
+    };
+    check();
+    const id = window.setInterval(check, 1000);
+    const onVis = () => check();
+    document.addEventListener("visibilitychange", onVis);
+    window.addEventListener("focus", onVis);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("focus", onVis);
+    };
+  }, [open, supported]);
+
+  /** Groups whose packages are actually installed on this device. */
+  const groups = useMemo(() => {
+    const installed = new Set(apps.map((a) => a.pkg));
+    return FOCUS_SHIELD_GROUPS.map((g) => {
+      const present = g.packages.filter((p) => installed.has(p));
+      const icon = apps.find((a) => present.includes(a.pkg))?.icon;
+      return { ...g, present, icon };
+    }).filter((g) => g.present.length > 0);
+  }, [apps]);
+
+  const allPackages = useMemo(() => groups.flatMap((g) => g.present), [groups]);
+  const selectedLabels = groups
+    .filter((g) => g.present.some((p) => selected.includes(p)))
+    .map((g) => g.label);
+
+  if (!open) return null;
+
+  const permissionsReady = usage && overlay;
+
+  function toggleGroup(present: string[]) {
+    setSelected((prev) => {
+      const on = present.some((p) => prev.includes(p));
+      return on ? prev.filter((p) => !present.includes(p)) : [...prev, ...present];
+    });
+  }
+
+  function finish() {
+    onDone({ enabled: true, packages: selected, labels: selectedLabels });
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 backdrop-blur-sm sm:items-center">
+      <div className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-4xl bg-card p-6 pb-10 shadow-lift sm:rounded-4xl sm:pb-6">
+        {step === "intro" && (
+          <>
+            <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-accent/15 text-primary">
+              <Shield className="h-5 w-5" />
+            </span>
+            <h2 className="mt-4 font-display text-xl font-semibold">Focus Shield</h2>
+            <p className="mt-2 text-sm text-foreground">
+              Want to block distracting apps during this commitment?
+            </p>
+            {!supported ? (
+              <p className="mt-4 rounded-2xl border border-hairline bg-background p-4 text-xs text-muted-foreground">
+                App blocking works in the CommitX Android app. On the web your session runs
+                normally — nothing on this device is blocked.
+              </p>
+            ) : (
+              <p className="mt-4 rounded-2xl border border-hairline bg-background p-4 text-xs text-muted-foreground">
+                Your apps stay installed and visible. While the session runs, opening a
+                blocked app shows a CommitX reminder instead. Access is restored
+                automatically the moment the session ends.
+              </p>
+            )}
+            <div className="mt-6 space-y-3">
+              <button
+                disabled={!supported}
+                onClick={() => setStep("apps")}
+                className="w-full rounded-full bg-primary px-6 py-4 text-sm font-medium text-primary-foreground disabled:opacity-50"
+              >
+                Turn On Focus Shield
+              </button>
+              <button
+                onClick={() => onDone({ enabled: false, packages: [], labels: [] })}
+                className="w-full rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground"
+              >
+                Skip for now
+              </button>
+            </div>
+          </>
+        )}
+
+        {step === "apps" && (
+          <>
+            <Header title="Choose apps to block" onBack={() => setStep("intro")} />
+            {groups.length === 0 ? (
+              <p className="mt-4 rounded-2xl border border-hairline bg-background p-4 text-xs text-muted-foreground">
+                None of the supported apps were found on this device.
+              </p>
+            ) : (
+              <>
+                <div className="mt-4 flex gap-2">
+                  <button
+                    onClick={() => setSelected(allPackages)}
+                    className="rounded-full border border-hairline bg-background px-4 py-2 text-xs font-medium"
+                  >
+                    Select All
+                  </button>
+                  <button
+                    onClick={() => setSelected([])}
+                    className="rounded-full border border-hairline bg-background px-4 py-2 text-xs font-medium"
+                  >
+                    Clear All
+                  </button>
+                </div>
+                <ul className="mt-4 space-y-2">
+                  {groups.map((g) => {
+                    const on = g.present.some((p) => selected.includes(p));
+                    return (
+                      <li key={g.id}>
+                        <button
+                          onClick={() => toggleGroup(g.present)}
+                          className={cn(
+                            "flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition-colors",
+                            on ? "border-primary bg-accent/10" : "border-hairline bg-background",
+                          )}
+                        >
+                          {g.icon ? (
+                            <img
+                              src={g.icon}
+                              alt=""
+                              className="h-9 w-9 shrink-0 rounded-xl object-contain"
+                            />
+                          ) : (
+                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-secondary text-xs font-semibold">
+                              {g.label.slice(0, 1)}
+                            </span>
+                          )}
+                          <span className="flex-1 text-sm font-medium">{g.label}</span>
+                          <span
+                            className={cn(
+                              "flex h-6 w-6 items-center justify-center rounded-full border",
+                              on
+                                ? "border-primary bg-primary text-primary-foreground"
+                                : "border-hairline",
+                            )}
+                          >
+                            {on && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </>
+            )}
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <button
+                onClick={onCancel}
+                className="rounded-2xl bg-secondary px-4 py-3 text-sm font-medium text-secondary-foreground"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={selected.length === 0}
+                onClick={() => setStep(permissionsReady ? "ready" : "permissions")}
+                className="rounded-2xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
+              >
+                Continue
+              </button>
+            </div>
+          </>
+        )}
+
+        {step === "permissions" && (
+          <>
+            <Header title="Two permissions needed" onBack={() => setStep("apps")} />
+            <p className="mt-2 text-sm text-muted-foreground">
+              Focus Shield can only protect your session with your explicit permission.
+              Nothing is blocked until both are granted.
+            </p>
+
+            <PermissionRow
+              granted={usage}
+              title="Usage access"
+              why="Lets CommitX see which app just came to the foreground, so it knows when a blocked app is opened. CommitX never reads your content and never uploads this data."
+              action="Open Usage Access settings"
+              onAction={openUsageAccess}
+            />
+            <PermissionRow
+              granted={overlay}
+              title="Display over other apps"
+              why="Lets CommitX show the Focus Shield reminder on top of a blocked app instead of letting it open."
+              action="Open display permission"
+              onAction={requestShieldOverlayAccess}
+            />
+
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <button
+                onClick={() => onDone({ enabled: false, packages: [], labels: [] })}
+                className="rounded-2xl bg-secondary px-4 py-3 text-sm font-medium text-secondary-foreground"
+              >
+                Skip Shield
+              </button>
+              <button
+                disabled={!permissionsReady}
+                onClick={() => setStep("ready")}
+                className="rounded-2xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
+              >
+                Continue
+              </button>
+            </div>
+          </>
+        )}
+
+        {step === "ready" && (
+          <>
+            <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-accent/15 text-primary">
+              <ShieldCheck className="h-5 w-5" />
+            </span>
+            <h2 className="mt-4 font-display text-xl font-semibold">Focus Shield Ready</h2>
+            <dl className="mt-4 space-y-2 rounded-2xl border border-hairline bg-background p-4 text-sm">
+              <Row label="Duration" value={durationLabel} />
+              <Row label="Mode" value="Standard" />
+              <Row label="Focus Shield" value="ON" />
+              <Row
+                label="Blocked apps"
+                value={selectedLabels.join(", ") || "None"}
+              />
+            </dl>
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setStep("apps")}
+                className="rounded-2xl bg-secondary px-4 py-3 text-sm font-medium text-secondary-foreground"
+              >
+                Change apps
+              </button>
+              <button
+                disabled={starting}
+                onClick={finish}
+                className="rounded-2xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground disabled:opacity-60"
+              >
+                {starting ? "Starting…" : "Start Commitment"}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Header({ title, onBack }: { title: string; onBack: () => void }) {
+  return (
+    <div className="flex items-center gap-3">
+      <button
+        onClick={onBack}
+        className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-secondary"
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </button>
+      <h2 className="font-display text-lg font-semibold">{title}</h2>
+    </div>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-start justify-between gap-4">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="text-right font-medium">{value}</dd>
+    </div>
+  );
+}
+
+function PermissionRow({
+  granted,
+  title,
+  why,
+  action,
+  onAction,
+}: {
+  granted: boolean;
+  title: string;
+  why: string;
+  action: string;
+  onAction: () => void;
+}) {
+  return (
+    <div className="mt-4 rounded-2xl border border-hairline bg-background p-4">
+      <p className="flex items-center gap-2 text-sm font-medium">
+        {granted && <Check className="h-4 w-4 text-primary" strokeWidth={3} />}
+        {title}
+        {granted && <span className="text-xs font-normal text-primary">Granted</span>}
+      </p>
+      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{why}</p>
+      {!granted && (
+        <button
+          onClick={onAction}
+          className="mt-3 w-full rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground"
+        >
+          {action}
+        </button>
+      )}
+    </div>
+  );
+}
