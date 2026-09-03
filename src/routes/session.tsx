@@ -153,6 +153,9 @@ function Session() {
     setNativeSessionLock(false);
     setNativeVerifiedModeActive(false);
     hideSessionProgress();
+    stopShield();
+    clearShieldPlan();
+
     void releaseActiveDbSession();
     navigate({ to: "/", replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
