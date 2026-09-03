@@ -660,9 +660,11 @@ function Commit() {
         >
           {starting
             ? "Starting…"
-            : mode === "verified" && !confirmVerified
+            : (mode === "verified" && !confirmVerified) ||
+                (mode === "standard" && !shieldDecided)
               ? "Continue"
               : "Commit Now"}
+
         </button>
       </div>
 
