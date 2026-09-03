@@ -340,13 +340,27 @@ function Commit() {
   ) : null;
 
   const picker = (
-    <ThemePicker
-      open={themeOpen}
-      starting={starting}
-      onCancel={() => setThemeOpen(false)}
-      onConfirm={(theme) => void startWithTheme(theme)}
-    />
+    <>
+      <FocusShieldSetup
+        open={shieldOpen}
+        durationLabel={duration ? fmtDuration(duration) : "Not set"}
+        onCancel={() => setShieldOpen(false)}
+        onDone={(result) => {
+          setShieldPlan(result);
+          setShieldDecided(true);
+          setShieldOpen(false);
+          setThemeOpen(true);
+        }}
+      />
+      <ThemePicker
+        open={themeOpen}
+        starting={starting}
+        onCancel={() => setThemeOpen(false)}
+        onConfirm={(theme) => void startWithTheme(theme)}
+      />
+    </>
   );
+
 
   if (isTablet) {
     return (
