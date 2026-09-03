@@ -45,7 +45,16 @@ import {
   setNativeSessionLock,
   setNativeVerifiedModeActive,
 } from "@/lib/native-session";
-import { BellOff, Leaf, X } from "lucide-react";
+import { BellOff, Leaf, Shield, X } from "lucide-react";
+import {
+  clearShieldPlan,
+  readShieldPlan,
+  recordShieldState,
+  shieldActive,
+  startShield,
+  stopShield,
+} from "@/lib/focus-shield";
+
 
 import { showSessionProgress, hideSessionProgress } from "@/lib/native-notifications";
 import { z } from "zod";
