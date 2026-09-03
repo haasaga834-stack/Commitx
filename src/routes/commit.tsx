@@ -22,6 +22,9 @@ import { ThemePicker } from "@/components/ThemePicker";
 import type { SessionThemeId } from "@/lib/session-themes";
 import { actionErrorMessage } from "@/lib/connectivity";
 import { useAuth } from "@/lib/use-auth";
+import { FocusShieldSetup, type FocusShieldResult } from "@/components/FocusShieldSetup";
+import { writeShieldPlan, clearShieldPlan } from "@/lib/focus-shield";
+
 
 const commitSearch = z.object({
   /** "1" when arriving from Swipe to Start — duration is preloaded from the plan. */
