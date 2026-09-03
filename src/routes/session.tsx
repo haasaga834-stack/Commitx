@@ -855,6 +855,10 @@ function LiveSession() {
     setNativeVerifiedModeActive(false);
     clearActiveVerifiedSession();
     hideSessionProgress();
+    // Focus Shield always releases the moment a session ends, however it ended.
+    stopShield();
+    setShieldOn(false);
+
     cancelWellnessSounds(wellnessSessionKey);
     // Permanent end marker + server slot release: the timer can never be
     // restarted or resurrected by back navigation, refresh or app restart.
