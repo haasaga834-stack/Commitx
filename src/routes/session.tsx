@@ -933,6 +933,13 @@ function LiveSession() {
               Leaving CommitX fails this session
             </p>
           )}
+          {!isVerified && shieldOn && (
+            <p className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-4 py-1.5 text-[11px] font-medium uppercase tracking-widest text-primary">
+              <Shield className="h-3.5 w-3.5" />
+              Focus Shield ON
+            </p>
+          )}
+
           {onBreak && (
             <p className="mt-6 rounded-full bg-primary/10 px-4 py-1.5 text-[11px] uppercase tracking-widest text-primary">
               Wellness break · timer paused
