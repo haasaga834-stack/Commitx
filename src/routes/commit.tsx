@@ -111,7 +111,7 @@ function Commit() {
 
   const affordable = useMemo(() => canAfford(value, state.coins), [value, state.coins]);
 
-  /** Validates the terms, then opens the theme selector. */
+  /** Validates the terms, then opens Focus Shield (Standard) or the theme selector. */
   function begin() {
     if (starting) return;
     if (!validate()) return;
@@ -124,9 +124,17 @@ function Commit() {
         setVerifiedWarn(true);
         return;
       }
+      setThemeOpen(true);
+      return;
+    }
+    // Standard only: offer Focus Shield once, then continue the normal flow.
+    if (!shieldDecided) {
+      setShieldOpen(true);
+      return;
     }
     setThemeOpen(true);
   }
+
 
   function validate() {
     if (!duration) {
