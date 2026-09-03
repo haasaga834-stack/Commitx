@@ -609,9 +609,12 @@ function Commit() {
               onClick={() => {
                 setMode("verified");
                 setConfirmVerified(false);
+                setShieldDecided(false);
+                setShieldPlan({ enabled: false, packages: [], labels: [] });
                 setVerifiedWarn(true);
               }}
             />
+
           </div>
 
           {mode === "verified" && native && (
