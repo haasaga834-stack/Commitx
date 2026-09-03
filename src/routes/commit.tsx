@@ -73,6 +73,15 @@ function Commit() {
   const [starting, setStarting] = useState(false);
   // A session may only begin once a theme has been picked and confirmed.
   const [themeOpen, setThemeOpen] = useState(false);
+  // Focus Shield (Standard only) — optional, decided once per commitment.
+  const [shieldOpen, setShieldOpen] = useState(false);
+  const [shieldDecided, setShieldDecided] = useState(false);
+  const [shieldPlan, setShieldPlan] = useState<FocusShieldResult>({
+    enabled: false,
+    packages: [],
+    labels: [],
+  });
+
 
   // The study plan is the single source of truth for commitment time.
   const nextPlan = useMemo(() => upcomingPlan(plans), [plans]);
