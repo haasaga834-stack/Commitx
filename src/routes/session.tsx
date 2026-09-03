@@ -174,6 +174,54 @@ function LiveSession() {
   const breaksApply = wellnessBreaksApply(duration);
   const isVerified = mode === "verified";
 
+  /**
+   * Focus Shield — Standard sessions only. Protection is enforced natively on
+   * Android; `shieldOn` is only true while the native layer confirms it, so the
+   * badge never claims blocking that isn't actually happening. Losing the shield
+   * never fails the session.
+   */
+  const [shieldOn, setShieldOn] = useState(false);
+  useEffect(() => {
+    if (isVerified) return;
+    const plan = readShieldPlan();
+    clearShieldPlan();
+    if (!plan?.enabled || !plan.packages.length) return;
+
+    const endsAt = Date.now() + duration * 60 * 1000;
+    const ok = startShield(plan.packages, endsAt);
+    const live = ok && shieldActive();
+    setShieldOn(live);
+    if (!guestRef.current) {
+      void recordShieldState({
+        enabled: true,
+        status: live ? "active" : "unavailable",
+        packages: plan.packages,
+        startedAt: live ? Date.now() : null,
+        endsAt: live ? endsAt : null,
+      });
+    }
+    if (!live) return;
+
+    // Keep the badge honest if Android stops protection for any reason.
+    const id = window.setInterval(() => setShieldOn(shieldActive()), 5000);
+    return () => {
+      window.clearInterval(id);
+      stopShield();
+      if (!guestRef.current) {
+        void recordShieldState({
+          enabled: true,
+          status: "ended",
+          packages: plan.packages,
+          startedAt: null,
+          endsAt: null,
+        });
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+
+
   // Verified sessions require Do Not Disturb before the timer may start.
   const [dndBlocked, setDndBlocked] = useState<boolean>(() => {
     if (typeof window === "undefined" || !isVerified) return false;
