@@ -183,7 +183,14 @@ function Commit() {
       return;
     }
     setStarting(true);
+    // Focus Shield is Standard-only; Verified sessions never carry a plan.
+    if (mode === "standard" && shieldPlan.enabled && shieldPlan.packages.length) {
+      writeShieldPlan(shieldPlan);
+    } else {
+      clearShieldPlan();
+    }
     try {
+
       // Only one active session per user — the database is the source of truth.
       const claim = await claimActiveDbSession({
         goal: finalGoal,
