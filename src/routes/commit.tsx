@@ -394,8 +394,11 @@ function Commit() {
         onMode={(m) => {
           setMode(m);
           setConfirmVerified(false);
+          setShieldDecided(false);
+          setShieldPlan({ enabled: false, packages: [], labels: [] });
           if (m === "verified") setVerifiedWarn(true);
         }}
+
         confirmVerified={confirmVerified}
         dndReady={dndReady}
         dndOn={dndOn}
