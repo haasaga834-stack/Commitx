@@ -45,7 +45,16 @@ import {
   setNativeSessionLock,
   setNativeVerifiedModeActive,
 } from "@/lib/native-session";
-import { BellOff, Leaf, X } from "lucide-react";
+import { BellOff, Leaf, Shield, X } from "lucide-react";
+import {
+  clearShieldPlan,
+  readShieldPlan,
+  recordShieldState,
+  shieldActive,
+  startShield,
+  stopShield,
+} from "@/lib/focus-shield";
+
 
 import { showSessionProgress, hideSessionProgress } from "@/lib/native-notifications";
 import { z } from "zod";
@@ -144,6 +153,9 @@ function Session() {
     setNativeSessionLock(false);
     setNativeVerifiedModeActive(false);
     hideSessionProgress();
+    stopShield();
+    clearShieldPlan();
+
     void releaseActiveDbSession();
     navigate({ to: "/", replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -164,6 +176,54 @@ function LiveSession() {
   // Sessions longer than an hour get a mandatory wellness break every 60 min.
   const breaksApply = wellnessBreaksApply(duration);
   const isVerified = mode === "verified";
+
+  /**
+   * Focus Shield — Standard sessions only. Protection is enforced natively on
+   * Android; `shieldOn` is only true while the native layer confirms it, so the
+   * badge never claims blocking that isn't actually happening. Losing the shield
+   * never fails the session.
+   */
+  const [shieldOn, setShieldOn] = useState(false);
+  useEffect(() => {
+    if (isVerified) return;
+    const plan = readShieldPlan();
+    clearShieldPlan();
+    if (!plan?.enabled || !plan.packages.length) return;
+
+    const endsAt = Date.now() + duration * 60 * 1000;
+    const ok = startShield(plan.packages, endsAt);
+    const live = ok && shieldActive();
+    setShieldOn(live);
+    if (!guestRef.current) {
+      void recordShieldState({
+        enabled: true,
+        status: live ? "active" : "unavailable",
+        packages: plan.packages,
+        startedAt: live ? Date.now() : null,
+        endsAt: live ? endsAt : null,
+      });
+    }
+    if (!live) return;
+
+    // Keep the badge honest if Android stops protection for any reason.
+    const id = window.setInterval(() => setShieldOn(shieldActive()), 5000);
+    return () => {
+      window.clearInterval(id);
+      stopShield();
+      if (!guestRef.current) {
+        void recordShieldState({
+          enabled: true,
+          status: "ended",
+          packages: plan.packages,
+          startedAt: null,
+          endsAt: null,
+        });
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+
 
   // Verified sessions require Do Not Disturb before the timer may start.
   const [dndBlocked, setDndBlocked] = useState<boolean>(() => {
@@ -798,6 +858,10 @@ function LiveSession() {
     setNativeVerifiedModeActive(false);
     clearActiveVerifiedSession();
     hideSessionProgress();
+    // Focus Shield always releases the moment a session ends, however it ended.
+    stopShield();
+    setShieldOn(false);
+
     cancelWellnessSounds(wellnessSessionKey);
     // Permanent end marker + server slot release: the timer can never be
     // restarted or resurrected by back navigation, refresh or app restart.
@@ -933,6 +997,13 @@ function LiveSession() {
               Leaving CommitX fails this session
             </p>
           )}
+          {!isVerified && shieldOn && (
+            <p className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-4 py-1.5 text-[11px] font-medium uppercase tracking-widest text-primary">
+              <Shield className="h-3.5 w-3.5" />
+              Focus Shield ON
+            </p>
+          )}
+
           {onBreak && (
             <p className="mt-6 rounded-full bg-primary/10 px-4 py-1.5 text-[11px] uppercase tracking-widest text-primary">
               Wellness break · timer paused

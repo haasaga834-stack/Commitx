@@ -22,6 +22,9 @@ import { ThemePicker } from "@/components/ThemePicker";
 import type { SessionThemeId } from "@/lib/session-themes";
 import { actionErrorMessage } from "@/lib/connectivity";
 import { useAuth } from "@/lib/use-auth";
+import { FocusShieldSetup, type FocusShieldResult } from "@/components/FocusShieldSetup";
+import { writeShieldPlan, clearShieldPlan } from "@/lib/focus-shield";
+
 
 const commitSearch = z.object({
   /** "1" when arriving from Swipe to Start — duration is preloaded from the plan. */
@@ -73,6 +76,15 @@ function Commit() {
   const [starting, setStarting] = useState(false);
   // A session may only begin once a theme has been picked and confirmed.
   const [themeOpen, setThemeOpen] = useState(false);
+  // Focus Shield (Standard only) — optional, decided once per commitment.
+  const [shieldOpen, setShieldOpen] = useState(false);
+  const [shieldDecided, setShieldDecided] = useState(false);
+  const [shieldPlan, setShieldPlan] = useState<FocusShieldResult>({
+    enabled: false,
+    packages: [],
+    labels: [],
+  });
+
 
   // The study plan is the single source of truth for commitment time.
   const nextPlan = useMemo(() => upcomingPlan(plans), [plans]);
@@ -111,7 +123,7 @@ function Commit() {
 
   const affordable = useMemo(() => canAfford(value, state.coins), [value, state.coins]);
 
-  /** Validates the terms, then opens the theme selector. */
+  /** Validates the terms, then opens Focus Shield (Standard) or the theme selector. */
   function begin() {
     if (starting) return;
     if (!validate()) return;
@@ -124,9 +136,17 @@ function Commit() {
         setVerifiedWarn(true);
         return;
       }
+      setThemeOpen(true);
+      return;
+    }
+    // Standard only: offer Focus Shield once, then continue the normal flow.
+    if (!shieldDecided) {
+      setShieldOpen(true);
+      return;
     }
     setThemeOpen(true);
   }
+
 
   function validate() {
     if (!duration) {
@@ -163,7 +183,14 @@ function Commit() {
       return;
     }
     setStarting(true);
+    // Focus Shield is Standard-only; Verified sessions never carry a plan.
+    if (mode === "standard" && shieldPlan.enabled && shieldPlan.packages.length) {
+      writeShieldPlan(shieldPlan);
+    } else {
+      clearShieldPlan();
+    }
     try {
+
       // Only one active session per user — the database is the source of truth.
       const claim = await claimActiveDbSession({
         goal: finalGoal,
@@ -320,13 +347,27 @@ function Commit() {
   ) : null;
 
   const picker = (
-    <ThemePicker
-      open={themeOpen}
-      starting={starting}
-      onCancel={() => setThemeOpen(false)}
-      onConfirm={(theme) => void startWithTheme(theme)}
-    />
+    <>
+      <FocusShieldSetup
+        open={shieldOpen}
+        durationLabel={duration ? fmtDuration(duration) : "Not set"}
+        onCancel={() => setShieldOpen(false)}
+        onDone={(result) => {
+          setShieldPlan(result);
+          setShieldDecided(true);
+          setShieldOpen(false);
+          setThemeOpen(true);
+        }}
+      />
+      <ThemePicker
+        open={themeOpen}
+        starting={starting}
+        onCancel={() => setThemeOpen(false)}
+        onConfirm={(theme) => void startWithTheme(theme)}
+      />
+    </>
   );
+
 
   if (isTablet) {
     return (
@@ -353,8 +394,11 @@ function Commit() {
         onMode={(m) => {
           setMode(m);
           setConfirmVerified(false);
+          setShieldDecided(false);
+          setShieldPlan({ enabled: false, packages: [], labels: [] });
           if (m === "verified") setVerifiedWarn(true);
         }}
+
         confirmVerified={confirmVerified}
         dndReady={dndReady}
         dndOn={dndOn}
@@ -565,9 +609,12 @@ function Commit() {
               onClick={() => {
                 setMode("verified");
                 setConfirmVerified(false);
+                setShieldDecided(false);
+                setShieldPlan({ enabled: false, packages: [], labels: [] });
                 setVerifiedWarn(true);
               }}
             />
+
           </div>
 
           {mode === "verified" && native && (
@@ -613,9 +660,11 @@ function Commit() {
         >
           {starting
             ? "Starting…"
-            : mode === "verified" && !confirmVerified
+            : (mode === "verified" && !confirmVerified) ||
+                (mode === "standard" && !shieldDecided)
               ? "Continue"
               : "Commit Now"}
+
         </button>
       </div>
 
