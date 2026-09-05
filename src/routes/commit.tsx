@@ -79,6 +79,12 @@ function Commit() {
   // Focus Shield (Standard only) — optional, decided once per commitment.
   const [shieldOpen, setShieldOpen] = useState(false);
   const [shieldDecided, setShieldDecided] = useState(false);
+  // Focus Shield is only offered where real device-level blocking exists.
+  const [shieldAvailable, setShieldAvailable] = useState(false);
+  useEffect(() => {
+    setShieldAvailable(shieldSupported());
+  }, []);
+
   const [shieldPlan, setShieldPlan] = useState<FocusShieldResult>({
     enabled: false,
     packages: [],
