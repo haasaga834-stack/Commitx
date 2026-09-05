@@ -23,7 +23,7 @@ import type { SessionThemeId } from "@/lib/session-themes";
 import { actionErrorMessage } from "@/lib/connectivity";
 import { useAuth } from "@/lib/use-auth";
 import { FocusShieldSetup, type FocusShieldResult } from "@/components/FocusShieldSetup";
-import { writeShieldPlan, clearShieldPlan } from "@/lib/focus-shield";
+import { writeShieldPlan, clearShieldPlan, shieldSupported } from "@/lib/focus-shield";
 
 
 const commitSearch = z.object({
@@ -79,6 +79,12 @@ function Commit() {
   // Focus Shield (Standard only) — optional, decided once per commitment.
   const [shieldOpen, setShieldOpen] = useState(false);
   const [shieldDecided, setShieldDecided] = useState(false);
+  // Focus Shield is only offered where real device-level blocking exists.
+  const [shieldAvailable, setShieldAvailable] = useState(false);
+  useEffect(() => {
+    setShieldAvailable(shieldSupported());
+  }, []);
+
   const [shieldPlan, setShieldPlan] = useState<FocusShieldResult>({
     enabled: false,
     packages: [],
@@ -140,7 +146,7 @@ function Commit() {
       return;
     }
     // Standard only: offer Focus Shield once, then continue the normal flow.
-    if (!shieldDecided) {
+    if (shieldAvailable && !shieldDecided) {
       setShieldOpen(true);
       return;
     }
@@ -661,7 +667,7 @@ function Commit() {
           {starting
             ? "Starting…"
             : (mode === "verified" && !confirmVerified) ||
-                (mode === "standard" && !shieldDecided)
+                (mode === "standard" && shieldAvailable && !shieldDecided)
               ? "Continue"
               : "Commit Now"}
 

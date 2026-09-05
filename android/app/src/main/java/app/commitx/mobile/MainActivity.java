@@ -1064,7 +1064,77 @@ public class MainActivity extends Activity {
             ScreenTimeTracker.setLimitMinutes(MainActivity.this, minutes);
             ScreenTimeTracker.checkLimit(MainActivity.this);
         }
+
+        /* ---------------------------- Focus Shield --------------------------- */
+
+        @JavascriptInterface
+        public boolean focusShieldSupported() {
+            return FocusShieldStore.supported();
+        }
+
+        @JavascriptInterface
+        public boolean focusShieldHasUsageAccess() {
+            return FocusShieldStore.hasUsageAccess(MainActivity.this);
+        }
+
+        @JavascriptInterface
+        public boolean focusShieldHasOverlayAccess() {
+            return FocusShieldStore.hasOverlayAccess(MainActivity.this);
+        }
+
+        @JavascriptInterface
+        public void requestFocusShieldOverlayAccess() {
+            runOnUiThread(() -> {
+                try {
+                    startActivity(new Intent(
+                            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                            Uri.parse("package:" + getPackageName()))
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                } catch (Throwable t) {
+                    try {
+                        startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                    } catch (Throwable ignored) {}
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public String focusShieldApps() {
+            return FocusShieldStore.installedAppsJson(MainActivity.this);
+        }
+
+        /** Returns true only when native protection is genuinely running. */
+        @JavascriptInterface
+        public boolean focusShieldStart(String packagesJson, double endsAtMs) {
+            java.util.Set<String> packages = new java.util.LinkedHashSet<>();
+            if (packagesJson != null) {
+                for (String part : packagesJson.split("[\\[\\]\",\\s]+")) {
+                    if (part != null && part.contains(".")) packages.add(part);
+                }
+            }
+            if (packages.isEmpty()) return false;
+            if (!FocusShieldStore.hasUsageAccess(MainActivity.this)
+                    || !FocusShieldStore.hasOverlayAccess(MainActivity.this)) {
+                return false;
+            }
+            FocusShieldStore.start(MainActivity.this, packages, (long) endsAtMs);
+            FocusShieldService.start(MainActivity.this);
+            return FocusShieldStore.isActive(MainActivity.this);
+        }
+
+        @JavascriptInterface
+        public void focusShieldStop() {
+            FocusShieldStore.stop(MainActivity.this);
+            FocusShieldService.stop(MainActivity.this);
+        }
+
+        @JavascriptInterface
+        public boolean focusShieldActive() {
+            return FocusShieldStore.isActive(MainActivity.this);
+        }
     }
+
 
     /** Play Store fallback when the in-app review flow is unavailable. */
     private void openPlayStoreListing() {

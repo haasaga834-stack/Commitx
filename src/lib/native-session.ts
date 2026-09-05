@@ -42,6 +42,16 @@ declare global {
       screenTimeLimit?: () => number;
       setScreenTimeLimit?: (minutes: number) => void;
       rateApp?: () => void;
+      /* Focus Shield (Standard mode only, native Android) */
+      focusShieldSupported?: () => boolean;
+      focusShieldHasUsageAccess?: () => boolean;
+      focusShieldHasOverlayAccess?: () => boolean;
+      requestFocusShieldOverlayAccess?: () => void;
+      focusShieldApps?: () => string;
+      focusShieldStart?: (packagesJson: string, endsAtMs: number) => boolean;
+      focusShieldStop?: () => void;
+      focusShieldActive?: () => boolean;
+
     };
     CommitXSession?: {
       onAndroidBack?: () => void;
