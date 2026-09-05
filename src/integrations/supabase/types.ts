@@ -196,6 +196,27 @@ export type Database = {
           },
         ]
       }
+      leaderboard_totals: {
+        Row: {
+          display_name: string
+          total_minutes: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          display_name?: string
+          total_minutes?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          display_name?: string
+          total_minutes?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age: string
@@ -505,6 +526,10 @@ export type Database = {
       leave_study_lobby: {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
+      }
+      refresh_leaderboard_total: {
+        Args: { _user_id: string }
+        Returns: undefined
       }
       release_stale_commitments: {
         Args: { _user_id: string }
