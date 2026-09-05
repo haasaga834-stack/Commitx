@@ -74,6 +74,28 @@
             </intent-filter>
         </activity>
 
+        <!-- Focus Shield reminder screen (shown over a blocked app). -->
+        <activity
+            android:name=".FocusShieldActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@style/AppTheme" />
+
+        <!-- Watches the foreground app while Focus Shield is on. -->
+        <service
+            android:name=".FocusShieldService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Keeps a user-started focus commitment protected by reminding the user when a self-selected app is opened." />
+        </service>
+
+
+
         <receiver
             android:name=".TodoActionReceiver"
             android:exported="false">
