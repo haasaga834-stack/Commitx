@@ -25,36 +25,33 @@ import java.util.Set;
 public class FocusShieldService extends Service {
     private static final String CHANNEL = "commitx_focus_shield";
     private static final int NOTIF_ID = 4711;
-    private static final long POLL_MS = 900L;
-    /** Don't re-show the reminder for the same app more than once a second. */
-    private static final long REPROMPT_MS = 1200L;
+    private static final long POLL_MS = 700L;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
-    private long lastPrompt = 0L;
-    private String lastPromptPkg = null;
+    private FocusShieldOverlay overlay;
 
     private final Runnable tick = new Runnable() {
         @Override
         public void run() {
             if (!FocusShieldStore.isActive(FocusShieldService.this)) {
+                if (overlay != null) overlay.hide();
                 stopSelf();
                 return;
             }
             String fg = foregroundPackage();
-            if (fg != null && FocusShieldStore.blockedPackages(FocusShieldService.this).contains(fg)) {
-                long now = System.currentTimeMillis();
-                if (!fg.equals(lastPromptPkg) || now - lastPrompt > REPROMPT_MS) {
-                    lastPrompt = now;
-                    lastPromptPkg = fg;
-                    FocusShieldActivity.show(FocusShieldService.this, fg,
-                            FocusShieldStore.endsAt(FocusShieldService.this));
+            boolean blocked = fg != null
+                    && FocusShieldStore.blockedPackages(FocusShieldService.this).contains(fg);
+            if (overlay != null) {
+                if (blocked) {
+                    overlay.show(fg, FocusShieldStore.endsAt(FocusShieldService.this));
+                } else if (fg != null && overlay.isShowing()) {
+                    overlay.hide();
                 }
-            } else if (fg != null && !fg.equals(lastPromptPkg)) {
-                lastPromptPkg = null;
             }
             handler.postDelayed(this, POLL_MS);
         }
     };
+
 
     static void start(Context ctx) {
         Intent intent = new Intent(ctx, FocusShieldService.class);
