@@ -73,20 +73,25 @@ public class FocusShieldService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        overlay = new FocusShieldOverlay(this);
         startForegroundSafely();
         handler.post(tick);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        handler.removeCallbacks(tick);
+        handler.post(tick);
         return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
         handler.removeCallbacksAndMessages(null);
+        if (overlay != null) overlay.hide();
         super.onDestroy();
     }
+
 
     @Override
     public IBinder onBind(Intent intent) {
