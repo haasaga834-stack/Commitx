@@ -140,7 +140,7 @@ public class FocusShieldService extends Service {
             UsageStatsManager usm = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
             if (usm == null) return null;
             long end = System.currentTimeMillis();
-            UsageEvents events = usm.queryEvents(end - 10_000L, end);
+            UsageEvents events = usm.queryEvents(end - 60_000L, end);
             UsageEvents.Event event = new UsageEvents.Event();
             String last = null;
             while (events != null && events.hasNextEvent()) {
