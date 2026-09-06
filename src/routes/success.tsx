@@ -109,7 +109,7 @@ function Success() {
         {goal}
       </p>
 
-      {coinsEarned > 0 && (
+      {!guest && coinsEarned > 0 && (
         <div
           className="relative mt-6 flex items-center gap-3 overflow-hidden rounded-full border border-accent/40 bg-card px-5 py-3 shadow-soft animate-coin-rise"
           style={{ animationDelay: "320ms" }}
