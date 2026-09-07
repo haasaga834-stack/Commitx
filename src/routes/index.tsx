@@ -53,6 +53,28 @@ function greeting() {
   return "Good evening";
 }
 
+/**
+ * Full-screen startup cover. Rendered by the server on top of the landing
+ * page so the very first pixels are always this calm splash — signed-in
+ * users never see the public landing page flash before their dashboard.
+ */
+function StartupSplash({ fading = false }: { fading?: boolean }) {
+  return (
+    <div
+      aria-hidden
+      className={cn(
+        "fixed inset-0 z-[100] flex flex-col items-center justify-center gap-5 bg-background transition-opacity duration-300",
+        fading && "pointer-events-none opacity-0",
+      )}
+    >
+      <span className="flex h-16 w-16 items-center justify-center rounded-3xl bg-primary font-display text-2xl font-semibold text-primary-foreground shadow-lift">
+        Cx
+      </span>
+      <span className="h-6 w-6 animate-spin rounded-full border-2 border-hairline border-t-primary" />
+    </div>
+  );
+}
+
 function Home() {
   const isTablet = useIsTablet();
   const navigate = useNavigate();
@@ -60,33 +82,40 @@ function Home() {
   // The Android app keeps its existing behaviour: signed-out users go to /auth.
   const native = hasNativeBridge();
 
+  // Gate everything on hydration: the server has no session, so its HTML is
+  // "landing + splash cover". The first client render matches it exactly, and
+  // only then do we decide between dashboard, landing or /auth.
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
+
   useEffect(() => {
-    if (loading || user || !native) return;
+    if (!hydrated || loading || user || !native) return;
     navigate({ to: "/auth" });
-  }, [loading, user, native, navigate]);
+  }, [hydrated, loading, user, native, navigate]);
 
-  // Returning visitors whose session is still being restored see a quiet
-  // splash rather than a flash of the public landing page.
+  if (!hydrated) {
+    return (
+      <>
+        <Landing />
+        <StartupSplash />
+      </>
+    );
+  }
+
+  // Returning visitors whose session is still being restored keep the splash.
   const restoring = loading && !user && hasStoredAuthSession();
-  if (restoring) {
-    return (
-      <div className="flex min-h-dvh items-center justify-center bg-background">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-hairline border-t-primary" />
-      </div>
-    );
-  }
+  if (restoring) return <StartupSplash />;
 
-  // Signed-out web visitors see the public landing page immediately.
-  if (!user && !native) return <Landing />;
-  if (!user) {
+  // Signed-out web visitors: reveal the landing page under a fading splash.
+  if (!user && !native) {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-background">
-        {loading ? (
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-hairline border-t-primary" />
-        ) : null}
-      </div>
+      <>
+        <Landing />
+        <StartupSplash fading />
+      </>
     );
   }
+  if (!user) return <StartupSplash fading={!loading} />;
 
   if (isTablet) return <TabletHome />;
   return <MobileHome />;
