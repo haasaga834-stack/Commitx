@@ -119,11 +119,6 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head suppressHydrationWarning>
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4902262012947970"
-          crossOrigin="anonymous"
-        />
         <HeadContent />
       </head>
       <body>
