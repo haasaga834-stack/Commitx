@@ -187,6 +187,7 @@ export function Landing() {
   const [modal, setModal] = useState<Mode | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
