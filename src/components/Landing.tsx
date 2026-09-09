@@ -2,6 +2,8 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowRight, Menu, X } from "lucide-react";
 import heroImage from "@/assets/landing-hero.jpg";
+import { LandingHourglass } from "@/components/LandingHourglass";
+import { FocusGarden } from "@/components/FocusGarden";
 
 const INDUS_APPSTORE_URL = "https://indusapp.store/nnbmdn4h";
 
@@ -85,10 +87,10 @@ function PrimaryButton({
     <button
       type="button"
       onClick={onClick}
-      className={`group inline-flex w-full items-center justify-center gap-2.5 rounded-full px-7 py-4 text-sm font-medium transition-all duration-300 sm:w-auto ${
+      className={`group inline-flex w-full items-center justify-center gap-2.5 rounded-full px-7 py-4 text-sm font-medium transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] sm:w-auto ${
         variant === "dark"
-          ? "bg-ink text-paper hover:opacity-90"
-          : "border border-ink-line bg-paper text-ink hover:border-ink/30"
+          ? "bg-ink text-paper hover:shadow-[0_18px_36px_-20px_rgb(0_0_0/0.6)] hover:opacity-95"
+          : "border border-ink-line bg-paper/80 text-ink backdrop-blur hover:border-ink/30 hover:shadow-[0_18px_36px_-24px_rgb(0_0_0/0.35)]"
       }`}
     >
       {children}
@@ -185,6 +187,7 @@ export function Landing() {
   const [modal, setModal] = useState<Mode | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -202,11 +205,17 @@ export function Landing() {
     <div className="landing-root min-h-dvh scroll-smooth">
       {/* NAV */}
       <header
-        className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
-          scrolled ? "border-b border-ink-line/70 bg-paper/85 backdrop-blur-xl" : ""
+        className={`fixed inset-x-0 top-0 z-50 px-3 transition-all duration-500 sm:px-5 ${
+          scrolled ? "pt-2" : "pt-3 sm:pt-4"
         }`}
       >
-        <nav className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-5 py-4 sm:px-8">
+        <nav
+          className={`mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-full px-5 transition-all duration-500 sm:px-7 ${
+            scrolled
+              ? "border border-ink-line/70 bg-paper/80 py-2.5 shadow-[0_10px_30px_-18px_rgb(0_0_0/0.35)] backdrop-blur-xl"
+              : "border border-transparent py-4"
+          }`}
+        >
           <a href="#top" className="min-w-0 text-lg font-semibold tracking-[-0.02em]">
             CommitX
           </a>
@@ -290,67 +299,98 @@ export function Landing() {
       ) : null}
 
       {/* HERO */}
-      <section id="top" className="relative">
-        <div className="relative h-[62vh] min-h-[380px] w-full overflow-hidden sm:h-[78vh]">
-          <img
-            src={heroImage}
-            alt="Calm sunrise lake and meadow — a quiet place to focus"
-            width={1920}
-            height={1152}
-            className="h-full w-full object-cover"
-          />
-          {/* Image dissolves into paper — no visible rectangle edge. */}
-          <div
-            aria-hidden
-            className="absolute inset-x-0 bottom-0 h-2/3"
-            style={{
-              background:
-                "linear-gradient(to bottom, transparent 0%, color-mix(in oklab, var(--paper) 55%, transparent) 55%, var(--paper) 100%)",
-            }}
-          />
-          <div
-            aria-hidden
-            className="absolute inset-y-0 left-0 w-24"
-            style={{
-              background:
-                "linear-gradient(to right, var(--paper), transparent)",
-            }}
-          />
-          <div
-            aria-hidden
-            className="absolute inset-y-0 right-0 w-24"
-            style={{
-              background: "linear-gradient(to left, var(--paper), transparent)",
-            }}
-          />
-        </div>
+      <section
+        id="top"
+        className="relative overflow-hidden px-6 pb-16 pt-28 sm:pb-24 sm:pt-36"
+        onMouseMove={(e) => {
+          if (typeof window === "undefined" || window.innerWidth < 900) return;
+          const r = e.currentTarget.getBoundingClientRect();
+          setTilt({
+            x: (e.clientX - r.left) / r.width - 0.5,
+            y: (e.clientY - r.top) / r.height - 0.5,
+          });
+        }}
+        onMouseLeave={() => setTilt({ x: 0, y: 0 })}
+      >
+        <img
+          src={heroImage}
+          alt=""
+          aria-hidden
+          width={1920}
+          height={1152}
+          className="pointer-events-none absolute inset-x-0 top-0 h-[52vh] w-full object-cover opacity-[0.16]"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-[52vh]"
+          style={{
+            background:
+              "linear-gradient(to bottom, transparent 0%, color-mix(in oklab, var(--paper) 60%, transparent) 50%, var(--paper) 100%)",
+          }}
+        />
 
-        <div className="relative -mt-24 px-6 pb-20 text-center sm:-mt-36 sm:pb-28">
-          <div className="mx-auto max-w-3xl animate-landing-reveal">
-            <h1 className="text-[34px] font-medium leading-[1.06] tracking-[-0.035em] sm:text-6xl lg:text-[72px]">
-              For the things you
-              <br />
-              said you'd do.
-            </h1>
-            <p className="mt-6 text-[13px] font-medium uppercase tracking-[0.3em] text-ink-soft sm:text-sm">
-              Decide. Commit. Complete.
-            </p>
-            <p className="mx-auto mt-6 max-w-xl text-sm leading-relaxed text-ink-soft sm:text-base">
-              Turn “I should” into “I did.” Start with a commitment. Stay focused.
-              Follow through.
-            </p>
+        <div className="relative mx-auto max-w-6xl">
+          <div className="grid items-center gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)] lg:gap-10">
+            <div className="animate-landing-reveal text-center lg:text-left">
+              <p className="text-[11px] font-medium uppercase tracking-[0.3em] text-ink-soft">
+                Commit. Complete. Get It Back.
+              </p>
+              <h1 className="mt-6 text-[36px] font-medium leading-[1.04] tracking-[-0.035em] sm:text-6xl lg:text-[70px]">
+                For the things you
+                <br />
+                said you'd do.
+              </h1>
+              <p className="mx-auto mt-6 max-w-xl text-sm leading-relaxed text-ink-soft lg:mx-0 sm:text-base">
+                Turn “I should” into “I did.” Start with a commitment. Stay focused.
+                Follow through.
+              </p>
 
-            <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <PrimaryButton onClick={() => setModal("standard")}>
-                Start a Standard Session
-              </PrimaryButton>
-              <PrimaryButton variant="light" onClick={() => setModal("verified")}>
-                Start a Verified Session
-              </PrimaryButton>
+              <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start">
+                <PrimaryButton onClick={() => setModal("standard")}>
+                  Start a Standard Session
+                </PrimaryButton>
+                <PrimaryButton variant="light" onClick={() => setModal("verified")}>
+                  Start a Verified Session
+                </PrimaryButton>
+              </div>
+              <p className="mt-5 text-[11px] text-ink-soft/80">
+                No account required to start.
+              </p>
             </div>
-            <p className="mt-5 text-[11px] text-ink-soft/80">
-              No account required to start.
-            </p>
+
+            {/* INTERACTIVE HOURGLASS */}
+            <div className="relative mx-auto flex w-full max-w-md items-center justify-center py-6">
+              <div
+                className="relative text-ink transition-transform duration-500 ease-out"
+                style={{
+                  transform: `translate3d(${tilt.x * 16}px, ${tilt.y * 14}px, 0)`,
+                }}
+              >
+                <LandingHourglass size={300} className="sm:scale-105" />
+              </div>
+
+              {[
+                { text: "50 min • Anatomy", cls: "left-0 top-2 sm:-left-4", d: "0s", f: 0.5 },
+                { text: "🔥 12 day streak", cls: "right-0 top-1/3 sm:-right-5", d: "1.2s", f: -0.7 },
+                { text: "+25 Cx Coins", cls: "bottom-4 left-3 sm:left-0", d: "2.1s", f: 0.9 },
+              ].map((c) => (
+                <div
+                  key={c.text}
+                  className={`pointer-events-none absolute ${c.cls}`}
+                  style={{
+                    transform: `translate3d(${tilt.x * 26 * c.f}px, ${tilt.y * 20 * c.f}px, 0)`,
+                    transition: "transform 600ms ease-out",
+                  }}
+                >
+                  <div
+                    className="animate-gentle-float rounded-2xl border border-ink-line/80 bg-paper/80 px-3.5 py-2 text-[11px] font-medium shadow-[0_16px_40px_-24px_rgb(0_0_0/0.45)] backdrop-blur-md sm:text-xs"
+                    style={{ animationDelay: c.d }}
+                  >
+                    {c.text}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -386,7 +426,7 @@ export function Landing() {
         <div className="mx-auto max-w-5xl">
           <div className="grid gap-5 md:grid-cols-2 md:gap-6">
             <Reveal>
-              <div className="flex h-full flex-col rounded-[28px] border border-ink-line bg-paper p-8 transition-all duration-300 hover:-translate-y-1 sm:p-10">
+              <div className="flex h-full flex-col rounded-[28px] border border-ink-line bg-paper p-8 transition-all duration-300 hover:-translate-y-1.5 hover:border-ink/25 hover:shadow-[0_28px_60px_-38px_rgb(0_0_0/0.45)] active:scale-[0.99] sm:p-10">
                 <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-ink-soft">
                   Standard
                 </p>
@@ -408,7 +448,12 @@ export function Landing() {
             </Reveal>
 
             <Reveal delay={100}>
-              <div className="flex h-full flex-col rounded-[28px] border border-ink/15 bg-ink p-8 text-paper transition-all duration-300 hover:-translate-y-1 sm:p-10">
+              <div className="relative flex h-full flex-col overflow-hidden rounded-[28px] border border-ink/15 bg-ink p-8 text-paper shadow-[0_24px_60px_-40px_rgb(0_0_0/0.6)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_36px_80px_-40px_rgb(0_0_0/0.65)] active:scale-[0.99] sm:p-10">
+                <div
+                  aria-hidden
+                  className="animate-sun-breathe pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full blur-3xl"
+                  style={{ background: "oklch(0.6 0.1 148 / 0.45)" }}
+                />
                 <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-paper/60">
                   Verified
                 </p>
@@ -453,6 +498,26 @@ export function Landing() {
         </div>
       </section>
 
+      {/* FOCUS GARDEN */}
+      <section className="bg-paper-soft px-6 py-20 sm:py-28">
+        <div className="mx-auto max-w-5xl">
+          <Reveal className="text-center">
+            <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-ink-soft">
+              Focus Garden
+            </p>
+            <h2 className="mx-auto mt-5 max-w-2xl text-[26px] font-medium leading-[1.15] tracking-[-0.03em] sm:text-[40px]">
+              Your focus time, growing quietly.
+            </h2>
+            <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-ink-soft">
+              Slide through a day of study and watch it grow — seed, sprout, plant, tree.
+            </p>
+          </Reveal>
+          <Reveal delay={120} className="mt-12">
+            <FocusGarden />
+          </Reveal>
+        </div>
+      </section>
+
       {/* EMOTIONAL */}
       <section className="px-6 py-28 text-center sm:py-40">
         <Reveal>
@@ -468,6 +533,9 @@ export function Landing() {
       {/* FINAL CTA */}
       <section className="bg-paper-soft px-6 py-20 text-center sm:py-28">
         <Reveal>
+          <div className="mx-auto mb-10 flex justify-center text-ink">
+            <LandingHourglass size={188} loopSeconds={90} showTimer={false} />
+          </div>
           <h2 className="mx-auto max-w-2xl text-[28px] font-medium leading-[1.14] tracking-[-0.03em] sm:text-[44px]">
             What will you commit to today?
           </h2>
@@ -476,7 +544,7 @@ export function Landing() {
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <PrimaryButton onClick={() => setModal("standard")}>
-              Start a Standard Session
+              Start a Commitment
             </PrimaryButton>
             <PrimaryButton variant="light" onClick={() => setModal("verified")}>
               Start a Verified Session
