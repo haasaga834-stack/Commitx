@@ -296,67 +296,93 @@ export function Landing() {
       ) : null}
 
       {/* HERO */}
-      <section id="top" className="relative">
-        <div className="relative h-[62vh] min-h-[380px] w-full overflow-hidden sm:h-[78vh]">
-          <img
-            src={heroImage}
-            alt="Calm sunrise lake and meadow — a quiet place to focus"
-            width={1920}
-            height={1152}
-            className="h-full w-full object-cover"
-          />
-          {/* Image dissolves into paper — no visible rectangle edge. */}
-          <div
-            aria-hidden
-            className="absolute inset-x-0 bottom-0 h-2/3"
-            style={{
-              background:
-                "linear-gradient(to bottom, transparent 0%, color-mix(in oklab, var(--paper) 55%, transparent) 55%, var(--paper) 100%)",
-            }}
-          />
-          <div
-            aria-hidden
-            className="absolute inset-y-0 left-0 w-24"
-            style={{
-              background:
-                "linear-gradient(to right, var(--paper), transparent)",
-            }}
-          />
-          <div
-            aria-hidden
-            className="absolute inset-y-0 right-0 w-24"
-            style={{
-              background: "linear-gradient(to left, var(--paper), transparent)",
-            }}
-          />
-        </div>
+      <section
+        id="top"
+        className="relative overflow-hidden px-6 pb-16 pt-28 sm:pb-24 sm:pt-36"
+        onMouseMove={(e) => {
+          if (typeof window === "undefined" || window.innerWidth < 900) return;
+          const r = e.currentTarget.getBoundingClientRect();
+          setTilt({
+            x: (e.clientX - r.left) / r.width - 0.5,
+            y: (e.clientY - r.top) / r.height - 0.5,
+          });
+        }}
+        onMouseLeave={() => setTilt({ x: 0, y: 0 })}
+      >
+        <img
+          src={heroImage}
+          alt=""
+          aria-hidden
+          width={1920}
+          height={1152}
+          className="pointer-events-none absolute inset-x-0 top-0 h-[52vh] w-full object-cover opacity-[0.16]"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-[52vh]"
+          style={{
+            background:
+              "linear-gradient(to bottom, transparent 0%, color-mix(in oklab, var(--paper) 60%, transparent) 50%, var(--paper) 100%)",
+          }}
+        />
 
-        <div className="relative -mt-24 px-6 pb-20 text-center sm:-mt-36 sm:pb-28">
-          <div className="mx-auto max-w-3xl animate-landing-reveal">
-            <h1 className="text-[34px] font-medium leading-[1.06] tracking-[-0.035em] sm:text-6xl lg:text-[72px]">
-              For the things you
-              <br />
-              said you'd do.
-            </h1>
-            <p className="mt-6 text-[13px] font-medium uppercase tracking-[0.3em] text-ink-soft sm:text-sm">
-              Decide. Commit. Complete.
-            </p>
-            <p className="mx-auto mt-6 max-w-xl text-sm leading-relaxed text-ink-soft sm:text-base">
-              Turn “I should” into “I did.” Start with a commitment. Stay focused.
-              Follow through.
-            </p>
+        <div className="relative mx-auto max-w-6xl">
+          <div className="grid items-center gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)] lg:gap-10">
+            <div className="animate-landing-reveal text-center lg:text-left">
+              <p className="text-[11px] font-medium uppercase tracking-[0.3em] text-ink-soft">
+                Commit. Complete. Get It Back.
+              </p>
+              <h1 className="mt-6 text-[36px] font-medium leading-[1.04] tracking-[-0.035em] sm:text-6xl lg:text-[70px]">
+                For the things you
+                <br />
+                said you'd do.
+              </h1>
+              <p className="mx-auto mt-6 max-w-xl text-sm leading-relaxed text-ink-soft lg:mx-0 sm:text-base">
+                Turn “I should” into “I did.” Start with a commitment. Stay focused.
+                Follow through.
+              </p>
 
-            <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <PrimaryButton onClick={() => setModal("standard")}>
-                Start a Standard Session
-              </PrimaryButton>
-              <PrimaryButton variant="light" onClick={() => setModal("verified")}>
-                Start a Verified Session
-              </PrimaryButton>
+              <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start">
+                <PrimaryButton onClick={() => setModal("standard")}>
+                  Start a Standard Session
+                </PrimaryButton>
+                <PrimaryButton variant="light" onClick={() => setModal("verified")}>
+                  Start a Verified Session
+                </PrimaryButton>
+              </div>
+              <p className="mt-5 text-[11px] text-ink-soft/80">
+                No account required to start.
+              </p>
             </div>
-            <p className="mt-5 text-[11px] text-ink-soft/80">
-              No account required to start.
-            </p>
+
+            {/* INTERACTIVE HOURGLASS */}
+            <div className="relative mx-auto flex w-full max-w-md items-center justify-center py-6">
+              <div
+                className="relative text-ink transition-transform duration-500 ease-out"
+                style={{
+                  transform: `translate3d(${tilt.x * 16}px, ${tilt.y * 14}px, 0)`,
+                }}
+              >
+                <LandingHourglass size={300} className="sm:scale-105" />
+              </div>
+
+              {[
+                { text: "50 min • Anatomy", cls: "left-0 top-4 sm:-left-2", d: "0s", f: 0.5 },
+                { text: "🔥 12 day streak", cls: "right-0 top-1/3 sm:-right-3", d: "1.2s", f: -0.7 },
+                { text: "+25 Cx Coins", cls: "bottom-6 left-4 sm:left-2", d: "2.1s", f: 0.9 },
+              ].map((c) => (
+                <div
+                  key={c.text}
+                  className="animate-gentle-float pointer-events-none absolute rounded-2xl border border-ink-line/80 bg-paper/80 px-3.5 py-2 text-[11px] font-medium shadow-[0_16px_40px_-24px_rgb(0_0_0/0.45)] backdrop-blur-md sm:text-xs"
+                  style={{
+                    animationDelay: c.d,
+                    transform: `translate3d(${tilt.x * 26 * c.f}px, ${tilt.y * 20 * c.f}px, 0)`,
+                    transition: "transform 600ms ease-out",
+                  }}
+                  {...{ className: undefined as never }}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </section>
