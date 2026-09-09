@@ -87,10 +87,10 @@ function PrimaryButton({
     <button
       type="button"
       onClick={onClick}
-      className={`group inline-flex w-full items-center justify-center gap-2.5 rounded-full px-7 py-4 text-sm font-medium transition-all duration-300 sm:w-auto ${
+      className={`group inline-flex w-full items-center justify-center gap-2.5 rounded-full px-7 py-4 text-sm font-medium transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] sm:w-auto ${
         variant === "dark"
-          ? "bg-ink text-paper hover:opacity-90"
-          : "border border-ink-line bg-paper text-ink hover:border-ink/30"
+          ? "bg-ink text-paper hover:shadow-[0_18px_36px_-20px_rgb(0_0_0/0.6)] hover:opacity-95"
+          : "border border-ink-line bg-paper/80 text-ink backdrop-blur hover:border-ink/30 hover:shadow-[0_18px_36px_-24px_rgb(0_0_0/0.35)]"
       }`}
     >
       {children}
