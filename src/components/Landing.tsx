@@ -367,20 +367,25 @@ export function Landing() {
               </div>
 
               {[
-                { text: "50 min • Anatomy", cls: "left-0 top-4 sm:-left-2", d: "0s", f: 0.5 },
-                { text: "🔥 12 day streak", cls: "right-0 top-1/3 sm:-right-3", d: "1.2s", f: -0.7 },
-                { text: "+25 Cx Coins", cls: "bottom-6 left-4 sm:left-2", d: "2.1s", f: 0.9 },
+                { text: "50 min • Anatomy", cls: "left-0 top-2 sm:-left-4", d: "0s", f: 0.5 },
+                { text: "🔥 12 day streak", cls: "right-0 top-1/3 sm:-right-5", d: "1.2s", f: -0.7 },
+                { text: "+25 Cx Coins", cls: "bottom-4 left-3 sm:left-0", d: "2.1s", f: 0.9 },
               ].map((c) => (
                 <div
                   key={c.text}
-                  className="animate-gentle-float pointer-events-none absolute rounded-2xl border border-ink-line/80 bg-paper/80 px-3.5 py-2 text-[11px] font-medium shadow-[0_16px_40px_-24px_rgb(0_0_0/0.45)] backdrop-blur-md sm:text-xs"
+                  className={`pointer-events-none absolute ${c.cls}`}
                   style={{
-                    animationDelay: c.d,
                     transform: `translate3d(${tilt.x * 26 * c.f}px, ${tilt.y * 20 * c.f}px, 0)`,
                     transition: "transform 600ms ease-out",
                   }}
-                  {...{ className: undefined as never }}
-                />
+                >
+                  <div
+                    className="animate-gentle-float rounded-2xl border border-ink-line/80 bg-paper/80 px-3.5 py-2 text-[11px] font-medium shadow-[0_16px_40px_-24px_rgb(0_0_0/0.45)] backdrop-blur-md sm:text-xs"
+                    style={{ animationDelay: c.d }}
+                  >
+                    {c.text}
+                  </div>
+                </div>
               ))}
             </div>
           </div>
