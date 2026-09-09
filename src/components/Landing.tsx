@@ -426,7 +426,7 @@ export function Landing() {
         <div className="mx-auto max-w-5xl">
           <div className="grid gap-5 md:grid-cols-2 md:gap-6">
             <Reveal>
-              <div className="flex h-full flex-col rounded-[28px] border border-ink-line bg-paper p-8 transition-all duration-300 hover:-translate-y-1 sm:p-10">
+              <div className="flex h-full flex-col rounded-[28px] border border-ink-line bg-paper p-8 transition-all duration-300 hover:-translate-y-1.5 hover:border-ink/25 hover:shadow-[0_28px_60px_-38px_rgb(0_0_0/0.45)] active:scale-[0.99] sm:p-10">
                 <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-ink-soft">
                   Standard
                 </p>
