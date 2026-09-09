@@ -498,6 +498,26 @@ export function Landing() {
         </div>
       </section>
 
+      {/* FOCUS GARDEN */}
+      <section className="bg-paper-soft px-6 py-20 sm:py-28">
+        <div className="mx-auto max-w-5xl">
+          <Reveal className="text-center">
+            <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-ink-soft">
+              Focus Garden
+            </p>
+            <h2 className="mx-auto mt-5 max-w-2xl text-[26px] font-medium leading-[1.15] tracking-[-0.03em] sm:text-[40px]">
+              Your focus time, growing quietly.
+            </h2>
+            <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-ink-soft">
+              Slide through a day of study and watch it grow — seed, sprout, plant, tree.
+            </p>
+          </Reveal>
+          <Reveal delay={120} className="mt-12">
+            <FocusGarden />
+          </Reveal>
+        </div>
+      </section>
+
       {/* EMOTIONAL */}
       <section className="px-6 py-28 text-center sm:py-40">
         <Reveal>
@@ -513,6 +533,9 @@ export function Landing() {
       {/* FINAL CTA */}
       <section className="bg-paper-soft px-6 py-20 text-center sm:py-28">
         <Reveal>
+          <div className="mx-auto mb-10 flex justify-center text-ink">
+            <LandingHourglass size={188} loopSeconds={90} showTimer={false} />
+          </div>
           <h2 className="mx-auto max-w-2xl text-[28px] font-medium leading-[1.14] tracking-[-0.03em] sm:text-[44px]">
             What will you commit to today?
           </h2>
@@ -521,7 +544,7 @@ export function Landing() {
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <PrimaryButton onClick={() => setModal("standard")}>
-              Start a Standard Session
+              Start a Commitment
             </PrimaryButton>
             <PrimaryButton variant="light" onClick={() => setModal("verified")}>
               Start a Verified Session
