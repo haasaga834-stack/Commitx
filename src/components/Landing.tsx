@@ -448,7 +448,12 @@ export function Landing() {
             </Reveal>
 
             <Reveal delay={100}>
-              <div className="flex h-full flex-col rounded-[28px] border border-ink/15 bg-ink p-8 text-paper transition-all duration-300 hover:-translate-y-1 sm:p-10">
+              <div className="relative flex h-full flex-col overflow-hidden rounded-[28px] border border-ink/15 bg-ink p-8 text-paper shadow-[0_24px_60px_-40px_rgb(0_0_0/0.6)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_36px_80px_-40px_rgb(0_0_0/0.65)] active:scale-[0.99] sm:p-10">
+                <div
+                  aria-hidden
+                  className="animate-sun-breathe pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full blur-3xl"
+                  style={{ background: "oklch(0.6 0.1 148 / 0.45)" }}
+                />
                 <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-paper/60">
                   Verified
                 </p>
