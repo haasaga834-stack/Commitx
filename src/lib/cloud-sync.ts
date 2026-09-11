@@ -8,6 +8,7 @@ import {
 } from "./commitx-store";
 import { recordSessions } from "./wallet.functions";
 import { isOnline, onReconnect, startConnectivityWatch } from "./connectivity";
+import { announceLeaderboardChange } from "./community";
 
 const syncedKey = (userId: string) => `commitx-synced-session-ids-v1:${userId}`;
 const pendingKey = (userId: string) => `commitx-cloud-pending-v1:${userId}`;
