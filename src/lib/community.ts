@@ -7,10 +7,49 @@ export interface LeaderRow {
   minutes: number;
 }
 
+/** Fired whenever a finished session reaches the cloud, on any device. */
+export const LEADERBOARD_REFRESH_EVENT = "commitx:leaderboard-refresh";
+
+export function announceLeaderboardChange() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(LEADERBOARD_REFRESH_EVENT));
+}
+
+/**
+ * Subscribes a loader to every moment the standings could have moved:
+ * a local session landing in the cloud, the app coming back to the
+ * foreground, regaining connectivity, plus a slow safety poll for other
+ * people's sessions.
+ */
+function useLiveRefresh(load: () => void, intervalMs = 25_000) {
+  useEffect(() => {
+    const run = () => load();
+    const onVisible = () => {
+      if (document.visibilityState === "visible") run();
+    };
+    window.addEventListener(LEADERBOARD_REFRESH_EVENT, run);
+    window.addEventListener("focus", run);
+    window.addEventListener("online", run);
+    document.addEventListener("visibilitychange", onVisible);
+    const id = setInterval(run, intervalMs);
+    return () => {
+      window.removeEventListener(LEADERBOARD_REFRESH_EVENT, run);
+      window.removeEventListener("focus", run);
+      window.removeEventListener("online", run);
+      document.removeEventListener("visibilitychange", onVisible);
+      clearInterval(id);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [load, intervalMs]);
+}
+
 /** Top study-hour totals across all users, straight from the cloud. */
 export function useLeaderboard(limit = 10) {
   const [rows, setRows] = useState<LeaderRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tick, setTick] = useState(0);
+
+  useLiveRefresh(() => setTick((t) => t + 1));
 
   useEffect(() => {
     let alive = true;
@@ -31,13 +70,10 @@ export function useLeaderboard(limit = 10) {
       setLoading(false);
     };
     void load();
-
-    const id = setInterval(load, 60_000);
     return () => {
       alive = false;
-      clearInterval(id);
     };
-  }, [limit]);
+  }, [limit, tick]);
 
   return { rows, loading };
 }
@@ -46,6 +82,9 @@ export function useLeaderboard(limit = 10) {
 export function useCommunityCxCoins() {
   const [coins, setCoins] = useState(0);
   const [loaded, setLoaded] = useState(false);
+  const [tick, setTick] = useState(0);
+
+  useLiveRefresh(() => setTick((t) => t + 1));
 
   useEffect(() => {
     let alive = true;
@@ -60,12 +99,10 @@ export function useCommunityCxCoins() {
       setLoaded(true);
     };
     void load();
-    const id = setInterval(load, 60_000);
     return () => {
       alive = false;
-      clearInterval(id);
     };
-  }, []);
+  }, [tick]);
 
   return { coins, loaded };
 }
