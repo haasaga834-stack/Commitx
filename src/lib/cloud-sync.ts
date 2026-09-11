@@ -245,6 +245,9 @@ async function push(userId: string) {
     coins: result.coins,
   });
   applyingRemote = false;
+
+  // Standings just moved — refresh any leaderboard on screen right away.
+  announceLeaderboardChange();
 }
 
 function schedulePush(userId: string) {
