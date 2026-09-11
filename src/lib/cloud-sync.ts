@@ -8,6 +8,7 @@ import {
 } from "./commitx-store";
 import { recordSessions } from "./wallet.functions";
 import { isOnline, onReconnect, startConnectivityWatch } from "./connectivity";
+import { announceLeaderboardChange } from "./community";
 
 const syncedKey = (userId: string) => `commitx-synced-session-ids-v1:${userId}`;
 const pendingKey = (userId: string) => `commitx-cloud-pending-v1:${userId}`;
@@ -245,6 +246,9 @@ async function push(userId: string) {
     coins: result.coins,
   });
   applyingRemote = false;
+
+  // Standings just moved — refresh any leaderboard on screen right away.
+  announceLeaderboardChange();
 }
 
 function schedulePush(userId: string) {
