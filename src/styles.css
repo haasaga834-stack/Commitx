@@ -154,6 +154,14 @@
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-4px); }
 }
+@keyframes break-breathe {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-2px) rotate(0.5deg); }
+}
+@keyframes break-cup {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1px); }
+}
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
@@ -167,6 +175,13 @@
 }
 @utility animate-gentle-float {
   animation: gentle-float 4s ease-in-out infinite;
+}
+@utility animate-break-breathe {
+  transform-origin: 128px 91px;
+  animation: break-breathe 3.2s ease-in-out infinite;
+}
+@utility animate-break-cup {
+  animation: break-cup 2.6s ease-in-out infinite;
 }
 
 /* Warm ambient nature motion */

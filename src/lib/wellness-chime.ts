@@ -39,6 +39,14 @@ export function vibrate(pattern: number | number[]) {
   } catch {}
 }
 
+function postWebNotification(body: string, tag: string) {
+  if (typeof window === "undefined" || !("Notification" in window)) return;
+  if (Notification.permission !== "granted") return;
+  try {
+    new Notification("CommitX", { body, tag });
+  } catch {}
+}
+
 /** Three soft ascending notes — clear but never jarring. */
 export function playWellnessChime() {
   const ctx = audioCtx();
@@ -75,6 +83,7 @@ export function cancelWellnessSounds(sessionPrefix: string) {
 }
 
 export function announceWellnessBreak(eventKey?: string) {
+  postWebNotification("Break time — take 5 minutes 🌿", eventKey ?? "commitx-break-start");
   const native = nativeBridge();
   if (native?.playWellnessSound && eventKey) {
     try {
@@ -88,6 +97,10 @@ export function announceWellnessBreak(eventKey?: string) {
 
 /** Break finished: chime + a shorter nudge to come back to CommitX. */
 export function announceBreakOver(eventKey?: string) {
+  postWebNotification(
+    "Your break is over. Ready to focus back?",
+    eventKey ?? "commitx-break-end",
+  );
   const native = nativeBridge();
   if (native?.playWellnessSound && eventKey) {
     try {

@@ -288,7 +288,7 @@ function Commit() {
             "You cannot leave the app — Home, Recents or switching apps fails the session immediately.",
             "The Back button is disabled while the session is running.",
             "Do Not Disturb must stay on; emergency calls have a 60 second grace window.",
-            "Sessions over an hour pause for a mandatory 5-minute wellness break — stay inside CommitX during it.",
+            "Sessions longer than two hours pause once for a 5-minute break at the halfway point.",
             "Your committed amount is returned only when you finish.",
           ].map((t) => (
             <li key={t} className="flex gap-2">
@@ -511,10 +511,10 @@ function Commit() {
             </Link>
           )}
 
-          {duration > 60 && (
+          {duration > 120 && (
             <p className="mt-3 rounded-2xl bg-accent/10 px-4 py-3 text-xs text-primary">
-              Sessions over an hour include a mandatory 5-minute wellness break after every
-              60 minutes of study. Your timer pauses during it.
+              This session includes one 5-minute break at the halfway point. Your focus timer
+              pauses until you return and tap YES.
             </p>
           )}
         </section>

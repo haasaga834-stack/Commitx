@@ -141,7 +141,8 @@ export function CommitTablet(p: CommitTabletProps) {
 
             {p.duration > 120 && (
               <p className="mt-3 rounded-2xl bg-accent/10 px-4 py-3 text-xs text-primary">
-                You'll receive one complimentary 10 minute break reminder.
+                One 5-minute break starts at the halfway point. Your timer stays paused until
+                you return and tap YES.
               </p>
             )}
           </Panel>
