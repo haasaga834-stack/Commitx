@@ -39,6 +39,9 @@ async function currentUserId() {
 const STALE_GRACE_MS = 30 * 60_000;
 
 function isStale(row: ActiveDbSession) {
+  const heartbeat = row.last_heartbeat ? new Date(row.last_heartbeat).getTime() : Number.NaN;
+  // A recent check-in proves a deliberately paused long session is still live.
+  if (Number.isFinite(heartbeat) && Date.now() - heartbeat <= STALE_GRACE_MS) return false;
   const started = new Date(row.started_at).getTime();
   if (!Number.isFinite(started)) return true;
   return Date.now() - started > row.duration_minutes * 60_000 + STALE_GRACE_MS;

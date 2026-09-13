@@ -27,6 +27,7 @@ import {
   finishWebSession,
   heartbeatWebSession,
   isWebRuntime,
+  touchPausedWebSession,
   WEB_HEARTBEAT_MS,
 } from "@/lib/web-verified-session";
 import { normalizeTheme, type SessionThemeId } from "@/lib/session-themes";
@@ -394,6 +395,8 @@ function LiveSession() {
       breakStartedAtRef.current = at;
       confirmSinceRef.current = null;
       setPhase("recovery_break");
+      if (isVerified) setNativeVerifiedModeActive(false);
+      if (isVerified && isWebRuntime()) void touchPausedWebSession();
       persist();
       setNow(Date.now());
       announceWellnessBreak(`${wellnessSessionKey}_break_${breaksTakenRef.current}_start`);
@@ -422,11 +425,13 @@ function LiveSession() {
     breakStartedAtRef.current = null;
     confirmSinceRef.current = null;
     breaksTakenRef.current += 1;
+    if (isVerified && isWebRuntime()) void touchPausedWebSession();
+    if (isVerified) setNativeVerifiedModeActive(true);
     setPhase("focus");
     resumeTimer("recovery_confirmed");
     persist();
     log("Recovery Confirmed", { breaksTaken: breaksTakenRef.current });
-  }, [persist, resumeTimer, setPhase]);
+  }, [isVerified, persist, resumeTimer, setPhase]);
 
   /**
    * Single timestamp-driven state machine. Every tick, foreground return and
@@ -670,7 +675,7 @@ function LiveSession() {
       window.removeEventListener("commitx:android-multi-window", onNativeMultiWindow);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVerified, dndBlocked, phase]);
+  }, [isVerified, dndBlocked]);
 
   /* ------------------------------------------------------------------ *
    * WEB ONLY — strict Verified Session enforcement.
@@ -733,6 +738,10 @@ function LiveSession() {
     // marks the session failed; if the server says failed, we stop locally.
     const beat = async () => {
       if (doneRef.current || stopped) return;
+      if (phaseRef.current !== "focus") {
+        await touchPausedWebSession();
+        return;
+      }
       const status = await heartbeatWebSession();
       if (status === "failed") failWeb("web_heartbeat_timeout");
     };
@@ -747,7 +756,7 @@ function LiveSession() {
       window.removeEventListener("beforeunload", onBeforeUnload);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVerified, dndBlocked, startedAt, phase]);
+  }, [isVerified, dndBlocked, startedAt]);
 
 
 

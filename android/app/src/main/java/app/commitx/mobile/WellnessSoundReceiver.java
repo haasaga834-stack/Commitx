@@ -22,9 +22,23 @@ public class WellnessSoundReceiver extends BroadcastReceiver {
             return;
         }
         if (!ACTION_SOUND.equals(action)) return;
+        String kind = intent.getStringExtra(EXTRA_KIND);
         WellnessSoundStore.playNowOnce(
                 context,
                 intent.getStringExtra(EXTRA_KEY),
-                intent.getStringExtra(EXTRA_KIND));
+                kind);
+        if ("end".equals(kind)) {
+            CommitXNotifications.showSession(
+                    context,
+                    "Your break is over. Ready to focus back?",
+                    "Return to CommitX and tap YES when you're ready.",
+                    50);
+        } else {
+            CommitXNotifications.showSession(
+                    context,
+                    "Break time — take 5 minutes 🌿",
+                    "Your focus timer is paused.",
+                    50);
+        }
     }
 }
