@@ -89,7 +89,7 @@ const features = [
 const steps = [
   "Set your goal, duration and a Cx Coin commitment.",
   "Choose Standard mode, or Verified mode to block app switching.",
-  "Focus while the sand timer runs — with a wellness break every hour.",
+  "Focus while the sand timer runs — longer sessions pause once at halfway for a 5-minute break.",
   "Complete the session, get your commitment back, and log the hours.",
 ];
 

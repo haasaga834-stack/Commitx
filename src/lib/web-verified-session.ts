@@ -56,6 +56,21 @@ export async function heartbeatWebSession(): Promise<HeartbeatStatus> {
   }
 }
 
+/**
+ * Keeps a deliberately paused web session alive without running the strict
+ * timeout check first. RLS limits this update to the signed-in user's row.
+ */
+export async function touchPausedWebSession(): Promise<void> {
+  if (!isOnline()) return;
+  try {
+    await supabase
+      .from("active_sessions")
+      .update({ last_heartbeat: new Date().toISOString() })
+      .eq("platform", "web")
+      .eq("status", "active");
+  } catch {}
+}
+
 /** Atomically marks the user's active session as failed (idempotent). */
 export async function failWebSession(reason: string): Promise<void> {
   if (!isOnline()) return;
