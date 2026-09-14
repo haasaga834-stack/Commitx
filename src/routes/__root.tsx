@@ -20,6 +20,7 @@ import { useAuth } from "../lib/use-auth";
 import { useStudyReminders } from "../lib/planner";
 import { reconcileMotivationNotifications } from "../lib/native-notifications";
 import { hasNativeBridge } from "../lib/native-session";
+import { registerAppServiceWorker } from "../lib/pwa";
 import { AmbientNature } from "../components/AmbientNature";
 import { OfflineNotice } from "../components/OfflineNotice";
 import { Onboarding } from "../components/Onboarding";
@@ -100,11 +101,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         children:
           "try{var m=localStorage.getItem('commitx-theme-v1');if(m==='dark'){document.documentElement.classList.add('dark');document.documentElement.style.colorScheme='dark';}}catch(e){}",
-      },
-      {
-        type: "module",
-        children:
-          "if(\"serviceWorker\"in navigator){window.addEventListener(\"load\",()=>{navigator.serviceWorker.register(\"/sw.js\").catch(()=>{})});}",
       },
     ],
 
@@ -279,6 +275,11 @@ function StudyReminders() {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  // Offline support: registers the generated worker in published production only.
+  useEffect(() => {
+    registerAppServiceWorker();
+  }, []);
 
   // Website only. The Android app must never load ad code: AdSense is not
   // permitted inside apps, and the Play listing declares the app ad-free.
