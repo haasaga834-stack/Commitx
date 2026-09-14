@@ -1,11 +1,17 @@
 // Offline support registration.
 //
 // The service worker is generated at build time by vite-plugin-pwa (generateSW)
-// and served from /sw.js. Registration happens ONLY here, and only in a real
-// published production page — never in dev, never inside the Lovable preview
-// iframe, and never when ?sw=off is used as a kill switch.
+// and served from /commitx-sw.js. Registration happens ONLY here, and only in a
+// real published production page — never in dev, never inside the Lovable
+// preview iframe, never when ?sw=off is used as a kill switch, and never inside
+// the native Android app (which must not register the website's service worker).
+//
+// /sw.js is reserved for Monetag verification and must not be touched by this
+// registration logic.
 
-const SW_URL = "/sw.js";
+import { hasNativeBridge } from "./native-session";
+
+const SW_URL = "/commitx-sw.js";
 
 function isPreviewHost(hostname: string): boolean {
   return (
