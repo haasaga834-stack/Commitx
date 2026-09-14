@@ -77,7 +77,7 @@ function About() {
           <p>
             CommitX is built and run by{" "}
             <span className="text-foreground">Aniket Kumar</span>, an independent
-            individual developer — not a company or organisation.
+            individual developer based in India — not a company or organisation.
           </p>
           <p>
             Questions, bugs or a deletion request? Email{" "}

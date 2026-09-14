@@ -33,7 +33,7 @@ const SECTIONS: { title: string; body: string[] }[] = [
     body: [
       "CommitX is a focus and accountability app that helps you commit to study sessions and follow through on them. This Privacy Policy explains what information we collect, why we collect it, how long we keep it, and the choices you have.",
       "It applies to the CommitX Android app and the CommitX website. By creating an account and using CommitX, you agree to the practices described here.",
-      "CommitX is developed and operated by Aniket Kumar, an independent individual developer (not a company or organisation). Data controller and contact: Aniket Kumar, commitx07@gmail.com.",
+      "CommitX is developed and operated by Aniket Kumar, an independent individual developer based in India (not a company or organisation). Data controller and contact: Aniket Kumar, commitx07@gmail.com.",
       "Last updated: 14 September 2026.",
     ],
   },
