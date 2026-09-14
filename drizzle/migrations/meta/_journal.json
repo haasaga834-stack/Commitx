@@ -22,6 +22,13 @@
       "when": 1789392413091,
       "tag": "0002_group_study_capacity_20",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789409138014,
+      "tag": "0003_tighten_definer_execute_and_wallets_roles",
+      "breakpoints": true
     }
   ]
 }
