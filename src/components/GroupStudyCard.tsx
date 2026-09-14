@@ -21,7 +21,7 @@ export function GroupStudyCard({ compact = false }: { compact?: boolean }) {
             Group Study
           </h2>
           <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-            Up to 5 people · one shared timer
+            Up to 20 people · one shared timer
           </p>
         </div>
       </div>

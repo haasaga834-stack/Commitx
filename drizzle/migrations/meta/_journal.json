@@ -15,6 +15,13 @@
       "when": 1789392006056,
       "tag": "0001_sessions_survive_offline",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789392413091,
+      "tag": "0002_group_study_capacity_20",
+      "breakpoints": true
     }
   ]
 }

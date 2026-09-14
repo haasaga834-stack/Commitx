@@ -1,7 +1,7 @@
 /* Shared, browser-safe pieces of the Group Study feature. */
 
-/** Creator + 4 friends. */
-export const MAX_GROUP_SIZE = 5;
+/** Host + 19 friends. */
+export const MAX_GROUP_SIZE = 20;
 
 export interface GroupDTO {
   id: string;

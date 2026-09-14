@@ -577,16 +577,21 @@ function GroupSession() {
                   </span>
                 </li>
               ))}
-              {Array.from({ length: Math.max(0, MAX_GROUP_SIZE - data!.members.length) }).map(
-                (_, i) => (
-                  <li
-                    key={`empty-${i}`}
-                    className="flex items-center gap-3 rounded-2xl border border-dashed border-hairline px-3 py-2.5 text-xs text-muted-foreground"
-                  >
-                    <span className="h-8 w-8 shrink-0 rounded-full border border-dashed border-hairline" />
-                    Open seat
-                  </li>
-                ),
+              {Array.from({
+                length: Math.min(3, Math.max(0, MAX_GROUP_SIZE - data!.members.length)),
+              }).map((_, i) => (
+                <li
+                  key={`empty-${i}`}
+                  className="flex items-center gap-3 rounded-2xl border border-dashed border-hairline px-3 py-2.5 text-xs text-muted-foreground"
+                >
+                  <span className="h-8 w-8 shrink-0 rounded-full border border-dashed border-hairline" />
+                  Open seat
+                </li>
+              ))}
+              {MAX_GROUP_SIZE - data!.members.length > 3 && (
+                <li className="px-1 text-[11px] text-muted-foreground">
+                  … and {MAX_GROUP_SIZE - data!.members.length - 3} more open seats
+                </li>
               )}
             </ul>
           </section>

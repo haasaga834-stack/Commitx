@@ -101,7 +101,9 @@ export function GroupLobbyTablet({
                   </span>
                 </li>
               ))}
-              {Array.from({ length: Math.max(0, MAX_GROUP_SIZE - members.length) }).map((_, i) => (
+              {Array.from({
+                length: Math.min(3, Math.max(0, MAX_GROUP_SIZE - members.length)),
+              }).map((_, i) => (
                 <li
                   key={`empty-${i}`}
                   className="flex items-center gap-3 rounded-2xl border border-dashed border-hairline px-3.5 py-2.5 text-xs text-muted-foreground"
@@ -110,6 +112,11 @@ export function GroupLobbyTablet({
                   Open seat
                 </li>
               ))}
+              {MAX_GROUP_SIZE - members.length > 3 && (
+                <li className="px-1 text-[11px] text-muted-foreground">
+                  … and {MAX_GROUP_SIZE - members.length - 3} more open seats
+                </li>
+              )}
             </ul>
           </section>
 
