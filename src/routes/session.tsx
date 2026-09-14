@@ -715,9 +715,10 @@ function LiveSession() {
     }
 
     /**
-     * A locked screen, a switched tab or a backgrounded browser is NOT a
-     * failure: focus time simply stops accruing until the user comes back.
-     * Only genuinely leaving the session (reload / closing the page) fails it.
+     * A locked / auto-off screen is NOT a failure: the page keeps keyboard
+     * focus (nothing else was opened), so focus time simply pauses until the
+     * screen comes back. Tab switching, minimising and app switching move
+     * focus elsewhere and still fail the session.
      */
     const beginAway = (reason: string) => {
       if (doneRef.current || stopped) return;
