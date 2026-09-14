@@ -763,6 +763,10 @@ function LiveSession() {
     // re-renders, scrolling and rotation never trigger it.
     const onBlur = () => {
       if (doneRef.current || stopped) return;
+      // Event order is the useful mobile distinction: switching tabs/apps
+      // blurs the still-visible page first, while locking/screen-off hides it
+      // first and may emit a synthetic blur afterwards.
+      if (document.visibilityState === "hidden") return;
       webBlurAtRef.current = Date.now();
       window.setTimeout(() => {
         if (doneRef.current || stopped) return;
