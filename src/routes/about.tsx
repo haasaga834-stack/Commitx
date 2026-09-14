@@ -75,6 +75,11 @@ function About() {
             , and delete your account and data at any time from Settings.
           </p>
           <p>
+            CommitX is built and run by{" "}
+            <span className="text-foreground">Aniket Kumar</span>, an independent
+            individual developer — not a company or organisation.
+          </p>
+          <p>
             Questions, bugs or a deletion request? Email{" "}
             <a href="mailto:commitx07@gmail.com" className="text-foreground underline">
               commitx07@gmail.com
