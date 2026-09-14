@@ -28,6 +28,8 @@ export default defineConfig({
         registerType: "autoUpdate",
         injectRegister: null,
         filename: "sw.js",
+        // Client assets are emitted to dist/client; the worker must live beside them.
+        outDir: "dist/client",
         devOptions: { enabled: false },
         // The app already ships public/manifest.json.
         manifest: false,
