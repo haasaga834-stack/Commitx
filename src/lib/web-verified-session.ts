@@ -70,7 +70,7 @@ export async function touchPausedWebSession(): Promise<HeartbeatStatus> {
   if (!isOnline()) return "unknown";
   try {
     if (!(await hasAuthenticatedSession())) return "none";
-    const { data, error } = await supabase.rpc("touch_paused_web_session" as never);
+    const { data, error } = await supabase.rpc("touch_paused_web_session");
     if (error) return "unknown";
     const status = typeof data === "string" ? data : "unknown";
     if (status === "active" || status === "failed" || status === "none") return status;
