@@ -205,12 +205,12 @@ export function Landing() {
     <div className="landing-root min-h-dvh scroll-smooth">
       {/* NAV */}
       <header
-        className={`fixed inset-x-0 top-0 z-50 px-3 transition-all duration-500 sm:px-5 ${
+        className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
           scrolled ? "pt-2" : "pt-3 sm:pt-4"
         }`}
       >
         <nav
-          className={`mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-full px-5 transition-all duration-500 sm:px-7 ${
+          className={`mx-auto grid w-[calc(100%-1.5rem)] max-w-[1400px] grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-full px-5 transition-all duration-500 sm:w-[calc(100%-2.5rem)] sm:px-7 lg:w-[86%] ${
             scrolled
               ? "border border-ink-line/70 bg-paper/80 py-2.5 shadow-[0_10px_30px_-18px_rgb(0_0_0/0.35)] backdrop-blur-xl"
               : "border border-transparent py-4"
@@ -301,7 +301,7 @@ export function Landing() {
       {/* HERO */}
       <section
         id="top"
-        className="relative overflow-hidden px-6 pb-16 pt-28 sm:pb-24 sm:pt-36 lg:px-8 xl:px-10"
+        className="relative overflow-hidden px-6 pb-16 pt-28 sm:pb-24 sm:pt-36 lg:px-0"
         onMouseMove={(e) => {
           if (typeof window === "undefined" || window.innerWidth < 900) return;
           const r = e.currentTarget.getBoundingClientRect();
@@ -329,7 +329,7 @@ export function Landing() {
           }}
         />
 
-        <div className="relative mx-auto max-w-[1400px]">
+        <div className="relative mx-auto max-w-[1400px] lg:w-[86%]">
           <div className="grid items-center gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)] lg:gap-10 xl:gap-16">
             <div className="animate-landing-reveal text-center lg:text-left">
               <p className="text-[11px] font-medium uppercase tracking-[0.3em] text-ink-soft">
