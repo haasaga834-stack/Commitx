@@ -418,8 +418,14 @@ function LiveSession() {
     [persist, setPhase, wellnessSessionKey],
   );
 
-  const confirmRefreshed = useCallback(() => {
+  const confirmRefreshed = useCallback(async () => {
     if (doneRef.current || phaseRef.current !== "awaiting_confirmation") return;
+    if (isVerified && isWebRuntime()) {
+      // Refresh with the server clock before focus resumes. Unlike the strict
+      // heartbeat, this never interprets an intentionally long break as loss.
+      const status = await touchPausedWebSession();
+      if (status === "failed") return;
+    }
     const anchor = breakStartedAtRef.current;
     if (anchor) nonFocusMsRef.current += Math.max(0, Date.now() - anchor);
     breakStartedAtRef.current = null;

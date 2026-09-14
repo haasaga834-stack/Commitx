@@ -42,10 +42,16 @@ export function clearWebSessionTab() {
 
 export type HeartbeatStatus = "active" | "failed" | "none" | "unknown";
 
+async function hasAuthenticatedSession() {
+  const { data, error } = await supabase.auth.getSession();
+  return !error && Boolean(data.session?.access_token);
+}
+
 /** Refreshes backend liveness; returns the authoritative session status. */
 export async function heartbeatWebSession(): Promise<HeartbeatStatus> {
   if (!isOnline()) return "unknown";
   try {
+    if (!(await hasAuthenticatedSession())) return "none";
     const { data, error } = await supabase.rpc("web_session_heartbeat");
     if (error) return "unknown";
     const status = typeof data === "string" ? data : "unknown";
@@ -60,21 +66,25 @@ export async function heartbeatWebSession(): Promise<HeartbeatStatus> {
  * Keeps a deliberately paused web session alive without running the strict
  * timeout check first. RLS limits this update to the signed-in user's row.
  */
-export async function touchPausedWebSession(): Promise<void> {
-  if (!isOnline()) return;
+export async function touchPausedWebSession(): Promise<HeartbeatStatus> {
+  if (!isOnline()) return "unknown";
   try {
-    await supabase
-      .from("active_sessions")
-      .update({ last_heartbeat: new Date().toISOString() })
-      .eq("platform", "web")
-      .eq("status", "active");
-  } catch {}
+    if (!(await hasAuthenticatedSession())) return "none";
+    const { data, error } = await supabase.rpc("touch_paused_web_session");
+    if (error) return "unknown";
+    const status = typeof data === "string" ? data : "unknown";
+    if (status === "active" || status === "failed" || status === "none") return status;
+    return "unknown";
+  } catch {
+    return "unknown";
+  }
 }
 
 /** Atomically marks the user's active session as failed (idempotent). */
 export async function failWebSession(reason: string): Promise<void> {
   if (!isOnline()) return;
   try {
+    if (!(await hasAuthenticatedSession())) return;
     await supabase.rpc("fail_web_session", { _reason: reason });
   } catch {}
 }
@@ -88,6 +98,7 @@ export function failWebSessionBeacon(reason: string) {
 export async function finishWebSession(): Promise<boolean> {
   if (!isOnline()) return true;
   try {
+    if (!(await hasAuthenticatedSession())) return true;
     const { data, error } = await supabase.rpc("finish_web_session");
     if (error) return true;
     return data !== false;
