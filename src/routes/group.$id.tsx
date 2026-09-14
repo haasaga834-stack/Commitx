@@ -80,6 +80,72 @@ function fmt(sec: number) {
 /** Verified group sessions allow a short absence (emergency calls). */
 const VERIFIED_GRACE_MS = 60_000;
 
+function initials(name: string) {
+  return name
+    .split(" ")
+    .map((p) => p[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
+
+function GroupParticipantSummary({ members }: { members: GroupStateDTO["members"] }) {
+  const present = members.filter((m) => m.status !== "left");
+  const focusing = present.filter((m) => m.status === "joined").length;
+  const finished = present.filter((m) => m.status === "completed").length;
+  const visible = present.slice(0, 6);
+  const hidden = present.length - visible.length;
+
+  return (
+    <div className="rounded-4xl border border-hairline bg-card p-7 shadow-soft">
+      <div className="flex items-center justify-between">
+        <h2 className="font-display text-lg font-semibold">Focusing together</h2>
+        <span className="text-[11px] text-muted-foreground">
+          {present.length} / {MAX_GROUP_SIZE}
+        </span>
+      </div>
+
+      <div className="mt-5 flex -space-x-2 overflow-hidden">
+        {visible.map((m) => (
+          <span
+            key={m.user_id}
+            title={`${m.display_name}${m.role === "creator" ? " · host" : ""}`}
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-card bg-accent/15 text-xs font-medium text-primary"
+          >
+            {initials(m.display_name)}
+          </span>
+        ))}
+        {hidden > 0 && (
+          <span className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-card bg-muted text-xs font-medium text-muted-foreground">
+            +{hidden}
+          </span>
+        )}
+      </div>
+
+      <div className="mt-5 flex flex-wrap gap-2">
+        {focusing > 0 && (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+            {focusing} focusing
+          </span>
+        )}
+        {finished > 0 && (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-1 text-[11px] font-medium text-accent">
+            <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+            {finished} finished
+          </span>
+        )}
+        {present.length === 0 && (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-foreground/5 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+            No one here yet
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function GroupSession() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
