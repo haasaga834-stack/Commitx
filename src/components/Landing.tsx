@@ -530,31 +530,6 @@ export function Landing() {
         </Reveal>
       </section>
 
-      {/* FINAL CTA */}
-      <section className="bg-paper-soft px-6 py-20 text-center sm:py-28">
-        <Reveal>
-          <div className="mx-auto mb-10 flex justify-center text-ink">
-            <LandingHourglass size={188} loopSeconds={90} showTimer={false} />
-          </div>
-          <h2 className="mx-auto max-w-2xl text-[28px] font-medium leading-[1.14] tracking-[-0.03em] sm:text-[44px]">
-            What will you commit to today?
-          </h2>
-          <p className="mt-5 text-sm text-ink-soft sm:text-base">
-            Start with one focused session.
-          </p>
-          <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <PrimaryButton onClick={() => setModal("standard")}>
-              Start a Commitment
-            </PrimaryButton>
-            <PrimaryButton variant="light" onClick={() => setModal("verified")}>
-              Start a Verified Session
-            </PrimaryButton>
-          </div>
-          <p className="mt-5 text-[11px] text-ink-soft/80">
-            No account required to start.
-          </p>
-        </Reveal>
-      </section>
 
       {/* CONTINUE ON APP */}
       <section className="px-6 py-16 sm:py-20">
