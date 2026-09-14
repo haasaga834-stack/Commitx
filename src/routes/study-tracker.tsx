@@ -76,7 +76,7 @@ const features = [
     icon: Users,
     title: "Group study timers",
     body:
-      "Study with up to five friends on one shared, synchronised timer so everyone finishes together.",
+      "Study with up to nineteen friends on one shared, synchronised timer so everyone finishes together.",
   },
   {
     icon: Coins,

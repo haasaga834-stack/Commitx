@@ -66,7 +66,7 @@ const SECTIONS: { title: string; body: string[] }[] = [
   {
     title: "6. Group Study",
     body: [
-      "Group Study lets up to five people share a synchronized session. Joining a group requires a commitment, which is held until the group session is settled.",
+      "Group Study lets up to twenty people share a synchronized session. Joining a group requires a commitment, which is held until the group session is settled.",
       "Leaving a group session before it ends forfeits your commitment. The organiser can start a session once at least one other member has joined. Group outcomes are decided by the server clock.",
     ],
   },
