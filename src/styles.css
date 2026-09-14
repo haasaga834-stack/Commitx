@@ -183,6 +183,13 @@
 @utility animate-break-cup {
   animation: break-cup 2.6s ease-in-out infinite;
 }
+@keyframes scroll-cue {
+  0%, 100% { transform: translateY(0); opacity: 0.55; }
+  50% { transform: translateY(6px); opacity: 1; }
+}
+@utility animate-scroll-cue {
+  animation: scroll-cue 2.2s ease-in-out infinite;
+}
 
 /* Warm ambient nature motion */
 @keyframes leaf-drift {
