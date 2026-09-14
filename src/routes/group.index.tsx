@@ -263,11 +263,14 @@ function GroupIndex() {
       </div>
 
       <h1
-        className={cn("mt-8 font-display text-3xl font-semibold", isTablet && "mt-6 text-[2rem]")}
+        className={cn(
+          "mt-8 text-center font-display text-3xl font-semibold",
+          isTablet && "mt-6 text-[2rem]",
+        )}
       >
         Lock in with your people. 🎯
       </h1>
-      <p className="mt-2 text-sm text-muted-foreground">
+      <p className="mt-2 text-center text-sm text-muted-foreground">
         Pick a time, commit together, and see who makes it to the finish.
       </p>
     </div>
