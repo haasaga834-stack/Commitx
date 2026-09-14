@@ -17,15 +17,16 @@ const primary = [
   { to: "/", label: "Home", icon: Home },
   { to: "/planner", label: "Planner", icon: CalendarDays },
   { to: "/analytics", label: "Insights", icon: BarChart3 },
-  { to: "/wallet", label: "Cx Coins", icon: Wallet },
   { to: "/profile", label: "Profile", icon: User },
 ] as const;
 
 const secondary = [
   { to: "/academics", label: "Academics", icon: BookOpen },
+  { to: "/wallet", label: "Cx Coins", icon: Wallet },
   { to: "/history", label: "History", icon: History },
   { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
+
 
 function RailLink({
   to,
