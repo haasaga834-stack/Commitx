@@ -715,28 +715,24 @@ function LiveSession() {
     }
 
     /**
-     * A locked / auto-off screen is NOT a failure: the page keeps keyboard
-     * focus (nothing else was opened), so focus time simply pauses until the
-     * screen comes back. Tab switching, minimising and app switching move
-     * focus elsewhere and still fail the session.
+     * A locked / auto-off screen is NOT a failure and the timer does NOT
+     * pause: the countdown runs on wall-clock timestamps, so it keeps ticking
+     * while the screen is dark and shows the correct remaining time the
+     * moment the screen wakes. We only mark the session "away" so the
+     * heartbeat stays in gentle keepalive mode. Tab switching, minimising
+     * and app switching move focus elsewhere and still fail the session.
      */
-    const beginAway = (reason: string) => {
+    const beginAway = (_reason: string) => {
       if (doneRef.current || stopped) return;
       if (awayAtRef.current !== null) return;
       awayAtRef.current = Date.now();
-      if (phaseRef.current === "focus") pauseTimer(`web_away_${reason}`);
+      // Timer intentionally left running — screen-off must not pause it.
       void touchPausedWebSession();
     };
 
     const endAway = () => {
       if (doneRef.current || stopped) return;
-      const at = awayAtRef.current;
       awayAtRef.current = null;
-      if (at !== null) {
-        // Away time counts as non-focus so the wall-clock cap stays fair.
-        nonFocusMsRef.current += Math.max(0, Date.now() - at);
-      }
-      if (phaseRef.current === "focus") resumeTimer("web_returned");
       setNow(Date.now());
       persist();
       evaluateRef.current();
