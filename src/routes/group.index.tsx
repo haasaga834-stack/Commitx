@@ -367,7 +367,7 @@ function GroupIndex() {
         <div className="min-w-0">
           <h2 className="font-display text-base font-semibold">Create a group</h2>
           <p className="text-[11px] text-muted-foreground">
-            You + up to 4 friends ({MAX_GROUP_SIZE} max)
+            You + up to 19 friends ({MAX_GROUP_SIZE} max)
           </p>
         </div>
       </div>
