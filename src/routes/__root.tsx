@@ -295,6 +295,14 @@ function RootComponent() {
     s.src =
       "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4902262012947970";
     document.head.appendChild(s);
+
+    // Monetag vignette (website only, never inside the Android app).
+    if (document.querySelector("script[data-monetag-zone='11802810']")) return;
+    const m = document.createElement("script");
+    m.dataset.zone = "11802810";
+    m.dataset.monetagZone = "11802810";
+    m.src = "https://n6wxm.com/vignette.min.js";
+    document.head.appendChild(m);
   }, []);
 
   return (
