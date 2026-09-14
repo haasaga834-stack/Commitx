@@ -31,96 +31,119 @@ const SECTIONS: { title: string; body: string[] }[] = [
   {
     title: "1. Introduction",
     body: [
-      "CommitX is a focus and accountability app that helps you commit to study sessions and follow through on them. This Privacy Policy explains what information we collect, why we collect it, and the choices you have.",
-      "By creating an account and using CommitX, you agree to the practices described here.",
+      "CommitX is a focus and accountability app that helps you commit to study sessions and follow through on them. This Privacy Policy explains what information we collect, why we collect it, how long we keep it, and the choices you have.",
+      "It applies to the CommitX Android app and the CommitX website. By creating an account and using CommitX, you agree to the practices described here.",
+      "Last updated: 14 September 2026.",
     ],
   },
   {
-    title: "2. Information we collect",
+    title: "2. Using CommitX without an account",
     body: [
-      "We keep data collection to the minimum needed to run the app. We do not sell your data, and we do not use it for advertising profiles.",
+      "You can start a Standard or Verified session on our website as a guest, without signing in. Guest sessions are not saved: no account is created, no history, streaks or Cx Coins are stored, and nothing about that session is written to our servers.",
+      "An account is only needed if you want your sessions, plans and Cx Coins to be saved.",
     ],
   },
   {
-    title: "3. Account information",
+    title: "3. Account information you provide",
     body: [
-      "When you sign up we store your email address, your display name and, if you add one, your profile photo. If you sign in with Google, we receive your basic Google profile details (name, email, profile picture) to create your account.",
-      "We also store a referral code linked to your account when one is used.",
+      "When you create an account we store your email address and a display name. If you sign in with Google, Google returns your basic profile details (name, email address and profile picture) and we use them to create your account.",
+      "Optional profile details you can add or leave blank: profile photo, age, sex and education level. These are shown only to you inside the app and are never used for advertising.",
+      "If you use a referral code, we store your own referral code, the account that referred you, and a device fingerprint (a short non-reversible value derived from your browser/device) used solely to stop the same device claiming referral rewards more than once.",
     ],
   },
   {
-    title: "4. App usage information",
+    title: "4. Information created by using the app",
     body: [
-      "To make the app work we store the things you create inside it: commitments and focus sessions (goal, duration, mode, committed amount, outcome), study plans and to-dos, subjects and exam dates, revision progress, streaks, Cx Coin balance and group study membership.",
-      "On Android, optional screen-time features read device usage statistics only after you grant permission. That information stays on your device and is used to show your own limits and totals.",
+      "Commitments and focus sessions: goal text, duration, mode (Standard, Verified or Group), the Cx Coins committed, the outcome and, for a failed session, the technical reason it ended (for example that the page was reloaded or closed).",
+      "Study data: study plans, to-dos, subjects, exam dates and revision progress, plus your daily and weekly goal settings, theme, reminder preferences and streak/stat totals.",
+      "Cx Coins: your balance and the amount currently held behind an active commitment.",
+      "Live session state: while a session runs we store one row with its start time, duration, mode and periodic check-in times, so a session can be recovered and only one session runs per account.",
+      "Focus Shield (Android): if you turn it on, the list of app package names you chose to be reminded about is saved with your live session, together with whether the shield is on and its start/end time.",
     ],
   },
   {
-    title: "5. How information is used",
+    title: "5. Group Study and leaderboard visibility",
     body: [
-      "We use your information to create and secure your account, run and settle focus sessions, keep your streaks, stats, analytics and Cx Coin balance accurate, enable group study with people you invite, send the in-app and device reminders you enable, and improve reliability by fixing errors.",
+      "If you join a Group Study, the other members of that group can see your display name and your status in that session (committed, focusing, finished or left). They cannot see your other sessions, plans, subjects or balance.",
+      "The community leaderboard shows a public top ten: display name and total completed focus minutes. If you do not want your display name to appear there, change it in your profile or do not complete sessions while signed in. Everyone's own totals are visible only to themselves.",
     ],
   },
   {
-    title: "6. Data storage",
+    title: "6. Device permissions we ask for (Android)",
     body: [
-      "Your account data is stored on our managed cloud backend, protected by row-level security rules so that your records are only readable by your own authenticated account.",
-      "Some preferences and session state are cached on your device so the app works smoothly and your timer stays accurate if the app restarts.",
+      "Notifications: to send the session, plan and break reminders you enable. You can deny or revoke this at any time in Android settings.",
+      "Alarms and reminders (exact alarms, restart after reboot): so scheduled study reminders and break sounds fire at the right time and survive a restart.",
+      "Usage access (app usage statistics): optional. Used by the screen-time feature and by Focus Shield to detect which app is in the foreground. This information is processed on your device only — CommitX does not upload your app usage or screen-time history.",
+      "Display over other apps: optional, used only so Focus Shield can show a CommitX reminder screen over an app you selected. Focus Shield never disables, hides, uninstalls or changes any other app.",
+      "Installed-app check: the app checks whether a small fixed list of well-known apps is installed, so the Focus Shield picker can show their names and icons. That list is not sent to our servers; only the packages you actively choose are saved with your session.",
+      "Do Not Disturb status: Verified Mode reads whether Do Not Disturb is on. Only the on/off state is read, never your notifications.",
+      "CommitX does not request access to your location, contacts, camera, microphone, call logs, SMS, files or health data.",
     ],
   },
   {
-    title: "7. Third-party services",
+    title: "7. How we use your information",
     body: [
-      "CommitX relies on a small number of service providers: our cloud hosting and database provider for accounts and app data, Google for optional Google Sign-In, and Google Fonts for typography. These providers process data only to deliver their service to us.",
-      "Our public web pages include Google AdSense, which may set cookies or use device identifiers to show and measure ads. Google acts as an independent controller for that data; you can review and change your ad settings at https://myadcenter.google.com. We never send Google your study data, plans, sessions or Cx Coin balance.",
-      "We never sell your personal information, and we do not share your study data with anyone for marketing purposes.",
+      "To create and secure your account; to run, verify and settle focus sessions; to keep streaks, stats and Cx Coin balances correct; to run Group Study with people you invite; to send the reminders you enable; to prevent referral and reward abuse; and to fix errors and keep the service reliable.",
+      "We do not use your study data for advertising, profiling or automated decisions, and we do not sell personal information.",
     ],
   },
   {
-    title: "8. Authentication",
+    title: "8. Where your data is stored",
     body: [
-      "Sign-in is handled by our authentication provider. Passwords are never stored in plain text and are never visible to us. If you use Google Sign-In, Google verifies your identity and we only receive your basic profile information.",
-      "Password reset links are sent to your registered email address and expire after a short period.",
+      "Account and app data is stored in our managed cloud database (hosted infrastructure operated on our behalf), protected by row-level security so records are readable only by your own authenticated account. Data is transmitted over encrypted connections.",
+      "Some preferences and session state are also cached on your device so the app works offline and your timer stays accurate if the app restarts. Clearing app data removes that local copy.",
     ],
   },
   {
-    title: "9. Security",
+    title: "9. Third-party services",
     body: [
-      "Data is transmitted over encrypted connections. Balance-affecting actions — commitments, settlements and group joins — are validated on our servers, not trusted from the app. Access to your records requires a valid session for your account.",
-      "No system is perfectly secure, so please keep your password private and sign out on shared devices.",
+      "Cloud database, authentication and email delivery: our managed backend provider, which processes your data only to provide the service to us.",
+      "Google Sign-In (optional) and Google Play services used for in-app sign-in and the in-app review prompt.",
+      "Google Fonts, used to load typography on our web pages.",
+      "Advertising: our public website pages may show Google AdSense ads, which can set cookies or use identifiers to show and measure ads. This is on the website only — the CommitX Android app does not show ads and does not load ad code. You can manage ad settings at https://myadcenter.google.com. We never send advertising partners your study data, sessions, plans or Cx Coin balance.",
     ],
   },
   {
-    title: "10. Your rights",
+    title: "10. Authentication and email",
     body: [
-      "You can view and edit your profile, plans, subjects and preferences at any time inside the app. You can request a copy of your data, or ask us to correct or delete it, by contacting us.",
-      "Depending on where you live, you may also have rights to object to or restrict certain processing.",
+      "Sign-in is handled by our authentication provider. Passwords are stored only as salted hashes and are never visible to us. With Google Sign-In, Google verifies your identity and we receive only basic profile information.",
+      "We send transactional emails (sign-up confirmation, password reset, email change, magic links) to your registered address. Reset and magic links expire after a short period. We do not send marketing emails.",
     ],
   },
   {
-    title: "11. Account deletion",
+    title: "11. How long we keep data",
     body: [
-      "You can delete your account from Settings. Deleting your account removes your profile, sessions, plans, subjects, balances and Cx Coins. Deletion is permanent and cannot be undone.",
-      "Limited records may be retained briefly where required for security or legal reasons, then removed.",
+      "Account, session, plan and Cx Coin records are kept while your account exists, so your history and streaks stay accurate.",
+      "Live session rows are removed when the session ends, and abandoned ones are cleared automatically. Guest sessions are never stored.",
+      "When you delete your account, your records are deleted immediately as described below. Backups of our hosting provider may retain copies for a short rolling period before they expire.",
     ],
   },
   {
-    title: "12. Children's privacy",
+    title: "12. Your rights and account deletion",
     body: [
-      "CommitX is intended for students and users aged 13 and above. We do not knowingly collect information from children under 13. If you believe a child has created an account, contact us and we will remove it.",
+      "You can view and edit your profile, plans, subjects and preferences at any time in the app. You can request a copy of your data, or ask us to correct it, by emailing commitx07@gmail.com.",
+      "You can delete your account yourself: Settings → Delete account. This permanently removes your profile and profile photo, focus session history, live session, study plans, to-dos, subjects, settings, referrals, group memberships and groups you created, your leaderboard entry, your Cx Coin balance and your login credentials. It cannot be undone and Cx Coins are not recoverable.",
+      "If you cannot access the app, email commitx07@gmail.com from your registered address and we will delete the account for you.",
+      "Depending on where you live, you may also have the right to object to or restrict certain processing, or to complain to your local data protection authority.",
+    ],
+  },
+  {
+    title: "13. Children's privacy",
+    body: [
+      "CommitX is intended for users aged 13 and above and is not directed at children. We do not knowingly collect information from children under 13. If you believe a child has created an account, email us and we will delete it.",
       "Younger users should use CommitX with the involvement of a parent or guardian.",
     ],
   },
   {
-    title: "13. Changes to this policy",
+    title: "14. Changes to this policy",
     body: [
-      "CommitX is in active beta, so this policy may be updated as features change. Material changes will be announced inside the app, and the updated policy will always be available on this page.",
+      "CommitX is in active beta, so this policy may be updated as features change. Material changes will be announced inside the app, and the current version is always on this page with its last-updated date.",
     ],
   },
   {
-    title: "14. Contact",
+    title: "15. Contact",
     body: [
-      "Questions about this policy or your data? Email us at commitx07@gmail.com and we will get back to you.",
+      "Questions about this policy, your data, or a deletion request? Email commitx07@gmail.com and we will get back to you.",
     ],
   },
 ];
