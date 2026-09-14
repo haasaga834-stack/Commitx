@@ -2,6 +2,8 @@ import { createFileRoute, Link, useLocation, useRouter } from "@tanstack/react-r
 import { MobileShell } from "@/components/BottomNav";
 import { NotificationsCard } from "@/components/NotificationsCard";
 import { ScreenTimeCard } from "@/components/ScreenTimeCard";
+import { CxCoin } from "@/components/CxCoin";
+
 
 import { useTheme } from "@/lib/theme";
 import { coinLabel, REFERRAL_REWARD } from "@/lib/commitx-store";
@@ -11,7 +13,7 @@ import { claimReferral, deleteAccount as deleteAccountFn } from "@/lib/account.f
 import { getDeviceHash } from "@/lib/device";
 import { signOutEverywhere } from "@/lib/use-auth";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Moon, Sun, Copy, Check, Trash2, ShieldAlert, LogOut, BookOpen, ChevronRight, Star, Info, Mail, Timer } from "lucide-react";
+import { ArrowLeft, Moon, Sun, Copy, Check, Trash2, ShieldAlert, LogOut, BookOpen, ChevronRight, Star, Info, Mail } from "lucide-react";
 import { isNativeApp, rateApp } from "@/lib/native-notifications";
 
 export const Route = createFileRoute("/settings")({
@@ -180,17 +182,18 @@ function Settings() {
               About us
             </span>
           </Link>
-          <button
-            onClick={() => revealSection("screen-time")}
+          <Link
+            to="/wallet"
             className="flex flex-col items-center gap-2 rounded-3xl bg-card p-4 text-center shadow-soft"
           >
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/15 text-primary">
-              <Timer className="h-4 w-4" />
+              <CxCoin className="h-4 w-4" />
             </span>
             <span className="text-xs font-medium leading-tight text-foreground">
-              Screen time
+              Cx Coins
             </span>
-          </button>
+          </Link>
+
         </div>
 
 

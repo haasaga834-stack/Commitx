@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, CalendarDays, BarChart3, Wallet, User } from "lucide-react";
+import { Home, CalendarDays, BarChart3, User } from "lucide-react";
 import { memo, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { setNativeAtRootScreen } from "@/lib/native-session";
@@ -10,9 +10,9 @@ const items = [
   { to: "/", label: "Home", icon: Home },
   { to: "/planner", label: "Planner", icon: CalendarDays },
   { to: "/analytics", label: "Stats", icon: BarChart3 },
-  { to: "/wallet", label: "Cx Coins", icon: Wallet },
   { to: "/profile", label: "Profile", icon: User },
 ] as const;
+
 
 function BottomNavBase() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
