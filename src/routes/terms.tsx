@@ -32,7 +32,8 @@ const SECTIONS: { title: string; body: string[] }[] = [
     title: "1. Acceptance of terms",
     body: [
       "By creating an account or using CommitX, you agree to these Terms of Service. If you do not agree, please stop using the app and delete your account.",
-      "CommitX is provided by Aniket Kumar, an independent individual developer (not a company or organisation), reachable at commitx07@gmail.com.",
+      "CommitX is provided by Aniket Kumar, an independent individual developer based in India (not a company or organisation), reachable at commitx07@gmail.com.",
+      "These Terms of Service are governed by the laws of India.",
     ],
   },
   {
