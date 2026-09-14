@@ -2,6 +2,8 @@ import { createFileRoute, Link, useLocation, useRouter } from "@tanstack/react-r
 import { MobileShell } from "@/components/BottomNav";
 import { NotificationsCard } from "@/components/NotificationsCard";
 import { ScreenTimeCard } from "@/components/ScreenTimeCard";
+import { CxCoin } from "@/components/CxCoin";
+
 
 import { useTheme } from "@/lib/theme";
 import { coinLabel, REFERRAL_REWARD } from "@/lib/commitx-store";
