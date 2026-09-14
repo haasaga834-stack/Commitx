@@ -305,6 +305,8 @@ function LiveSession() {
   const hiddenAtRef = useRef<number | null>(null);
   /** Web verified: timestamp the page went away (screen off, tab switch). */
   const awayAtRef = useRef<number | null>(null);
+  /** Explicit window blur is the web signal for switching tabs/apps. */
+  const webBlurAtRef = useRef<number | null>(null);
 
 
   const persist = useCallback(() => {
@@ -730,9 +732,16 @@ function LiveSession() {
       void touchPausedWebSession();
     };
 
-    const endAway = () => {
+    const endAway = async () => {
+      if (doneRef.current || stopped) return;
+      // A sleeping browser suspends JavaScript and therefore misses heartbeat
+      // intervals. Refresh liveness with the server clock before allowing the
+      // strict heartbeat to run again; otherwise a long lock can be mistaken
+      // for abandonment as soon as the screen wakes.
+      if (awayAtRef.current !== null) await touchPausedWebSession();
       if (doneRef.current || stopped) return;
       awayAtRef.current = null;
+      webBlurAtRef.current = null;
       setNow(Date.now());
       persist();
       evaluateRef.current();
@@ -740,16 +749,13 @@ function LiveSession() {
 
     const onVisibility = () => {
       if (document.visibilityState !== "hidden") {
-        endAway();
+        void endAway();
         return;
       }
-      // Screen off / device lock: the page is hidden but still holds focus,
-      // because no other tab, window or app was brought forward.
-      if (document.hasFocus()) {
-        beginAway("screen_off");
-        return;
-      }
-      failWeb("web_page_hidden");
+      // document.hasFocus() becomes false on several mobile browsers when the
+      // screen locks, so it cannot distinguish a lock from a tab switch. Treat
+      // visibility-only hiding as screen-off; an actual blur is handled below.
+      beginAway("screen_off");
     };
 
     // Focus moved to another window while this page is still visible
@@ -757,15 +763,21 @@ function LiveSession() {
     // re-renders, scrolling and rotation never trigger it.
     const onBlur = () => {
       if (doneRef.current || stopped) return;
+      webBlurAtRef.current = Date.now();
       window.setTimeout(() => {
         if (doneRef.current || stopped) return;
-        if (document.visibilityState === "hidden") return;
-        if (!document.hasFocus()) failWeb("web_window_blur");
+        // Mobile lock/screen-off commonly emits visibilitychange without a
+        // meaningful blur. A real tab, app, or window switch emits blur and
+        // remains unfocused, whether the document is visible or hidden.
+        if (!document.hasFocus() && webBlurAtRef.current !== null) {
+          failWeb(document.visibilityState === "hidden" ? "web_page_hidden" : "web_window_blur");
+        }
       }, 400);
     };
 
     const onFocus = () => {
-      if (document.visibilityState !== "hidden") endAway();
+      webBlurAtRef.current = null;
+      if (document.visibilityState !== "hidden") void endAway();
     };
 
     const markUnload = () => {

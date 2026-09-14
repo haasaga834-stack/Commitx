@@ -10,11 +10,20 @@ import { clearCachedUser, readCachedUser, writeCachedUser } from "./auth-cache";
 import { isOnline, onReconnect, startConnectivityWatch } from "./connectivity";
 
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(() => readCachedUser());
-  const [loading, setLoading] = useState(() => !readCachedUser());
+  // Keep the server and first browser render identical. The cached user is
+  // restored immediately inside the effect instead of during render, avoiding
+  // an authentication-gate hydration mismatch.
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
+
+    const cachedAtStart = readCachedUser();
+    if (cachedAtStart) {
+      setUser(cachedAtStart);
+      setLoading(false);
+    }
 
     const handle = (session: SupabaseSession | null, allowCached = false) => {
       if (!mounted) return;
