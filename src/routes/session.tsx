@@ -752,31 +752,33 @@ function LiveSession() {
         void endAway();
         return;
       }
-      // document.hasFocus() becomes false on several mobile browsers when the
-      // screen locks, so it cannot distinguish a lock from a tab switch. Treat
-      // visibility-only hiding as screen-off; an actual blur is handled below.
+      // A hidden page is treated as a dark screen, never as a failure. Some
+      // Android browsers (e.g. Samsung/Chrome on tablets) emit blur *before*
+      // hiding on a screen lock, so any pending blur check is cancelled here.
+      webBlurAtRef.current = null;
       beginAway("screen_off");
     };
 
     // Focus moved to another window while this page is still visible
     // (split screen, second window). Confirmed after a short delay so
-    // re-renders, scrolling and rotation never trigger it.
+    // re-renders, scrolling, rotation and lock-screen blur never trigger it.
     const onBlur = () => {
       if (doneRef.current || stopped) return;
-      // Event order is the useful mobile distinction: switching tabs/apps
-      // blurs the still-visible page first, while locking/screen-off hides it
-      // first and may emit a synthetic blur afterwards.
       if (document.visibilityState === "hidden") return;
       webBlurAtRef.current = Date.now();
       window.setTimeout(() => {
         if (doneRef.current || stopped) return;
-        // Mobile lock/screen-off commonly emits visibilitychange without a
-        // meaningful blur. A real tab, app, or window switch emits blur and
-        // remains unfocused, whether the document is visible or hidden.
-        if (!document.hasFocus() && webBlurAtRef.current !== null) {
-          failWeb(document.visibilityState === "hidden" ? "web_page_hidden" : "web_window_blur");
+        // Only a page that is still on screen yet unfocused is a genuine
+        // second-window switch. Anything hidden by now is a dark screen.
+        if (document.visibilityState === "hidden") {
+          webBlurAtRef.current = null;
+          beginAway("screen_off");
+          return;
         }
-      }, 400);
+        if (!document.hasFocus() && webBlurAtRef.current !== null) {
+          failWeb("web_window_blur");
+        }
+      }, 1200);
     };
 
     const onFocus = () => {
