@@ -596,13 +596,13 @@ function GroupSession() {
     return (
       <div className="relative flex min-h-dvh flex-col bg-background px-10 pb-10 pt-12 lg:px-16">
         <SessionScene theme={group.theme} progress={progress} className="z-0" />
-        <div className="relative z-10 mx-auto flex w-full max-w-5xl items-center justify-between">
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+        <div className="relative z-10 mx-auto w-full max-w-5xl">
+          <p className="text-center text-xs uppercase tracking-[0.2em] text-muted-foreground">
             Group {isVerified ? "verified" : "standard"} session
           </p>
           <button
             onClick={() => setConfirmLeave(true)}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-card shadow-soft"
+            className="absolute right-0 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-card shadow-soft"
             aria-label="Leave session"
           >
             <X className="h-5 w-5" />
@@ -628,31 +628,7 @@ function GroupSession() {
                 Leaving CommitX fails you
               </p>
             )}
-            <div className="rounded-4xl border border-hairline bg-card p-7 shadow-soft">
-              <h2 className="font-display text-lg font-semibold">Focusing together</h2>
-              <ul className="mt-5 grid gap-3.5">
-                {data!.members.map((m) => (
-                  <li key={m.user_id} className="flex items-center gap-3">
-                    <span
-                      className={`h-2.5 w-2.5 shrink-0 rounded-full ${
-                        m.status === "joined"
-                          ? "bg-primary"
-                          : m.status === "completed"
-                            ? "bg-accent"
-                            : "bg-muted-foreground/40"
-                      }`}
-                    />
-                    <span className="min-w-0 flex-1 truncate text-sm text-foreground">
-                      {m.display_name}
-                      {m.role === "creator" ? " · host" : ""}
-                    </span>
-                    <span className="shrink-0 text-[11px] text-muted-foreground">
-                      {memberStatusLabel(m.status)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <GroupParticipantSummary members={data!.members} />
             {offline && (
               <p className="text-[11px] text-muted-foreground">
                 Reconnecting… the shared timer keeps running.
