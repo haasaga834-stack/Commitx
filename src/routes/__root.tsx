@@ -19,6 +19,7 @@ import { releaseActiveDbSession } from "../lib/active-session";
 import { useAuth } from "../lib/use-auth";
 import { useStudyReminders } from "../lib/planner";
 import { reconcileMotivationNotifications } from "../lib/native-notifications";
+import { hasNativeBridge } from "../lib/native-session";
 import { AmbientNature } from "../components/AmbientNature";
 import { OfflineNotice } from "../components/OfflineNotice";
 import { Onboarding } from "../components/Onboarding";
