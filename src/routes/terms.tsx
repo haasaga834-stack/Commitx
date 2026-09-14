@@ -71,7 +71,21 @@ const SECTIONS: { title: string; body: string[] }[] = [
     ],
   },
   {
-    title: "7. Cx Coins & rewards",
+    title: "7. Focus Shield (Android, optional)",
+    body: [
+      "Focus Shield is an optional helper in Standard Mode. When you turn it on and pick apps yourself, CommitX shows its own full-screen reminder over those apps for the length of your session, using Android's usage-access and display-over-other-apps permissions that you grant.",
+      "Focus Shield never disables, hides, uninstalls, modifies or collects data from any other app, and it stops when your session ends. You can dismiss the reminder and leave at any time; if Android stops the shield, your session is unaffected and Verified Mode rules never apply to it.",
+      "Focus Shield is not available on the website, where CommitX makes no claim to block anything.",
+    ],
+  },
+  {
+    title: "8. Using CommitX without an account",
+    body: [
+      "On our website you can run a Standard or Verified session as a guest. Guest sessions cost no Cx Coins, earn no Cx Coins, and are not saved anywhere. Create an account if you want your history, streaks and Cx Coins kept.",
+    ],
+  },
+  {
+    title: "9. Cx Coins & rewards",
     body: [
       "You earn 25 Cx Coins for each fully completed hour of focus. Partial hours earn nothing, and cancelled or failed sessions earn nothing.",
       "Cx Coins are not currency. They have no cash value, cannot be bought, withdrawn, transferred, sold or exchanged, and may be adjusted or reset while CommitX is in beta.",
@@ -79,51 +93,51 @@ const SECTIONS: { title: string; body: string[] }[] = [
     ],
   },
   {
-    title: "8. Prohibited use",
+    title: "10. Prohibited use",
     body: [
       "You may not reverse engineer, tamper with or automate the app, bypass session or focus checks, exploit bugs for balances or rewards, access other users' data, upload harmful or offensive content, or resell access to CommitX.",
     ],
   },
   {
-    title: "9. Beta-phase limitations",
+    title: "11. Beta-phase limitations",
     body: [
       "CommitX is in open beta. Features, rules, balances and rewards may change, break or be reset without notice, and data loss is possible.",
       "Every balance inside the app is measured in Cx Coins. CommitX has no deposits, no top-ups and no cash-outs of any kind.",
     ],
   },
   {
-    title: "10. Service availability",
+    title: "12. Service availability",
     body: [
       "We aim to keep CommitX available and accurate, but we do not guarantee uninterrupted service. Maintenance, updates, device restrictions or connectivity issues may interrupt sessions.",
     ],
   },
   {
-    title: "11. Suspension & termination",
+    title: "13. Suspension & termination",
     body: [
       "We may suspend or terminate accounts that abuse the app, exploit rewards, or breach these terms. You can delete your account at any time from Settings, which permanently removes your data, balances and Cx Coins.",
     ],
   },
   {
-    title: "12. Intellectual property",
+    title: "14. Intellectual property",
     body: [
       "CommitX, its name, logo, design, animations and software are owned by us and protected by applicable law. You may not copy, modify or distribute them without permission.",
       "The study content you create inside the app remains yours.",
     ],
   },
   {
-    title: "13. Limitation of liability",
+    title: "15. Limitation of liability",
     body: [
       "CommitX is provided \u201cas is\u201d, without warranties of any kind. To the extent permitted by law, we are not liable for lost focus time, forfeited Cx Coins, lost coins or streaks, data loss, or any indirect or consequential damages arising from your use of the app.",
     ],
   },
   {
-    title: "14. Changes to terms",
+    title: "16. Changes to terms",
     body: [
       "We may update these terms as CommitX evolves. Material changes will be announced inside the app, and continuing to use CommitX after an update means you accept the revised terms.",
     ],
   },
   {
-    title: "15. Contact",
+    title: "17. Contact",
     body: [
       "Questions about these terms? Email us at commitx07@gmail.com.",
     ],
