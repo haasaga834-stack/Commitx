@@ -301,7 +301,7 @@ export function Landing() {
       {/* HERO */}
       <section
         id="top"
-        className="relative overflow-hidden px-6 pb-16 pt-28 sm:pb-24 sm:pt-36"
+        className="relative overflow-hidden px-6 pb-16 pt-28 sm:pb-24 sm:pt-36 lg:px-8 xl:px-10"
         onMouseMove={(e) => {
           if (typeof window === "undefined" || window.innerWidth < 900) return;
           const r = e.currentTarget.getBoundingClientRect();
@@ -329,8 +329,8 @@ export function Landing() {
           }}
         />
 
-        <div className="relative mx-auto max-w-6xl">
-          <div className="grid items-center gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)] lg:gap-10">
+        <div className="relative mx-auto max-w-[1400px]">
+          <div className="grid items-center gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)] lg:gap-10 xl:gap-16">
             <div className="animate-landing-reveal text-center lg:text-left">
               <p className="text-[11px] font-medium uppercase tracking-[0.3em] text-ink-soft">
                 Commit. Complete. Get It Back.
