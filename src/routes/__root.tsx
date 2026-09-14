@@ -19,6 +19,7 @@ import { releaseActiveDbSession } from "../lib/active-session";
 import { useAuth } from "../lib/use-auth";
 import { useStudyReminders } from "../lib/planner";
 import { reconcileMotivationNotifications } from "../lib/native-notifications";
+import { hasNativeBridge } from "../lib/native-session";
 import { AmbientNature } from "../components/AmbientNature";
 import { OfflineNotice } from "../components/OfflineNotice";
 import { Onboarding } from "../components/Onboarding";
@@ -279,10 +280,12 @@ function StudyReminders() {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
-  // Load the ad script only after hydration: injected <ins> elements from the
-  // network otherwise mutate the SSR HTML before React attaches, which caused
-  // hydration mismatches and slowed first paint.
+  // Website only. The Android app must never load ad code: AdSense is not
+  // permitted inside apps, and the Play listing declares the app ad-free.
+  // Loaded after hydration because injected <ins> elements otherwise mutate the
+  // SSR HTML before React attaches.
   useEffect(() => {
+    if (hasNativeBridge()) return;
     if (document.querySelector("script[data-commitx-ads]")) return;
     const s = document.createElement("script");
     s.async = true;

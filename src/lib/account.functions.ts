@@ -112,6 +112,8 @@ export const deleteAccount = createServerFn({ method: "POST" })
     await supabaseAdmin.from("group_members").delete().eq("user_id", userId);
     await supabaseAdmin.from("study_groups").delete().eq("creator_id", userId);
     await supabaseAdmin.from("wallets").delete().eq("user_id", userId);
+    // The public leaderboard row carries a display name: it must go too.
+    await supabaseAdmin.from("leaderboard_totals").delete().eq("user_id", userId);
     await supabaseAdmin.from("profiles").delete().eq("id", userId);
 
 

@@ -54,12 +54,32 @@ function About() {
           </p>
           <p>
             Every completed hour also earns {coinLabel(COINS_PER_HOUR)} — a simple reward for
-            consistency, which will become redeemable for Cx Coupons as CommitX
-            grows.<span className="text-foreground"> Turning discipline into progress.</span>
+            consistency.<span className="text-foreground"> Turning discipline into progress.</span>
           </p>
           <p>
-            CommitX runs entirely on Cx Coins — in-app points with no cash value,
-            used only to back your commitments inside the app.
+            CommitX runs entirely on Cx Coins — in-app points with no cash value.
+            They cannot be bought, topped up, transferred or cashed out, and they
+            are only used to back your commitments inside the app. Cx Coupons are
+            not available yet; any future rewards will be announced in the app.
+          </p>
+          <p>
+            CommitX is in open beta, so features and rules can change. The app
+            shows no ads, and your study data is never sold. You can read our{" "}
+            <Link to="/privacy-policy" className="text-foreground underline">
+              Privacy Policy
+            </Link>{" "}
+            and{" "}
+            <Link to="/terms" className="text-foreground underline">
+              Terms of Service
+            </Link>
+            , and delete your account and data at any time from Settings.
+          </p>
+          <p>
+            Questions, bugs or a deletion request? Email{" "}
+            <a href="mailto:commitx07@gmail.com" className="text-foreground underline">
+              commitx07@gmail.com
+            </a>
+            .
           </p>
         </div>
       </div>
