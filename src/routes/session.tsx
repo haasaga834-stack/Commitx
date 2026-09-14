@@ -712,18 +712,50 @@ function LiveSession() {
       return;
     }
 
-    const onVisibility = () => {
-      if (document.visibilityState === "hidden") failWeb("web_page_hidden");
+    /**
+     * A locked screen, a switched tab or a backgrounded browser is NOT a
+     * failure: focus time simply stops accruing until the user comes back.
+     * Only genuinely leaving the session (reload / closing the page) fails it.
+     */
+    const beginAway = (reason: string) => {
+      if (doneRef.current || stopped) return;
+      if (awayAtRef.current !== null) return;
+      awayAtRef.current = Date.now();
+      if (phaseRef.current === "focus") pauseTimer(`web_away_${reason}`);
+      void touchPausedWebSession();
     };
 
-    // Focus loss (other app, other window, minimised browser). Confirmed after
+    const endAway = () => {
+      if (doneRef.current || stopped) return;
+      const at = awayAtRef.current;
+      awayAtRef.current = null;
+      if (at !== null) {
+        // Away time counts as non-focus so the wall-clock cap stays fair.
+        nonFocusMsRef.current += Math.max(0, Date.now() - at);
+      }
+      if (phaseRef.current === "focus") resumeTimer("web_returned");
+      setNow(Date.now());
+      persist();
+      evaluateRef.current();
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") beginAway("hidden");
+      else endAway();
+    };
+
+    // Focus loss (other window, minimised browser, screen off). Confirmed after
     // a short delay so re-renders, scrolling and rotation never trigger it.
     const onBlur = () => {
       if (doneRef.current || stopped) return;
       window.setTimeout(() => {
         if (doneRef.current || stopped) return;
-        if (!document.hasFocus()) failWeb("web_window_blur");
+        if (!document.hasFocus()) beginAway("blur");
       }, 400);
+    };
+
+    const onFocus = () => {
+      if (document.visibilityState !== "hidden") endAway();
     };
 
     const markUnload = () => {
@@ -732,19 +764,28 @@ function LiveSession() {
       failWebSessionBeacon("web_unload");
     };
 
-    const onPageHide = () => markUnload();
+    const onPageHide = (event: PageTransitionEvent) => {
+      // A cached (persisted) page is only backgrounded, not closed.
+      if (event.persisted) {
+        beginAway("pagehide");
+        return;
+      }
+      markUnload();
+    };
     const onBeforeUnload = () => markUnload();
 
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("blur", onBlur);
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("pageshow", onFocus);
     window.addEventListener("pagehide", onPageHide);
     window.addEventListener("beforeunload", onBeforeUnload);
 
-    // Heartbeat: the backend is authoritative. If check-ins stop, the server
-    // marks the session failed; if the server says failed, we stop locally.
+    // Heartbeat: the backend tracks liveness, but a paused/away session is kept
+    // alive with the gentle touch so it can never be failed for being away.
     const beat = async () => {
       if (doneRef.current || stopped) return;
-      if (phaseRef.current !== "focus") {
+      if (phaseRef.current !== "focus" || awayAtRef.current !== null) {
         await touchPausedWebSession();
         return;
       }
@@ -758,6 +799,8 @@ function LiveSession() {
       clearInterval(heartbeatId);
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("blur", onBlur);
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("pageshow", onFocus);
       window.removeEventListener("pagehide", onPageHide);
       window.removeEventListener("beforeunload", onBeforeUnload);
     };
