@@ -54,6 +54,7 @@ export function registerAppServiceWorker(): void {
     !import.meta.env.PROD ||
     window.self !== window.top ||
     isPreviewHost(window.location.hostname) ||
+    hasNativeBridge() ||
     new URLSearchParams(window.location.search).get("sw") === "off";
 
   if (refused) {
