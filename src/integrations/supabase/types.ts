@@ -550,6 +550,7 @@ export type Database = {
           started_at: string
         }[]
       }
+      touch_paused_web_session: { Args: never; Returns: string }
       web_session_heartbeat: { Args: never; Returns: string }
     }
     Enums: {
