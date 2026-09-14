@@ -318,14 +318,14 @@ export function Landing() {
           aria-hidden
           width={1920}
           height={1152}
-          className="pointer-events-none absolute inset-x-0 top-0 h-[52vh] w-full object-cover opacity-[0.16]"
+          className="pointer-events-none absolute inset-x-0 top-0 h-[56vh] w-full object-cover opacity-[0.34]"
         />
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-[52vh]"
+          className="pointer-events-none absolute inset-x-0 top-0 h-[56vh]"
           style={{
             background:
-              "linear-gradient(to bottom, transparent 0%, color-mix(in oklab, var(--paper) 60%, transparent) 50%, var(--paper) 100%)",
+              "linear-gradient(to bottom, transparent 0%, color-mix(in oklab, var(--paper) 32%, transparent) 55%, var(--paper) 100%)",
           }}
         />
 
