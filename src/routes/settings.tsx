@@ -180,17 +180,18 @@ function Settings() {
               About us
             </span>
           </Link>
-          <button
-            onClick={() => revealSection("screen-time")}
+          <Link
+            to="/wallet"
             className="flex flex-col items-center gap-2 rounded-3xl bg-card p-4 text-center shadow-soft"
           >
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/15 text-primary">
-              <Timer className="h-4 w-4" />
+              <CxCoin className="h-4 w-4" />
             </span>
             <span className="text-xs font-medium leading-tight text-foreground">
-              Screen time
+              Cx Coins
             </span>
-          </button>
+          </Link>
+
         </div>
 
 
