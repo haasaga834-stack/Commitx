@@ -80,6 +80,72 @@ function fmt(sec: number) {
 /** Verified group sessions allow a short absence (emergency calls). */
 const VERIFIED_GRACE_MS = 60_000;
 
+function initials(name: string) {
+  return name
+    .split(" ")
+    .map((p) => p[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
+
+function GroupParticipantSummary({ members }: { members: GroupStateDTO["members"] }) {
+  const present = members.filter((m) => m.status !== "left");
+  const focusing = present.filter((m) => m.status === "joined").length;
+  const finished = present.filter((m) => m.status === "completed").length;
+  const visible = present.slice(0, 6);
+  const hidden = present.length - visible.length;
+
+  return (
+    <div className="rounded-4xl border border-hairline bg-card p-7 shadow-soft">
+      <div className="flex items-center justify-between">
+        <h2 className="font-display text-lg font-semibold">Focusing together</h2>
+        <span className="text-[11px] text-muted-foreground">
+          {present.length} / {MAX_GROUP_SIZE}
+        </span>
+      </div>
+
+      <div className="mt-5 flex -space-x-2 overflow-hidden">
+        {visible.map((m) => (
+          <span
+            key={m.user_id}
+            title={`${m.display_name}${m.role === "creator" ? " · host" : ""}`}
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-card bg-accent/15 text-xs font-medium text-primary"
+          >
+            {initials(m.display_name)}
+          </span>
+        ))}
+        {hidden > 0 && (
+          <span className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-card bg-muted text-xs font-medium text-muted-foreground">
+            +{hidden}
+          </span>
+        )}
+      </div>
+
+      <div className="mt-5 flex flex-wrap gap-2">
+        {focusing > 0 && (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+            {focusing} focusing
+          </span>
+        )}
+        {finished > 0 && (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-1 text-[11px] font-medium text-accent">
+            <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+            {finished} finished
+          </span>
+        )}
+        {present.length === 0 && (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-foreground/5 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+            No one here yet
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function GroupSession() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
@@ -596,13 +662,13 @@ function GroupSession() {
     return (
       <div className="relative flex min-h-dvh flex-col bg-background px-10 pb-10 pt-12 lg:px-16">
         <SessionScene theme={group.theme} progress={progress} className="z-0" />
-        <div className="relative z-10 mx-auto flex w-full max-w-5xl items-center justify-between">
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+        <div className="relative z-10 mx-auto w-full max-w-5xl">
+          <p className="text-center text-xs uppercase tracking-[0.2em] text-muted-foreground">
             Group {isVerified ? "verified" : "standard"} session
           </p>
           <button
             onClick={() => setConfirmLeave(true)}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-card shadow-soft"
+            className="absolute right-0 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-card shadow-soft"
             aria-label="Leave session"
           >
             <X className="h-5 w-5" />
@@ -628,31 +694,7 @@ function GroupSession() {
                 Leaving CommitX fails you
               </p>
             )}
-            <div className="rounded-4xl border border-hairline bg-card p-7 shadow-soft">
-              <h2 className="font-display text-lg font-semibold">Focusing together</h2>
-              <ul className="mt-5 grid gap-3.5">
-                {data!.members.map((m) => (
-                  <li key={m.user_id} className="flex items-center gap-3">
-                    <span
-                      className={`h-2.5 w-2.5 shrink-0 rounded-full ${
-                        m.status === "joined"
-                          ? "bg-primary"
-                          : m.status === "completed"
-                            ? "bg-accent"
-                            : "bg-muted-foreground/40"
-                      }`}
-                    />
-                    <span className="min-w-0 flex-1 truncate text-sm text-foreground">
-                      {m.display_name}
-                      {m.role === "creator" ? " · host" : ""}
-                    </span>
-                    <span className="shrink-0 text-[11px] text-muted-foreground">
-                      {memberStatusLabel(m.status)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <GroupParticipantSummary members={data!.members} />
             {offline && (
               <p className="text-[11px] text-muted-foreground">
                 Reconnecting… the shared timer keeps running.
@@ -733,29 +775,8 @@ function GroupSession() {
       </div>
 
       {/* Live participants */}
-      <div className="relative z-10 mx-auto w-full max-w-md rounded-3xl border border-hairline bg-card p-4 shadow-soft">
-        <ul className="grid gap-2">
-          {data!.members.map((m) => (
-            <li key={m.user_id} className="flex items-center gap-2.5">
-              <span
-                className={`h-2 w-2 shrink-0 rounded-full ${
-                  m.status === "joined"
-                    ? "bg-primary"
-                    : m.status === "completed"
-                      ? "bg-accent"
-                      : "bg-muted-foreground/40"
-                }`}
-              />
-              <span className="min-w-0 flex-1 truncate text-xs text-foreground">
-                {m.display_name}
-                {m.role === "creator" ? " · host" : ""}
-              </span>
-              <span className="shrink-0 text-[11px] text-muted-foreground">
-                {memberStatusLabel(m.status)}
-              </span>
-            </li>
-          ))}
-        </ul>
+      <div className="relative z-10 mx-auto w-full max-w-md">
+        <GroupParticipantSummary members={data!.members} />
       </div>
 
       {confirmLeave && (
