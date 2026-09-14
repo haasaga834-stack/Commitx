@@ -743,17 +743,28 @@ function LiveSession() {
     };
 
     const onVisibility = () => {
-      if (document.visibilityState === "hidden") beginAway("hidden");
-      else endAway();
+      if (document.visibilityState !== "hidden") {
+        endAway();
+        return;
+      }
+      // Screen off / device lock: the page is hidden but still holds focus,
+      // because no other tab, window or app was brought forward.
+      if (document.hasFocus()) {
+        beginAway("screen_off");
+        return;
+      }
+      failWeb("web_page_hidden");
     };
 
-    // Focus loss (other window, minimised browser, screen off). Confirmed after
-    // a short delay so re-renders, scrolling and rotation never trigger it.
+    // Focus moved to another window while this page is still visible
+    // (split screen, second window). Confirmed after a short delay so
+    // re-renders, scrolling and rotation never trigger it.
     const onBlur = () => {
       if (doneRef.current || stopped) return;
       window.setTimeout(() => {
         if (doneRef.current || stopped) return;
-        if (!document.hasFocus()) beginAway("blur");
+        if (document.visibilityState === "hidden") return;
+        if (!document.hasFocus()) failWeb("web_window_blur");
       }, 400);
     };
 
@@ -767,14 +778,7 @@ function LiveSession() {
       failWebSessionBeacon("web_unload");
     };
 
-    const onPageHide = (event: PageTransitionEvent) => {
-      // A cached (persisted) page is only backgrounded, not closed.
-      if (event.persisted) {
-        beginAway("pagehide");
-        return;
-      }
-      markUnload();
-    };
+    const onPageHide = () => markUnload();
     const onBeforeUnload = () => markUnload();
 
     document.addEventListener("visibilitychange", onVisibility);
