@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, CalendarDays, BarChart3, Wallet, User } from "lucide-react";
+import { Home, CalendarDays, BarChart3, User } from "lucide-react";
 import { memo, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { setNativeAtRootScreen } from "@/lib/native-session";
