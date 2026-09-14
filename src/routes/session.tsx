@@ -303,6 +303,8 @@ function LiveSession() {
   const doneRef = useRef(false);
   const graceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hiddenAtRef = useRef<number | null>(null);
+  /** Web verified: timestamp the page went away (screen off, tab switch). */
+  const awayAtRef = useRef<number | null>(null);
 
 
   const persist = useCallback(() => {
