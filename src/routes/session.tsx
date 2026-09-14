@@ -402,7 +402,7 @@ function LiveSession() {
       announceWellnessBreak(`${wellnessSessionKey}_break_${breaksTakenRef.current}_start`);
       log("Wellness Break Started", { at, breaksTaken: breaksTakenRef.current });
     },
-    [halfwayMs, persist, setPhase, wellnessSessionKey],
+    [halfwayMs, isVerified, persist, setPhase, wellnessSessionKey],
   );
 
   const enterAwaitingConfirmation = useCallback(
