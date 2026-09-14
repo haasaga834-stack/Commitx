@@ -775,29 +775,8 @@ function GroupSession() {
       </div>
 
       {/* Live participants */}
-      <div className="relative z-10 mx-auto w-full max-w-md rounded-3xl border border-hairline bg-card p-4 shadow-soft">
-        <ul className="grid gap-2">
-          {data!.members.map((m) => (
-            <li key={m.user_id} className="flex items-center gap-2.5">
-              <span
-                className={`h-2 w-2 shrink-0 rounded-full ${
-                  m.status === "joined"
-                    ? "bg-primary"
-                    : m.status === "completed"
-                      ? "bg-accent"
-                      : "bg-muted-foreground/40"
-                }`}
-              />
-              <span className="min-w-0 flex-1 truncate text-xs text-foreground">
-                {m.display_name}
-                {m.role === "creator" ? " · host" : ""}
-              </span>
-              <span className="shrink-0 text-[11px] text-muted-foreground">
-                {memberStatusLabel(m.status)}
-              </span>
-            </li>
-          ))}
-        </ul>
+      <div className="relative z-10 mx-auto w-full max-w-md">
+        <GroupParticipantSummary members={data!.members} />
       </div>
 
       {confirmLeave && (
