@@ -392,6 +392,50 @@ export function Landing() {
               ))}
             </div>
           </div>
+
+          {/* WHY COMMITX — fills the fold, invites the scroll */}
+          <div className="mt-16 sm:mt-20">
+            <div className="mx-auto grid max-w-4xl grid-cols-1 gap-3 sm:grid-cols-3">
+              {[
+                { icon: "🪙", title: "25 Cx Coins per hour", sub: "Every focused hour counts" },
+                { icon: "🛡️", title: "Two focus modes", sub: "Standard or fully Verified" },
+                { icon: "⚡", title: "Start in seconds", sub: "No account required" },
+              ].map((f) => (
+                <div
+                  key={f.title}
+                  className="flex items-center gap-3 rounded-2xl border border-ink-line/70 bg-paper/70 px-4 py-3.5 shadow-[0_18px_44px_-30px_rgb(0_0_0/0.35)] backdrop-blur-sm transition-transform duration-300 hover:-translate-y-0.5"
+                >
+                  <span className="text-xl" aria-hidden>
+                    {f.icon}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-[13px] font-medium tracking-[-0.01em]">{f.title}</p>
+                    <p className="text-[11px] text-ink-soft">{f.sub}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-10 flex flex-col items-center gap-2 text-ink-soft/70">
+              <span className="text-[10px] font-medium uppercase tracking-[0.28em]">
+                See how it works
+              </span>
+              <svg
+                className="animate-scroll-cue"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </div>
+          </div>
         </div>
       </section>
 
