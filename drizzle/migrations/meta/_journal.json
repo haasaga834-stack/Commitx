@@ -29,6 +29,13 @@
       "when": 1789409138014,
       "tag": "0003_tighten_definer_execute_and_wallets_roles",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789441890105,
+      "tag": "0004_restore_group_participant_execute",
+      "breakpoints": true
     }
   ]
 }
