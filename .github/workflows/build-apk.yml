@@ -40,14 +40,50 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      # The GitHub Ubuntu runner already ships the Android SDK. Use it directly
+      # (with a self-installed cmdline-tools fallback) instead of the
+      # setup-android action, which intermittently fails on its own download.
+      - name: Resolve Android SDK
+        run: |
+          set -eux
+          SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-$HOME/android-sdk}}"
+          mkdir -p "$SDK_ROOT"
+          SDKMANAGER="$(command -v sdkmanager || true)"
+          if [ -z "$SDKMANAGER" ]; then
+            for candidate in \
+              "$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" \
+              "$SDK_ROOT/cmdline-tools/"*/bin/sdkmanager; do
+              if [ -x "$candidate" ]; then SDKMANAGER="$candidate"; break; fi
+            done
+          fi
+          if [ -z "$SDKMANAGER" ]; then
+            TOOLS_ZIP="$RUNNER_TEMP/cmdline-tools.zip"
+            for attempt in 1 2 3; do
+              curl -fsSL --retry 3 --retry-all-errors \
+                https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip \
+                -o "$TOOLS_ZIP" && break
+              sleep 5
+            done
+            rm -rf "$SDK_ROOT/cmdline-tools/latest"
+            mkdir -p "$SDK_ROOT/cmdline-tools"
+            unzip -q "$TOOLS_ZIP" -d "$SDK_ROOT/cmdline-tools"
+            mv "$SDK_ROOT/cmdline-tools/cmdline-tools" "$SDK_ROOT/cmdline-tools/latest"
+            SDKMANAGER="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          fi
+          echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
+          echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
+          echo "SDKMANAGER=$SDKMANAGER" >> "$GITHUB_ENV"
 
       - name: Accept SDK licenses and install platform
         run: |
           set -eux
-          yes | sdkmanager --licenses > /dev/null || true
-          sdkmanager --install "platforms;android-36" "build-tools;36.0.0" < /dev/null
+          yes | "$SDKMANAGER" --sdk_root="$ANDROID_SDK_ROOT" --licenses > /dev/null || true
+          for attempt in 1 2 3; do
+            "$SDKMANAGER" --sdk_root="$ANDROID_SDK_ROOT" --install \
+              "platform-tools" "platforms;android-36" "build-tools;36.0.0" < /dev/null && break
+            sleep 10
+          done
+
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
