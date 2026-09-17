@@ -899,6 +899,8 @@ function LiveSession() {
       window.removeEventListener("pageshow", onFocus);
       window.removeEventListener("pagehide", onPageHide);
       window.removeEventListener("beforeunload", onBeforeUnload);
+      window.removeEventListener("offline", markConnectionGap);
+      window.removeEventListener("online", markConnectionGap);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVerified, dndBlocked, startedAt]);
