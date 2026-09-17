@@ -848,17 +848,47 @@ function LiveSession() {
 
     // Heartbeat: the backend tracks liveness, but a paused/away session is kept
     // alive with the gentle touch so it can never be failed for being away.
+    // A dropped connection must never end a session: while the device is
+    // offline no check-in can reach the server, so the stored liveness stamp
+    // goes stale on its own. When the connection returns we refresh liveness
+    // first and only then allow the strict check to run again.
+    let connectionGap = typeof navigator !== "undefined" && !isOnline();
+
+    const markConnectionGap = () => {
+      connectionGap = true;
+    };
+
     const beat = async () => {
       if (doneRef.current || stopped) return;
+      if (!isOnline()) {
+        connectionGap = true;
+        return;
+      }
       if (phaseRef.current !== "focus" || awayAtRef.current !== null) {
         await touchPausedWebSession();
+        connectionGap = false;
+        return;
+      }
+      if (connectionGap) {
+        // Reconnected (or just woke up) after a gap: restore liveness with the
+        // server clock instead of judging the session on a stale stamp.
+        await touchPausedWebSession();
+        connectionGap = false;
         return;
       }
       const status = await heartbeatWebSession();
-      if (status === "failed") failWeb("web_heartbeat_timeout");
+      if (status !== "failed") return;
+      // Double-check: refresh liveness and ask once more, so a stale stamp
+      // caused by sleep or a connection drop can never forfeit the session.
+      await touchPausedWebSession();
+      if (doneRef.current || stopped) return;
+      const confirmed = await heartbeatWebSession();
+      if (confirmed === "failed") failWeb("web_heartbeat_timeout");
     };
     void beat();
     const heartbeatId = setInterval(() => void beat(), WEB_HEARTBEAT_MS);
+    window.addEventListener("offline", markConnectionGap);
+    window.addEventListener("online", markConnectionGap);
 
     return () => {
       clearInterval(heartbeatId);
