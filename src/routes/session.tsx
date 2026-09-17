@@ -151,6 +151,42 @@ function Session() {
       setStatus("live");
       return;
     }
+
+    /**
+     * Opened without (or with the wrong) commitment details — this happens when
+     * the timer notification launches the app straight at the timer screen. A
+     * still-running session must be re-entered, never silently discarded.
+     */
+    if (
+      ticket &&
+      !ticket.pendingFail &&
+      typeof ticket.startedAt === "number" &&
+      Date.now() - ticket.startedAt < ticket.duration * 60 * 1000 + 3 * 60 * 60 * 1000 &&
+      !isSessionEnded({
+        goal: ticket.goal,
+        duration: ticket.duration,
+        value: ticket.value,
+        mode: ticket.mode,
+      }) &&
+      (ticket.goal !== goal ||
+        ticket.duration !== duration ||
+        ticket.value !== value ||
+        ticket.mode !== mode)
+    ) {
+      navigate({
+        to: "/session",
+        search: {
+          goal: ticket.goal,
+          duration: ticket.duration,
+          value: ticket.value,
+          mode: ticket.mode,
+          ...(ticket.theme ? { theme: ticket.theme } : {}),
+        },
+        replace: true,
+      });
+      return;
+    }
+
     setStatus("dead");
     setNativeSessionLock(false);
     setNativeVerifiedModeActive(false);
@@ -161,7 +197,8 @@ function Session() {
     void releaseActiveDbSession();
     navigate({ to: "/", replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [goal, duration, value, mode]);
+
 
   if (status !== "live") return null;
   return <LiveSession />;
