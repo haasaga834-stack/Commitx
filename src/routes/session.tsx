@@ -151,6 +151,42 @@ function Session() {
       setStatus("live");
       return;
     }
+
+    /**
+     * Opened without (or with the wrong) commitment details — this happens when
+     * the timer notification launches the app straight at the timer screen. A
+     * still-running session must be re-entered, never silently discarded.
+     */
+    if (
+      ticket &&
+      !ticket.pendingFail &&
+      typeof ticket.startedAt === "number" &&
+      Date.now() - ticket.startedAt < ticket.duration * 60 * 1000 + 3 * 60 * 60 * 1000 &&
+      !isSessionEnded({
+        goal: ticket.goal,
+        duration: ticket.duration,
+        value: ticket.value,
+        mode: ticket.mode,
+      }) &&
+      (ticket.goal !== goal ||
+        ticket.duration !== duration ||
+        ticket.value !== value ||
+        ticket.mode !== mode)
+    ) {
+      navigate({
+        to: "/session",
+        search: {
+          goal: ticket.goal,
+          duration: ticket.duration,
+          value: ticket.value,
+          mode: ticket.mode,
+          ...(ticket.theme ? { theme: ticket.theme } : {}),
+        },
+        replace: true,
+      });
+      return;
+    }
+
     setStatus("dead");
     setNativeSessionLock(false);
     setNativeVerifiedModeActive(false);
@@ -161,7 +197,8 @@ function Session() {
     void releaseActiveDbSession();
     navigate({ to: "/", replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [goal, duration, value, mode]);
+
 
   if (status !== "live") return null;
   return <LiveSession />;
@@ -747,39 +784,46 @@ function LiveSession() {
       evaluateRef.current();
     };
 
+    /**
+     * A hidden page is either a dark screen (allowed) or the user leaving for
+     * another tab / another app / the home screen (a failure). The reliable
+     * difference is keyboard focus: a locked or auto-off screen leaves this
+     * page focused, while switching tabs, minimising or opening another app
+     * hands focus to something else.
+     */
     const onVisibility = () => {
       if (document.visibilityState !== "hidden") {
         void endAway();
         return;
       }
-      // A hidden page is treated as a dark screen, never as a failure. Some
-      // Android browsers (e.g. Samsung/Chrome on tablets) emit blur *before*
-      // hiding on a screen lock, so any pending blur check is cancelled here.
       webBlurAtRef.current = null;
-      beginAway("screen_off");
+      window.setTimeout(() => {
+        if (doneRef.current || stopped) return;
+        if (document.visibilityState !== "hidden") return;
+        if (!document.hasFocus()) {
+          failWeb("web_tab_hidden");
+          return;
+        }
+        beginAway("screen_off");
+      }, 400);
     };
 
     // Focus moved to another window while this page is still visible
     // (split screen, second window). Confirmed after a short delay so
-    // re-renders, scrolling, rotation and lock-screen blur never trigger it.
+    // re-renders, scrolling and rotation never trigger it.
     const onBlur = () => {
       if (doneRef.current || stopped) return;
       if (document.visibilityState === "hidden") return;
       webBlurAtRef.current = Date.now();
       window.setTimeout(() => {
         if (doneRef.current || stopped) return;
-        // Only a page that is still on screen yet unfocused is a genuine
-        // second-window switch. Anything hidden by now is a dark screen.
-        if (document.visibilityState === "hidden") {
-          webBlurAtRef.current = null;
-          beginAway("screen_off");
-          return;
-        }
+        if (document.visibilityState === "hidden") return; // handled by onVisibility
         if (!document.hasFocus() && webBlurAtRef.current !== null) {
           failWeb("web_window_blur");
         }
       }, 1200);
     };
+
 
     const onFocus = () => {
       webBlurAtRef.current = null;
