@@ -59,6 +59,7 @@ import {
 
 
 import { showSessionProgress, hideSessionProgress } from "@/lib/native-notifications";
+import { isOnline } from "@/lib/connectivity";
 import { z } from "zod";
 import { useAuth } from "@/lib/use-auth";
 
