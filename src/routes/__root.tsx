@@ -14,6 +14,7 @@ import {
   finalizePendingVerifiedFailure,
   markSessionEnded,
   readActiveVerifiedSession,
+  readRestorableActiveSession,
 } from "../lib/verified-mode";
 import { releaseActiveDbSession } from "../lib/active-session";
 import { useAuth } from "../lib/use-auth";
