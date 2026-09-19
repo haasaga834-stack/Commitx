@@ -218,3 +218,35 @@ export function isSessionEnded(input: {
     m.mode === input.mode
   );
 }
+
+/**
+ * The still-running session that should be re-entered when the app is opened
+ * from the timer notification (or relaunched after being killed). Returns null
+ * whenever there is nothing live to restore, so nothing is ever resurrected:
+ * a pending failure is handled by the recovery path, an already-ended
+ * commitment stays ended, and a stale focus record is ignored.
+ */
+export function readRestorableActiveSession(): ActiveVerifiedSession | null {
+  const active = readActiveVerifiedSession();
+  if (!active || active.pendingFail) return null;
+
+  const goal = active.goal;
+  const duration = active.duration;
+  const value = active.value;
+  const mode = active.mode;
+  if (typeof goal !== "string" || typeof duration !== "number") return null;
+  if (typeof value !== "number" || (mode !== "standard" && mode !== "verified")) return null;
+  if (isSessionEnded({ goal, duration, value, mode })) return null;
+
+  const started = typeof active.startedAt === "number" ? active.startedAt : 0;
+  if (!started) return null;
+  const sinceStart = Date.now() - started;
+  if (sinceStart < 0) return null;
+
+  // Break / confirmation phases are intentionally unbounded (the user may come
+  // back much later). A focus phase has a bounded lifetime.
+  const phase = active.phase ?? "focus";
+  if (phase === "focus" && sinceStart > duration * 60 * 1000 + 3 * 60 * 60 * 1000) return null;
+
+  return active;
+}

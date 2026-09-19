@@ -14,6 +14,7 @@ import {
   finalizePendingVerifiedFailure,
   markSessionEnded,
   readActiveVerifiedSession,
+  readRestorableActiveSession,
 } from "../lib/verified-mode";
 import { releaseActiveDbSession } from "../lib/active-session";
 import { useAuth } from "../lib/use-auth";
@@ -258,6 +259,42 @@ function AuthGate({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * Opening the app from the live timer notification (or relaunching it after
+ * Android killed it) may land on the last route instead of the timer. A running
+ * session must be re-entered exactly where it is — same commitment, same
+ * elapsed time — never restarted, cancelled or charged. Runs once per app load
+ * only, so navigating away during a session stays the user's own choice.
+ */
+function ActiveSessionRestore() {
+  const router = useRouter();
+  useEffect(() => {
+    try {
+      const path = router.state.location.pathname.toLowerCase();
+      // Result screens and the timer itself already handle their own state.
+      if (path === "/session" || path === "/success" || path === "/failed") return;
+
+      const active = readRestorableActiveSession();
+      if (!active) return;
+
+      router.navigate({
+        to: "/session",
+        search: {
+          goal: active.goal,
+          duration: active.duration,
+          value: active.value,
+          mode: active.mode,
+          ...(active.theme ? { theme: active.theme } : {}),
+        },
+        replace: true,
+      });
+    } catch {}
+    // Intentionally start-of-app only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return null;
+}
+
 function StudyReminders() {
   useStudyReminders();
   // Re-arms the native 8:00 AM / 7:00 PM motivation alarms; idempotent, so a
@@ -310,6 +347,7 @@ function RootComponent() {
       <AmbientNature />
       <OfflineNotice />
       <VerifiedRecovery />
+      <ActiveSessionRestore />
       <StudyReminders />
       <AuthGate>
         <Outlet />
