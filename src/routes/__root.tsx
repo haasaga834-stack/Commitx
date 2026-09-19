@@ -347,6 +347,7 @@ function RootComponent() {
       <AmbientNature />
       <OfflineNotice />
       <VerifiedRecovery />
+      <ActiveSessionRestore />
       <StudyReminders />
       <AuthGate>
         <Outlet />
