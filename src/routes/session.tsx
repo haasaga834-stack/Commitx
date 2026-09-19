@@ -11,6 +11,7 @@ import {
   markSessionEnded,
   isSessionEnded,
   readActiveVerifiedSession,
+  readRestorableActiveSession,
   writeActiveVerifiedSession,
   RECOVERY_BREAK_MS,
   wellnessBreakAtMs,
