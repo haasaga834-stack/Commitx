@@ -686,10 +686,15 @@ function LiveSession() {
 
     const onPageHide = (event: PageTransitionEvent) => {
       if (doneRef.current || phaseRef.current !== "focus") return;
+      // Mobile browsers can emit pagehide when the power button turns the
+      // screen off. Web lifecycle enforcement below handles true unloads via
+      // beforeunload/reload markers without misclassifying a device lock.
+      if (isWebRuntime()) return;
       if (event.persisted) return;
       markActiveVerifiedSessionPendingFailure("browser_unload");
     };
     const onBeforeUnload = () => {
+      if (isWebRuntime()) return;
       if (phaseRef.current === "focus") markActiveVerifiedSessionPendingFailure("browser_unload");
     };
     const onNativeUserLeaveHint = (event: Event) =>
@@ -786,11 +791,10 @@ function LiveSession() {
     };
 
     /**
-     * A hidden page is either a dark screen (allowed) or the user leaving for
-     * another tab / another app / the home screen (a failure). The reliable
-     * difference is keyboard focus: a locked or auto-off screen leaves this
-     * page focused, while switching tabs, minimising or opening another app
-     * hands focus to something else.
+     * Samsung Chrome reports a power-button lock as hidden + unfocused, which
+     * is indistinguishable from a tab switch through the Page Visibility API.
+     * Therefore hidden alone is always treated as an allowed screen-off state.
+     * Explicit unload/reload and visible-window blur remain failure paths.
      */
     const onVisibility = () => {
       if (document.visibilityState !== "hidden") {
@@ -798,15 +802,7 @@ function LiveSession() {
         return;
       }
       webBlurAtRef.current = null;
-      window.setTimeout(() => {
-        if (doneRef.current || stopped) return;
-        if (document.visibilityState !== "hidden") return;
-        if (!document.hasFocus()) {
-          failWeb("web_tab_hidden");
-          return;
-        }
-        beginAway("screen_off");
-      }, 400);
+      beginAway("screen_off");
     };
 
     // Focus moved to another window while this page is still visible
@@ -837,14 +833,15 @@ function LiveSession() {
       failWebSessionBeacon("web_unload");
     };
 
-    const onPageHide = () => markUnload();
+    // pagehide is intentionally not a failure signal: Samsung Chrome emits it
+    // for a power-button lock. beforeunload plus the reload marker still catch
+    // refreshes and navigations, while backend timeout covers abandoned tabs.
     const onBeforeUnload = () => markUnload();
 
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("blur", onBlur);
     window.addEventListener("focus", onFocus);
     window.addEventListener("pageshow", onFocus);
-    window.addEventListener("pagehide", onPageHide);
     window.addEventListener("beforeunload", onBeforeUnload);
 
     // Heartbeat: the backend tracks liveness, but a paused/away session is kept
@@ -897,7 +894,6 @@ function LiveSession() {
       window.removeEventListener("blur", onBlur);
       window.removeEventListener("focus", onFocus);
       window.removeEventListener("pageshow", onFocus);
-      window.removeEventListener("pagehide", onPageHide);
       window.removeEventListener("beforeunload", onBeforeUnload);
       window.removeEventListener("offline", markConnectionGap);
       window.removeEventListener("online", markConnectionGap);
