@@ -158,30 +158,22 @@ function Session() {
      * the timer notification launches the app straight at the timer screen. A
      * still-running session must be re-entered, never silently discarded.
      */
+    const live = readRestorableActiveSession();
     if (
-      ticket &&
-      !ticket.pendingFail &&
-      typeof ticket.startedAt === "number" &&
-      Date.now() - ticket.startedAt < ticket.duration * 60 * 1000 + 3 * 60 * 60 * 1000 &&
-      !isSessionEnded({
-        goal: ticket.goal,
-        duration: ticket.duration,
-        value: ticket.value,
-        mode: ticket.mode,
-      }) &&
-      (ticket.goal !== goal ||
-        ticket.duration !== duration ||
-        ticket.value !== value ||
-        ticket.mode !== mode)
+      live &&
+      (live.goal !== goal ||
+        live.duration !== duration ||
+        live.value !== value ||
+        live.mode !== mode)
     ) {
       navigate({
         to: "/session",
         search: {
-          goal: ticket.goal,
-          duration: ticket.duration,
-          value: ticket.value,
-          mode: ticket.mode,
-          ...(ticket.theme ? { theme: ticket.theme } : {}),
+          goal: live.goal,
+          duration: live.duration,
+          value: live.value,
+          mode: live.mode,
+          ...(live.theme ? { theme: live.theme } : {}),
         },
         replace: true,
       });
