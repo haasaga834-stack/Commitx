@@ -82,9 +82,15 @@ public class FocusShieldActivity extends Activity {
         back.setPadding(dp(24), dp(14), dp(24), dp(14));
         back.setOnClickListener(v -> {
             try {
+                // Return straight to the live timer screen — the web layer
+                // re-enters the stored running session (same id, same clock),
+                // never the home screen and never a new session.
                 startActivity(new Intent(this, MainActivity.class)
-                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                                | Intent.FLAG_ACTIVITY_CLEAR_TOP));
+                        .setAction(Intent.ACTION_MAIN)
+                        .addCategory(Intent.CATEGORY_LAUNCHER)
+                        .putExtra(MainActivity.EXTRA_ROUTE, "/session")
+                        .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP
+                                | Intent.FLAG_ACTIVITY_NEW_TASK));
             } catch (Throwable ignored) {}
             finish();
         });

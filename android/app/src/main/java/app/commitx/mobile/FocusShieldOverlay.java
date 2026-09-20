@@ -93,9 +93,14 @@ final class FocusShieldOverlay {
             back.setOnClickListener(v -> {
                 hide();
                 try {
+                    // Same as the timer notification: open the live timer
+                    // screen so the running session is restored, not reset.
                     ctx.startActivity(new Intent(ctx, MainActivity.class)
-                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                                    | Intent.FLAG_ACTIVITY_CLEAR_TOP));
+                            .setAction(Intent.ACTION_MAIN)
+                            .addCategory(Intent.CATEGORY_LAUNCHER)
+                            .putExtra(MainActivity.EXTRA_ROUTE, "/session")
+                            .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP
+                                    | Intent.FLAG_ACTIVITY_NEW_TASK));
                 } catch (Throwable ignored) {}
             });
             view.addView(back);
