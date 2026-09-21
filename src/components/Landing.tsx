@@ -625,6 +625,23 @@ export function Landing() {
             © {new Date().getFullYear()} CommitX
           </p>
         </div>
+        <div className="mx-auto mt-8 flex max-w-5xl justify-center border-t border-ink-line/60 pt-8">
+          <a
+            href="https://launchbuff.com/products/commitx-e1h8ub"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Featured on LaunchBuff"
+            className="transition-opacity duration-300 hover:opacity-80"
+          >
+            <img
+              src="https://launchbuff.com/badge-featured-dark.svg"
+              alt="Featured on LaunchBuff"
+              width={256}
+              height={80}
+              loading="lazy"
+            />
+          </a>
+        </div>
       </footer>
 
       {modal ? (
