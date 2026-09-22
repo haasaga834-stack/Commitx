@@ -233,7 +233,20 @@ export function Landing() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const [faqOpen, setFaqOpen] = useState(false);
+  const faqRef = useRef<HTMLDivElement | null>(null);
   const { count: focusClassCount, loading: focusClassLoading } = useFocusClassCount();
+
+  useEffect(() => {
+    if (!faqOpen) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (faqRef.current && !faqRef.current.contains(event.target as Node)) {
+        setFaqOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [faqOpen]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
