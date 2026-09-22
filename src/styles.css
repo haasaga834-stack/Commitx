@@ -553,6 +553,42 @@ body {
   animation: focus-notice 3.4s ease-in-out both;
 }
 
+@keyframes focus-moon-breathe {
+  0%, 100% { opacity: 0.68; transform: scale(1); }
+  50% { opacity: 0.95; transform: scale(1.04); }
+}
+@keyframes focus-cloud-drift {
+  0% { transform: translate3d(-6%, 0, 0); }
+  100% { transform: translate3d(6%, 0, 0); }
+}
+@keyframes focus-canopy-sway {
+  0%, 100% { transform: rotate(-0.45deg) translate3d(0, 0, 0); }
+  50% { transform: rotate(0.45deg) translate3d(2px, -2px, 0); }
+}
+@keyframes focus-grass-sway {
+  0%, 100% { transform: skewX(-0.6deg); }
+  50% { transform: skewX(0.6deg); }
+}
+
+@utility animate-focus-moon-breathe {
+  animation: focus-moon-breathe 26s ease-in-out infinite;
+}
+@utility animate-focus-cloud-drift {
+  animation: focus-cloud-drift 150s ease-in-out infinite alternate;
+}
+@utility animate-focus-cloud-drift-slow {
+  animation: focus-cloud-drift 220s ease-in-out infinite alternate-reverse;
+}
+@utility animate-focus-canopy-sway {
+  animation: focus-canopy-sway 24s ease-in-out infinite;
+}
+@utility animate-focus-canopy-sway-reverse {
+  animation: focus-canopy-sway 30s ease-in-out infinite reverse;
+}
+@utility animate-focus-grass-sway {
+  animation: focus-grass-sway 28s ease-in-out infinite;
+}
+
 /* Extra ambience motion: hazy air, breathing leaves, gliding water light */
 @keyframes scene-haze {
   0%, 100% { opacity: 0.5; transform: translateX(-2%); }
