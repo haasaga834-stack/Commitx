@@ -255,6 +255,29 @@ function FocusClassPage() {
         : selectedDuration,
     );
     setCompletedAlongside(Math.max(0, activeCount - 1));
+    // Signed-in users get the finished class saved to their account and the
+    // usual hourly Cx Coins reward. Visitors stay fully anonymous.
+    if (!endedBeforeTime && signedIn) {
+      const earned = coinsForMinutes(selectedDuration);
+      setState((s) => ({
+        ...s,
+        sessions: [
+          {
+            id: createLocalSessionId(),
+            goal: "Focus Class",
+            durationMinutes: selectedDuration,
+            value: 0,
+            mode: "standard" as const,
+            status: "completed" as const,
+            date: Date.now(),
+            coinsSpent: 0,
+            coinsEarned: earned,
+          },
+          ...s.sessions,
+        ],
+        coins: s.coins + earned,
+      }));
+    }
     setPhase("complete");
     activeRef.current = false;
     audio.stop();
