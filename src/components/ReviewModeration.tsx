@@ -4,14 +4,6 @@ import { Check, Pencil, RefreshCw, Trash2, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import {
   approveStudentReview,
@@ -140,149 +132,127 @@ export function ReviewModeration() {
 
       {error ? <p className="mt-4 text-sm font-medium text-destructive">{error}</p> : null}
 
-      <div className="mt-5 overflow-x-auto rounded-2xl border border-hairline bg-background/70">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Review</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Submitted</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {reviews.length ? (
-              reviews.map((review) => {
-                const isEditing = editingId === review.id;
-                const deleting = confirmDeleteId === review.id;
-                return (
-                  <TableRow key={review.id}>
-                    <TableCell className="min-w-[260px] align-top">
-                      {isEditing ? (
-                        <div className="space-y-2 py-2">
-                          <Input
-                            value={editing.displayName}
-                            maxLength={60}
-                            onChange={(event) => setEditing((prev) => ({ ...prev, displayName: event.target.value }))}
-                            placeholder="Display name"
-                          />
-                          <Input
-                            value={editing.courseYear}
-                            maxLength={80}
-                            onChange={(event) => setEditing((prev) => ({ ...prev, courseYear: event.target.value }))}
-                            placeholder="Course/year"
-                          />
-                          <Textarea
-                            value={editing.review}
-                            maxLength={500}
-                            rows={4}
-                            onChange={(event) => setEditing((prev) => ({ ...prev, review: event.target.value }))}
-                            placeholder="Review"
-                          />
-                        </div>
-                      ) : (
-                        <div className="py-2">
-                          <p className="font-semibold text-foreground">{review.displayName}</p>
-                          {review.courseYear ? <p className="text-xs text-muted-foreground">{review.courseYear}</p> : null}
-                          <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">{review.review}</p>
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="align-top">
-                      <Badge variant="outline" className={cn("capitalize", statusClass[review.status])}>
-                        {review.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap align-top text-sm text-muted-foreground">
-                      {dateLabel(review.submittedAt)}
-                    </TableCell>
-                    <TableCell className="align-top">
-                      <div className="flex flex-wrap justify-end gap-2">
-                        {isEditing ? (
-                          <>
-                            <Button type="button" size="sm" onClick={() => void saveEditing(review.id)} disabled={busyId === review.id}>
-                              Save
-                            </Button>
-                            <Button type="button" size="sm" variant="outline" onClick={() => setEditingId(null)} disabled={busyId === review.id}>
-                              Cancel
-                            </Button>
-                          </>
-                        ) : deleting ? (
-                          <>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => void runAction(review.id, () => removeReview({ data: { id: review.id } }))}
-                              disabled={busyId === review.id}
-                            >
-                              Delete
-                            </Button>
-                            <Button type="button" size="sm" variant="outline" onClick={() => setConfirmDeleteId(null)} disabled={busyId === review.id}>
-                              Cancel
-                            </Button>
-                          </>
-                        ) : (
-                          <>
-                            <Button
-                              type="button"
-                              size="icon"
-                              variant="outline"
-                              aria-label="Approve review"
-                              onClick={() => void runAction(review.id, () => approveReview({ data: { id: review.id } }))}
-                              disabled={busyId === review.id || review.status === "approved"}
-                            >
-                              <Check className="h-4 w-4" aria-hidden="true" />
-                            </Button>
-                            <Button
-                              type="button"
-                              size="icon"
-                              variant="outline"
-                              aria-label="Reject review"
-                              onClick={() => void runAction(review.id, () => rejectReview({ data: { id: review.id } }))}
-                              disabled={busyId === review.id || review.status === "rejected"}
-                            >
-                              <X className="h-4 w-4" aria-hidden="true" />
-                            </Button>
-                            <Button
-                              type="button"
-                              size="icon"
-                              variant="outline"
-                              aria-label="Edit review"
-                              onClick={() => startEditing(review)}
-                              disabled={busyId === review.id}
-                            >
-                              <Pencil className="h-4 w-4" aria-hidden="true" />
-                            </Button>
-                            <Button
-                              type="button"
-                              size="icon"
-                              variant="outline"
-                              aria-label="Delete review"
-                              onClick={() => {
-                                setEditingId(null);
-                                setConfirmDeleteId(review.id);
-                              }}
-                              disabled={busyId === review.id}
-                            >
-                              <Trash2 className="h-4 w-4" aria-hidden="true" />
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            ) : (
-              <TableRow>
-                <TableCell colSpan={4} className="py-8 text-center text-sm text-muted-foreground">
-                  No student reviews submitted yet.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+      <div className="mt-5 space-y-4">
+        {reviews.length ? (
+          reviews.map((review) => {
+            const isEditing = editingId === review.id;
+            const deleting = confirmDeleteId === review.id;
+            const busy = busyId === review.id;
+            return (
+              <div key={review.id} className="rounded-2xl border border-hairline bg-background/70 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <Badge variant="outline" className={cn("capitalize", statusClass[review.status])}>
+                    {review.status}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">{dateLabel(review.submittedAt)}</span>
+                </div>
+
+                {isEditing ? (
+                  <div className="mt-3 space-y-2">
+                    <Input
+                      value={editing.displayName}
+                      maxLength={60}
+                      onChange={(event) => setEditing((prev) => ({ ...prev, displayName: event.target.value }))}
+                      placeholder="Display name"
+                    />
+                    <Input
+                      value={editing.courseYear}
+                      maxLength={80}
+                      onChange={(event) => setEditing((prev) => ({ ...prev, courseYear: event.target.value }))}
+                      placeholder="Course/year"
+                    />
+                    <Textarea
+                      value={editing.review}
+                      maxLength={500}
+                      rows={5}
+                      onChange={(event) => setEditing((prev) => ({ ...prev, review: event.target.value }))}
+                      placeholder="Review"
+                    />
+                  </div>
+                ) : (
+                  <div className="mt-3">
+                    <p className="font-semibold text-foreground">{review.displayName}</p>
+                    {review.courseYear ? (
+                      <p className="text-xs text-muted-foreground">{review.courseYear}</p>
+                    ) : null}
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">{review.review}</p>
+                  </div>
+                )}
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {isEditing ? (
+                    <>
+                      <Button type="button" size="sm" onClick={() => void saveEditing(review.id)} disabled={busy}>
+                        Save
+                      </Button>
+                      <Button type="button" size="sm" variant="outline" onClick={() => setEditingId(null)} disabled={busy}>
+                        Cancel
+                      </Button>
+                    </>
+                  ) : deleting ? (
+                    <>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => void runAction(review.id, () => removeReview({ data: { id: review.id } }))}
+                        disabled={busy}
+                      >
+                        Delete permanently
+                      </Button>
+                      <Button type="button" size="sm" variant="outline" onClick={() => setConfirmDeleteId(null)} disabled={busy}>
+                        Cancel
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => void runAction(review.id, () => approveReview({ data: { id: review.id } }))}
+                        disabled={busy || review.status === "approved"}
+                      >
+                        <Check className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                        Approve
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => void runAction(review.id, () => rejectReview({ data: { id: review.id } }))}
+                        disabled={busy || review.status === "rejected"}
+                      >
+                        <X className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                        Reject
+                      </Button>
+                      <Button type="button" size="sm" variant="outline" onClick={() => startEditing(review)} disabled={busy}>
+                        <Pencil className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                        Edit
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setEditingId(null);
+                          setConfirmDeleteId(review.id);
+                        }}
+                        disabled={busy}
+                      >
+                        <Trash2 className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                        Delete
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <p className="rounded-2xl border border-hairline bg-background/70 py-8 text-center text-sm text-muted-foreground">
+            No student reviews submitted yet.
+          </p>
+        )}
       </div>
     </section>
   );
