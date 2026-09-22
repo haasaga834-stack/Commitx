@@ -10,9 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WalletRouteImport } from './routes/wallet'
+import { Route as VerifiedFocusRouteImport } from './routes/verified-focus'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SuccessRouteImport } from './routes/success'
 import { Route as StudyTrackerRouteImport } from './routes/study-tracker'
+import { Route as StudyAccountabilityRouteImport } from './routes/study-accountability'
+import { Route as StandardFocusRouteImport } from './routes/standard-focus'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SessionRouteImport } from './routes/session'
@@ -23,6 +26,8 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PlannerRouteImport } from './routes/planner'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as HistoryRouteImport } from './routes/history'
+import { Route as GroupStudyRouteImport } from './routes/group-study'
+import { Route as FocusTimerRouteImport } from './routes/focus-timer'
 import { Route as FocusClassRouteImport } from './routes/focus-class'
 import { Route as FailedRouteImport } from './routes/failed'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -42,6 +47,11 @@ const WalletRoute = WalletRouteImport.update({
   path: '/wallet',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VerifiedFocusRoute = VerifiedFocusRouteImport.update({
+  id: '/verified-focus',
+  path: '/verified-focus',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -55,6 +65,16 @@ const SuccessRoute = SuccessRouteImport.update({
 const StudyTrackerRoute = StudyTrackerRouteImport.update({
   id: '/study-tracker',
   path: '/study-tracker',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudyAccountabilityRoute = StudyAccountabilityRouteImport.update({
+  id: '/study-accountability',
+  path: '/study-accountability',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StandardFocusRoute = StandardFocusRouteImport.update({
+  id: '/standard-focus',
+  path: '/standard-focus',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -105,6 +125,16 @@ const HowItWorksRoute = HowItWorksRouteImport.update({
 const HistoryRoute = HistoryRouteImport.update({
   id: '/history',
   path: '/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GroupStudyRoute = GroupStudyRouteImport.update({
+  id: '/group-study',
+  path: '/group-study',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FocusTimerRoute = FocusTimerRouteImport.update({
+  id: '/focus-timer',
+  path: '/focus-timer',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FocusClassRoute = FocusClassRouteImport.update({
@@ -183,6 +213,8 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/failed': typeof FailedRoute
   '/focus-class': typeof FocusClassRoute
+  '/focus-timer': typeof FocusTimerRoute
+  '/group-study': typeof GroupStudyRoute
   '/history': typeof HistoryRoute
   '/how-it-works': typeof HowItWorksRoute
   '/planner': typeof PlannerRoute
@@ -193,9 +225,12 @@ export interface FileRoutesByFullPath {
   '/session': typeof SessionRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/standard-focus': typeof StandardFocusRoute
+  '/study-accountability': typeof StudyAccountabilityRoute
   '/study-tracker': typeof StudyTrackerRoute
   '/success': typeof SuccessRoute
   '/terms': typeof TermsRoute
+  '/verified-focus': typeof VerifiedFocusRoute
   '/wallet': typeof WalletRoute
   '/group/$id': typeof GroupIdRoute
   '/group/': typeof GroupIndexRoute
@@ -212,6 +247,8 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/failed': typeof FailedRoute
   '/focus-class': typeof FocusClassRoute
+  '/focus-timer': typeof FocusTimerRoute
+  '/group-study': typeof GroupStudyRoute
   '/history': typeof HistoryRoute
   '/how-it-works': typeof HowItWorksRoute
   '/planner': typeof PlannerRoute
@@ -222,9 +259,12 @@ export interface FileRoutesByTo {
   '/session': typeof SessionRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/standard-focus': typeof StandardFocusRoute
+  '/study-accountability': typeof StudyAccountabilityRoute
   '/study-tracker': typeof StudyTrackerRoute
   '/success': typeof SuccessRoute
   '/terms': typeof TermsRoute
+  '/verified-focus': typeof VerifiedFocusRoute
   '/wallet': typeof WalletRoute
   '/group/$id': typeof GroupIdRoute
   '/group': typeof GroupIndexRoute
@@ -242,6 +282,8 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/failed': typeof FailedRoute
   '/focus-class': typeof FocusClassRoute
+  '/focus-timer': typeof FocusTimerRoute
+  '/group-study': typeof GroupStudyRoute
   '/history': typeof HistoryRoute
   '/how-it-works': typeof HowItWorksRoute
   '/planner': typeof PlannerRoute
@@ -252,9 +294,12 @@ export interface FileRoutesById {
   '/session': typeof SessionRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/standard-focus': typeof StandardFocusRoute
+  '/study-accountability': typeof StudyAccountabilityRoute
   '/study-tracker': typeof StudyTrackerRoute
   '/success': typeof SuccessRoute
   '/terms': typeof TermsRoute
+  '/verified-focus': typeof VerifiedFocusRoute
   '/wallet': typeof WalletRoute
   '/group/$id': typeof GroupIdRoute
   '/group/': typeof GroupIndexRoute
@@ -273,6 +318,8 @@ export interface FileRouteTypes {
     | '/contact'
     | '/failed'
     | '/focus-class'
+    | '/focus-timer'
+    | '/group-study'
     | '/history'
     | '/how-it-works'
     | '/planner'
@@ -283,9 +330,12 @@ export interface FileRouteTypes {
     | '/session'
     | '/settings'
     | '/sitemap.xml'
+    | '/standard-focus'
+    | '/study-accountability'
     | '/study-tracker'
     | '/success'
     | '/terms'
+    | '/verified-focus'
     | '/wallet'
     | '/group/$id'
     | '/group/'
@@ -302,6 +352,8 @@ export interface FileRouteTypes {
     | '/contact'
     | '/failed'
     | '/focus-class'
+    | '/focus-timer'
+    | '/group-study'
     | '/history'
     | '/how-it-works'
     | '/planner'
@@ -312,9 +364,12 @@ export interface FileRouteTypes {
     | '/session'
     | '/settings'
     | '/sitemap.xml'
+    | '/standard-focus'
+    | '/study-accountability'
     | '/study-tracker'
     | '/success'
     | '/terms'
+    | '/verified-focus'
     | '/wallet'
     | '/group/$id'
     | '/group'
@@ -331,6 +386,8 @@ export interface FileRouteTypes {
     | '/contact'
     | '/failed'
     | '/focus-class'
+    | '/focus-timer'
+    | '/group-study'
     | '/history'
     | '/how-it-works'
     | '/planner'
@@ -341,9 +398,12 @@ export interface FileRouteTypes {
     | '/session'
     | '/settings'
     | '/sitemap.xml'
+    | '/standard-focus'
+    | '/study-accountability'
     | '/study-tracker'
     | '/success'
     | '/terms'
+    | '/verified-focus'
     | '/wallet'
     | '/group/$id'
     | '/group/'
@@ -361,6 +421,8 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   FailedRoute: typeof FailedRoute
   FocusClassRoute: typeof FocusClassRoute
+  FocusTimerRoute: typeof FocusTimerRoute
+  GroupStudyRoute: typeof GroupStudyRoute
   HistoryRoute: typeof HistoryRoute
   HowItWorksRoute: typeof HowItWorksRoute
   PlannerRoute: typeof PlannerRoute
@@ -371,9 +433,12 @@ export interface RootRouteChildren {
   SessionRoute: typeof SessionRoute
   SettingsRoute: typeof SettingsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  StandardFocusRoute: typeof StandardFocusRoute
+  StudyAccountabilityRoute: typeof StudyAccountabilityRoute
   StudyTrackerRoute: typeof StudyTrackerRoute
   SuccessRoute: typeof SuccessRoute
   TermsRoute: typeof TermsRoute
+  VerifiedFocusRoute: typeof VerifiedFocusRoute
   WalletRoute: typeof WalletRoute
   GroupIdRoute: typeof GroupIdRoute
   GroupIndexRoute: typeof GroupIndexRoute
@@ -388,6 +453,13 @@ declare module '@tanstack/react-router' {
       path: '/wallet'
       fullPath: '/wallet'
       preLoaderRoute: typeof WalletRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verified-focus': {
+      id: '/verified-focus'
+      path: '/verified-focus'
+      fullPath: '/verified-focus'
+      preLoaderRoute: typeof VerifiedFocusRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -409,6 +481,20 @@ declare module '@tanstack/react-router' {
       path: '/study-tracker'
       fullPath: '/study-tracker'
       preLoaderRoute: typeof StudyTrackerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/study-accountability': {
+      id: '/study-accountability'
+      path: '/study-accountability'
+      fullPath: '/study-accountability'
+      preLoaderRoute: typeof StudyAccountabilityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/standard-focus': {
+      id: '/standard-focus'
+      path: '/standard-focus'
+      fullPath: '/standard-focus'
+      preLoaderRoute: typeof StandardFocusRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sitemap.xml': {
@@ -479,6 +565,20 @@ declare module '@tanstack/react-router' {
       path: '/history'
       fullPath: '/history'
       preLoaderRoute: typeof HistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/group-study': {
+      id: '/group-study'
+      path: '/group-study'
+      fullPath: '/group-study'
+      preLoaderRoute: typeof GroupStudyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/focus-timer': {
+      id: '/focus-timer'
+      path: '/focus-timer'
+      fullPath: '/focus-timer'
+      preLoaderRoute: typeof FocusTimerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/focus-class': {
@@ -585,6 +685,8 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   FailedRoute: FailedRoute,
   FocusClassRoute: FocusClassRoute,
+  FocusTimerRoute: FocusTimerRoute,
+  GroupStudyRoute: GroupStudyRoute,
   HistoryRoute: HistoryRoute,
   HowItWorksRoute: HowItWorksRoute,
   PlannerRoute: PlannerRoute,
@@ -595,9 +697,12 @@ const rootRouteChildren: RootRouteChildren = {
   SessionRoute: SessionRoute,
   SettingsRoute: SettingsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  StandardFocusRoute: StandardFocusRoute,
+  StudyAccountabilityRoute: StudyAccountabilityRoute,
   StudyTrackerRoute: StudyTrackerRoute,
   SuccessRoute: SuccessRoute,
   TermsRoute: TermsRoute,
+  VerifiedFocusRoute: VerifiedFocusRoute,
   WalletRoute: WalletRoute,
   GroupIdRoute: GroupIdRoute,
   GroupIndexRoute: GroupIndexRoute,

@@ -215,6 +215,11 @@ const PUBLIC_PATHS = [
   "/contact",
   "/how-it-works",
   "/study-tracker",
+  "/focus-timer",
+  "/study-accountability",
+  "/group-study",
+  "/verified-focus",
+  "/standard-focus",
   "/reset-password",
 ];
 
