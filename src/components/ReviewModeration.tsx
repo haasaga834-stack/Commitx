@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
 import {
   approveStudentReview,
   deleteStudentReview,
@@ -59,6 +60,11 @@ export function ReviewModeration() {
   const refresh = async () => {
     try {
       setError(null);
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) {
+        setIsAdmin(false);
+        return;
+      }
       const result = await loadReviews({});
       setIsAdmin(result.isAdmin);
       setReviews(result.reviews);
