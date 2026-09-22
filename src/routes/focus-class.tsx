@@ -624,12 +624,12 @@ function QuietForest() {
         preserveAspectRatio="none"
       >
         <path
-          d="M0 168 L120 120 L232 152 L340 98 L452 146 L566 106 L690 150 L812 112 L930 154 L1050 118 L1200 160 L1200 220 L0 220 Z"
+          d="M0 172 C140 118 210 120 330 158 C450 194 520 118 650 150 C790 184 860 126 980 154 C1080 176 1140 166 1200 156 L1200 220 L0 220 Z"
           fill="var(--focus-ridge-far)"
           opacity="0.75"
         />
         <path
-          d="M0 196 L104 158 L214 186 L330 144 L446 182 L570 150 L700 186 L830 152 L960 188 L1080 156 L1200 192 L1200 220 L0 220 Z"
+          d="M0 198 C130 160 214 166 326 190 C452 214 530 156 664 184 C810 214 882 162 1010 190 C1090 206 1152 196 1200 188 L1200 220 L0 220 Z"
           fill="var(--focus-ridge-mid)"
           opacity="0.9"
         />
@@ -662,7 +662,7 @@ function QuietForest() {
       <div className="animate-focus-mist-slow absolute inset-x-[-18%] top-[70%] h-24 bg-[linear-gradient(90deg,transparent,var(--focus-mist-low),transparent)] blur-2xl" />
 
       {/* meadow */}
-      <div className="absolute inset-x-0 bottom-0 h-[30%] bg-[linear-gradient(180deg,transparent,var(--focus-meadow)_35%,var(--focus-meadow-deep))]" />
+      <div className="absolute inset-x-0 bottom-0 h-[30%] bg-[linear-gradient(180deg,transparent,var(--focus-meadow)_42%,var(--focus-meadow-deep))]" />
       <div className="animate-focus-mist-slow absolute inset-x-[-14%] bottom-[22%] h-24 bg-[linear-gradient(90deg,transparent,var(--focus-mist-low),transparent)] blur-3xl" />
       <div className="animate-focus-grass-sway absolute inset-x-0 bottom-0 h-[14%] origin-bottom bg-[radial-gradient(ellipse_at_18%_100%,var(--focus-leaf),transparent_46%),radial-gradient(ellipse_at_48%_100%,var(--focus-leaf-soft),transparent_42%),radial-gradient(ellipse_at_82%_100%,var(--focus-leaf),transparent_46%)] blur-[4px]" />
       {/* near foreground shrubs for depth */}
@@ -686,7 +686,7 @@ function QuietForest() {
 
       {/* light edge trees — enough framing without closing in the timer */}
       <svg
-        className="animate-focus-canopy-sway absolute -left-10 bottom-0 h-full w-[22%] origin-bottom opacity-65 blur-[2px] sm:w-[17%]"
+        className="animate-focus-canopy-sway absolute -left-12 bottom-0 h-full w-[20%] origin-bottom opacity-40 blur-[4px] sm:w-[14%]"
         viewBox="0 0 240 900"
         preserveAspectRatio="xMinYMax slice"
       >
@@ -701,7 +701,7 @@ function QuietForest() {
         </g>
       </svg>
       <svg
-        className="animate-focus-canopy-sway-reverse absolute -right-10 bottom-0 h-full w-[23%] origin-bottom opacity-65 blur-[2px] sm:w-[18%]"
+        className="animate-focus-canopy-sway-reverse absolute -right-12 bottom-0 h-full w-[21%] origin-bottom opacity-40 blur-[4px] sm:w-[15%]"
         viewBox="0 0 240 900"
         preserveAspectRatio="xMaxYMax slice"
       >
@@ -751,7 +751,7 @@ function QuietForest() {
       <div className="animate-focus-particles absolute inset-0 bg-[radial-gradient(circle_at_22%_46%,var(--focus-particle)_0_1px,transparent_2px),radial-gradient(circle_at_74%_54%,var(--focus-particle)_0_1px,transparent_2px),radial-gradient(circle_at_52%_78%,var(--focus-particle)_0_1px,transparent_2px),radial-gradient(circle_at_38%_66%,var(--focus-particle)_0_1px,transparent_2px)]" />
 
       {/* vignette keeps the centre calm and readable */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_46%,transparent_48%,var(--focus-deep)_100%)] opacity-45" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_46%,transparent_54%,var(--focus-deep)_100%)] opacity-28" />
     </div>
   );
 }
