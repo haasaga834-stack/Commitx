@@ -51,14 +51,13 @@ function validateForm(form: FormState) {
   return null;
 }
 
-const READ_MORE_THRESHOLD = 220;
+const REVIEW_SCROLL_MAX = 168;
 
 export function LandingReviews() {
   const loadReviews = useServerFn(listApprovedStudentReviews);
   const submitReview = useServerFn(submitStudentReview);
   const [reviews, setReviews] = useState<StudentReviewDTO[]>([]);
   const [active, setActive] = useState(0);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(initialForm);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -145,23 +144,16 @@ export function LandingReviews() {
             ) : current ? (
               <article className="flex min-h-[190px] flex-col justify-between gap-6">
                 <div>
-                  <p
+                  <div
                     className={cn(
-                      "text-lg leading-relaxed text-ink sm:text-xl",
-                      expandedId !== current.id && "line-clamp-6",
+                      "overflow-y-auto pr-1",
+                      current.review.length > 180 &&
+                        "[scrollbar-width:thin] max-h-[168px] overscroll-contain",
                     )}
+                    style={current.review.length > 180 ? { maxHeight: REVIEW_SCROLL_MAX } : undefined}
                   >
-                    “{current.review}”
-                  </p>
-                  {current.review.length > READ_MORE_THRESHOLD ? (
-                    <button
-                      type="button"
-                      onClick={() => setExpandedId((id) => (id === current.id ? null : current.id))}
-                      className="mt-3 text-sm font-semibold text-primary hover:underline"
-                    >
-                      {expandedId === current.id ? "Show less" : "Read more"}
-                    </button>
-                  ) : null}
+                    <p className="text-lg leading-relaxed text-ink sm:text-xl">“{current.review}”</p>
+                  </div>
                 </div>
                 <div className="flex flex-wrap items-end justify-between gap-4">
                   <div>
