@@ -215,6 +215,7 @@ const PUBLIC_PATHS = [
   "/how-it-works",
   "/study-tracker",
   "/reset-password",
+  "/scene-check",
 ];
 
 function isPublicPath(path: string) {
