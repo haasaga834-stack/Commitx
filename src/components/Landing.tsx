@@ -8,6 +8,7 @@ import { GuestSetup } from "@/components/GuestSetup";
 import { FocusClassSetup } from "@/components/FocusClassSetup";
 import { LandingReviews } from "@/components/LandingReviews";
 import { useFocusClassCount } from "@/lib/focus-class";
+import { useAuth } from "@/lib/use-auth";
 
 const INDUS_APPSTORE_URL = "https://indusapp.store/nnbmdn4h";
 
