@@ -615,28 +615,6 @@ export function Landing() {
         </div>
       </section>
 
-      {/* WHY COMMITX */}
-      <section className="bg-paper-soft px-6 py-16 sm:py-20">
-        <div className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
-          <Reveal>
-            <div>
-              <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-ink-soft">
-                Why CommitX
-              </p>
-              <h2 className="mt-5 text-[28px] font-medium leading-[1.15] tracking-[-0.03em] sm:text-[42px]">
-                A calm push from intention to action.
-              </h2>
-            </div>
-          </Reveal>
-          <Reveal delay={90}>
-            <p className="text-base leading-8 text-ink-soft sm:text-lg">
-              CommitX helps people turn the intention to study or work into a real commitment.
-              Pick what matters, set a focused window, and use accountability to stay with it until the time is done.
-            </p>
-          </Reveal>
-        </div>
-      </section>
-
       <LandingReviews />
 
       {/* FAQ */}
