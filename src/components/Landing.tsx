@@ -670,6 +670,8 @@ export function Landing() {
           onContinue={() => start(modal)}
         />
       ) : null}
+
+      {setup ? <GuestSetup mode={setup} onClose={() => setSetup(null)} /> : null}
     </div>
   );
 }
