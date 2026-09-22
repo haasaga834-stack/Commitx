@@ -324,7 +324,7 @@ export function Landing() {
   }
 
   return (
-    <div className="landing-root min-h-dvh scroll-smooth">
+    <div className={`landing-root min-h-dvh scroll-smooth ${darkPage ? "landing-dark" : ""}`}>
       {/* NAV */}
       <header
         className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
