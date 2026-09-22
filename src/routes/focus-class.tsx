@@ -116,6 +116,8 @@ function FocusClassPage() {
   const [activeCount, setActiveCount] = useState(0);
   const [notices, setNotices] = useState<Notice[]>([]);
   const [completedAlongside, setCompletedAlongside] = useState(0);
+  const [endedEarly, setEndedEarly] = useState(false);
+  const [focusedMinutes, setFocusedMinutes] = useState(0);
   const [audioOn, setAudioOn] = useState(false);
   const [presenceKey, setPresenceKey] = useState("");
   const [confirmComplete, setConfirmComplete] = useState(false);
@@ -243,6 +245,13 @@ function FocusClassPage() {
   async function finish() {
     if (phase !== "focus") return;
     finishingRef.current = true;
+    const endedBeforeTime = remainingMs > 1000;
+    setEndedEarly(endedBeforeTime);
+    setFocusedMinutes(
+      endedBeforeTime
+        ? Math.max(0, Math.round((selectedDuration * 60_000 - remainingMs) / 60_000))
+        : selectedDuration,
+    );
     setCompletedAlongside(Math.max(0, activeCount - 1));
     setPhase("complete");
     activeRef.current = false;
@@ -261,6 +270,8 @@ function FocusClassPage() {
     setStartedAt(null);
     setNow(Date.now());
     setCompletedAlongside(0);
+    setEndedEarly(false);
+    setFocusedMinutes(0);
     setNotices([]);
   }
 
@@ -473,13 +484,15 @@ function FocusClassPage() {
           <section className="flex flex-1 items-center justify-center py-10 text-center">
             <div className="w-full max-w-lg rounded-[30px] border border-focus-line bg-focus-panel/72 p-8 shadow-[0_30px_90px_-55px_var(--focus-shadow)] backdrop-blur-2xl sm:p-10">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-focus-accent text-2xl text-focus-accent-foreground">
-                🌱
+                {endedEarly ? "⏹" : "🌱"}
               </div>
               <h1 className="mt-6 text-3xl font-semibold tracking-normal text-focus-foreground">
-                You did it. 🌱
+                {endedEarly ? "Session ended early" : "You did it. 🌱"}
               </h1>
               <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed text-focus-muted">
-                You focused for {formatDuration(selectedDuration)} alongside {completedAlongside} students.
+                {endedEarly
+                  ? `You focused for ${focusedMinutes < 1 ? "less than a minute" : `${focusedMinutes} minute${focusedMinutes === 1 ? "" : "s"}`} before ending. No worries — come back and finish your ${formatDuration(selectedDuration)} class anytime.`
+                  : `You focused for ${formatDuration(selectedDuration)} alongside ${completedAlongside} students.`}
               </p>
               <div className="mt-8 grid gap-3 sm:grid-cols-2">
                 <Button
