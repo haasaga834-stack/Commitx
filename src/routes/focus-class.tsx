@@ -501,6 +501,52 @@ function FocusClassPage() {
           </section>
         ) : null}
       </div>
+
+      {confirmComplete ? (
+        <div
+          className="fixed inset-0 z-[80] flex items-end justify-center bg-focus-night/70 p-4 backdrop-blur-sm sm:items-center"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Complete Focus Class"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setConfirmComplete(false);
+          }}
+        >
+          <div className="animate-scale-in w-full max-w-sm rounded-[26px] border border-focus-line bg-focus-panel/90 p-6 text-center shadow-[0_30px_90px_-45px_var(--focus-shadow)] backdrop-blur-2xl">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-focus-accent/15 text-xl">
+              🌱
+            </div>
+            <h2 className="mt-4 text-lg font-semibold text-focus-foreground">
+              Complete your Focus Class?
+            </h2>
+            <p className="mx-auto mt-2 max-w-xs text-sm leading-relaxed text-focus-muted">
+              {remainingMs > 1000
+                ? `You still have ${formatClock(remainingMs)} left. Your focus time so far will be saved.`
+                : "Finish now and see your session summary."}
+            </p>
+            <div className="mt-6 grid gap-2.5">
+              <Button
+                type="button"
+                onClick={() => {
+                  setConfirmComplete(false);
+                  void finish();
+                }}
+                className="h-11 w-full rounded-full bg-focus-accent text-focus-accent-foreground hover:bg-focus-accent/90"
+              >
+                Yes, complete
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setConfirmComplete(false)}
+                className="h-11 w-full rounded-full border border-focus-line bg-focus-panel/40 text-focus-muted hover:bg-focus-panel hover:text-focus-foreground"
+              >
+                Keep focusing
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
