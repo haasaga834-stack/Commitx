@@ -16,6 +16,8 @@ import {
   type FocusClassSound,
 } from "@/lib/focus-class";
 import { supabase } from "@/integrations/supabase/client";
+import { coinsForMinutes, createLocalSessionId, setState } from "@/lib/commitx-store";
+import { useAuth } from "@/lib/use-auth";
 
 const focusClassSearch = z.object({
   start: z.boolean().optional(),
