@@ -118,8 +118,9 @@ function Home() {
   const restoring = loading && !user && hasStoredAuthSession();
   if (restoring) return <StartupSplash />;
 
-  // Signed-out web visitors: reveal the landing page under a fading splash.
-  if (!user && !native) {
+  // The website keeps its own experience for everyone, signed in or not: the
+  // app dashboard below belongs to the Android app only.
+  if (!native) {
     return (
       <>
         <Landing />
