@@ -156,6 +156,44 @@ function Session() {
     }
 
     /**
+     * A Verified session that already failed by the existing rules stays
+     * failed. Arriving here from the timer notification must never revive it or
+     * quietly drop it: the recorded outcome is settled once and shown.
+     */
+    if (ticket?.mode === "verified" && ticket.pendingFail) {
+      setStatus("dead");
+      setNativeSessionLock(false);
+      setNativeVerifiedModeActive(false);
+      hideSessionProgress();
+      const failure = finalizePendingVerifiedFailure();
+      if (failure) {
+        markSessionEnded({
+          goal: failure.goal,
+          duration: failure.duration,
+          value: failure.value,
+          mode: "verified",
+          status: "failed",
+          reason: failure.reason,
+        });
+        void releaseActiveDbSession();
+        navigate({
+          to: "/failed",
+          search: {
+            goal: String(failure.goal),
+            duration: String(failure.duration),
+            value: String(failure.value),
+            reason: failure.reason,
+          } as Record<string, string>,
+          replace: true,
+        });
+        return;
+      }
+      // Already settled elsewhere (root recovery) — go to the result screen.
+      navigate({ to: "/failed", search: { goal, duration: String(duration), value: String(value) } as Record<string, string>, replace: true });
+      return;
+    }
+
+    /**
      * Opened without (or with the wrong) commitment details — this happens when
      * the timer notification launches the app straight at the timer screen. A
      * still-running session must be re-entered, never silently discarded.
