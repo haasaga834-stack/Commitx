@@ -358,6 +358,15 @@ export function Landing() {
             >
               About
             </Link>
+            <button
+              type="button"
+              onClick={toggleDarkPage}
+              aria-label={darkPage ? "Switch to light theme" : "Switch to dark theme"}
+              title={darkPage ? "Light theme" : "Dark theme"}
+              className="rounded-full border border-ink-line/70 p-2 text-ink-soft transition-colors hover:text-ink"
+            >
+              {darkPage ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </button>
             <Link
               to={signedIn ? "/history" : "/auth"}
               className="rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper transition-opacity hover:opacity-90"
@@ -366,14 +375,24 @@ export function Landing() {
             </Link>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setMenuOpen(true)}
-            aria-label="Open menu"
-            className="rounded-full p-2 text-ink md:hidden"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-1 md:hidden">
+            <button
+              type="button"
+              onClick={toggleDarkPage}
+              aria-label={darkPage ? "Switch to light theme" : "Switch to dark theme"}
+              className="rounded-full p-2 text-ink-soft"
+            >
+              {darkPage ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </button>
+            <button
+              type="button"
+              onClick={() => setMenuOpen(true)}
+              aria-label="Open menu"
+              className="rounded-full p-2 text-ink"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+          </div>
         </nav>
       </header>
 
