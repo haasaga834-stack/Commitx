@@ -703,6 +703,7 @@ export function Landing() {
       ) : null}
 
       {setup ? <GuestSetup mode={setup} onClose={() => setSetup(null)} /> : null}
+      <FocusClassSetup open={focusClassOpen} onClose={() => setFocusClassOpen(false)} />
     </div>
   );
 }
