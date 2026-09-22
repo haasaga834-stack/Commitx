@@ -166,15 +166,23 @@ function ModeModal({
         </div>
 
         <div className="mt-5 text-center">
-          <Link
-            to="/auth"
-            className="text-xs text-ink-soft underline decoration-ink-line underline-offset-4 transition-colors hover:text-ink"
-          >
-            Sign in
-          </Link>
-          <p className="mt-4 text-[11px] text-ink-soft/80">
-            No account required to start.
-          </p>
+          {signedIn ? (
+            <p className="text-[11px] text-ink-soft/80">
+              Your session is saved to your CommitX account.
+            </p>
+          ) : (
+            <>
+              <Link
+                to="/auth"
+                className="text-xs text-ink-soft underline decoration-ink-line underline-offset-4 transition-colors hover:text-ink"
+              >
+                Sign in
+              </Link>
+              <p className="mt-4 text-[11px] text-ink-soft/80">
+                No account required to start.
+              </p>
+            </>
+          )}
         </div>
       </div>
     </div>
