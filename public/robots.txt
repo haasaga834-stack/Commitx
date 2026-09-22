@@ -1,4 +1,20 @@
 User-agent: *
 Allow: /
 
+# Private, signed-in-only screens — no useful public content to index.
+Disallow: /auth
+Disallow: /reset-password
+Disallow: /session
+Disallow: /commit
+Disallow: /success
+Disallow: /failed
+Disallow: /history
+Disallow: /wallet
+Disallow: /profile
+Disallow: /settings
+Disallow: /planner
+Disallow: /analytics
+Disallow: /academics
+Disallow: /group/
+
 Sitemap: https://commitx.site/sitemap.xml
