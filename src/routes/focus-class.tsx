@@ -124,6 +124,8 @@ function FocusClassPage() {
   const [presenceKey, setPresenceKey] = useState("");
   const [confirmComplete, setConfirmComplete] = useState(false);
   const audio = useFocusClassAudio();
+  const { user } = useAuth();
+  const signedIn = Boolean(user);
   const activeRef = useRef(false);
   const finishingRef = useRef(false);
   const lastCountRef = useRef<number | null>(null);
