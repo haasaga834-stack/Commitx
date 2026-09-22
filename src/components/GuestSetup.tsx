@@ -30,6 +30,7 @@ export function GuestSetup({ mode, onClose }: { mode: Mode; onClose: () => void 
   const [goal, setGoal] = useState<string>("Study");
   const [customGoal, setCustomGoal] = useState("");
   const [duration, setDuration] = useState(60);
+  const startedRef = useRef(false);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
