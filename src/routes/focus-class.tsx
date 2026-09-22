@@ -17,7 +17,13 @@ import {
 } from "@/lib/focus-class";
 import { supabase } from "@/integrations/supabase/client";
 
-const focusClassSearch = z.object({});
+const focusClassSearch = z.object({
+  start: z.boolean().optional(),
+  duration: z.coerce.number().optional(),
+  sound: z
+    .enum(["rain", "forest", "ocean", "campfire", "deep-focus", "silence"])
+    .optional(),
+});
 
 export const Route = createFileRoute("/focus-class")({
   validateSearch: focusClassSearch,
@@ -85,12 +91,26 @@ function formatClock(ms: number) {
 }
 
 function FocusClassPage() {
+  const search = Route.useSearch();
+  const preset = useMemo(() => {
+    const raw = typeof search.duration === "number" ? Math.round(search.duration) : 25;
+    const d = Math.min(360, Math.max(25, raw));
+    const isCustom = !(FIXED_DURATIONS as readonly number[]).includes(d);
+    return {
+      duration: isCustom ? 25 : d,
+      custom: isCustom,
+      customDuration: isCustom ? d : 120,
+      sound: (search.sound ?? "silence") as FocusClassSound,
+    };
+    // Captured once on mount — search params only seed the session.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const { count: lobbyCount, loading } = useFocusClassCount();
   const [phase, setPhase] = useState<Phase>("setup");
-  const [duration, setDuration] = useState(25);
-  const [customDuration, setCustomDuration] = useState(120);
-  const [custom, setCustom] = useState(false);
-  const [sound, setSound] = useState<FocusClassSound>("silence");
+  const [duration, setDuration] = useState(preset.duration);
+  const [customDuration, setCustomDuration] = useState(preset.customDuration);
+  const [custom, setCustom] = useState(preset.custom);
+  const [sound, setSound] = useState<FocusClassSound>(preset.sound);
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const [activeCount, setActiveCount] = useState(0);
@@ -113,6 +133,15 @@ function FocusClassPage() {
   useEffect(() => {
     setPresenceKey(getFocusClassPresenceKey());
   }, []);
+
+  // Auto-start when arriving from the homepage setup popup.
+  const autoStartedRef = useRef(false);
+  useEffect(() => {
+    if (!search.start || autoStartedRef.current || !presenceKey) return;
+    autoStartedRef.current = true;
+    void startFocus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [presenceKey, search.start]);
 
   const pushNotice = useCallback((text: string) => {
     const id = noticeIdRef.current + 1;
