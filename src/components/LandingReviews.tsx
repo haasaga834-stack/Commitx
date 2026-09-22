@@ -51,11 +51,14 @@ function validateForm(form: FormState) {
   return null;
 }
 
+const READ_MORE_THRESHOLD = 220;
+
 export function LandingReviews() {
   const loadReviews = useServerFn(listApprovedStudentReviews);
   const submitReview = useServerFn(submitStudentReview);
   const [reviews, setReviews] = useState<StudentReviewDTO[]>([]);
   const [active, setActive] = useState(0);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(initialForm);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -140,8 +143,26 @@ export function LandingReviews() {
                 <div className="h-7 w-7 animate-spin rounded-full border-2 border-ink-line border-t-primary" />
               </div>
             ) : current ? (
-              <article className="flex min-h-[190px] flex-col justify-between gap-8">
-                <p className="text-xl leading-relaxed text-ink sm:text-2xl">“{current.review}”</p>
+              <article className="flex min-h-[190px] flex-col justify-between gap-6">
+                <div>
+                  <p
+                    className={cn(
+                      "text-lg leading-relaxed text-ink sm:text-xl",
+                      expandedId !== current.id && "line-clamp-6",
+                    )}
+                  >
+                    “{current.review}”
+                  </p>
+                  {current.review.length > READ_MORE_THRESHOLD ? (
+                    <button
+                      type="button"
+                      onClick={() => setExpandedId((id) => (id === current.id ? null : current.id))}
+                      className="mt-3 text-sm font-semibold text-primary hover:underline"
+                    >
+                      {expandedId === current.id ? "Show less" : "Read more"}
+                    </button>
+                  ) : null}
+                </div>
                 <div className="flex flex-wrap items-end justify-between gap-4">
                   <div>
                     <p className="text-base font-semibold text-ink">{current.displayName}</p>
