@@ -13,6 +13,29 @@ export function PublicFooter() {
           Study Tracker
         </Link>
         <span aria-hidden="true" className="h-3 w-px bg-hairline" />
+        <Link to="/focus-timer" className="transition-colors hover:text-foreground">
+          Focus Timer
+        </Link>
+        <span aria-hidden="true" className="h-3 w-px bg-hairline" />
+        <Link
+          to="/study-accountability"
+          className="transition-colors hover:text-foreground"
+        >
+          Study Accountability
+        </Link>
+        <span aria-hidden="true" className="h-3 w-px bg-hairline" />
+        <Link to="/group-study" className="transition-colors hover:text-foreground">
+          Group Study
+        </Link>
+        <span aria-hidden="true" className="h-3 w-px bg-hairline" />
+        <Link to="/verified-focus" className="transition-colors hover:text-foreground">
+          Verified Focus
+        </Link>
+        <span aria-hidden="true" className="h-3 w-px bg-hairline" />
+        <Link to="/standard-focus" className="transition-colors hover:text-foreground">
+          Standard Focus
+        </Link>
+        <span aria-hidden="true" className="h-3 w-px bg-hairline" />
         <Link
           to="/privacy-policy"
           className="transition-colors hover:text-foreground"
