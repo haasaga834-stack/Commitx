@@ -455,6 +455,96 @@ body {
   animation: lotus-shimmer 7s ease-in-out infinite;
 }
 
+/* Focus Class quiet-forest environment */
+.focus-class-root {
+  --focus-foreground: oklch(0.965 0.018 112);
+  --focus-muted: oklch(0.78 0.035 136);
+  --focus-night: oklch(0.155 0.036 214);
+  --focus-panel: oklch(0.24 0.041 176);
+  --focus-deep: oklch(0.12 0.036 214);
+  --focus-line: oklch(0.56 0.05 152 / 0.32);
+  --focus-accent: oklch(0.76 0.115 142);
+  --focus-accent-foreground: oklch(0.13 0.032 170);
+  --focus-live: oklch(0.78 0.16 145);
+  --focus-firefly: oklch(0.9 0.14 104);
+  --focus-moonlight: oklch(0.8 0.058 230 / 0.32);
+  --focus-sky-top: oklch(0.18 0.055 244);
+  --focus-sky-mid: oklch(0.15 0.045 205);
+  --focus-sky-bottom: oklch(0.13 0.05 156);
+  --focus-mist: oklch(0.82 0.035 160 / 0.14);
+  --focus-mist-low: oklch(0.78 0.05 146 / 0.1);
+  --focus-ground: oklch(0.12 0.04 148 / 0.86);
+  --focus-tree: oklch(0.09 0.035 150 / 0.76);
+  --focus-leaf: oklch(0.24 0.075 146 / 0.58);
+  --focus-leaf-soft: oklch(0.32 0.08 150 / 0.36);
+  --focus-depth: oklch(0.36 0.06 158 / 0.18);
+  --focus-particle: oklch(0.92 0.08 104 / 0.28);
+  --focus-shadow: oklch(0.06 0.025 180 / 0.78);
+  background-image: none;
+}
+
+@theme inline {
+  --color-focus-foreground: var(--focus-foreground);
+  --color-focus-muted: var(--focus-muted);
+  --color-focus-night: var(--focus-night);
+  --color-focus-panel: var(--focus-panel);
+  --color-focus-deep: var(--focus-deep);
+  --color-focus-line: var(--focus-line);
+  --color-focus-accent: var(--focus-accent);
+  --color-focus-accent-foreground: var(--focus-accent-foreground);
+  --color-focus-live: var(--focus-live);
+  --color-focus-firefly: var(--focus-firefly);
+}
+
+@keyframes focus-mist {
+  0%, 100% { transform: translate3d(-4%, 0, 0); opacity: 0.55; }
+  50% { transform: translate3d(4%, -2%, 0); opacity: 0.82; }
+}
+@keyframes focus-mist-slow {
+  0%, 100% { transform: translate3d(5%, 0, 0); opacity: 0.45; }
+  50% { transform: translate3d(-5%, 2%, 0); opacity: 0.68; }
+}
+@keyframes focus-leaves {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(-0.7deg); }
+  50% { transform: translate3d(3px, -4px, 0) rotate(0.7deg); }
+}
+@keyframes focus-firefly {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(0.75); opacity: 0.32; }
+  45% { transform: translate3d(14px, -18px, 0) scale(1); opacity: 0.82; }
+  72% { transform: translate3d(-8px, -26px, 0) scale(0.9); opacity: 0.48; }
+}
+@keyframes focus-particles {
+  0%, 100% { transform: translateY(0); opacity: 0.22; }
+  50% { transform: translateY(-10px); opacity: 0.4; }
+}
+@keyframes focus-notice {
+  0% { opacity: 0; transform: translateY(-10px) scale(0.98); }
+  14%, 78% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-18px) scale(0.98); }
+}
+
+@utility animate-focus-mist {
+  animation: focus-mist 48s ease-in-out infinite;
+}
+@utility animate-focus-mist-slow {
+  animation: focus-mist-slow 64s ease-in-out infinite;
+}
+@utility animate-focus-leaves {
+  animation: focus-leaves 18s ease-in-out infinite;
+}
+@utility animate-focus-leaves-reverse {
+  animation: focus-leaves 22s ease-in-out infinite reverse;
+}
+@utility animate-focus-firefly {
+  animation: focus-firefly 20s ease-in-out infinite;
+}
+@utility animate-focus-particles {
+  animation: focus-particles 36s ease-in-out infinite;
+}
+@utility animate-focus-notice {
+  animation: focus-notice 3.4s ease-in-out both;
+}
+
 /* Extra ambience motion: hazy air, breathing leaves, gliding water light */
 @keyframes scene-haze {
   0%, 100% { opacity: 0.5; transform: translateX(-2%); }

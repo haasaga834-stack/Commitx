@@ -206,6 +206,7 @@ const PUBLIC_PATHS = [
   "/session",
   "/success",
   "/failed",
+  "/focus-class",
   "/auth",
   "/privacy",
   "/privacy-policy",
