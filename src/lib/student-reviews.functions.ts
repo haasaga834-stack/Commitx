@@ -142,12 +142,16 @@ async function readBearerUserId(): Promise<string | null> {
   return data.claims.sub;
 }
 
-async function ensureAdmin(context: { supabase: ReturnType<typeof createServerPublicClient>; userId: string }) {
+async function isAdminUser(context: { supabase: ReturnType<typeof createServerPublicClient>; userId: string }) {
   const { data, error } = await context.supabase.rpc("has_role", {
     _user_id: context.userId,
     _role: "admin",
   });
-  if (error || data !== true) throw new Error("Admin access required.");
+  return !error && data === true;
+}
+
+async function ensureAdmin(context: { supabase: ReturnType<typeof createServerPublicClient>; userId: string }) {
+  if (!(await isAdminUser(context))) throw new Error("Admin access required.");
 }
 
 export const listApprovedStudentReviews = createServerFn({ method: "GET" }).handler(
