@@ -243,10 +243,17 @@ export function readRestorableActiveSession(): ActiveVerifiedSession | null {
   const sinceStart = Date.now() - started;
   if (sinceStart < 0) return null;
 
-  // Break / confirmation phases are intentionally unbounded (the user may come
-  // back much later). A focus phase has a bounded lifetime.
+  // A break / confirmation phase is generously long-lived (the user may come
+  // back much later), but not forever: an abandoned record must never trap the
+  // app on an old timer screen on every launch. A focus phase is tighter.
   const phase = active.phase ?? "focus";
-  if (phase === "focus" && sinceStart > duration * 60 * 1000 + 3 * 60 * 60 * 1000) return null;
+  const limit =
+    duration * 60 * 1000 + (phase === "focus" ? 3 * 60 * 60 * 1000 : 12 * 60 * 60 * 1000);
+  if (sinceStart > limit) {
+    // Abandoned: forget it so the app opens normally again.
+    clearActiveVerifiedSession();
+    return null;
+  }
 
   return active;
 }
