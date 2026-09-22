@@ -64,6 +64,13 @@
       "when": 1790096898042,
       "tag": "0008_tighten_student_review_submissions",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790103951673,
+      "tag": "0009_restrict_focus_class_presence_reads",
+      "breakpoints": true
     }
   ]
 }
