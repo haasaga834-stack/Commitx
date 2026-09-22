@@ -656,7 +656,26 @@ function QuietForest() {
 
       {/* meadow */}
       <div className="absolute inset-x-0 bottom-0 h-[30%] bg-[linear-gradient(180deg,transparent,var(--focus-meadow)_35%,var(--focus-meadow-deep))]" />
-      <div className="animate-focus-grass-sway absolute inset-x-0 bottom-0 h-[14%] bg-[radial-gradient(ellipse_at_18%_100%,var(--focus-leaf),transparent_46%),radial-gradient(ellipse_at_48%_100%,var(--focus-leaf-soft),transparent_42%),radial-gradient(ellipse_at_82%_100%,var(--focus-leaf),transparent_46%)] blur-[2px]" />
+      <div className="animate-focus-mist-slow absolute inset-x-[-14%] bottom-[22%] h-24 bg-[linear-gradient(90deg,transparent,var(--focus-mist-low),transparent)] blur-3xl" />
+      <div className="animate-focus-grass-sway absolute inset-x-0 bottom-0 h-[18%] origin-bottom bg-[radial-gradient(ellipse_at_18%_100%,var(--focus-leaf),transparent_46%),radial-gradient(ellipse_at_48%_100%,var(--focus-leaf-soft),transparent_42%),radial-gradient(ellipse_at_82%_100%,var(--focus-leaf),transparent_46%)] blur-[2px]" />
+      {/* near foreground shrubs for depth */}
+      <svg
+        className="animate-focus-grass-sway absolute inset-x-0 bottom-0 h-[13%] w-full origin-bottom blur-[2px]"
+        viewBox="0 0 1200 140"
+        preserveAspectRatio="none"
+      >
+        <g fill="var(--focus-leaf)">
+          {Array.from({ length: 16 }).map((_, i) => {
+            const x = i * 80 + ((i * 29) % 22);
+            const h = 40 + ((i * 47) % 58);
+            const w = 48 + ((i * 31) % 40);
+            return (
+              <ellipse key={i} cx={x} cy={140} rx={w} ry={h} />
+            );
+          })}
+        </g>
+      </svg>
+      <div className="absolute inset-x-0 bottom-0 h-[16%] bg-[linear-gradient(180deg,transparent,var(--focus-ground))]" />
 
       {/* tall edge trees */}
       <svg
