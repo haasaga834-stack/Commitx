@@ -279,6 +279,27 @@ export function Landing() {
   const { user } = useAuth();
   const signedIn = Boolean(user);
 
+  // Optional dark palette for this page only — remembered between visits.
+  const [darkPage, setDarkPage] = useState(false);
+  useEffect(() => {
+    try {
+      setDarkPage(window.localStorage.getItem("commitx.landing.theme") === "dark");
+    } catch {
+      /* storage unavailable — stay light */
+    }
+  }, []);
+  const toggleDarkPage = () => {
+    setDarkPage((prev) => {
+      const next = !prev;
+      try {
+        window.localStorage.setItem("commitx.landing.theme", next ? "dark" : "light");
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  };
+
   useEffect(() => {
     if (!faqOpen) return;
     const onPointerDown = (event: PointerEvent) => {
