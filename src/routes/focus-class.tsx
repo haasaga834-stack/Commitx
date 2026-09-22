@@ -567,12 +567,19 @@ function FocusClassPage() {
 function QuietForest() {
   const fireflies = useMemo(
     () => [
-      [14, 62, "0s", "1"],
-      [26, 74, "7s", "0.8"],
-      [38, 58, "13s", "0.6"],
-      [62, 70, "4s", "0.9"],
-      [76, 61, "10s", "0.7"],
-      [88, 76, "17s", "0.55"],
+      [18, 66, "0s", "0.72"],
+      [33, 74, "9s", "0.52"],
+      [69, 69, "5s", "0.66"],
+      [84, 76, "15s", "0.48"],
+    ] as const,
+    [],
+  );
+
+  const driftingLeaves = useMemo(
+    () => [
+      [18, "0s", "0.8"],
+      [31, "15s", "0.6"],
+      [48, "29s", "0.72"],
     ] as const,
     [],
   );
@@ -628,24 +635,24 @@ function QuietForest() {
         />
       </svg>
 
-      {/* distant treeline */}
+      {/* soft distant treeline */}
       <svg
         className="absolute inset-x-0 top-[54%] h-[16%] w-full"
         viewBox="0 0 1200 160"
         preserveAspectRatio="none"
       >
-        <g fill="var(--focus-treeline)">
-          {Array.from({ length: 40 }).map((_, i) => {
-            const x = i * 30;
-            const h = 52 + ((i * 37) % 44);
-            return <polygon key={i} points={`${x},160 ${x + 15},${160 - h} ${x + 30},160`} />;
+        <g fill="var(--focus-treeline)" opacity="0.72">
+          {Array.from({ length: 22 }).map((_, i) => {
+            const x = i * 58 - 12;
+            const h = 34 + ((i * 23) % 34);
+            return <ellipse key={i} cx={x} cy={160 - h / 3} rx={42} ry={h} />;
           })}
         </g>
-        <g fill="var(--focus-treeline-near)" opacity="0.95">
-          {Array.from({ length: 28 }).map((_, i) => {
-            const x = i * 44 - 12;
-            const h = 74 + ((i * 53) % 46);
-            return <polygon key={i} points={`${x},160 ${x + 22},${160 - h} ${x + 44},160`} />;
+        <g fill="var(--focus-treeline-near)" opacity="0.68">
+          {Array.from({ length: 15 }).map((_, i) => {
+            const x = i * 88 - 18;
+            const h = 44 + ((i * 31) % 38);
+            return <ellipse key={i} cx={x} cy={164 - h / 3} rx={58} ry={h} />;
           })}
         </g>
       </svg>
@@ -657,10 +664,10 @@ function QuietForest() {
       {/* meadow */}
       <div className="absolute inset-x-0 bottom-0 h-[30%] bg-[linear-gradient(180deg,transparent,var(--focus-meadow)_35%,var(--focus-meadow-deep))]" />
       <div className="animate-focus-mist-slow absolute inset-x-[-14%] bottom-[22%] h-24 bg-[linear-gradient(90deg,transparent,var(--focus-mist-low),transparent)] blur-3xl" />
-      <div className="animate-focus-grass-sway absolute inset-x-0 bottom-0 h-[18%] origin-bottom bg-[radial-gradient(ellipse_at_18%_100%,var(--focus-leaf),transparent_46%),radial-gradient(ellipse_at_48%_100%,var(--focus-leaf-soft),transparent_42%),radial-gradient(ellipse_at_82%_100%,var(--focus-leaf),transparent_46%)] blur-[2px]" />
+      <div className="animate-focus-grass-sway absolute inset-x-0 bottom-0 h-[14%] origin-bottom bg-[radial-gradient(ellipse_at_18%_100%,var(--focus-leaf),transparent_46%),radial-gradient(ellipse_at_48%_100%,var(--focus-leaf-soft),transparent_42%),radial-gradient(ellipse_at_82%_100%,var(--focus-leaf),transparent_46%)] blur-[4px]" />
       {/* near foreground shrubs for depth */}
       <svg
-        className="animate-focus-grass-sway absolute inset-x-0 bottom-0 h-[13%] w-full origin-bottom blur-[2px]"
+        className="animate-focus-grass-sway absolute inset-x-0 bottom-0 h-[10%] w-full origin-bottom opacity-60 blur-[4px]"
         viewBox="0 0 1200 140"
         preserveAspectRatio="none"
       >
@@ -677,43 +684,35 @@ function QuietForest() {
       </svg>
       <div className="absolute inset-x-0 bottom-0 h-[16%] bg-[linear-gradient(180deg,transparent,var(--focus-ground))]" />
 
-      {/* tall edge trees */}
+      {/* light edge trees — enough framing without closing in the timer */}
       <svg
-        className="animate-focus-canopy-sway absolute -left-16 bottom-0 h-full w-[26%] origin-bottom blur-[1px] sm:w-[20%]"
+        className="animate-focus-canopy-sway absolute -left-10 bottom-0 h-full w-[22%] origin-bottom opacity-65 blur-[2px] sm:w-[17%]"
         viewBox="0 0 240 900"
         preserveAspectRatio="xMinYMax slice"
       >
-        <g fill="var(--focus-tree)" opacity="0.92">
-          <rect x="84" y="150" width="13" height="760" />
-          {[
-            [150, 70, 96],
-            [240, 84, 112],
-            [340, 96, 126],
-            [450, 106, 136],
-            [570, 114, 144],
-            [700, 122, 152],
-          ].map(([y, spread, h]) => (
-            <path key={y} d={`M90 ${y - h} C ${90 + spread * 0.45} ${y - h * 0.3} ${90 + spread * 0.8} ${y - 8} ${90 + spread} ${y} C ${90 + spread * 0.5} ${y + 12} ${90 + spread * 0.2} ${y + 26} 90 ${y + 40} C ${90 - spread * 0.2} ${y + 26} ${90 - spread * 0.5} ${y + 12} ${90 - spread} ${y} C ${90 - spread * 0.8} ${y - 8} ${90 - spread * 0.45} ${y - h * 0.3} 90 ${y - h} Z`} />
-          ))}
+        <g opacity="0.82">
+          <path d="M86 900 C82 670 89 420 98 118" fill="none" stroke="var(--focus-trunk)" strokeWidth="8" strokeLinecap="round" />
+          <g fill="var(--focus-tree)">
+            <ellipse cx="92" cy="168" rx="50" ry="86" />
+            <ellipse cx="61" cy="248" rx="54" ry="76" />
+            <ellipse cx="112" cy="294" rx="62" ry="84" />
+            <ellipse cx="68" cy="402" rx="58" ry="78" />
+          </g>
         </g>
       </svg>
       <svg
-        className="animate-focus-canopy-sway-reverse absolute -right-16 bottom-0 h-full w-[28%] origin-bottom blur-[1px] sm:w-[22%]"
+        className="animate-focus-canopy-sway-reverse absolute -right-10 bottom-0 h-full w-[23%] origin-bottom opacity-65 blur-[2px] sm:w-[18%]"
         viewBox="0 0 240 900"
         preserveAspectRatio="xMaxYMax slice"
       >
-        <g fill="var(--focus-tree)" opacity="0.92">
-          <rect x="146" y="120" width="14" height="790" />
-          {[
-            [130, 74, 100],
-            [225, 88, 116],
-            [330, 100, 130],
-            [445, 110, 140],
-            [570, 118, 148],
-            [705, 126, 156],
-          ].map(([y, spread, h]) => (
-            <path key={y} d={`M153 ${y - h} C ${153 + spread * 0.45} ${y - h * 0.3} ${153 + spread * 0.8} ${y - 8} ${153 + spread} ${y} C ${153 + spread * 0.5} ${y + 12} ${153 + spread * 0.2} ${y + 26} 153 ${y + 40} C ${153 - spread * 0.2} ${y + 26} ${153 - spread * 0.5} ${y + 12} ${153 - spread} ${y} C ${153 - spread * 0.8} ${y - 8} ${153 - spread * 0.45} ${y - h * 0.3} 153 ${y - h} Z`} />
-          ))}
+        <g opacity="0.82">
+          <path d="M154 900 C160 662 153 398 145 104" fill="none" stroke="var(--focus-trunk)" strokeWidth="8" strokeLinecap="round" />
+          <g fill="var(--focus-tree)">
+            <ellipse cx="148" cy="156" rx="52" ry="88" />
+            <ellipse cx="181" cy="238" rx="56" ry="78" />
+            <ellipse cx="130" cy="286" rx="64" ry="86" />
+            <ellipse cx="174" cy="398" rx="60" ry="80" />
+          </g>
         </g>
       </svg>
 
@@ -734,11 +733,25 @@ function QuietForest() {
         />
       ))}
 
+      {/* an occasional soft shower, deliberately absent most of the time */}
+      <div className="animate-focus-rain-weather absolute inset-0 opacity-0">
+        <div className="animate-focus-rain-fall absolute inset-0 bg-[repeating-linear-gradient(105deg,transparent_0_42px,var(--focus-rain)_43px_44px,transparent_45px_88px)] bg-[length:96px_180px]" />
+      </div>
+
+      {/* a few leaves pass through when the breeze picks up */}
+      {driftingLeaves.map(([top, delay, scale]) => (
+        <span
+          key={`leaf-${top}-${delay}`}
+          className="animate-focus-wind-leaf absolute -left-6 h-2 w-3 rounded-[100%_0_100%_0] bg-[var(--focus-wind-leaf)] opacity-0"
+          style={{ top: `${top}%`, animationDelay: delay, scale }}
+        />
+      ))}
+
       {/* drifting dust */}
       <div className="animate-focus-particles absolute inset-0 bg-[radial-gradient(circle_at_22%_46%,var(--focus-particle)_0_1px,transparent_2px),radial-gradient(circle_at_74%_54%,var(--focus-particle)_0_1px,transparent_2px),radial-gradient(circle_at_52%_78%,var(--focus-particle)_0_1px,transparent_2px),radial-gradient(circle_at_38%_66%,var(--focus-particle)_0_1px,transparent_2px)]" />
 
       {/* vignette keeps the centre calm and readable */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_46%,transparent_38%,var(--focus-deep)_100%)] opacity-70" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_46%,transparent_48%,var(--focus-deep)_100%)] opacity-45" />
     </div>
   );
 }
