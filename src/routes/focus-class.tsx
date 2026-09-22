@@ -388,6 +388,7 @@ function FocusClassPage() {
                 <Button
                   type="button"
                   onClick={() => void startFocus()}
+                  disabled={!presenceKey}
                   className="mt-7 h-12 w-full rounded-full bg-focus-accent text-focus-accent-foreground hover:bg-focus-accent/90"
                 >
                   Start Focusing
