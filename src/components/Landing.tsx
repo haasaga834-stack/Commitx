@@ -428,7 +428,9 @@ export function Landing() {
                 </PrimaryButton>
               </div>
               <p className="mt-5 text-[11px] text-ink-soft/80">
-                No account required to start.
+                {signedIn
+                  ? "Your sessions are saved to your CommitX account."
+                  : "No account required to start."}
               </p>
             </div>
 
