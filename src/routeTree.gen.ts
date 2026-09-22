@@ -16,7 +16,6 @@ import { Route as StudyTrackerRouteImport } from './routes/study-tracker'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SessionRouteImport } from './routes/session'
-import { Route as SceneCheckRouteImport } from './routes/scene-check'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
@@ -70,11 +69,6 @@ const SettingsRoute = SettingsRouteImport.update({
 const SessionRoute = SessionRouteImport.update({
   id: '/session',
   path: '/session',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SceneCheckRoute = SceneCheckRouteImport.update({
-  id: '/scene-check',
-  path: '/scene-check',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -189,7 +183,6 @@ export interface FileRoutesByFullPath {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/scene-check': typeof SceneCheckRoute
   '/session': typeof SessionRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -218,7 +211,6 @@ export interface FileRoutesByTo {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/scene-check': typeof SceneCheckRoute
   '/session': typeof SessionRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -248,7 +240,6 @@ export interface FileRoutesById {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/scene-check': typeof SceneCheckRoute
   '/session': typeof SessionRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -279,7 +270,6 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/profile'
     | '/reset-password'
-    | '/scene-check'
     | '/session'
     | '/settings'
     | '/sitemap.xml'
@@ -308,7 +298,6 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/profile'
     | '/reset-password'
-    | '/scene-check'
     | '/session'
     | '/settings'
     | '/sitemap.xml'
@@ -337,7 +326,6 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/profile'
     | '/reset-password'
-    | '/scene-check'
     | '/session'
     | '/settings'
     | '/sitemap.xml'
@@ -367,7 +355,6 @@ export interface RootRouteChildren {
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
-  SceneCheckRoute: typeof SceneCheckRoute
   SessionRoute: typeof SessionRoute
   SettingsRoute: typeof SettingsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -430,13 +417,6 @@ declare module '@tanstack/react-router' {
       path: '/session'
       fullPath: '/session'
       preLoaderRoute: typeof SessionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/scene-check': {
-      id: '/scene-check'
-      path: '/scene-check'
-      fullPath: '/scene-check'
-      preLoaderRoute: typeof SceneCheckRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -591,7 +571,6 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,
-  SceneCheckRoute: SceneCheckRoute,
   SessionRoute: SessionRoute,
   SettingsRoute: SettingsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
