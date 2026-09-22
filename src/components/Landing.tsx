@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ArrowRight, Menu, X } from "lucide-react";
+import { ArrowRight, Menu, Moon, Sun, X } from "lucide-react";
 import heroImage from "@/assets/landing-hero.jpg";
 import { LandingHourglass } from "@/components/LandingHourglass";
 import { FocusGarden } from "@/components/FocusGarden";
