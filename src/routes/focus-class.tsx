@@ -134,6 +134,15 @@ function FocusClassPage() {
     setPresenceKey(getFocusClassPresenceKey());
   }, []);
 
+  // Auto-start when arriving from the homepage setup popup.
+  const autoStartedRef = useRef(false);
+  useEffect(() => {
+    if (!search.start || autoStartedRef.current || !presenceKey) return;
+    autoStartedRef.current = true;
+    void startFocus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [presenceKey, search.start]);
+
   const pushNotice = useCallback((text: string) => {
     const id = noticeIdRef.current + 1;
     noticeIdRef.current = id;
