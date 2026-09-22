@@ -2,6 +2,7 @@ import { createFileRoute, Link, useLocation, useRouter } from "@tanstack/react-r
 import { MobileShell } from "@/components/BottomNav";
 import { NotificationsCard } from "@/components/NotificationsCard";
 import { ScreenTimeCard } from "@/components/ScreenTimeCard";
+import { ReviewModeration } from "@/components/ReviewModeration";
 import { CxCoin } from "@/components/CxCoin";
 
 
@@ -351,6 +352,8 @@ function Settings() {
         </div>
       </div>
 
+
+      <ReviewModeration />
 
       {confirming && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 backdrop-blur-sm">
