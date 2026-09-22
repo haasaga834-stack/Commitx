@@ -8,6 +8,7 @@ import { GuestSetup } from "@/components/GuestSetup";
 import { FocusClassSetup } from "@/components/FocusClassSetup";
 import { LandingReviews } from "@/components/LandingReviews";
 import { useFocusClassCount } from "@/lib/focus-class";
+import { useAuth } from "@/lib/use-auth";
 
 const INDUS_APPSTORE_URL = "https://indusapp.store/nnbmdn4h";
 
@@ -113,6 +114,8 @@ function ModeModal({
   onContinue: () => void;
 }) {
   const copy = MODE_COPY[mode];
+  const { user } = useAuth();
+  const signedIn = Boolean(user);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -165,15 +168,23 @@ function ModeModal({
         </div>
 
         <div className="mt-5 text-center">
-          <Link
-            to="/auth"
-            className="text-xs text-ink-soft underline decoration-ink-line underline-offset-4 transition-colors hover:text-ink"
-          >
-            Sign in
-          </Link>
-          <p className="mt-4 text-[11px] text-ink-soft/80">
-            No account required to start.
-          </p>
+          {signedIn ? (
+            <p className="text-[11px] text-ink-soft/80">
+              Your session is saved to your CommitX account.
+            </p>
+          ) : (
+            <>
+              <Link
+                to="/auth"
+                className="text-xs text-ink-soft underline decoration-ink-line underline-offset-4 transition-colors hover:text-ink"
+              >
+                Sign in
+              </Link>
+              <p className="mt-4 text-[11px] text-ink-soft/80">
+                No account required to start.
+              </p>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -236,6 +247,10 @@ export function Landing() {
   const [faqOpen, setFaqOpen] = useState(false);
   const faqRef = useRef<HTMLDivElement | null>(null);
   const { count: focusClassCount, loading: focusClassLoading } = useFocusClassCount();
+  // Website visitors who are signed in stay on this page; only the account
+  // links change so they can reach their saved sessions.
+  const { user } = useAuth();
+  const signedIn = Boolean(user);
 
   useEffect(() => {
     if (!faqOpen) return;
@@ -296,10 +311,10 @@ export function Landing() {
               About
             </Link>
             <Link
-              to="/auth"
+              to={signedIn ? "/history" : "/auth"}
               className="rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper transition-opacity hover:opacity-90"
             >
-              Sign in
+              {signedIn ? "My sessions" : "Sign in"}
             </Link>
           </div>
 
@@ -347,11 +362,11 @@ export function Landing() {
               About
             </Link>
             <Link
-              to="/auth"
+              to={signedIn ? "/history" : "/auth"}
               onClick={() => setMenuOpen(false)}
               className="mt-4 inline-flex items-center justify-center rounded-full bg-ink px-6 py-4 text-sm font-medium text-paper"
             >
-              Sign in
+              {signedIn ? "My sessions" : "Sign in"}
             </Link>
           </div>
         </div>
@@ -413,7 +428,9 @@ export function Landing() {
                 </PrimaryButton>
               </div>
               <p className="mt-5 text-[11px] text-ink-soft/80">
-                No account required to start.
+                {signedIn
+                  ? "Your sessions are saved to your CommitX account."
+                  : "No account required to start."}
               </p>
             </div>
 

@@ -16,6 +16,8 @@ import {
   type FocusClassSound,
 } from "@/lib/focus-class";
 import { supabase } from "@/integrations/supabase/client";
+import { coinsForMinutes, createLocalSessionId, setState } from "@/lib/commitx-store";
+import { useAuth } from "@/lib/use-auth";
 
 const focusClassSearch = z.object({
   start: z.boolean().optional(),
@@ -122,6 +124,8 @@ function FocusClassPage() {
   const [presenceKey, setPresenceKey] = useState("");
   const [confirmComplete, setConfirmComplete] = useState(false);
   const audio = useFocusClassAudio();
+  const { user } = useAuth();
+  const signedIn = Boolean(user);
   const activeRef = useRef(false);
   const finishingRef = useRef(false);
   const lastCountRef = useRef<number | null>(null);
@@ -253,6 +257,29 @@ function FocusClassPage() {
         : selectedDuration,
     );
     setCompletedAlongside(Math.max(0, activeCount - 1));
+    // Signed-in users get the finished class saved to their account and the
+    // usual hourly Cx Coins reward. Visitors stay fully anonymous.
+    if (!endedBeforeTime && signedIn) {
+      const earned = coinsForMinutes(selectedDuration);
+      setState((s) => ({
+        ...s,
+        sessions: [
+          {
+            id: createLocalSessionId(),
+            goal: "Focus Class",
+            durationMinutes: selectedDuration,
+            value: 0,
+            mode: "standard" as const,
+            status: "completed" as const,
+            date: Date.now(),
+            coinsSpent: 0,
+            coinsEarned: earned,
+          },
+          ...s.sessions,
+        ],
+        coins: s.coins + earned,
+      }));
+    }
     setPhase("complete");
     activeRef.current = false;
     audio.stop();
