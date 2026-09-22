@@ -75,8 +75,9 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 }
 
 function createServerPublicClient() {
-  const url = process.env["SUPABASE_URL"]!;
-  const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
+  const url = process.env["SUPABASE_URL"];
+  const key = process.env["SUPABASE_PUBLISHABLE_KEY"];
+  if (!url || !key) throw new Error("Backend is not configured.");
   return createClient<Database>(url, key, {
     auth: {
       storage: undefined,
