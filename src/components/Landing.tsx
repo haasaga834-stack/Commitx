@@ -200,7 +200,7 @@ export function Landing() {
 
   function start(mode: Mode) {
     setModal(null);
-    navigate({ to: "/commit", search: { mode } });
+    setSetup(mode);
   }
 
   return (
