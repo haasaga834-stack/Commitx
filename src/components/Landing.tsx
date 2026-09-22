@@ -645,6 +645,38 @@ export function Landing() {
         </div>
       </section>
 
+      {/* FOCUS GARDEN */}
+      <section className="bg-paper-soft px-6 py-20 sm:py-28">
+        <div className="mx-auto max-w-5xl">
+          <Reveal className="text-center">
+            <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-ink-soft">
+              Focus Garden
+            </p>
+            <h2 className="mx-auto mt-5 max-w-2xl text-[26px] font-medium leading-[1.15] tracking-[-0.03em] sm:text-[40px]">
+              Your focus time, growing quietly.
+            </h2>
+            <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-ink-soft">
+              Slide through a day of study and watch it grow — seed, sprout, plant, tree.
+            </p>
+          </Reveal>
+          <Reveal delay={120} className="mt-12">
+            <FocusGarden />
+          </Reveal>
+        </div>
+      </section>
+
+      {/* EMOTIONAL */}
+      <section className="px-6 py-28 text-center sm:py-40">
+        <Reveal>
+          <h2 className="mx-auto max-w-3xl text-[32px] font-medium leading-[1.1] tracking-[-0.035em] sm:text-[60px]">
+            Turn “I should” into “I did.”
+          </h2>
+          <p className="mt-7 text-sm text-ink-soft sm:text-base">
+            Every completed commitment is a step forward.
+          </p>
+        </Reveal>
+      </section>
+
       <LandingReviews />
 
       {/* FAQ */}
@@ -689,39 +721,6 @@ export function Landing() {
           </div>
         </div>
       </section>
-
-      {/* FOCUS GARDEN */}
-      <section className="bg-paper-soft px-6 py-20 sm:py-28">
-        <div className="mx-auto max-w-5xl">
-          <Reveal className="text-center">
-            <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-ink-soft">
-              Focus Garden
-            </p>
-            <h2 className="mx-auto mt-5 max-w-2xl text-[26px] font-medium leading-[1.15] tracking-[-0.03em] sm:text-[40px]">
-              Your focus time, growing quietly.
-            </h2>
-            <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-ink-soft">
-              Slide through a day of study and watch it grow — seed, sprout, plant, tree.
-            </p>
-          </Reveal>
-          <Reveal delay={120} className="mt-12">
-            <FocusGarden />
-          </Reveal>
-        </div>
-      </section>
-
-      {/* EMOTIONAL */}
-      <section className="px-6 py-28 text-center sm:py-40">
-        <Reveal>
-          <h2 className="mx-auto max-w-3xl text-[32px] font-medium leading-[1.1] tracking-[-0.035em] sm:text-[60px]">
-            Turn “I should” into “I did.”
-          </h2>
-          <p className="mt-7 text-sm text-ink-soft sm:text-base">
-            Every completed commitment is a step forward.
-          </p>
-        </Reveal>
-      </section>
-
 
       {/* CONTINUE ON APP */}
       <section className="px-6 py-16 sm:py-20">
