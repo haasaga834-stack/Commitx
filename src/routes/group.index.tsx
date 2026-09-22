@@ -604,14 +604,21 @@ function GroupIndex() {
               </button>
               <button
                 onClick={onAcceptAndCommit}
-                disabled={!accepted || busy || terms.full || terms.status !== "lobby"}
+                disabled={
+                  !accepted ||
+                  busy ||
+                  terms.full ||
+                  !(terms.status === "lobby" || terms.running)
+                }
                 className="rounded-2xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
               >
                 {terms.full
                   ? "Group full"
-                  : terms.status !== "lobby"
-                    ? "Already started"
-                    : "Accept & commit"}
+                  : terms.running
+                    ? "Join in progress"
+                    : terms.status !== "lobby"
+                      ? "Session finished"
+                      : "Accept & commit"}
               </button>
             </div>
           </div>
