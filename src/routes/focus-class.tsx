@@ -100,6 +100,7 @@ function FocusClassPage() {
   const presenceKey = useMemo(() => getFocusClassPresenceKey(), []);
   const audio = useFocusClassAudio();
   const activeRef = useRef(false);
+  const finishingRef = useRef(false);
   const lastCountRef = useRef<number | null>(null);
   const noticeIdRef = useRef(0);
 
@@ -174,7 +175,7 @@ function FocusClassPage() {
       window.clearInterval(heartbeat);
       window.clearInterval(countPoll);
       void supabase.removeChannel(channel);
-      void leaveFocusClassPresence(presenceKey).catch(() => {});
+      if (!finishingRef.current) void leaveFocusClassPresence(presenceKey).catch(() => {});
     };
   }, [phase, presenceKey, refreshCount, selectedDuration, sound, pushNotice]);
 
@@ -189,14 +190,15 @@ function FocusClassPage() {
     setStartedAt(start);
     setNow(start);
     setPhase("focus");
+    finishingRef.current = false;
     try {
-      const next = await touchFocusClassPresence(presenceKey, selectedDuration, sound);
-      setActiveCount(next);
-      lastCountRef.current = next;
       if (sound !== "silence") {
         await audio.play(sound);
         setAudioOn(true);
       }
+      const next = await touchFocusClassPresence(presenceKey, selectedDuration, sound);
+      setActiveCount(next);
+      lastCountRef.current = next;
     } catch {
       setActiveCount(0);
       lastCountRef.current = 0;
@@ -205,6 +207,7 @@ function FocusClassPage() {
 
   async function finish() {
     if (phase !== "focus") return;
+    finishingRef.current = true;
     setCompletedAlongside(Math.max(0, activeCount - 1));
     setPhase("complete");
     activeRef.current = false;
@@ -218,6 +221,7 @@ function FocusClassPage() {
   }
 
   function focusAgain() {
+    finishingRef.current = false;
     setPhase("setup");
     setStartedAt(null);
     setNow(Date.now());
