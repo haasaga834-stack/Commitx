@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ArrowRight, Menu, X } from "lucide-react";
+import { ArrowRight, Menu, Moon, Sun, X } from "lucide-react";
 import heroImage from "@/assets/landing-hero.jpg";
 import { LandingHourglass } from "@/components/LandingHourglass";
 import { FocusGarden } from "@/components/FocusGarden";
@@ -279,6 +279,27 @@ export function Landing() {
   const { user } = useAuth();
   const signedIn = Boolean(user);
 
+  // Optional dark palette for this page only — remembered between visits.
+  const [darkPage, setDarkPage] = useState(false);
+  useEffect(() => {
+    try {
+      setDarkPage(window.localStorage.getItem("commitx.landing.theme") === "dark");
+    } catch {
+      /* storage unavailable — stay light */
+    }
+  }, []);
+  const toggleDarkPage = () => {
+    setDarkPage((prev) => {
+      const next = !prev;
+      try {
+        window.localStorage.setItem("commitx.landing.theme", next ? "dark" : "light");
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  };
+
   useEffect(() => {
     if (!faqOpen) return;
     const onPointerDown = (event: PointerEvent) => {
@@ -303,7 +324,7 @@ export function Landing() {
   }
 
   return (
-    <div className="landing-root min-h-dvh scroll-smooth">
+    <div className={`landing-root min-h-dvh scroll-smooth ${darkPage ? "landing-dark" : ""}`}>
       {/* NAV */}
       <header
         className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
@@ -337,6 +358,15 @@ export function Landing() {
             >
               About
             </Link>
+            <button
+              type="button"
+              onClick={toggleDarkPage}
+              aria-label={darkPage ? "Switch to light theme" : "Switch to dark theme"}
+              title={darkPage ? "Light theme" : "Dark theme"}
+              className="rounded-full border border-ink-line/70 p-2 text-ink-soft transition-colors hover:text-ink"
+            >
+              {darkPage ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </button>
             <Link
               to={signedIn ? "/history" : "/auth"}
               className="rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper transition-opacity hover:opacity-90"
@@ -345,14 +375,24 @@ export function Landing() {
             </Link>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setMenuOpen(true)}
-            aria-label="Open menu"
-            className="rounded-full p-2 text-ink md:hidden"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-1 md:hidden">
+            <button
+              type="button"
+              onClick={toggleDarkPage}
+              aria-label={darkPage ? "Switch to light theme" : "Switch to dark theme"}
+              className="rounded-full p-2 text-ink-soft"
+            >
+              {darkPage ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </button>
+            <button
+              type="button"
+              onClick={() => setMenuOpen(true)}
+              aria-label="Open menu"
+              className="rounded-full p-2 text-ink"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+          </div>
         </nav>
       </header>
 

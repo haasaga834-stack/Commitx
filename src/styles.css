@@ -666,6 +666,15 @@ body {
   background-image: none;
 }
 
+/* Optional dark palette for the public landing page (user toggled). */
+.landing-root.landing-dark {
+  --paper: oklch(0.175 0.006 60);
+  --paper-soft: oklch(0.225 0.008 60);
+  --ink: oklch(0.965 0.004 90);
+  --ink-soft: oklch(0.755 0.006 85);
+  --ink-line: oklch(0.325 0.008 70);
+}
+
 @theme inline {
   --color-paper: var(--paper);
   --color-paper-soft: var(--paper-soft);
