@@ -233,7 +233,20 @@ export function Landing() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const [faqOpen, setFaqOpen] = useState(false);
+  const faqRef = useRef<HTMLDivElement | null>(null);
   const { count: focusClassCount, loading: focusClassLoading } = useFocusClassCount();
+
+  useEffect(() => {
+    if (!faqOpen) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (faqRef.current && !faqRef.current.contains(event.target as Node)) {
+        setFaqOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [faqOpen]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -628,20 +641,34 @@ export function Landing() {
               Simple answers before you start.
             </h2>
           </Reveal>
-          <div className="mt-10 grid gap-3 md:grid-cols-2">
-            {FAQ_ITEMS.map(([question, answer], index) => (
-              <Reveal key={question} delay={(index % 2) * 80}>
-                <details className="group rounded-[22px] border border-ink-line bg-paper/75 px-5 py-4 shadow-[0_18px_44px_-34px_rgb(0_0_0/0.3)] backdrop-blur-sm">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-medium text-ink">
-                    <span>{question}</span>
-                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-ink-line text-base leading-none text-ink-soft transition-transform group-open:rotate-45">
-                      +
-                    </span>
-                  </summary>
-                  <p className="mt-3 pr-8 text-sm leading-6 text-ink-soft">{answer}</p>
-                </details>
-              </Reveal>
-            ))}
+          <div ref={faqRef} className="mt-10">
+            {faqOpen ? (
+              <div className="grid gap-3 md:grid-cols-2">
+                {FAQ_ITEMS.map(([question, answer], index) => (
+                  <Reveal key={question} delay={(index % 2) * 80}>
+                    <details className="group rounded-[22px] border border-ink-line bg-paper/75 px-5 py-4 shadow-[0_18px_44px_-34px_rgb(0_0_0/0.3)] backdrop-blur-sm">
+                      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-medium text-ink">
+                        <span>{question}</span>
+                        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-ink-line text-base leading-none text-ink-soft transition-transform group-open:rotate-45">
+                          +
+                        </span>
+                      </summary>
+                      <p className="mt-3 pr-8 text-sm leading-6 text-ink-soft">{answer}</p>
+                    </details>
+                  </Reveal>
+                ))}
+              </div>
+            ) : (
+              <div className="flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => setFaqOpen(true)}
+                  className="rounded-full border border-ink-line bg-paper/75 px-7 py-3 text-sm font-medium text-ink shadow-[0_18px_44px_-34px_rgb(0_0_0/0.3)] backdrop-blur-sm transition-colors hover:bg-paper-soft"
+                >
+                  Show FAQs
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </section>
