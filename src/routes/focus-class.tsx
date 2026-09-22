@@ -116,6 +116,7 @@ function FocusClassPage() {
   const [activeCount, setActiveCount] = useState(0);
   const [notices, setNotices] = useState<Notice[]>([]);
   const [completedAlongside, setCompletedAlongside] = useState(0);
+  const [endedEarly, setEndedEarly] = useState(false);
   const [audioOn, setAudioOn] = useState(false);
   const [presenceKey, setPresenceKey] = useState("");
   const [confirmComplete, setConfirmComplete] = useState(false);
@@ -243,6 +244,13 @@ function FocusClassPage() {
   async function finish() {
     if (phase !== "focus") return;
     finishingRef.current = true;
+    const endedBeforeTime = remainingMs > 1000;
+    setEndedEarly(endedBeforeTime);
+    setFocusedMinutes(
+      endedBeforeTime
+        ? Math.max(0, Math.round((selectedDuration * 60_000 - remainingMs) / 60_000))
+        : selectedDuration,
+    );
     setCompletedAlongside(Math.max(0, activeCount - 1));
     setPhase("complete");
     activeRef.current = false;
