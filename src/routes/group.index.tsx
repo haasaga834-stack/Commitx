@@ -553,7 +553,9 @@ function GroupIndex() {
             <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
               {[
                 `You commit exactly ${coinLabel(terms.commit_value)} — the same as everyone else.`,
-                "One shared timer runs for the whole group.",
+                terms.running && terms.minutes_left
+                  ? `This session is already running — you join with about ${terms.minutes_left} min left on the shared timer.`
+                  : "One shared timer runs for the whole group.",
                 "If you leave, exit or abandon before the timer finishes, you lose your commitment.",
                 terms.mode === "verified"
                   ? "Verified: leaving CommitX during the session fails you immediately."
