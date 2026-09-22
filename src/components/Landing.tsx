@@ -247,6 +247,10 @@ export function Landing() {
   const [faqOpen, setFaqOpen] = useState(false);
   const faqRef = useRef<HTMLDivElement | null>(null);
   const { count: focusClassCount, loading: focusClassLoading } = useFocusClassCount();
+  // Website visitors who are signed in stay on this page; only the account
+  // links change so they can reach their saved sessions.
+  const { user } = useAuth();
+  const signedIn = Boolean(user);
 
   useEffect(() => {
     if (!faqOpen) return;
