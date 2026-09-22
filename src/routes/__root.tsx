@@ -177,9 +177,23 @@ function VerifiedRecovery() {
       } catch {}
     };
 
+    // Coming back to the foreground — including a tap on the timer
+    // notification — must settle an already-failed Verified session instead of
+    // leaving it in limbo. The tap never changes the state; it only reveals it.
+    const onForeground = () => {
+      if (document.visibilityState !== "visible") return;
+      try {
+        recover();
+      } catch {}
+    };
+
     window.addEventListener("commitx:verified-pending-failure", onNativePendingFailure);
+    document.addEventListener("visibilitychange", onForeground);
+    window.addEventListener("focus", onForeground);
     return () => {
       window.removeEventListener("commitx:verified-pending-failure", onNativePendingFailure);
+      document.removeEventListener("visibilitychange", onForeground);
+      window.removeEventListener("focus", onForeground);
     };
   }, [router]);
   return null;
