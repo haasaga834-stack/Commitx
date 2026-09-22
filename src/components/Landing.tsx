@@ -5,6 +5,7 @@ import heroImage from "@/assets/landing-hero.jpg";
 import { LandingHourglass } from "@/components/LandingHourglass";
 import { FocusGarden } from "@/components/FocusGarden";
 import { GuestSetup } from "@/components/GuestSetup";
+import { FocusClassSetup } from "@/components/FocusClassSetup";
 import { useFocusClassCount } from "@/lib/focus-class";
 
 const INDUS_APPSTORE_URL = "https://indusapp.store/nnbmdn4h";
@@ -188,6 +189,7 @@ export function Landing() {
   const [modal, setModal] = useState<Mode | null>(null);
   // Visitors set up their session right here instead of leaving the page.
   const [setup, setSetup] = useState<Mode | null>(null);
+  const [focusClassOpen, setFocusClassOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
@@ -412,13 +414,14 @@ export function Landing() {
                     {focusClassLoading ? "Loading live count…" : `${focusClassCount} students focusing now`}
                   </p>
                 </div>
-                <Link
-                  to="/focus-class"
+                <button
+                  type="button"
+                  onClick={() => setFocusClassOpen(true)}
                   className="group inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 text-sm font-medium text-paper transition-opacity hover:opacity-90"
                 >
                   Join Focus Class
                   <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                </Link>
+                </button>
               </div>
             </Reveal>
 
