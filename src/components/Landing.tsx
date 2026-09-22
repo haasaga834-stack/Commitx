@@ -114,6 +114,8 @@ function ModeModal({
   onContinue: () => void;
 }) {
   const copy = MODE_COPY[mode];
+  const { user } = useAuth();
+  const signedIn = Boolean(user);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
