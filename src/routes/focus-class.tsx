@@ -491,7 +491,7 @@ function FocusClassPage() {
               </h1>
               <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed text-focus-muted">
                 {endedEarly
-                  ? `You focused for ${focusedMinutes} minute${focusedMinutes === 1 ? "" : "s"} before ending. No worries — come back and finish your ${formatDuration(selectedDuration)} class anytime.`
+                  ? `You focused for ${focusedMinutes < 1 ? "less than a minute" : `${focusedMinutes} minute${focusedMinutes === 1 ? "" : "s"}`} before ending. No worries — come back and finish your ${formatDuration(selectedDuration)} class anytime.`
                   : `You focused for ${formatDuration(selectedDuration)} alongside ${completedAlongside} students.`}
               </p>
               <div className="mt-8 grid gap-3 sm:grid-cols-2">
