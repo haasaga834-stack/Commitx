@@ -455,6 +455,31 @@ body {
   animation: lotus-shimmer 7s ease-in-out infinite;
 }
 
+/* Extra ambience motion: hazy air, breathing leaves, gliding water light */
+@keyframes scene-haze {
+  0%, 100% { opacity: 0.5; transform: translateX(-2%); }
+  50% { opacity: 0.85; transform: translateX(2%); }
+}
+@keyframes leaf-breathe {
+  0%, 100% { rotate: -2.5deg; }
+  50% { rotate: 2.5deg; }
+}
+@keyframes water-glide {
+  0% { transform: translateX(-28%); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateX(28%); opacity: 0; }
+}
+
+@utility animate-scene-haze {
+  animation: scene-haze 16s ease-in-out infinite;
+}
+@utility animate-leaf-breathe {
+  animation: leaf-breathe 8s ease-in-out infinite;
+}
+@utility animate-water-glide {
+  animation: water-glide 18s ease-in-out infinite;
+}
+
 @keyframes offline-in {
   from {
     opacity: 0;
