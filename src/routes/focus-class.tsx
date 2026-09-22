@@ -97,7 +97,7 @@ function FocusClassPage() {
   const [notices, setNotices] = useState<Notice[]>([]);
   const [completedAlongside, setCompletedAlongside] = useState(0);
   const [audioOn, setAudioOn] = useState(false);
-  const presenceKey = useMemo(() => getFocusClassPresenceKey(), []);
+  const [presenceKey, setPresenceKey] = useState("");
   const audio = useFocusClassAudio();
   const activeRef = useRef(false);
   const finishingRef = useRef(false);
@@ -109,6 +109,10 @@ function FocusClassPage() {
     ? Math.max(0, selectedDuration * 60_000 - (now - startedAt))
     : selectedDuration * 60_000;
   const otherStudents = Math.max(0, activeCount - (phase === "focus" ? 1 : 0));
+
+  useEffect(() => {
+    setPresenceKey(getFocusClassPresenceKey());
+  }, []);
 
   const pushNotice = useCallback((text: string) => {
     const id = noticeIdRef.current + 1;
@@ -186,6 +190,7 @@ function FocusClassPage() {
   }, [phase, remainingMs]);
 
   async function startFocus() {
+    if (!presenceKey) return;
     const start = Date.now();
     setStartedAt(start);
     setNow(start);
