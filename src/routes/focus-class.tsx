@@ -118,6 +118,7 @@ function FocusClassPage() {
   const [completedAlongside, setCompletedAlongside] = useState(0);
   const [audioOn, setAudioOn] = useState(false);
   const [presenceKey, setPresenceKey] = useState("");
+  const [confirmComplete, setConfirmComplete] = useState(false);
   const audio = useFocusClassAudio();
   const activeRef = useRef(false);
   const finishingRef = useRef(false);
@@ -459,7 +460,7 @@ function FocusClassPage() {
               <Button
                 type="button"
                 variant="ghost"
-                onClick={() => void finish()}
+                onClick={() => setConfirmComplete(true)}
                 className="rounded-full border border-focus-line bg-focus-panel/45 text-focus-muted hover:bg-focus-panel hover:text-focus-foreground"
               >
                 Complete
