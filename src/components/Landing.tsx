@@ -307,10 +307,10 @@ export function Landing() {
               About
             </Link>
             <Link
-              to="/auth"
+              to={signedIn ? "/history" : "/auth"}
               className="rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper transition-opacity hover:opacity-90"
             >
-              Sign in
+              {signedIn ? "My sessions" : "Sign in"}
             </Link>
           </div>
 
