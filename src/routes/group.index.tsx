@@ -545,12 +545,17 @@ function GroupIndex() {
                 value={terms.mode === "verified" ? "Verified" : "Standard"}
               />
               <Row label="Group" value={`${terms.member_count} / ${MAX_GROUP_SIZE} joined`} />
+              {terms.running && terms.minutes_left ? (
+                <Row label="Already running" value={`${terms.minutes_left} min left`} />
+              ) : null}
             </dl>
 
             <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
               {[
                 `You commit exactly ${coinLabel(terms.commit_value)} — the same as everyone else.`,
-                "One shared timer runs for the whole group.",
+                terms.running && terms.minutes_left
+                  ? `This session is already running — you join with about ${terms.minutes_left} min left on the shared timer.`
+                  : "One shared timer runs for the whole group.",
                 "If you leave, exit or abandon before the timer finishes, you lose your commitment.",
                 terms.mode === "verified"
                   ? "Verified: leaving CommitX during the session fails you immediately."
@@ -601,14 +606,21 @@ function GroupIndex() {
               </button>
               <button
                 onClick={onAcceptAndCommit}
-                disabled={!accepted || busy || terms.full || terms.status !== "lobby"}
+                disabled={
+                  !accepted ||
+                  busy ||
+                  terms.full ||
+                  !(terms.status === "lobby" || terms.running)
+                }
                 className="rounded-2xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
               >
                 {terms.full
                   ? "Group full"
-                  : terms.status !== "lobby"
-                    ? "Already started"
-                    : "Accept & commit"}
+                  : terms.running
+                    ? "Join in progress"
+                    : terms.status !== "lobby"
+                      ? "Session finished"
+                      : "Accept & commit"}
               </button>
             </div>
           </div>

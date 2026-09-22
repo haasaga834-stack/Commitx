@@ -77,7 +77,21 @@ export const previewInvite = createServerFn({ method: "POST" })
       .eq("user_id", context.userId)
       .maybeSingle();
 
+    // Late joining shares the group's one authoritative end time, so the
+    // invite can show exactly how much of the session is still left.
+    const { data: window } = await supabaseAdmin
+      .from("study_groups")
+      .select("ends_at")
+      .eq("id", row.id)
+      .maybeSingle();
+    const endsAt = (window?.ends_at as string | null) ?? null;
+    const msLeft = endsAt ? Date.parse(endsAt) - Date.now() : 0;
+    const running = row.status === "active" && msLeft > 0;
+
     return {
+      running,
+      ends_at: endsAt,
+      minutes_left: running ? Math.max(1, Math.round(msLeft / 60000)) : null,
       id: row.id,
       goal: row.goal,
       duration_minutes: row.duration_minutes,
