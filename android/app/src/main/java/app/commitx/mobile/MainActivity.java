@@ -308,6 +308,29 @@ public class MainActivity extends Activity {
         return START_URL + route.replaceFirst("^/", "");
     }
 
+    /**
+     * A route intent reloads the web app from the network. With no connection
+     * that would replace a perfectly good running timer with the WebView error
+     * page, so in that case we simply bring the already-loaded page forward.
+     */
+    private boolean canReloadForRoute() {
+        String current = webView == null ? null : webView.getUrl();
+        boolean hasPage = current != null && current.startsWith(START_URL);
+        if (!hasPage) return true;
+        try {
+            android.net.ConnectivityManager cm = (android.net.ConnectivityManager)
+                    getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
+            if (cm == null) return true;
+            android.net.Network network = cm.getActiveNetwork();
+            if (network == null) return false;
+            android.net.NetworkCapabilities caps = cm.getNetworkCapabilities(network);
+            return caps != null
+                    && caps.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET);
+        } catch (Throwable ignored) {
+            return true;
+        }
+    }
+
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
