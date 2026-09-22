@@ -45,6 +45,12 @@ export interface InvitePreviewDTO {
   member_count: number;
   full: boolean;
   already_member: boolean;
+  /** Set when the shared timer is already running (late join). */
+  running?: boolean;
+  /** Authoritative end of the shared window, when running. */
+  ends_at?: string | null;
+  /** Whole minutes left in the shared window, when running. */
+  minutes_left?: number | null;
 }
 
 /** Human-friendly invite code (no ambiguous characters). */
