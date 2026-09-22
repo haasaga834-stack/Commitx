@@ -362,11 +362,11 @@ export function Landing() {
               About
             </Link>
             <Link
-              to="/auth"
+              to={signedIn ? "/history" : "/auth"}
               onClick={() => setMenuOpen(false)}
               className="mt-4 inline-flex items-center justify-center rounded-full bg-ink px-6 py-4 text-sm font-medium text-paper"
             >
-              Sign in
+              {signedIn ? "My sessions" : "Sign in"}
             </Link>
           </div>
         </div>
