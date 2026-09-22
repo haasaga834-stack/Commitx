@@ -521,7 +521,7 @@ function FocusClassPage() {
             </h2>
             <p className="mx-auto mt-2 max-w-xs text-sm leading-relaxed text-focus-muted">
               {remainingMs > 1000
-                ? `You still have ${formatClock(remainingMs)} left. Your focus time so far will be saved.`
+                ? `You still have ${formatClock(remainingMs)} left. You can always come back and focus again.`
                 : "Finish now and see your session summary."}
             </p>
             <div className="mt-6 grid gap-2.5">
