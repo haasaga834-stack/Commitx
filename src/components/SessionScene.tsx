@@ -316,15 +316,15 @@ function GrowingPlant({ progress }: { progress: number }) {
             <stop offset="100%" stopColor="oklch(0.48 0.12 152)" />
           </linearGradient>
           <linearGradient id="cxSoil" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="oklch(0.44 0.06 55)" />
-            <stop offset="100%" stopColor="oklch(0.3 0.05 50)" />
+            <stop offset="0%" stopColor="oklch(0.52 0.06 58)" />
+            <stop offset="100%" stopColor="oklch(0.33 0.05 48)" />
           </linearGradient>
         </defs>
 
-        {/* Soil mound with a soft shadow and a few pebbles */}
-        <ellipse cx="200" cy={SOIL_Y + 6} rx="150" ry="16" fill="oklch(0.55 0.04 60 / 0.22)" />
+        {/* Broad soil bed with a soft shadow and a few pebbles */}
+        <ellipse cx="200" cy={SOIL_Y + 6} rx="190" ry="18" fill="oklch(0.58 0.04 60 / 0.2)" />
         <path
-          d={`M46 ${SOIL_Y + 22} Q 120 ${SOIL_Y - 12} 200 ${SOIL_Y - 9} Q 282 ${SOIL_Y - 12} 354 ${SOIL_Y + 22} Z`}
+          d={`M-10 ${SOIL_Y + 40} Q 96 ${SOIL_Y - 14} 200 ${SOIL_Y - 10} Q 306 ${SOIL_Y - 14} 410 ${SOIL_Y + 40} Z`}
           fill="url(#cxSoil)"
         />
         {pebbles.map((s, i) => (
