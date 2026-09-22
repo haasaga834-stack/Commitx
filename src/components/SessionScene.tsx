@@ -248,8 +248,9 @@ function GrowingPlant({ progress }: { progress: number }) {
       y: SOIL_Y - stemH * along,
       x: 200 + lean * along * 0.55,
       side: i % 2 === 0 ? 1 : -1,
-      len: mix(13, 30, 1 - Math.abs(0.5 - along) * 1.2),
-      droop: 8 + (i % 3) * 5,
+      // Fuller near the middle of the stem, tapering towards soil and tip.
+      len: mix(20, 44, 1 - Math.abs(0.48 - along) * 1.35),
+      droop: 12 + (i % 3) * 6,
     };
   });
 
