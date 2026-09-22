@@ -313,7 +313,7 @@ public class MainActivity extends Activity {
         super.onNewIntent(intent);
         setIntent(intent);
         String route = intent == null ? null : intent.getStringExtra(EXTRA_ROUTE);
-        if (route != null && !route.trim().isEmpty() && webView != null) {
+        if (route != null && !route.trim().isEmpty() && webView != null && canReloadForRoute()) {
             webView.loadUrl(startUrlFor(intent));
         }
         String callback = oauthCallbackFrom(intent);
