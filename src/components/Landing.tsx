@@ -4,6 +4,7 @@ import { ArrowRight, Menu, X } from "lucide-react";
 import heroImage from "@/assets/landing-hero.jpg";
 import { LandingHourglass } from "@/components/LandingHourglass";
 import { FocusGarden } from "@/components/FocusGarden";
+import { GuestSetup } from "@/components/GuestSetup";
 
 const INDUS_APPSTORE_URL = "https://indusapp.store/nnbmdn4h";
 
