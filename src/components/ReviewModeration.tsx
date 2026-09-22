@@ -25,9 +25,9 @@ import {
 import { cn } from "@/lib/utils";
 
 const statusClass: Record<ReviewStatus, string> = {
-  pending: "border-amber-200 bg-amber-50 text-amber-800",
-  approved: "border-emerald-200 bg-emerald-50 text-emerald-800",
-  rejected: "border-stone-200 bg-stone-50 text-stone-700",
+  pending: "border-primary/20 bg-primary/10 text-primary",
+  approved: "border-primary/20 bg-primary/10 text-primary",
+  rejected: "border-muted bg-muted text-muted-foreground",
 };
 
 function dateLabel(value: string) {

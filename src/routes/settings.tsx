@@ -24,6 +24,8 @@ export const Route = createFileRoute("/settings")({
       { name: "description", content: "Appearance, referrals and account controls for CommitX." },
       { property: "og:title", content: "CommitX — Settings" },
       { property: "og:description", content: "Appearance, referrals and account controls for CommitX." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Settings,

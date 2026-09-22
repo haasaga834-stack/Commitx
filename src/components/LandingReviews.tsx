@@ -121,44 +121,44 @@ export function LandingReviews() {
   return (
     <section id="student-reviews" className="px-6 py-12 sm:py-16">
       <div className="mx-auto grid w-full max-w-5xl gap-6 lg:grid-cols-[1fr_0.9fr] lg:items-stretch">
-        <div className="rounded-[2rem] border border-emerald-950/10 bg-white/78 p-5 shadow-[0_24px_80px_rgba(37,64,49,0.08)] backdrop-blur-xl sm:p-7">
+        <div className="rounded-[2rem] border border-ink-line bg-paper/78 p-5 shadow-[0_24px_80px_-48px_rgb(0_0_0/0.35)] backdrop-blur-xl sm:p-7">
           <div className="mb-6 flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-950/45">
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-ink-soft/70">
                 What students are saying
               </p>
-              <h2 className="mt-2 text-3xl font-semibold tracking-tight text-emerald-950 sm:text-4xl">
+              <h2 className="mt-2 text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
                 Real experiences, reviewed before publishing.
               </h2>
             </div>
-            <MessageCircle className="mt-1 h-6 w-6 flex-none text-emerald-700/70" aria-hidden="true" />
+            <MessageCircle className="mt-1 h-6 w-6 flex-none text-primary/70" aria-hidden="true" />
           </div>
 
-          <div className="min-h-[240px] rounded-[1.5rem] border border-emerald-950/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.82),rgba(235,243,236,0.72))] p-5 sm:p-6">
+          <div className="min-h-[240px] rounded-[1.5rem] border border-ink-line bg-paper-soft/75 p-5 sm:p-6">
             {loading ? (
               <div className="flex h-full min-h-[190px] items-center justify-center">
-                <div className="h-7 w-7 animate-spin rounded-full border-2 border-emerald-950/15 border-t-emerald-700" />
+                <div className="h-7 w-7 animate-spin rounded-full border-2 border-ink-line border-t-primary" />
               </div>
             ) : current ? (
               <article className="flex min-h-[190px] flex-col justify-between gap-8">
-                <p className="text-xl leading-relaxed text-emerald-950 sm:text-2xl">“{current.review}”</p>
+                <p className="text-xl leading-relaxed text-ink sm:text-2xl">“{current.review}”</p>
                 <div className="flex flex-wrap items-end justify-between gap-4">
                   <div>
-                    <p className="text-base font-semibold text-emerald-950">{current.displayName}</p>
+                    <p className="text-base font-semibold text-ink">{current.displayName}</p>
                     {current.courseYear ? (
-                      <p className="mt-1 text-sm text-emerald-950/55">{current.courseYear}</p>
+                      <p className="mt-1 text-sm text-ink-soft">{current.courseYear}</p>
                     ) : null}
                   </div>
-                  {currentDate ? <p className="text-xs font-medium text-emerald-950/45">{currentDate}</p> : null}
+                  {currentDate ? <p className="text-xs font-medium text-ink-soft/70">{currentDate}</p> : null}
                 </div>
               </article>
             ) : (
               <div className="flex min-h-[190px] flex-col items-center justify-center text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-900/8 text-emerald-800">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
                   <MessageCircle className="h-5 w-5" aria-hidden="true" />
                 </div>
-                <p className="mt-4 text-lg font-semibold text-emerald-950">No approved reviews yet.</p>
-                <p className="mt-2 max-w-sm text-sm leading-6 text-emerald-950/60">
+                <p className="mt-4 text-lg font-semibold text-ink">No approved reviews yet.</p>
+                <p className="mt-2 max-w-sm text-sm leading-6 text-ink-soft">
                   Shared experiences appear here only after moderation.
                 </p>
               </div>
@@ -176,7 +176,7 @@ export function LandingReviews() {
                     onClick={() => setActive(index)}
                     className={cn(
                       "h-2.5 rounded-full transition-all",
-                      active === index ? "w-8 bg-emerald-800" : "w-2.5 bg-emerald-900/18 hover:bg-emerald-900/30",
+                      active === index ? "w-8 bg-primary" : "w-2.5 bg-ink-line hover:bg-ink-soft/30",
                     )}
                   />
                 ))}
@@ -195,52 +195,52 @@ export function LandingReviews() {
 
         <form
           onSubmit={onSubmit}
-          className="rounded-[2rem] border border-emerald-950/10 bg-emerald-950/[0.035] p-5 shadow-[0_24px_80px_rgba(37,64,49,0.06)] sm:p-7"
+          className="rounded-[2rem] border border-ink-line bg-paper-soft/70 p-5 shadow-[0_24px_80px_-52px_rgb(0_0_0/0.35)] sm:p-7"
         >
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-950/45">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-ink-soft/70">
             Share your experience
           </p>
-          <h3 className="mt-2 text-2xl font-semibold tracking-tight text-emerald-950">Add a short review</h3>
+          <h3 className="mt-2 text-2xl font-semibold tracking-tight text-ink">Add a short review</h3>
           <div className="mt-6 space-y-4">
-            <label className="block text-sm font-medium text-emerald-950/70">
+            <label className="block text-sm font-medium text-ink-soft">
               Display name
               <Input
                 value={form.displayName}
                 maxLength={DISPLAY_NAME_LIMIT}
                 onChange={(event) => setForm((prev) => ({ ...prev, displayName: event.target.value }))}
-                className="mt-2 bg-white/80"
+                className="mt-2 bg-paper/80"
                 placeholder="Your name"
               />
             </label>
-            <label className="block text-sm font-medium text-emerald-950/70">
-              Course/year <span className="font-normal text-emerald-950/40">optional</span>
+            <label className="block text-sm font-medium text-ink-soft">
+              Course/year <span className="font-normal text-ink-soft/70">optional</span>
               <Input
                 value={form.courseYear}
                 maxLength={COURSE_YEAR_LIMIT}
                 onChange={(event) => setForm((prev) => ({ ...prev, courseYear: event.target.value }))}
-                className="mt-2 bg-white/80"
+                className="mt-2 bg-paper/80"
                 placeholder="Class 12, B.Tech 2nd year"
               />
             </label>
-            <label className="block text-sm font-medium text-emerald-950/70">
+            <label className="block text-sm font-medium text-ink-soft">
               Review
               <Textarea
                 value={form.review}
                 maxLength={REVIEW_LIMIT}
                 rows={5}
                 onChange={(event) => setForm((prev) => ({ ...prev, review: event.target.value }))}
-                className="mt-2 resize-none bg-white/80"
+                className="mt-2 resize-none bg-paper/80"
                 placeholder="What changed in your study routine?"
               />
             </label>
           </div>
-          <div className="mt-3 flex items-center justify-between gap-3 text-xs text-emerald-950/45">
+          <div className="mt-3 flex items-center justify-between gap-3 text-xs text-ink-soft/70">
             <span>Reviewed before publishing.</span>
             <span>{remaining} left</span>
           </div>
           {error ? <p className="mt-4 text-sm font-medium text-destructive">{error}</p> : null}
           {submitted ? (
-            <p className="mt-4 flex items-center gap-2 text-sm font-medium text-emerald-800">
+            <p className="mt-4 flex items-center gap-2 text-sm font-medium text-primary">
               <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
               Thanks — your review is pending approval.
             </p>
