@@ -664,15 +664,15 @@ function QuietForest() {
         viewBox="0 0 240 900"
         preserveAspectRatio="xMinYMax slice"
       >
-        <g fill="var(--focus-tree)">
+        <g fill="var(--focus-tree)" opacity="0.92">
           <rect x="84" y="150" width="13" height="760" />
           {[
-            [150, 150, 96],
-            [230, 170, 116],
-            [320, 190, 132],
-            [420, 205, 142],
-            [530, 215, 150],
-            [650, 225, 158],
+            [150, 70, 96],
+            [240, 84, 112],
+            [340, 96, 126],
+            [450, 106, 136],
+            [570, 114, 144],
+            [700, 122, 152],
           ].map(([y, spread, h]) => (
             <path key={y} d={`M90 ${y - h} C ${90 + spread * 0.45} ${y - h * 0.3} ${90 + spread * 0.8} ${y - 8} ${90 + spread} ${y} C ${90 + spread * 0.5} ${y + 12} ${90 + spread * 0.2} ${y + 26} 90 ${y + 40} C ${90 - spread * 0.2} ${y + 26} ${90 - spread * 0.5} ${y + 12} ${90 - spread} ${y} C ${90 - spread * 0.8} ${y - 8} ${90 - spread * 0.45} ${y - h * 0.3} 90 ${y - h} Z`} />
           ))}
@@ -683,15 +683,15 @@ function QuietForest() {
         viewBox="0 0 240 900"
         preserveAspectRatio="xMaxYMax slice"
       >
-        <g fill="var(--focus-tree)">
+        <g fill="var(--focus-tree)" opacity="0.92">
           <rect x="146" y="120" width="14" height="790" />
           {[
-            [130, 160, 100],
-            [215, 180, 120],
-            [310, 200, 136],
-            [415, 215, 146],
-            [530, 228, 154],
-            [660, 238, 162],
+            [130, 74, 100],
+            [225, 88, 116],
+            [330, 100, 130],
+            [445, 110, 140],
+            [570, 118, 148],
+            [705, 126, 156],
           ].map(([y, spread, h]) => (
             <path key={y} d={`M153 ${y - h} C ${153 + spread * 0.45} ${y - h * 0.3} ${153 + spread * 0.8} ${y - 8} ${153 + spread} ${y} C ${153 + spread * 0.5} ${y + 12} ${153 + spread * 0.2} ${y + 26} 153 ${y + 40} C ${153 - spread * 0.2} ${y + 26} ${153 - spread * 0.5} ${y + 12} ${153 - spread} ${y} C ${153 - spread * 0.8} ${y - 8} ${153 - spread * 0.45} ${y - h * 0.3} 153 ${y - h} Z`} />
           ))}
