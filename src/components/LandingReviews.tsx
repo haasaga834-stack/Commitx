@@ -144,23 +144,16 @@ export function LandingReviews() {
             ) : current ? (
               <article className="flex min-h-[190px] flex-col justify-between gap-6">
                 <div>
-                  <p
+                  <div
                     className={cn(
-                      "text-lg leading-relaxed text-ink sm:text-xl",
-                      expandedId !== current.id && "line-clamp-6",
+                      "overflow-y-auto pr-1",
+                      current.review.length > 180 &&
+                        "[scrollbar-width:thin] max-h-[168px] overscroll-contain",
                     )}
+                    style={current.review.length > 180 ? { maxHeight: REVIEW_SCROLL_MAX } : undefined}
                   >
-                    “{current.review}”
-                  </p>
-                  {current.review.length > READ_MORE_THRESHOLD ? (
-                    <button
-                      type="button"
-                      onClick={() => setExpandedId((id) => (id === current.id ? null : current.id))}
-                      className="mt-3 text-sm font-semibold text-primary hover:underline"
-                    >
-                      {expandedId === current.id ? "Show less" : "Read more"}
-                    </button>
-                  ) : null}
+                    <p className="text-lg leading-relaxed text-ink sm:text-xl">“{current.review}”</p>
+                  </div>
                 </div>
                 <div className="flex flex-wrap items-end justify-between gap-4">
                   <div>
