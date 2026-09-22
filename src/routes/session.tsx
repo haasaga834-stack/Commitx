@@ -792,9 +792,13 @@ function LiveSession() {
     };
 
     // Reload / reopen protection: a live verified session may never resume.
-    if (claimWebSessionTab(startedAt).reloaded && phaseRef.current === "focus") {
-      failWeb("web_reload");
-      return;
+    // Claimed only once per mount, so an effect re-run is not a reload.
+    if (webClaimedRef.current !== startedAt) {
+      webClaimedRef.current = startedAt;
+      if (claimWebSessionTab(startedAt).reloaded && phaseRef.current === "focus") {
+        failWeb("web_reload");
+        return;
+      }
     }
 
     /**
