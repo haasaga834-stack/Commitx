@@ -7,6 +7,7 @@ import { SessionScene } from "@/components/SessionScene";
 import { setState, coinLabel, coinsForMinutes, createLocalSessionId, getState, type Mode } from "@/lib/commitx-store";
 import {
   clearActiveVerifiedSession,
+  finalizePendingVerifiedFailure,
   markActiveVerifiedSessionPendingFailure,
   markSessionEnded,
   isSessionEnded,
