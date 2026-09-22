@@ -40,16 +40,51 @@ export const recordSessions = createServerFn({ method: "POST" })
     const { userId } = context;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const [{ data: existing }, { data: referrals }] = await Promise.all([
-      supabaseAdmin
-        .from("focus_sessions")
-        .select("id, coins_spent, coins_earned")
-        .eq("user_id", userId),
-      supabaseAdmin
-        .from("referrals")
-        .select("bonus_amount, referrer_id, referred_id")
-        .or(`referrer_id.eq.${userId},referred_id.eq.${userId}`),
-    ]);
+    const [{ data: existing }, { data: referrals }, { data: active }, { data: lastRecorded }] =
+      await Promise.all([
+        supabaseAdmin
+          .from("focus_sessions")
+          .select("id, coins_spent, coins_earned")
+          .eq("user_id", userId),
+        supabaseAdmin
+          .from("referrals")
+          .select("bonus_amount, referrer_id, referred_id")
+          .or(`referrer_id.eq.${userId},referred_id.eq.${userId}`),
+        supabaseAdmin
+          .from("active_sessions")
+          .select("started_at, duration_minutes")
+          .eq("user_id", userId)
+          .maybeSingle(),
+        supabaseAdmin
+          .from("focus_sessions")
+          .select("created_at")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
+
+    /**
+     * Minutes of study the server is willing to credit in this call. Derived from
+     * the server clock — either the live session's own start time, or the real
+     * time that has passed since the user's last recorded session — so a client
+     * cannot claim study time that could not physically have happened.
+     */
+    const nowMs = Date.now();
+    const minutesSince = (iso: string | null | undefined) => {
+      if (!iso) return null;
+      const ms = new Date(iso).getTime();
+      if (Number.isNaN(ms)) return null;
+      return Math.max(0, Math.floor((nowMs - ms) / 60000));
+    };
+    const activeElapsed = minutesSince(active?.started_at);
+    const sinceLastRecorded = minutesSince(lastRecorded?.created_at);
+    let creditBudget =
+      activeElapsed !== null
+        ? activeElapsed
+        : sinceLastRecorded !== null
+          ? sinceLastRecorded
+          : 600;
 
     const bonus = (referrals ?? []).reduce(
       (sum, r: { bonus_amount: number | null }) => sum + (r.bonus_amount ?? 0),
