@@ -49,6 +49,8 @@ export function GuestSetup({ mode, onClose }: { mode: Mode; onClose: () => void 
 
   /** Hands the guest session over to the existing session page, unchanged. */
   function startWithTheme(theme: SessionThemeId) {
+    if (startedRef.current) return;
+    startedRef.current = true;
     // Guests never carry a Focus Shield plan.
     clearShieldPlan();
     clearEndedSession();
