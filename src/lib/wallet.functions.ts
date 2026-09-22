@@ -115,8 +115,13 @@ export const recordSessions = createServerFn({ method: "POST" })
       if (s.status === "failed" && s.value >= MIN_COMMIT) {
         coinsSpent = Math.min(s.value, available);
         spent += coinsSpent;
-      } else if (s.status === "completed") {
-        coinsEarned = rewardFor(s.durationMinutes);
+      }
+      // Credited study time can never exceed the time the server clock says was
+      // actually available, so a client-supplied duration cannot mint coins.
+      const creditedMinutes = Math.max(0, Math.min(s.durationMinutes, creditBudget));
+      if (s.status === "completed") {
+        creditBudget -= creditedMinutes;
+        coinsEarned = rewardFor(creditedMinutes);
         earned += coinsEarned;
       }
 
@@ -126,7 +131,7 @@ export const recordSessions = createServerFn({ method: "POST" })
           ...(s.id ? { id: s.id } : {}),
           user_id: userId,
           goal: s.goal,
-          duration_minutes: s.durationMinutes,
+          duration_minutes: s.status === "completed" ? creditedMinutes : s.durationMinutes,
           value: s.value,
           mode: s.mode,
           status: s.status,
