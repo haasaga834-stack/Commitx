@@ -1,9 +1,10 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowRight, Menu, X } from "lucide-react";
 import heroImage from "@/assets/landing-hero.jpg";
 import { LandingHourglass } from "@/components/LandingHourglass";
 import { FocusGarden } from "@/components/FocusGarden";
+import { GuestSetup } from "@/components/GuestSetup";
 
 const INDUS_APPSTORE_URL = "https://indusapp.store/nnbmdn4h";
 
@@ -183,8 +184,9 @@ const NAV_LINKS = [
 ];
 
 export function Landing() {
-  const navigate = useNavigate();
   const [modal, setModal] = useState<Mode | null>(null);
+  // Visitors set up their session right here instead of leaving the page.
+  const [setup, setSetup] = useState<Mode | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
@@ -198,7 +200,7 @@ export function Landing() {
 
   function start(mode: Mode) {
     setModal(null);
-    navigate({ to: "/commit", search: { mode } });
+    setSetup(mode);
   }
 
   return (
@@ -668,6 +670,8 @@ export function Landing() {
           onContinue={() => start(modal)}
         />
       ) : null}
+
+      {setup ? <GuestSetup mode={setup} onClose={() => setSetup(null)} /> : null}
     </div>
   );
 }

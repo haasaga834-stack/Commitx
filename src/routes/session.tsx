@@ -377,6 +377,12 @@ function LiveSession() {
   const awayAtRef = useRef<number | null>(null);
   /** Explicit window blur is the web signal for switching tabs/apps. */
   const webBlurAtRef = useRef<number | null>(null);
+  /**
+   * Reload protection is claimed once per mounted session. The enforcement
+   * effect re-runs whenever the DND check resolves, and a re-run must never be
+   * mistaken for a page reload.
+   */
+  const webClaimedRef = useRef<number | null>(null);
 
 
   const persist = useCallback(() => {
@@ -786,9 +792,13 @@ function LiveSession() {
     };
 
     // Reload / reopen protection: a live verified session may never resume.
-    if (claimWebSessionTab(startedAt).reloaded && phaseRef.current === "focus") {
-      failWeb("web_reload");
-      return;
+    // Claimed only once per mount, so an effect re-run is not a reload.
+    if (webClaimedRef.current !== startedAt) {
+      webClaimedRef.current = startedAt;
+      if (claimWebSessionTab(startedAt).reloaded && phaseRef.current === "focus") {
+        failWeb("web_reload");
+        return;
+      }
     }
 
     /**
