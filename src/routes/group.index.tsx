@@ -545,6 +545,9 @@ function GroupIndex() {
                 value={terms.mode === "verified" ? "Verified" : "Standard"}
               />
               <Row label="Group" value={`${terms.member_count} / ${MAX_GROUP_SIZE} joined`} />
+              {terms.running && terms.minutes_left ? (
+                <Row label="Already running" value={`${terms.minutes_left} min left`} />
+              ) : null}
             </dl>
 
             <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
