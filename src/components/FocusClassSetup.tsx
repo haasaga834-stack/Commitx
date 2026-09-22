@@ -131,7 +131,7 @@ export function FocusClassSetup({ open, onClose }: FocusClassSetupProps) {
             </div>
 
             {custom ? (
-              <div className="mt-4 rounded-3xl border border-ink-line/80 bg-paper-deep/40 p-3">
+              <div className="mt-4 rounded-3xl border border-ink-line/80 bg-paper-soft/40 p-3">
                 <div className="no-scrollbar flex snap-x gap-2 overflow-x-auto px-1 py-1">
                   {CUSTOM_DURATIONS.map((minutes) => (
                     <button
@@ -172,7 +172,7 @@ export function FocusClassSetup({ open, onClose }: FocusClassSetupProps) {
                   key={item.id}
                   className={cn(
                     "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-2xl border border-ink-line bg-paper p-2 transition-colors",
-                    sound === item.id && "border-ink bg-paper-deep/50",
+                    sound === item.id && "border-ink bg-paper-soft/50",
                   )}
                 >
                   <button
@@ -187,7 +187,7 @@ export function FocusClassSetup({ open, onClose }: FocusClassSetupProps) {
                     <button
                       type="button"
                       onClick={() => void audio.preview(item.id)}
-                      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-ink-soft transition-colors hover:bg-paper-deep hover:text-ink"
+                      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-ink-soft transition-colors hover:bg-paper-soft hover:text-ink"
                     >
                       <Play className="h-3.5 w-3.5" />
                       Preview
