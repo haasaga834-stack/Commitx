@@ -2,6 +2,7 @@ import { createFileRoute, Link, useLocation, useRouter } from "@tanstack/react-r
 import { MobileShell } from "@/components/BottomNav";
 import { NotificationsCard } from "@/components/NotificationsCard";
 import { ScreenTimeCard } from "@/components/ScreenTimeCard";
+import { ReviewModeration } from "@/components/ReviewModeration";
 import { CxCoin } from "@/components/CxCoin";
 
 
@@ -23,6 +24,10 @@ export const Route = createFileRoute("/settings")({
       { name: "description", content: "Appearance, referrals and account controls for CommitX." },
       { property: "og:title", content: "CommitX — Settings" },
       { property: "og:description", content: "Appearance, referrals and account controls for CommitX." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "CommitX — Settings" },
+      { name: "twitter:description", content: "Appearance, referrals and account controls for CommitX." },
     ],
   }),
   component: Settings,
@@ -351,6 +356,8 @@ function Settings() {
         </div>
       </div>
 
+
+      <ReviewModeration />
 
       {confirming && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 backdrop-blur-sm">

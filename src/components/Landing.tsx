@@ -6,6 +6,7 @@ import { LandingHourglass } from "@/components/LandingHourglass";
 import { FocusGarden } from "@/components/FocusGarden";
 import { GuestSetup } from "@/components/GuestSetup";
 import { FocusClassSetup } from "@/components/FocusClassSetup";
+import { LandingReviews } from "@/components/LandingReviews";
 import { useFocusClassCount } from "@/lib/focus-class";
 
 const INDUS_APPSTORE_URL = "https://indusapp.store/nnbmdn4h";
@@ -184,6 +185,45 @@ const NAV_LINKS = [
   { label: "Standard", href: "#modes" },
   { label: "Verified", href: "#modes" },
 ];
+
+const FAQ_ITEMS = [
+  [
+    "What is CommitX?",
+    "CommitX is a focus and accountability app that helps you turn study or work intentions into timed commitments.",
+  ],
+  [
+    "How does a focus session work?",
+    "Choose a goal, duration, theme, and mode, then start the timer and focus until the session ends.",
+  ],
+  [
+    "What is Standard?",
+    "Standard is the flexible mode for everyday focus sessions. You can start without signing in on the website.",
+  ],
+  [
+    "What is Verified?",
+    "Verified is stricter accountability. It preserves the timer through screen lock, but leaving CommitX can fail the session.",
+  ],
+  [
+    "Can I start without signing in?",
+    "Yes. Website visitors can start Standard, Verified, and Focus Class without an account. Guest sessions do not use Cx Coins.",
+  ],
+  [
+    "Can I study with friends?",
+    "Yes. Group Study lets signed-in users create or join shared sessions with one shared timer and commitments.",
+  ],
+  [
+    "What is Focus Class?",
+    "Focus Class is a public quiet room with live presence, calm sounds, and focused study durations.",
+  ],
+  [
+    "What are Cx Coins?",
+    "Cx Coins are in-app points used for commitments. Completed sessions earn 25 Cx Coins per hour, with no cash value.",
+  ],
+  [
+    "What is Focus Shield?",
+    "Focus Shield is an optional Standard-mode Android protection that helps block selected distracting apps during a session.",
+  ],
+] as const;
 
 export function Landing() {
   const [modal, setModal] = useState<Mode | null>(null);
@@ -569,6 +609,59 @@ export function Landing() {
                   {title}
                 </h3>
                 <p className="mt-3 text-sm leading-relaxed text-ink-soft">{body}</p>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* WHY COMMITX */}
+      <section className="bg-paper-soft px-6 py-16 sm:py-20">
+        <div className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
+          <Reveal>
+            <div>
+              <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-ink-soft">
+                Why CommitX
+              </p>
+              <h2 className="mt-5 text-[28px] font-medium leading-[1.15] tracking-[-0.03em] sm:text-[42px]">
+                A calm push from intention to action.
+              </h2>
+            </div>
+          </Reveal>
+          <Reveal delay={90}>
+            <p className="text-base leading-8 text-ink-soft sm:text-lg">
+              CommitX helps people turn the intention to study or work into a real commitment.
+              Pick what matters, set a focused window, and use accountability to stay with it until the time is done.
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
+      <LandingReviews />
+
+      {/* FAQ */}
+      <section className="px-6 py-16 sm:py-20">
+        <div className="mx-auto max-w-5xl">
+          <Reveal className="max-w-2xl">
+            <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-ink-soft">
+              FAQ
+            </p>
+            <h2 className="mt-5 text-[28px] font-medium leading-[1.15] tracking-[-0.03em] sm:text-[42px]">
+              Simple answers before you start.
+            </h2>
+          </Reveal>
+          <div className="mt-10 grid gap-3 md:grid-cols-2">
+            {FAQ_ITEMS.map(([question, answer], index) => (
+              <Reveal key={question} delay={(index % 2) * 80}>
+                <details className="group rounded-[22px] border border-ink-line bg-paper/75 px-5 py-4 shadow-[0_18px_44px_-34px_rgb(0_0_0/0.3)] backdrop-blur-sm">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-medium text-ink">
+                    <span>{question}</span>
+                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-ink-line text-base leading-none text-ink-soft transition-transform group-open:rotate-45">
+                      +
+                    </span>
+                  </summary>
+                  <p className="mt-3 pr-8 text-sm leading-6 text-ink-soft">{answer}</p>
+                </details>
               </Reveal>
             ))}
           </div>
