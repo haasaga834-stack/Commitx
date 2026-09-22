@@ -50,6 +50,13 @@
       "when": 1790091926857,
       "tag": "0006_create_focus_class_presence",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790096773513,
+      "tag": "0007_create_student_reviews",
+      "breakpoints": true
     }
   ]
 }
