@@ -660,23 +660,41 @@ function QuietForest() {
 
       {/* tall edge trees */}
       <svg
-        className="animate-focus-canopy-sway absolute -left-10 bottom-0 h-full w-[30%] origin-bottom sm:w-[24%]"
-        viewBox="0 0 300 900"
-        preserveAspectRatio="none"
+        className="animate-focus-canopy-sway absolute -left-16 bottom-0 h-full w-[26%] origin-bottom blur-[1px] sm:w-[20%]"
+        viewBox="0 0 240 900"
+        preserveAspectRatio="xMinYMax slice"
       >
         <g fill="var(--focus-tree)">
-          <rect x="96" y="120" width="20" height="780" />
-          <path d="M106 60 C 150 150 196 176 268 196 C 196 206 152 232 120 300 C 150 312 190 320 250 330 C 180 348 132 384 108 452 C 74 372 40 330 -20 306 C 44 292 82 258 96 200 C 46 176 8 152 -34 136 C 40 132 82 104 106 60 Z" />
+          <rect x="84" y="150" width="13" height="760" />
+          {[
+            [150, 150, 96],
+            [230, 170, 116],
+            [320, 190, 132],
+            [420, 205, 142],
+            [530, 215, 150],
+            [650, 225, 158],
+          ].map(([y, spread, h]) => (
+            <path key={y} d={`M90 ${y - h} C ${90 + spread * 0.45} ${y - h * 0.3} ${90 + spread * 0.8} ${y - 8} ${90 + spread} ${y} C ${90 + spread * 0.5} ${y + 12} ${90 + spread * 0.2} ${y + 26} 90 ${y + 40} C ${90 - spread * 0.2} ${y + 26} ${90 - spread * 0.5} ${y + 12} ${90 - spread} ${y} C ${90 - spread * 0.8} ${y - 8} ${90 - spread * 0.45} ${y - h * 0.3} 90 ${y - h} Z`} />
+          ))}
         </g>
       </svg>
       <svg
-        className="animate-focus-canopy-sway-reverse absolute -right-10 bottom-0 h-full w-[32%] origin-bottom sm:w-[26%]"
-        viewBox="0 0 300 900"
-        preserveAspectRatio="none"
+        className="animate-focus-canopy-sway-reverse absolute -right-16 bottom-0 h-full w-[28%] origin-bottom blur-[1px] sm:w-[22%]"
+        viewBox="0 0 240 900"
+        preserveAspectRatio="xMaxYMax slice"
       >
         <g fill="var(--focus-tree)">
-          <rect x="188" y="90" width="22" height="810" />
-          <path d="M198 40 C 160 140 110 168 30 190 C 110 202 156 228 188 296 C 152 310 110 320 44 332 C 122 350 168 386 194 456 C 228 372 266 330 330 304 C 262 290 222 256 206 196 C 258 172 296 148 340 132 C 264 128 222 92 198 40 Z" />
+          <rect x="146" y="120" width="14" height="790" />
+          {[
+            [130, 160, 100],
+            [215, 180, 120],
+            [310, 200, 136],
+            [415, 215, 146],
+            [530, 228, 154],
+            [660, 238, 162],
+          ].map(([y, spread, h]) => (
+            <path key={y} d={`M153 ${y - h} C ${153 + spread * 0.45} ${y - h * 0.3} ${153 + spread * 0.8} ${y - 8} ${153 + spread} ${y} C ${153 + spread * 0.5} ${y + 12} ${153 + spread * 0.2} ${y + 26} 153 ${y + 40} C ${153 - spread * 0.2} ${y + 26} ${153 - spread * 0.5} ${y + 12} ${153 - spread} ${y} C ${153 - spread * 0.8} ${y - 8} ${153 - spread * 0.45} ${y - h * 0.3} 153 ${y - h} Z`} />
+          ))}
         </g>
       </svg>
 
