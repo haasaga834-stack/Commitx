@@ -51,14 +51,13 @@ function validateForm(form: FormState) {
   return null;
 }
 
-const READ_MORE_THRESHOLD = 220;
+const REVIEW_SCROLL_MAX = 168;
 
 export function LandingReviews() {
   const loadReviews = useServerFn(listApprovedStudentReviews);
   const submitReview = useServerFn(submitStudentReview);
   const [reviews, setReviews] = useState<StudentReviewDTO[]>([]);
   const [active, setActive] = useState(0);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(initialForm);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
