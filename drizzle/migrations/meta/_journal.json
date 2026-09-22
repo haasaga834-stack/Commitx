@@ -36,6 +36,13 @@
       "when": 1789441890105,
       "tag": "0004_restore_group_participant_execute",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790089792997,
+      "tag": "0005_allow_late_group_join",
+      "breakpoints": true
     }
   ]
 }
