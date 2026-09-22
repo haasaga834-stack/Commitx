@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowRight, Menu, X } from "lucide-react";
 import heroImage from "@/assets/landing-hero.jpg";
