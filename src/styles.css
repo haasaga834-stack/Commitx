@@ -457,37 +457,40 @@ body {
 
 /* Focus Class quiet-forest environment */
 .focus-class-root {
-  --focus-foreground: oklch(0.965 0.018 112);
-  --focus-muted: oklch(0.79 0.028 200);
-  --focus-night: oklch(0.145 0.034 238);
-  --focus-panel: oklch(0.225 0.038 232);
-  --focus-deep: oklch(0.11 0.032 240);
-  --focus-line: oklch(0.6 0.04 210 / 0.28);
-  --focus-accent: oklch(0.74 0.1 158);
-  --focus-accent-foreground: oklch(0.13 0.03 210);
-  --focus-live: oklch(0.78 0.15 150);
-  --focus-firefly: oklch(0.91 0.13 100);
-  --focus-moonlight: oklch(0.86 0.045 235 / 0.3);
-  --focus-moon: oklch(0.97 0.03 230);
-  --focus-sky-top: oklch(0.165 0.05 258);
-  --focus-sky-mid: oklch(0.2 0.042 240);
-  --focus-sky-bottom: oklch(0.26 0.032 226);
-  --focus-cloud: oklch(0.42 0.035 244 / 0.5);
-  --focus-ridge-far: oklch(0.34 0.026 228);
-  --focus-ridge-mid: oklch(0.27 0.03 222);
-  --focus-treeline: oklch(0.2 0.032 206);
-  --focus-treeline-near: oklch(0.15 0.034 196);
-  --focus-meadow: oklch(0.175 0.04 168);
-  --focus-meadow-deep: oklch(0.12 0.035 166);
-  --focus-mist: oklch(0.88 0.02 220 / 0.16);
-  --focus-mist-low: oklch(0.85 0.024 210 / 0.13);
-  --focus-ground: oklch(0.11 0.032 170 / 0.88);
-  --focus-tree: oklch(0.075 0.028 200 / 0.92);
-  --focus-leaf: oklch(0.13 0.036 176 / 0.9);
-  --focus-leaf-soft: oklch(0.2 0.04 180 / 0.55);
-  --focus-depth: oklch(0.42 0.035 214 / 0.16);
-  --focus-particle: oklch(0.93 0.05 210 / 0.26);
-  --focus-shadow: oklch(0.05 0.022 230 / 0.8);
+  --focus-foreground: oklch(0.975 0.012 118);
+  --focus-muted: oklch(0.83 0.025 190);
+  --focus-night: oklch(0.23 0.035 220);
+  --focus-panel: oklch(0.3 0.035 208);
+  --focus-deep: oklch(0.18 0.03 218);
+  --focus-line: oklch(0.7 0.035 190 / 0.26);
+  --focus-accent: oklch(0.79 0.105 155);
+  --focus-accent-foreground: oklch(0.18 0.03 190);
+  --focus-live: oklch(0.82 0.13 150);
+  --focus-firefly: oklch(0.94 0.115 103);
+  --focus-moonlight: oklch(0.91 0.04 210 / 0.26);
+  --focus-moon: oklch(0.98 0.022 204);
+  --focus-sky-top: oklch(0.3 0.05 235);
+  --focus-sky-mid: oklch(0.36 0.045 218);
+  --focus-sky-bottom: oklch(0.46 0.04 194);
+  --focus-cloud: oklch(0.72 0.025 214 / 0.18);
+  --focus-ridge-far: oklch(0.49 0.035 205);
+  --focus-ridge-mid: oklch(0.39 0.04 194);
+  --focus-treeline: oklch(0.33 0.05 178 / 0.72);
+  --focus-treeline-near: oklch(0.27 0.055 171 / 0.78);
+  --focus-meadow: oklch(0.31 0.055 165);
+  --focus-meadow-deep: oklch(0.28 0.045 172);
+  --focus-mist: oklch(0.91 0.025 205 / 0.13);
+  --focus-mist-low: oklch(0.9 0.028 190 / 0.1);
+  --focus-ground: oklch(0.24 0.04 170 / 0.42);
+  --focus-tree: oklch(0.24 0.05 178 / 0.5);
+  --focus-trunk: oklch(0.3 0.025 174 / 0.42);
+  --focus-leaf: oklch(0.28 0.065 158 / 0.68);
+  --focus-leaf-soft: oklch(0.39 0.07 160 / 0.42);
+  --focus-wind-leaf: oklch(0.68 0.09 147 / 0.62);
+  --focus-rain: oklch(0.9 0.025 215 / 0.32);
+  --focus-depth: oklch(0.68 0.035 196 / 0.12);
+  --focus-particle: oklch(0.96 0.04 180 / 0.2);
+  --focus-shadow: oklch(0.12 0.025 215 / 0.6);
   background-image: none;
 }
 
@@ -562,8 +565,8 @@ body {
   100% { transform: translate3d(6%, 0, 0); }
 }
 @keyframes focus-canopy-sway {
-  0%, 100% { transform: rotate(-0.45deg) translate3d(0, 0, 0); }
-  50% { transform: rotate(0.45deg) translate3d(2px, -2px, 0); }
+  0%, 100% { transform: rotate(-0.22deg) translate3d(0, 0, 0); }
+  50% { transform: rotate(0.3deg) translate3d(3px, -1px, 0); }
 }
 @keyframes focus-grass-sway {
   0%, 100% { transform: skewX(-0.6deg); }
@@ -587,6 +590,34 @@ body {
 }
 @utility animate-focus-grass-sway {
   animation: focus-grass-sway 28s ease-in-out infinite;
+}
+
+@keyframes focus-wind-leaf {
+  0%, 18% { opacity: 0; transform: translate3d(-8vw, -4vh, 0) rotate(0deg); }
+  24% { opacity: 0.48; }
+  54% { opacity: 0.34; }
+  70%, 100% { opacity: 0; transform: translate3d(112vw, 24vh, 0) rotate(320deg); }
+}
+@keyframes focus-rain-weather {
+  0%, 52%, 100% { opacity: 0; transform: translateY(-3%); }
+  58% { opacity: 0.16; }
+  66% { opacity: 0.26; }
+  78% { opacity: 0.13; }
+  86% { opacity: 0; transform: translateY(4%); }
+}
+@keyframes focus-rain-fall {
+  from { background-position: 0 -120px; }
+  to { background-position: 18px 240px; }
+}
+
+@utility animate-focus-wind-leaf {
+  animation: focus-wind-leaf 46s ease-in-out infinite;
+}
+@utility animate-focus-rain-weather {
+  animation: focus-rain-weather 110s ease-in-out infinite;
+}
+@utility animate-focus-rain-fall {
+  animation: focus-rain-fall 8s linear infinite;
 }
 
 /* Extra ambience motion: hazy air, breathing leaves, gliding water light */
