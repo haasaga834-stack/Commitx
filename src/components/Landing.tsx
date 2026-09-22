@@ -677,6 +677,50 @@ export function Landing() {
         </Reveal>
       </section>
 
+      <LandingReviews />
+
+      {/* FAQ */}
+      <section className="px-6 py-16 sm:py-20">
+        <div className="mx-auto max-w-5xl">
+          <Reveal className="max-w-2xl">
+            <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-ink-soft">
+              FAQ
+            </p>
+            <h2 className="mt-5 text-[28px] font-medium leading-[1.15] tracking-[-0.03em] sm:text-[42px]">
+              Simple answers before you start.
+            </h2>
+          </Reveal>
+          <div ref={faqRef} className="mt-10">
+            {faqOpen ? (
+              <div className="grid gap-3 md:grid-cols-2">
+                {FAQ_ITEMS.map(([question, answer], index) => (
+                  <Reveal key={question} delay={(index % 2) * 80}>
+                    <details className="group rounded-[22px] border border-ink-line bg-paper/75 px-5 py-4 shadow-[0_18px_44px_-34px_rgb(0_0_0/0.3)] backdrop-blur-sm">
+                      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-medium text-ink">
+                        <span>{question}</span>
+                        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-ink-line text-base leading-none text-ink-soft transition-transform group-open:rotate-45">
+                          +
+                        </span>
+                      </summary>
+                      <p className="mt-3 pr-8 text-sm leading-6 text-ink-soft">{answer}</p>
+                    </details>
+                  </Reveal>
+                ))}
+              </div>
+            ) : (
+              <div className="flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => setFaqOpen(true)}
+                  className="rounded-full border border-ink-line bg-paper/75 px-7 py-3 text-sm font-medium text-ink shadow-[0_18px_44px_-34px_rgb(0_0_0/0.3)] backdrop-blur-sm transition-colors hover:bg-paper-soft"
+                >
+                  Show FAQs
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
 
       {/* CONTINUE ON APP */}
       <section className="px-6 py-16 sm:py-20">
