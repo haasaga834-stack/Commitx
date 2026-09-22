@@ -183,7 +183,6 @@ const NAV_LINKS = [
 ];
 
 export function Landing() {
-  const navigate = useNavigate();
   const [modal, setModal] = useState<Mode | null>(null);
   // Visitors set up their session right here instead of leaving the page.
   const [setup, setSetup] = useState<Mode | null>(null);
