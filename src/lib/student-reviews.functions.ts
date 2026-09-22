@@ -193,7 +193,7 @@ export const submitStudentReview = createServerFn({ method: "POST" })
 export const listAdminStudentReviews = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<{ isAdmin: boolean; reviews: AdminStudentReviewDTO[] }> => {
-    await ensureAdmin(context);
+    if (!(await isAdminUser(context))) return { isAdmin: false, reviews: [] };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
       .from("student_reviews")
