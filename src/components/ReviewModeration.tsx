@@ -121,7 +121,7 @@ export function ReviewModeration() {
     );
 
   return (
-    <section className="mt-6 rounded-[28px] border border-hairline bg-card/85 p-5 shadow-card sm:p-6">
+    <section className="mx-6 mb-8 mt-6 rounded-[28px] border border-hairline bg-card/85 p-5 shadow-card sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
@@ -140,7 +140,7 @@ export function ReviewModeration() {
 
       {error ? <p className="mt-4 text-sm font-medium text-destructive">{error}</p> : null}
 
-      <div className="mt-5 overflow-hidden rounded-2xl border border-hairline bg-background/70">
+      <div className="mt-5 overflow-x-auto rounded-2xl border border-hairline bg-background/70">
         <Table>
           <TableHeader>
             <TableRow>
