@@ -397,28 +397,30 @@ export function Landing() {
             </div>
           </div>
 
-          {/* WHY COMMITX — fills the fold, invites the scroll */}
+          {/* FOCUS CLASS ENTRY — fills the fold, invites the scroll */}
           <div className="mt-16 sm:mt-20">
-            <div className="mx-auto grid max-w-4xl grid-cols-1 gap-3 sm:grid-cols-3">
-              {[
-                { icon: "🪙", title: "25 Cx Coins per hour", sub: "Every focused hour counts" },
-                { icon: "🛡️", title: "Two focus modes", sub: "Standard or fully Verified" },
-                { icon: "⚡", title: "Start in seconds", sub: "No account required" },
-              ].map((f) => (
-                <div
-                  key={f.title}
-                  className="flex items-center gap-3 rounded-2xl border border-ink-line/70 bg-paper/70 px-4 py-3.5 shadow-[0_18px_44px_-30px_rgb(0_0_0/0.35)] backdrop-blur-sm transition-transform duration-300 hover:-translate-y-0.5"
-                >
-                  <span className="text-xl" aria-hidden>
-                    {f.icon}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="truncate text-[13px] font-medium tracking-[-0.01em]">{f.title}</p>
-                    <p className="text-[11px] text-ink-soft">{f.sub}</p>
-                  </div>
+            <Reveal>
+              <div className="mx-auto grid max-w-5xl gap-5 rounded-[28px] border border-ink-line bg-paper px-6 py-6 shadow-[0_22px_60px_-44px_rgb(0_0_0/0.4)] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-8">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-ink-soft">
+                    🌱 Join the Focus Class
+                  </p>
+                  <h2 className="mt-3 text-2xl font-medium tracking-[-0.02em] sm:text-[30px]">
+                    Students are focusing right now. Join them.
+                  </h2>
+                  <p className="mt-3 text-sm text-ink-soft">
+                    {focusClassLoading ? "Loading live count…" : `${focusClassCount} students focusing now`}
+                  </p>
                 </div>
-              ))}
-            </div>
+                <Link
+                  to="/focus-class"
+                  className="group inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 text-sm font-medium text-paper transition-opacity hover:opacity-90"
+                >
+                  Join Focus Class
+                  <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                </Link>
+              </div>
+            </Reveal>
 
             <div className="mt-10 flex flex-col items-center gap-2 text-ink-soft/70">
               <span className="text-[10px] font-medium uppercase tracking-[0.28em]">
@@ -443,30 +445,28 @@ export function Landing() {
         </div>
       </section>
 
-      {/* FOCUS CLASS ENTRY */}
+      {/* WHY COMMITX */}
       <section className="px-6 pb-4 sm:pb-8">
-        <Reveal>
-          <div className="mx-auto grid max-w-5xl gap-5 rounded-[28px] border border-ink-line bg-paper px-6 py-6 shadow-[0_22px_60px_-44px_rgb(0_0_0/0.4)] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-8">
-            <div className="min-w-0">
-              <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-ink-soft">
-                🌱 Join the Focus Class
-              </p>
-              <h2 className="mt-3 text-2xl font-medium tracking-[-0.02em] sm:text-[30px]">
-                Students are focusing right now. Join them.
-              </h2>
-              <p className="mt-3 text-sm text-ink-soft">
-                {focusClassLoading ? "Loading live count…" : `${focusClassCount} students focusing now`}
-              </p>
-            </div>
-            <Link
-              to="/focus-class"
-              className="group inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 text-sm font-medium text-paper transition-opacity hover:opacity-90"
+        <div className="mx-auto grid max-w-4xl grid-cols-1 gap-3 sm:grid-cols-3">
+          {[
+            { icon: "🪙", title: "25 Cx Coins per hour", sub: "Every focused hour counts" },
+            { icon: "🛡️", title: "Two focus modes", sub: "Standard or fully Verified" },
+            { icon: "⚡", title: "Start in seconds", sub: "No account required" },
+          ].map((f) => (
+            <div
+              key={f.title}
+              className="flex items-center gap-3 rounded-2xl border border-ink-line/70 bg-paper/70 px-4 py-3.5 shadow-[0_18px_44px_-30px_rgb(0_0_0/0.35)] backdrop-blur-sm transition-transform duration-300 hover:-translate-y-0.5"
             >
-              Join Focus Class
-              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-            </Link>
-          </div>
-        </Reveal>
+              <span className="text-xl" aria-hidden>
+                {f.icon}
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-[13px] font-medium tracking-[-0.01em]">{f.title}</p>
+                <p className="text-[11px] text-ink-soft">{f.sub}</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* INTRODUCTION */}
