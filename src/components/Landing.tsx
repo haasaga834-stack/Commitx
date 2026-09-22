@@ -419,7 +419,10 @@ export function Landing() {
           aria-hidden
           width={1920}
           height={1152}
-          className="pointer-events-none absolute inset-x-0 top-0 h-[56vh] w-full object-cover opacity-[0.34]"
+          className="pointer-events-none absolute inset-x-0 top-0 h-[56vh] w-full object-cover opacity-[0.34] will-change-transform"
+          style={{
+            transform: `translate3d(0, ${heroDrift}px, 0) scale(${1 + heroDrift * 0.0006})`,
+          }}
         />
         <div
           aria-hidden
