@@ -79,6 +79,32 @@ function Reveal({
   );
 }
 
+/** Very gentle scroll-linked drift for the hero backdrop. */
+function useScrollDrift(max = 60) {
+  const [offset, setOffset] = useState(0);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let frame = 0;
+    const onScroll = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        setOffset(Math.min(max, window.scrollY * 0.16));
+      });
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, [max]);
+
+  return offset;
+}
+
 function PrimaryButton({
   children,
   onClick,
