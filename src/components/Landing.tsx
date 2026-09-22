@@ -79,6 +79,32 @@ function Reveal({
   );
 }
 
+/** Very gentle scroll-linked drift for the hero backdrop. */
+function useScrollDrift(max = 60) {
+  const [offset, setOffset] = useState(0);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let frame = 0;
+    const onScroll = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        setOffset(Math.min(max, window.scrollY * 0.16));
+      });
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, [max]);
+
+  return offset;
+}
+
 function PrimaryButton({
   children,
   onClick,
@@ -244,6 +270,7 @@ export function Landing() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const heroDrift = useScrollDrift(70);
   const [faqOpen, setFaqOpen] = useState(false);
   const faqRef = useRef<HTMLDivElement | null>(null);
   const { count: focusClassCount, loading: focusClassLoading } = useFocusClassCount();
@@ -392,7 +419,10 @@ export function Landing() {
           aria-hidden
           width={1920}
           height={1152}
-          className="pointer-events-none absolute inset-x-0 top-0 h-[56vh] w-full object-cover opacity-[0.34]"
+          className="pointer-events-none absolute inset-x-0 top-0 h-[56vh] w-full object-cover opacity-[0.34] will-change-transform"
+          style={{
+            transform: `translate3d(0, ${heroDrift}px, 0) scale(${1 + heroDrift * 0.0006})`,
+          }}
         />
         <div
           aria-hidden

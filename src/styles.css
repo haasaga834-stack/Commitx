@@ -675,11 +675,27 @@ body {
 }
 
 @keyframes landing-reveal {
-  from { opacity: 0; transform: translateY(18px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(26px) scale(0.985);
+    filter: blur(6px);
+  }
+  60% { filter: blur(0); }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
 }
 @utility animate-landing-reveal {
-  animation: landing-reveal 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation: landing-reveal 1.05s cubic-bezier(0.16, 0.84, 0.24, 1) both;
+  will-change: opacity, transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  @keyframes landing-reveal {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
 }
 @keyframes landing-modal-in {
   from { opacity: 0; transform: translateY(12px) scale(0.97); }
