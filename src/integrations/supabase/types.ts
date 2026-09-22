@@ -104,6 +104,48 @@ export type Database = {
         }
         Relationships: []
       }
+      focus_class_presence: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          duration_minutes: number
+          id: string
+          last_heartbeat: string
+          left_at: string | null
+          presence_key: string
+          sound: string
+          started_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          last_heartbeat?: string
+          left_at?: string | null
+          presence_key: string
+          sound?: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          last_heartbeat?: string
+          left_at?: string | null
+          presence_key?: string
+          sound?: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       focus_sessions: {
         Row: {
           coins_earned: number
@@ -478,6 +520,7 @@ export type Database = {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
+      cleanup_focus_class_presence: { Args: never; Returns: undefined }
       community_food_coins: { Args: never; Returns: number }
       create_study_group: {
         Args: {
@@ -495,6 +538,17 @@ export type Database = {
       }
       fail_web_session: { Args: { _reason: string }; Returns: string }
       finish_web_session: { Args: never; Returns: boolean }
+      focus_class_active_count: { Args: never; Returns: number }
+      focus_class_complete: { Args: { _presence_key: string }; Returns: number }
+      focus_class_leave: { Args: { _presence_key: string }; Returns: number }
+      focus_class_touch: {
+        Args: {
+          _duration_minutes?: number
+          _presence_key: string
+          _sound?: string
+        }
+        Returns: number
+      }
       generate_referral_code: { Args: never; Returns: string }
       group_display_name: { Args: { _user_id: string }; Returns: string }
       group_invite_preview: {

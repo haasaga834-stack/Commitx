@@ -23,6 +23,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PlannerRouteImport } from './routes/planner'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as HistoryRouteImport } from './routes/history'
+import { Route as FocusClassRouteImport } from './routes/focus-class'
 import { Route as FailedRouteImport } from './routes/failed'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CommitRouteImport } from './routes/commit'
@@ -106,6 +107,11 @@ const HistoryRoute = HistoryRouteImport.update({
   path: '/history',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FocusClassRoute = FocusClassRouteImport.update({
+  id: '/focus-class',
+  path: '/focus-class',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FailedRoute = FailedRouteImport.update({
   id: '/failed',
   path: '/failed',
@@ -176,6 +182,7 @@ export interface FileRoutesByFullPath {
   '/commit': typeof CommitRoute
   '/contact': typeof ContactRoute
   '/failed': typeof FailedRoute
+  '/focus-class': typeof FocusClassRoute
   '/history': typeof HistoryRoute
   '/how-it-works': typeof HowItWorksRoute
   '/planner': typeof PlannerRoute
@@ -204,6 +211,7 @@ export interface FileRoutesByTo {
   '/commit': typeof CommitRoute
   '/contact': typeof ContactRoute
   '/failed': typeof FailedRoute
+  '/focus-class': typeof FocusClassRoute
   '/history': typeof HistoryRoute
   '/how-it-works': typeof HowItWorksRoute
   '/planner': typeof PlannerRoute
@@ -233,6 +241,7 @@ export interface FileRoutesById {
   '/commit': typeof CommitRoute
   '/contact': typeof ContactRoute
   '/failed': typeof FailedRoute
+  '/focus-class': typeof FocusClassRoute
   '/history': typeof HistoryRoute
   '/how-it-works': typeof HowItWorksRoute
   '/planner': typeof PlannerRoute
@@ -263,6 +272,7 @@ export interface FileRouteTypes {
     | '/commit'
     | '/contact'
     | '/failed'
+    | '/focus-class'
     | '/history'
     | '/how-it-works'
     | '/planner'
@@ -291,6 +301,7 @@ export interface FileRouteTypes {
     | '/commit'
     | '/contact'
     | '/failed'
+    | '/focus-class'
     | '/history'
     | '/how-it-works'
     | '/planner'
@@ -319,6 +330,7 @@ export interface FileRouteTypes {
     | '/commit'
     | '/contact'
     | '/failed'
+    | '/focus-class'
     | '/history'
     | '/how-it-works'
     | '/planner'
@@ -348,6 +360,7 @@ export interface RootRouteChildren {
   CommitRoute: typeof CommitRoute
   ContactRoute: typeof ContactRoute
   FailedRoute: typeof FailedRoute
+  FocusClassRoute: typeof FocusClassRoute
   HistoryRoute: typeof HistoryRoute
   HowItWorksRoute: typeof HowItWorksRoute
   PlannerRoute: typeof PlannerRoute
@@ -468,6 +481,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HistoryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/focus-class': {
+      id: '/focus-class'
+      path: '/focus-class'
+      fullPath: '/focus-class'
+      preLoaderRoute: typeof FocusClassRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/failed': {
       id: '/failed'
       path: '/failed'
@@ -564,6 +584,7 @@ const rootRouteChildren: RootRouteChildren = {
   CommitRoute: CommitRoute,
   ContactRoute: ContactRoute,
   FailedRoute: FailedRoute,
+  FocusClassRoute: FocusClassRoute,
   HistoryRoute: HistoryRoute,
   HowItWorksRoute: HowItWorksRoute,
   PlannerRoute: PlannerRoute,

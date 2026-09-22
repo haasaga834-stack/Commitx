@@ -5,6 +5,7 @@ import heroImage from "@/assets/landing-hero.jpg";
 import { LandingHourglass } from "@/components/LandingHourglass";
 import { FocusGarden } from "@/components/FocusGarden";
 import { GuestSetup } from "@/components/GuestSetup";
+import { useFocusClassCount } from "@/lib/focus-class";
 
 const INDUS_APPSTORE_URL = "https://indusapp.store/nnbmdn4h";
 
@@ -190,6 +191,7 @@ export function Landing() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const { count: focusClassCount, loading: focusClassLoading } = useFocusClassCount();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -439,6 +441,32 @@ export function Landing() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* FOCUS CLASS ENTRY */}
+      <section className="px-6 pb-4 sm:pb-8">
+        <Reveal>
+          <div className="mx-auto grid max-w-5xl gap-5 rounded-[28px] border border-ink-line bg-paper px-6 py-6 shadow-[0_22px_60px_-44px_rgb(0_0_0/0.4)] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-8">
+            <div className="min-w-0">
+              <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-ink-soft">
+                🌱 Join the Focus Class
+              </p>
+              <h2 className="mt-3 text-2xl font-medium tracking-[-0.02em] sm:text-[30px]">
+                Students are focusing right now. Join them.
+              </h2>
+              <p className="mt-3 text-sm text-ink-soft">
+                {focusClassLoading ? "Loading live count…" : `${focusClassCount} students focusing now`}
+              </p>
+            </div>
+            <Link
+              to="/focus-class"
+              className="group inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 text-sm font-medium text-paper transition-opacity hover:opacity-90"
+            >
+              Join Focus Class
+              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+            </Link>
+          </div>
+        </Reveal>
       </section>
 
       {/* INTRODUCTION */}

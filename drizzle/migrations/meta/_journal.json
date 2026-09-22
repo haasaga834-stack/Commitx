@@ -43,6 +43,13 @@
       "when": 1790089792997,
       "tag": "0005_allow_late_group_join",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790091926857,
+      "tag": "0006_create_focus_class_presence",
+      "breakpoints": true
     }
   ]
 }
