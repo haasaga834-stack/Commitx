@@ -270,6 +270,7 @@ export function Landing() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const heroDrift = useScrollDrift(70);
   const [faqOpen, setFaqOpen] = useState(false);
   const faqRef = useRef<HTMLDivElement | null>(null);
   const { count: focusClassCount, loading: focusClassLoading } = useFocusClassCount();
