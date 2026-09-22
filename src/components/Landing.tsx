@@ -185,6 +185,8 @@ const NAV_LINKS = [
 export function Landing() {
   const navigate = useNavigate();
   const [modal, setModal] = useState<Mode | null>(null);
+  // Visitors set up their session right here instead of leaving the page.
+  const [setup, setSetup] = useState<Mode | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
