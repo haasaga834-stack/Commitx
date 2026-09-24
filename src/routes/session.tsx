@@ -12,6 +12,7 @@ import {
   markSessionEnded,
   isSessionEnded,
   readActiveVerifiedSession,
+  readEndedSession,
   readRestorableActiveSession,
   writeActiveVerifiedSession,
   RECOVERY_BREAK_MS,
@@ -228,6 +229,33 @@ function Session() {
     clearShieldPlan();
 
     void releaseActiveDbSession();
+
+    /**
+     * This commitment was already settled (for example a Verified web session
+     * failed on reload and root recovery cleared the ticket). The recorded
+     * outcome must be shown instead of silently dropping the user home.
+     */
+    const ended = readEndedSession();
+    if (
+      ended &&
+      ended.goal === goal &&
+      ended.duration === duration &&
+      ended.value === value &&
+      ended.mode === mode
+    ) {
+      navigate({
+        to: ended.status === "completed" ? "/success" : "/failed",
+        search: {
+          goal,
+          duration: String(duration),
+          value: String(value),
+          ...(ended.reason ? { reason: ended.reason } : {}),
+        } as Record<string, string>,
+        replace: true,
+      });
+      return;
+    }
+
     navigate({ to: "/", replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [goal, duration, value, mode]);
