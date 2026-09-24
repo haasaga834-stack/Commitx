@@ -8,6 +8,10 @@ import { formatDuration } from "@/lib/planner";
 import { clearEndedSession, writeActiveVerifiedSession } from "@/lib/verified-mode";
 import { clearShieldPlan } from "@/lib/focus-shield";
 import type { SessionThemeId } from "@/lib/session-themes";
+import { useAuth } from "@/lib/use-auth";
+import { useAppState, coinLabel, coinsForMinutes, MIN_COMMIT, MAX_COMMIT } from "@/lib/commitx-store";
+import { claimActiveDbSession } from "@/lib/active-session";
+import { actionErrorMessage } from "@/lib/connectivity";
 
 type Mode = "standard" | "verified";
 
@@ -31,6 +35,14 @@ export function GuestSetup({ mode, onClose }: { mode: Mode; onClose: () => void 
   const [customGoal, setCustomGoal] = useState("");
   const [duration, setDuration] = useState(60);
   const startedRef = useRef(false);
+  const { user } = useAuth();
+  const signedIn = Boolean(user);
+  const state = useAppState();
+  const [stake, setStake] = useState(MIN_COMMIT);
+  const [error, setError] = useState<string | null>(null);
+  const [starting, setStarting] = useState(false);
+  const maxStake = Math.min(MAX_COMMIT, Math.max(MIN_COMMIT, state.coins));
+  const canStake = state.coins >= MIN_COMMIT;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -49,8 +61,31 @@ export function GuestSetup({ mode, onClose }: { mode: Mode; onClose: () => void 
   const modeLabel = mode === "verified" ? "Verified" : "Standard";
 
   /** Hands the guest session over to the existing session page, unchanged. */
-  function startWithTheme(theme: SessionThemeId) {
-    if (startedRef.current) return;
+  async function startWithTheme(theme: SessionThemeId) {
+    if (startedRef.current || starting) return;
+    const value = signedIn ? stake : 0;
+    if (signedIn) {
+      if (value < MIN_COMMIT || value > MAX_COMMIT || value > state.coins) {
+        setError(`You need at least ${coinLabel(MIN_COMMIT)} to start. Your balance is ${coinLabel(state.coins)}.`);
+        setStep("duration");
+        return;
+      }
+      setStarting(true);
+      try {
+        const claim = await claimActiveDbSession({ goal: finalGoal, duration, value, mode });
+        if (!claim.ok) {
+          setError("You already have an active session running. Finish or end it first.");
+          setStep("duration");
+          return;
+        }
+      } catch (e) {
+        setError(actionErrorMessage(e, "Could not start the commitment."));
+        setStep("duration");
+        return;
+      } finally {
+        setStarting(false);
+      }
+    }
     startedRef.current = true;
     // Guests never carry a Focus Shield plan.
     clearShieldPlan();
@@ -58,7 +93,7 @@ export function GuestSetup({ mode, onClose }: { mode: Mode; onClose: () => void 
     writeActiveVerifiedSession({
       goal: finalGoal,
       duration,
-      value: 0,
+      value,
       mode,
       startedAt: Date.now(),
       accumulatedMs: 0,
@@ -75,7 +110,7 @@ export function GuestSetup({ mode, onClose }: { mode: Mode; onClose: () => void 
       search: {
         goal: finalGoal,
         duration: String(duration),
-        value: "0",
+        value: String(value),
         mode,
         theme,
       } as Record<string, string>,
@@ -183,12 +218,43 @@ export function GuestSetup({ mode, onClose }: { mode: Mode; onClose: () => void 
               <DurationWheel value={duration} onChange={setDuration} />
             </div>
 
+            {signedIn ? (
+              <div className="mt-5 rounded-2xl border border-ink-line p-4">
+                <div className="flex items-baseline justify-between text-sm">
+                  <span className="text-ink-soft">Commit Cx Coins</span>
+                  <span className="font-medium text-ink">{coinLabel(stake)}</span>
+                </div>
+                {canStake ? (
+                  <input
+                    type="range"
+                    min={MIN_COMMIT}
+                    max={maxStake}
+                    step={10}
+                    value={Math.min(stake, maxStake)}
+                    onChange={(e) => setStake(Number(e.target.value))}
+                    className="mt-3 w-full accent-current"
+                    aria-label="Cx Coins to commit"
+                  />
+                ) : null}
+                <p className="mt-2 text-xs text-ink-soft">
+                  Balance {coinLabel(state.coins)} · Complete to get them back
+                  {coinsForMinutes(duration) > 0 ? ` + earn ${coinLabel(coinsForMinutes(duration))}` : ""}.
+                </p>
+              </div>
+            ) : null}
+            {error ? <p className="mt-3 text-sm text-destructive">{error}</p> : null}
+
             <button
               type="button"
-              onClick={() => setStep("theme")}
+              disabled={signedIn && !canStake}
+              onClick={() => {
+                if (signedIn && !canStake) return;
+                setError(null);
+                setStep("theme");
+              }}
               className="group mt-7 inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-ink px-7 py-4 text-sm font-medium text-paper transition-all duration-300 hover:-translate-y-0.5 hover:opacity-95 active:translate-y-0"
             >
-              Continue
+              {signedIn && !canStake ? `Need ${coinLabel(MIN_COMMIT)} to start` : "Continue"}
               <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
             </button>
             <button
