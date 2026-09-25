@@ -9,6 +9,7 @@ import {
 import { recordSessions } from "./wallet.functions";
 import { isOnline, onReconnect, startConnectivityWatch } from "./connectivity";
 import { announceLeaderboardChange } from "./community";
+import { hasLiveSession } from "./session-guard";
 
 const syncedKey = (userId: string) => `commitx-synced-session-ids-v1:${userId}`;
 const pendingKey = (userId: string) => `commitx-cloud-pending-v1:${userId}`;
@@ -114,6 +115,7 @@ function sessionSignature(s: Session) {
 /** Pull profile, wallet and sessions from the cloud into the local store. */
 export async function pullFromCloud(userId: string) {
   if (!isOnline()) return null;
+  if (!(await hasLiveSession(userId))) return null;
   const localState = getState();
   const [profileRes, walletRes, sessionsRes] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
@@ -198,7 +200,7 @@ export async function pullFromCloud(userId: string) {
 }
 
 async function push(userId: string) {
-  if (!isOnline()) {
+  if (!isOnline() || !(await hasLiveSession(userId))) {
     setPendingPush(true, userId);
     return;
   }

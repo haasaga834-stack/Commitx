@@ -108,7 +108,7 @@ function toRow(row: StudyPlan, userId: string) {
 }
 
 async function pushPlannerToCloud(userId: string) {
-  if (!isOnline()) {
+  if (!isOnline() || !(await hasLiveSession(userId))) {
     pendingCloudPush = true;
     return;
   }
@@ -469,14 +469,15 @@ export function getRemindersEnabled() {
 
 async function upsertSettings(patch: Record<string, unknown>) {
   if (!cloudUserId) return;
-  if (!isOnline()) {
+  const uid = cloudUserId;
+  if (!isOnline() || !(await hasLiveSession(uid))) {
     pendingCloudPush = true;
     return;
   }
   try {
     const { error } = await supabase
       .from("user_settings")
-      .upsert({ user_id: cloudUserId, ...patch }, { onConflict: "user_id" });
+      .upsert({ user_id: uid, ...patch }, { onConflict: "user_id" });
     if (error) pendingCloudPush = true;
   } catch {}
 }
@@ -664,6 +665,7 @@ export function useTodos() {
 /** Pull plans, today's to-dos and settings from the cloud. */
 export async function pullPlannerFromCloud(userId: string) {
   if (!isOnline()) return null;
+  if (!(await hasLiveSession(userId))) return null;
   const today = todayKey();
   const [plansRes, todosRes, settingsRes] = await Promise.all([
     supabase

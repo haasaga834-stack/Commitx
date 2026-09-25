@@ -79,12 +79,13 @@ export const recordSessions = createServerFn({ method: "POST" })
     };
     const activeElapsed = minutesSince(active?.started_at);
     const sinceLastRecorded = minutesSince(lastRecorded?.created_at);
+    // Sessions in this batch may predate a newly started live session (e.g.
+    // completed offline, synced later), so the budget is the full real time
+    // since the last recorded session — never just the live session's age.
     let creditBudget =
-      activeElapsed !== null
-        ? activeElapsed
-        : sinceLastRecorded !== null
-          ? sinceLastRecorded
-          : 600;
+      sinceLastRecorded !== null
+        ? Math.max(sinceLastRecorded, activeElapsed ?? 0)
+        : 600;
 
     const bonus = (referrals ?? []).reduce(
       (sum, r: { bonus_amount: number | null }) => sum + (r.bonus_amount ?? 0),
