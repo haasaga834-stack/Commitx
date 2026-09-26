@@ -6,6 +6,7 @@ import { LandingHourglass } from "@/components/LandingHourglass";
 import { FocusGarden } from "@/components/FocusGarden";
 import { GuestSetup } from "@/components/GuestSetup";
 import { FocusClassSetup } from "@/components/FocusClassSetup";
+import { GroupSetup } from "@/components/GroupSetup";
 import { LandingReviews } from "@/components/LandingReviews";
 import { useFocusClassCount } from "@/lib/focus-class";
 import { useAuth } from "@/lib/use-auth";
@@ -267,6 +268,7 @@ export function Landing() {
   // Visitors set up their session right here instead of leaving the page.
   const [setup, setSetup] = useState<Mode | null>(null);
   const [focusClassOpen, setFocusClassOpen] = useState(false);
+  const [groupOpen, setGroupOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
@@ -560,6 +562,31 @@ export function Landing() {
                   className="group inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 text-sm font-medium text-paper transition-opacity hover:opacity-90"
                 >
                   Join Focus Class
+                  <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                </button>
+              </div>
+            </Reveal>
+
+            {/* GROUP STUDY ENTRY — create or join from the website */}
+            <Reveal>
+              <div className="mx-auto mt-5 grid max-w-5xl gap-5 rounded-[28px] border border-ink-line bg-paper px-6 py-6 shadow-[0_22px_60px_-44px_rgb(0_0_0/0.4)] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-8">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-ink-soft">
+                    👥 Group Study
+                  </p>
+                  <h2 className="mt-3 text-2xl font-medium tracking-[-0.02em] sm:text-[30px]">
+                    Prefer to study with your loved ones?
+                  </h2>
+                  <p className="mt-3 text-sm text-ink-soft">
+                    Create a group or join with a code — one shared timer, up to 20 of you.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setGroupOpen(true)}
+                  className="group inline-flex items-center justify-center gap-2 rounded-full border border-ink-line px-6 py-3.5 text-sm font-medium transition-colors hover:border-ink/30"
+                >
+                  Study together
                   <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                 </button>
               </div>
