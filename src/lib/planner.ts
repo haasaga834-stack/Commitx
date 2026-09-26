@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { syncTodoNotification, syncStudyPlanReminders } from "@/lib/native-notifications";
 import { isOnline, onReconnect, startConnectivityWatch } from "./connectivity";
+import { hasLiveSession } from "./session-guard";
 
 export type Repeat = "daily" | "weekly" | "monthly";
 export type Priority = "high" | "medium" | "low";
