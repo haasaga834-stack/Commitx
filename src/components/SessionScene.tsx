@@ -323,10 +323,11 @@ function GrowingPlant({ progress }: { progress: number }) {
           </linearGradient>
         </defs>
 
-        {/* Broad soil bed with a soft shadow and a few pebbles */}
+        {/* Broad soil bed with a soft shadow and a few pebbles. The bed spans
+            far past the viewBox so wide desktop screens never see its edges. */}
         <ellipse cx="200" cy={SOIL_Y + 6} rx="190" ry="18" fill="oklch(0.58 0.04 60 / 0.2)" />
         <path
-          d={`M-10 ${SOIL_Y + 40} Q 96 ${SOIL_Y - 14} 200 ${SOIL_Y - 10} Q 306 ${SOIL_Y - 14} 410 ${SOIL_Y + 40} Z`}
+          d={`M-1200 ${SOIL_Y + 40} Q -500 ${SOIL_Y - 12} 200 ${SOIL_Y - 10} Q 900 ${SOIL_Y - 12} 1600 ${SOIL_Y + 40} Z`}
           fill="url(#cxSoil)"
         />
         {pebbles.map((s, i) => (
