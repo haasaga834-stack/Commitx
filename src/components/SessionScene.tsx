@@ -225,7 +225,9 @@ const SOIL_Y = 250;
 
 function GrowingPlant({ progress }: { progress: number }) {
   const p = clamp01(progress);
-  const g = ease(p);
+  // Front-loaded curve: visible growth from the first minutes, easing off
+  // towards full bloom — instead of looking like a seed for half the session.
+  const g = Math.pow(p, 0.6);
 
   // One continuous growth curve drives stem, leaves, bud and bloom.
   const stemH = mix(6, 182, g);
@@ -303,7 +305,7 @@ function GrowingPlant({ progress }: { progress: number }) {
 
       <svg
         viewBox="0 0 400 260"
-        preserveAspectRatio="xMidYEnd slice"
+        preserveAspectRatio="xMidYEnd meet"
         className="absolute inset-x-0 bottom-0 h-[66%] w-full"
       >
         <defs>
