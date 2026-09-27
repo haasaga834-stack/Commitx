@@ -225,7 +225,9 @@ const SOIL_Y = 250;
 
 function GrowingPlant({ progress }: { progress: number }) {
   const p = clamp01(progress);
-  const g = ease(p);
+  // Front-loaded curve: visible growth from the first minutes, easing off
+  // towards full bloom — instead of looking like a seed for half the session.
+  const g = Math.pow(p, 0.6);
 
   // One continuous growth curve drives stem, leaves, bud and bloom.
   const stemH = mix(6, 182, g);
@@ -303,7 +305,7 @@ function GrowingPlant({ progress }: { progress: number }) {
 
       <svg
         viewBox="0 0 400 260"
-        preserveAspectRatio="xMidYEnd slice"
+        preserveAspectRatio="xMidYEnd meet"
         className="absolute inset-x-0 bottom-0 h-[66%] w-full"
       >
         <defs>
@@ -321,10 +323,11 @@ function GrowingPlant({ progress }: { progress: number }) {
           </linearGradient>
         </defs>
 
-        {/* Broad soil bed with a soft shadow and a few pebbles */}
+        {/* Broad soil bed with a soft shadow and a few pebbles. The bed spans
+            far past the viewBox so wide desktop screens never see its edges. */}
         <ellipse cx="200" cy={SOIL_Y + 6} rx="190" ry="18" fill="oklch(0.58 0.04 60 / 0.2)" />
         <path
-          d={`M-10 ${SOIL_Y + 40} Q 96 ${SOIL_Y - 14} 200 ${SOIL_Y - 10} Q 306 ${SOIL_Y - 14} 410 ${SOIL_Y + 40} Z`}
+          d={`M-1200 ${SOIL_Y + 40} Q -500 ${SOIL_Y - 12} 200 ${SOIL_Y - 10} Q 900 ${SOIL_Y - 12} 1600 ${SOIL_Y + 40} Z`}
           fill="url(#cxSoil)"
         />
         {pebbles.map((s, i) => (
