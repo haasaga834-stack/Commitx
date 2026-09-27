@@ -915,6 +915,7 @@ export function Landing() {
 
       {setup ? <GuestSetup mode={setup} onClose={() => setSetup(null)} /> : null}
       <FocusClassSetup open={focusClassOpen} onClose={() => setFocusClassOpen(false)} />
+      {groupOpen ? <GroupSetup onClose={() => setGroupOpen(false)} /> : null}
     </div>
   );
 }
