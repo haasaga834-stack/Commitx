@@ -10,6 +10,7 @@ import { GroupSetup } from "@/components/GroupSetup";
 import { LandingReviews } from "@/components/LandingReviews";
 import { useFocusClassCount } from "@/lib/focus-class";
 import { useAuth } from "@/lib/use-auth";
+import { useAppState, formatCoins } from "@/lib/commitx-store";
 
 const INDUS_APPSTORE_URL = "https://indusapp.store/nnbmdn4h";
 
@@ -280,6 +281,8 @@ export function Landing() {
   // links change so they can reach their saved sessions.
   const { user } = useAuth();
   const signedIn = Boolean(user);
+  const { state: appState, hydrated: appHydrated } = useAppState();
+  const coinBadge = signedIn && appHydrated ? ` · ${formatCoins(appState.coins)} Cx` : "";
 
   // Optional dark palette for this page only — remembered between visits.
   const [darkPage, setDarkPage] = useState(false);

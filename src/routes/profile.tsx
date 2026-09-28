@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { MobileShell } from "@/components/BottomNav";
-import { useAppState, stats, setState } from "@/lib/commitx-store";
+import { useAppState, stats, setState, formatCoins } from "@/lib/commitx-store";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Pencil, Check, Trophy, Clock, Camera, Settings as SettingsIcon } from "lucide-react";
 import { fileToProfilePhoto } from "@/lib/profile-photo";
@@ -186,6 +186,8 @@ function Profile() {
           Dashboard
         </p>
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <Stat label="Cx Coins" value={hydrated ? formatCoins(state.coins) : "—"} />
+          <Stat label="Coins earned" value={formatCoins(s.coinsEarned)} />
           <Stat label="Current streak" value={`${s.streak}d`} />
           <Stat label="Longest streak" value={`${s.longest}d`} />
           <Stat label="Focus hours" value={totalHours} />
