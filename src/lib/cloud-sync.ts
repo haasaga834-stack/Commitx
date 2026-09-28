@@ -348,9 +348,33 @@ export function startCloudSync(userId: string) {
       },
     )
     .subscribe();
+
+  // Safety net for missed live updates (e.g. group/Focus Class sessions saved
+  // on another device): re-pull whenever the user comes back to the app.
+  if (typeof window !== "undefined") {
+    const onBack = () => {
+      if (document.visibilityState === "hidden") return;
+      if (currentUserId && isOnline() && !pendingPush) schedulePull(currentUserId);
+    };
+    window.addEventListener("focus", onBack);
+    document.addEventListener("visibilitychange", onBack);
+    stopFocusPull = () => {
+      window.removeEventListener("focus", onBack);
+      document.removeEventListener("visibilitychange", onBack);
+    };
+  }
+}
+
+let stopFocusPull: (() => void) | null = null;
+
+/** Ask for a fresh copy of sessions, coins and hours (e.g. when opening Profile). */
+export function refreshFromCloud() {
+  if (currentUserId && isOnline() && !pendingPush) schedulePull(currentUserId);
 }
 
 export function stopCloudSync() {
+  if (stopFocusPull) stopFocusPull();
+  stopFocusPull = null;
   if (unsubscribe) unsubscribe();
   unsubscribe = null;
   if (stopReconnect) stopReconnect();
