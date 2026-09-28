@@ -77,6 +77,16 @@ function History() {
                   <span className="text-muted-foreground">Commitment value</span>
                   <span className="font-medium tabular-nums">{coinLabel(s.value)}</span>
                 </div>
+                <div className="mt-2 flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    {s.status === "completed" ? "Cx Coins earned" : "Cx Coins lost"}
+                  </span>
+                  <span className="font-medium tabular-nums">
+                    {s.status === "completed"
+                      ? `+${coinLabel(s.coinsEarned ?? 0)}`
+                      : `−${coinLabel(s.coinsSpent ?? 0)}`}
+                  </span>
+                </div>
               </div>
             ))}
           </div>
