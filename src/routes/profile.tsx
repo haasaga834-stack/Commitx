@@ -4,6 +4,7 @@ import { useAppState, stats, setState, formatCoins } from "@/lib/commitx-store";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Pencil, Check, Trophy, Clock, Camera, Settings as SettingsIcon } from "lucide-react";
 import { fileToProfilePhoto } from "@/lib/profile-photo";
+import { refreshFromCloud } from "@/lib/cloud-sync";
 
 import { formatHours } from "@/lib/analytics-data";
 
@@ -49,6 +50,11 @@ function Profile() {
   useEffect(() => {
     setDraft(state.profile);
   }, [state.profile]);
+
+  // Opening Profile fetches the latest hours and coins from every device.
+  useEffect(() => {
+    refreshFromCloud();
+  }, []);
 
   function save() {
     setState((prev) => ({ ...prev, profile: draft }));
