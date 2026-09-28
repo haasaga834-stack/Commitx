@@ -4,6 +4,8 @@ import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { cn } from "@/lib/utils";
 import { DurationWheel } from "@/components/DurationWheel";
+import { ThemePicker } from "@/components/ThemePicker";
+import type { SessionThemeId } from "@/lib/session-themes";
 import { formatDuration } from "@/lib/planner";
 import { coinLabel, MIN_COMMIT, MAX_COMMIT, useAppState } from "@/lib/commitx-store";
 import { createGroup, joinGroup, previewInvite } from "@/lib/group-study.functions";
@@ -35,6 +37,7 @@ export function GroupSetup({ onClose }: { onClose: () => void }) {
   const [terms, setTerms] = useState<InvitePreviewDTO | null>(null);
   const [accepted, setAccepted] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [themeOpen, setThemeOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const maxStake = Math.min(MAX_COMMIT, Math.max(MIN_COMMIT, state.coins));
@@ -53,7 +56,7 @@ export function GroupSetup({ onClose }: { onClose: () => void }) {
     };
   }, [onClose]);
 
-  async function onCreate() {
+  async function onCreate(theme: SessionThemeId) {
     if (busy) return;
     if (!isOnline()) {
       setError(OFFLINE_ACTION_MESSAGE);
@@ -63,18 +66,20 @@ export function GroupSetup({ onClose }: { onClose: () => void }) {
     setError(null);
     try {
       const res = await create({
-        data: { goal: "Group Study", duration, value, mode, theme: "leaves" },
+        data: { goal: "Group Study", duration, value, mode, theme },
       });
       if ("error" in res) {
         setError(res.error);
         return;
       }
+      setThemeOpen(false);
       onClose();
       navigate({ to: "/group/$id", params: { id: res.id } });
     } catch (e) {
       setError(actionErrorMessage(e, "Could not create the group."));
     } finally {
       setBusy(false);
+      setThemeOpen(false);
     }
   }
 
@@ -308,8 +313,8 @@ export function GroupSetup({ onClose }: { onClose: () => void }) {
               ))}
             </div>
             {error ? <p className="mt-3 text-sm text-destructive">{error}</p> : null}
-            <button type="button" disabled={busy} onClick={onCreate} className={primary}>
-              {busy ? "Creating…" : "Create group"}
+            <button type="button" disabled={busy} onClick={() => setThemeOpen(true)} className={primary}>
+              Choose theme
               <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
             </button>
             {back("coins")}
@@ -394,6 +399,15 @@ export function GroupSetup({ onClose }: { onClose: () => void }) {
           </>
         )}
       </div>
+      <ThemePicker
+        open={themeOpen}
+        starting={busy}
+        confirmLabel="Create group"
+        title="Choose the group's mood"
+        subtitle="Everyone in this group studies inside the scene you pick."
+        onCancel={() => setThemeOpen(false)}
+        onConfirm={(theme) => void onCreate(theme)}
+      />
     </div>
   );
 }
