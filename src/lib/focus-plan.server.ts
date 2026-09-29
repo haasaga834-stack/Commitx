@@ -68,7 +68,7 @@ function parsePlan(text: string, goal: string, minutes: number | null): FocusPla
   } catch {
     raw = {};
   }
-  const total = Math.max(30, Math.min(360, Math.round(minutes ?? Number(raw.totalMinutes) || 60)));
+  const total = Math.max(30, Math.min(360, Math.round(minutes ?? (Number(raw.totalMinutes) || 60))));
   let blocks: { minutes: number; task: string }[] = Array.isArray(raw.blocks)
     ? raw.blocks
         .map((b: any) => ({
