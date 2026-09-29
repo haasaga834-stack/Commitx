@@ -302,6 +302,19 @@ function FocusClassPage() {
     setNotices([]);
   }
 
+  // Phone/browser Back during a class opens the same confirmation instead of
+  // leaving the page and ending the session.
+  useEffect(() => {
+    if (phase !== "focus") return;
+    window.history.pushState({ focusClassGuard: true }, "");
+    const onPop = () => {
+      window.history.pushState({ focusClassGuard: true }, "");
+      setConfirmComplete(true);
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, [phase]);
+
   return (
     <main className="focus-class-root relative min-h-dvh overflow-hidden bg-focus-night text-focus-foreground">
       <QuietForest />
@@ -320,6 +333,13 @@ function FocusClassPage() {
         <header className="flex items-center justify-between gap-4">
           <Link
             to="/"
+            onClick={(e) => {
+              // Leaving mid-class must never silently end it — ask first.
+              if (phase === "focus") {
+                e.preventDefault();
+                setConfirmComplete(true);
+              }
+            }}
             className="inline-flex items-center gap-2 rounded-full border border-focus-line bg-focus-panel/45 px-3.5 py-2 text-xs font-medium text-focus-muted backdrop-blur-xl transition-colors hover:text-focus-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
