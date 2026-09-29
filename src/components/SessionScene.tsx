@@ -239,20 +239,21 @@ function GrowingPlant({ progress }: { progress: number }) {
   const bud = ramp(p, 0.62, 0.18);
   const bloom = ramp(p, 0.8, 0.2);
 
-  // Alternating leaf pairs unfurl up the stem, each a little later.
+  // Leaves sit at fixed heights on the stem and unfurl the moment the growing
+  // tip passes them, so stem and foliage grow together instead of a bare stalk.
   const leaves = Array.from({ length: 10 }, (_, i) => {
-    const at = 0.05 + i * 0.075;
-    const grow = ease(ramp(p, at, 0.16));
-    const along = 0.16 + (i / 10) * 0.76;
+    const along = 0.1 + i * 0.085;
+    const h = 182 * along;
+    const grow = ease(Math.max(0, Math.min(1, (stemH - h) / 26)));
+    const rel = stemH > 0 ? h / stemH : 0;
     return {
       key: i,
       grow,
-      y: SOIL_Y - stemH * along,
-      x: 200 + lean * along * 0.55,
+      y: SOIL_Y - h,
+      x: 200 + lean * rel * rel * 0.9,
       side: i % 2 === 0 ? 1 : -1,
-      // Fuller near the middle of the stem, tapering towards soil and tip.
-      len: mix(20, 44, 1 - Math.abs(0.48 - along) * 1.35),
-      droop: 12 + (i % 3) * 6,
+      len: mix(24, 42, 1 - Math.abs(0.45 - along) * 1.3),
+      droop: 12 + (i % 3) * 5,
     };
   });
 
@@ -367,7 +368,7 @@ function GrowingPlant({ progress }: { progress: number }) {
           />
         )}
 
-        <g className="animate-canopy-sway" style={{ transformOrigin: `200px ${SOIL_Y}px` }}>
+        <g className="animate-plant-sway" style={{ transformOrigin: `200px ${SOIL_Y}px`, transformBox: "view-box" }}>
           {/* Stem */}
           <path
             d={`M200 ${SOIL_Y - 2} Q ${200 + lean * 0.9} ${SOIL_Y - stemH * 0.55} ${200 + lean} ${tipY}`}
@@ -375,7 +376,7 @@ function GrowingPlant({ progress }: { progress: number }) {
             strokeWidth={stemW}
             strokeLinecap="round"
             fill="none"
-            style={{ transition: "d 900ms linear, stroke-width 900ms linear" }}
+            
           />
 
           {leaves.map((l) => (
@@ -450,14 +451,8 @@ function Leaf({
   if (grow <= 0.005) return null;
   return (
     <g
-      className="animate-leaf-breathe"
-      style={{
-        transform: `translate(${x}px, ${y}px) scale(${grow})`,
-        transformOrigin: "0px 0px",
-        transition: "transform 900ms linear",
-        opacity: 0.3 + 0.7 * grow,
-        animationDelay: `-${(len * 0.37) % 6}s`,
-      }}
+      transform={`translate(${x} ${y}) scale(${grow})`}
+      opacity={0.35 + 0.65 * grow}
     >
       {/* A tapering blade rather than a plain oval, so it reads botanical */}
       <path

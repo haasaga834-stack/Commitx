@@ -425,6 +425,16 @@ body {
 @utility animate-star-twinkle {
   animation: star-twinkle 4s ease-in-out infinite;
 }
+@keyframes plant-sway {
+  0%, 100% { transform: rotate(-0.5deg); }
+  50% { transform: rotate(0.5deg); }
+}
+@utility animate-plant-sway {
+  animation: plant-sway 14s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-plant-sway { animation: none; }
+}
 @utility animate-canopy-sway {
   animation: canopy-sway 9s ease-in-out infinite;
 }
