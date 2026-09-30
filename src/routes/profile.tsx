@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { Pencil, Check, Trophy, Clock, Camera, Settings as SettingsIcon } from "lucide-react";
 import { fileToProfilePhoto } from "@/lib/profile-photo";
 import { refreshFromCloud } from "@/lib/cloud-sync";
+import { supabase } from "@/integrations/supabase/client";
 
 import { formatHours } from "@/lib/analytics-data";
 
@@ -26,7 +27,35 @@ export const Route = createFileRoute("/profile")({
 
 function Profile() {
   const { state, hydrated } = useAppState();
-  const s = stats(state.sessions);
+  const local = stats(state.sessions);
+  const [server, setServer] = useState<null | { total_minutes: number; completed: number; failed: number; coins_earned: number }>(null);
+  useEffect(() => {
+    let alive = true;
+    const load = async () => {
+      const { data: sess } = await supabase.auth.getSession();
+      if (!sess.session) return;
+      const { data } = await supabase.rpc("my_focus_totals");
+      const row = Array.isArray(data) ? data[0] : data;
+      if (alive && row) setServer({
+        total_minutes: Number(row.total_minutes), completed: Number(row.completed),
+        failed: Number(row.failed), coins_earned: Number(row.coins_earned),
+      });
+    };
+    load();
+    const onFocus = () => load();
+    window.addEventListener("focus", onFocus);
+    return () => { alive = false; window.removeEventListener("focus", onFocus); };
+  }, [state.sessions.length]);
+  // Backend records are authoritative; local unsynced sessions can only add.
+  const s = server
+    ? {
+        ...local,
+        totalMinutes: Math.max(local.totalMinutes, server.total_minutes),
+        completed: Math.max(local.completed, server.completed),
+        failed: Math.max(local.failed, server.failed),
+        coinsEarned: Math.max(local.coinsEarned, server.coins_earned),
+      }
+    : local;
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(state.profile);
   const fileRef = useRef<HTMLInputElement | null>(null);
