@@ -125,7 +125,7 @@ export async function pullFromCloud(userId: string) {
       .select("*")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
-      .limit(200),
+      .limit(1000),
   ]);
   if (profileRes.error || walletRes.error || sessionsRes.error) {
     throw profileRes.error ?? walletRes.error ?? sessionsRes.error;

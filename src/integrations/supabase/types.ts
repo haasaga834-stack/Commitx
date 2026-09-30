@@ -651,6 +651,15 @@ export type Database = {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
+      my_focus_totals: {
+        Args: never
+        Returns: {
+          coins_earned: number
+          completed: number
+          failed: number
+          total_minutes: number
+        }[]
+      }
       refresh_leaderboard_total: {
         Args: { _user_id: string }
         Returns: undefined

@@ -71,6 +71,13 @@
       "when": 1790103951673,
       "tag": "0009_restrict_focus_class_presence_reads",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790729307059,
+      "tag": "0010_fix_group_session_ledger_and_backfill",
+      "breakpoints": true
     }
   ]
 }
