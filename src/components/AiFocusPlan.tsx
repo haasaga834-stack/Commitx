@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Wand2, Loader2 } from "lucide-react";
 import { planFocusSession, type FocusPlan } from "@/lib/focus-plan.functions";
@@ -10,7 +10,11 @@ import { cn } from "@/lib/utils";
 const LENGTHS: (number | null)[] = [null, 30, 60, 90, 120, 180];
 
 /** Type a focus goal, get a personalised, achievable session plan from AI. */
+/** Hand the AI plan to the New Commitment form across navigation. */
+export const AI_PLAN_STORAGE_KEY = "commitx.aiPlan";
+
 export function AiFocusPlan() {
+  const navigate = useNavigate();
   const plan = useServerFn(planFocusSession);
   const [goal, setGoal] = useState("");
   const [minutes, setMinutes] = useState<number | null>(null);
@@ -107,13 +111,18 @@ export function AiFocusPlan() {
             ))}
           </ol>
           {result.tip ? <p className="mt-3 text-xs italic text-muted-foreground">{result.tip}</p> : null}
-          <Link
-            to="/commit"
-            search={{ mode: result.mode }}
+          <button
+            type="button"
+            onClick={() => {
+              try {
+                sessionStorage.setItem(AI_PLAN_STORAGE_KEY, JSON.stringify(result));
+              } catch {}
+              navigate({ to: "/commit", search: { mode: result.mode } });
+            }}
             className="mt-4 inline-flex w-full items-center justify-center rounded-full border border-primary px-6 py-3 text-sm font-medium text-primary"
           >
             Start this session
-          </Link>
+          </button>
         </div>
       ) : null}
     </section>
