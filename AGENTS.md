@@ -8,3 +8,6 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Focus-session rewards and forfeits must be derived and recorded transactionally from the user's locked `active_sessions` row, because client-submitted session claims are untrusted.
+- Group state is readable only while the caller has a current `committed` or `joined` membership, because leaving must revoke access immediately.
