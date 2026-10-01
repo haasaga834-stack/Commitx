@@ -27,7 +27,6 @@ import {
   clearWebSessionTab,
   failWebSession,
   failWebSessionBeacon,
-  finishWebSession,
   heartbeatWebSession,
   isWebRuntime,
   touchPausedWebSession,
