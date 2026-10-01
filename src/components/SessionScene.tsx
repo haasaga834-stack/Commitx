@@ -307,7 +307,7 @@ function GrowingPlant({ progress }: { progress: number }) {
       <svg
         viewBox="0 0 400 260"
         preserveAspectRatio="xMidYEnd meet"
-        className="absolute inset-x-0 bottom-0 h-[66%] w-full"
+        className="absolute inset-x-0 -bottom-24 h-[66%] w-full sm:-bottom-16"
       >
         <defs>
           <linearGradient id="cxStem" x1="0" y1="1" x2="0" y2="0">
