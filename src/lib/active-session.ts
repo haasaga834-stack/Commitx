@@ -36,15 +36,18 @@ async function currentUserId() {
  * an abandoned leftover (app killed, crash, forced close) and must never block
  * a new commitment.
  */
-const STALE_GRACE_MS = 30 * 60_000;
+const END_GRACE_MS = 2 * 60_000;
+const PAUSE_HEARTBEAT_MS = 2 * 60_000;
 
 function isStale(row: ActiveDbSession) {
-  const heartbeat = row.last_heartbeat ? new Date(row.last_heartbeat).getTime() : Number.NaN;
-  // A recent check-in proves a deliberately paused long session is still live.
-  if (Number.isFinite(heartbeat) && Date.now() - heartbeat <= STALE_GRACE_MS) return false;
   const started = new Date(row.started_at).getTime();
   if (!Number.isFinite(started)) return true;
-  return Date.now() - started > row.duration_minutes * 60_000 + STALE_GRACE_MS;
+  // Still inside its planned window: genuinely running.
+  if (Date.now() - started <= row.duration_minutes * 60_000 + END_GRACE_MS) return false;
+  // Past its end: only a very recent check-in (a paused/extended session) keeps it.
+  const heartbeat = row.last_heartbeat ? new Date(row.last_heartbeat).getTime() : Number.NaN;
+  if (Number.isFinite(heartbeat) && Date.now() - heartbeat <= PAUSE_HEARTBEAT_MS) return false;
+  return true;
 }
 
 /** Returns the live active session for this user, cleaning up stale rows. */
