@@ -27,7 +27,6 @@ import {
   clearWebSessionTab,
   failWebSession,
   failWebSessionBeacon,
-  finishWebSession,
   heartbeatWebSession,
   isWebRuntime,
   touchPausedWebSession,
@@ -65,6 +64,7 @@ import { showSessionProgress, hideSessionProgress } from "@/lib/native-notificat
 import { isOnline } from "@/lib/connectivity";
 import { z } from "zod";
 import { useAuth } from "@/lib/use-auth";
+import { recordSessions } from "@/lib/wallet.functions";
 
 declare global {
   interface Window {
@@ -1044,7 +1044,7 @@ function LiveSession() {
     [wellnessSessionKey],
   );
 
-  function complete(status: "completed" | "failed", reason?: string) {
+  async function complete(status: "completed" | "failed", reason?: string) {
     // Idempotent: prevents duplicate deductions and duplicate session rows.
     if (doneRef.current) return;
     doneRef.current = true;
@@ -1070,17 +1070,11 @@ function LiveSession() {
       status,
       ...(reason ? { reason } : {}),
     });
-    // Web verified sessions settle atomically on the backend: a failure is
-    // recorded as 'failed', a completion only releases a still-active slot.
+    // Web-only tab state is local. The authoritative active row is settled by
+    // recordSessions below, in the same transaction that records coins.
     if (isVerified && isWebRuntime()) {
       clearWebSessionTab();
-      if (status === "failed") {
-        void failWebSession(reason ?? "failed");
-      } else {
-        void finishWebSession();
-      }
     }
-    void releaseActiveDbSession();
 
     if (guestRef.current) {
       // No account: no coin movement and no saved history.
@@ -1115,12 +1109,32 @@ function LiveSession() {
       coinsSpent,
       coinsEarned,
     };
+    let authoritativeCoins: number | null = null;
+    if (isOnline()) {
+      try {
+        const result = await recordSessions({
+          data: {
+            sessions: [{
+              id: session.id,
+              goal: session.goal,
+              durationMinutes: session.durationMinutes,
+              value: session.value,
+              mode: session.mode,
+              status: session.status,
+            }],
+          },
+        });
+        if (result.ids.includes(session.id)) authoritativeCoins = result.coins;
+      } catch {
+        // Keep the active server record intact so cloud sync can retry safely.
+      }
+    }
     // Completing returns the committed coins untouched and adds the hourly
     // reward; failing forfeits the committed coins.
     setState((s) => ({
       ...s,
       sessions: [session, ...s.sessions],
-      coins: Math.max(0, s.coins - coinsSpent + coinsEarned),
+      coins: authoritativeCoins ?? Math.max(0, s.coins - coinsSpent + coinsEarned),
     }));
     if (status === "completed") {
       log("Session Completed");

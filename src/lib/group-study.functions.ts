@@ -137,6 +137,18 @@ export const getGroupState = createServerFn({ method: "POST" })
       _user_id: userId,
       _group_id: data.id,
     });
+
+    // Access ends immediately when a participant leaves or is settled. Check
+    // current membership before any privileged member-list read.
+    const { data: membership } = await supabase
+      .from("group_members")
+      .select("status")
+      .eq("group_id", data.id)
+      .eq("user_id", userId)
+      .in("status", ["committed", "joined"])
+      .maybeSingle();
+    if (!membership) return { gone: true };
+
     const { data: group } = await supabase
       .from("study_groups")
       .select("*")
@@ -152,7 +164,9 @@ export const getGroupState = createServerFn({ method: "POST" })
       .eq("group_id", data.id)
       .order("created_at", { ascending: true });
 
-    const list = (members ?? []) as GroupMemberDTO[];
+    const list = ((members ?? []) as GroupMemberDTO[]).filter(
+      (member) => member.status === "committed" || member.status === "joined",
+    );
 
     return {
       group: group as GroupDTO,

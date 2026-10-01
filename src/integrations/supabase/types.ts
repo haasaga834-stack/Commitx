@@ -660,6 +660,18 @@ export type Database = {
           total_minutes: number
         }[]
       }
+      record_focus_session_from_active: {
+        Args: {
+          _requested_status: string
+          _session_id: string
+          _user_id: string
+        }
+        Returns: {
+          accepted: boolean
+          coin_balance: number
+          session_id: string
+        }[]
+      }
       refresh_leaderboard_total: {
         Args: { _user_id: string }
         Returns: undefined
