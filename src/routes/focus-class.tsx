@@ -312,7 +312,12 @@ function FocusClassPage() {
       setConfirmComplete(true);
     };
     window.addEventListener("popstate", onPop);
-    return () => window.removeEventListener("popstate", onPop);
+    return () => {
+      window.removeEventListener("popstate", onPop);
+      // Drop the guard entry so it never jams Back after the session ends.
+      // The listener is already removed, so this back() passes through.
+      if (window.history.state?.focusClassGuard) window.history.back();
+    };
   }, [phase]);
 
   return (
