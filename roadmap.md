@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Focus Class: remove history sentinel after session ends so Back never jams
-- [ ] Planner: remove AI planner section entirely
-- [ ] Planner: move Today's to-do card to the top (functionality unchanged)
-- [ ] (Later, if asked) AI plan hand-off: commit.tsx does not read `commitx.aiPlan` yet — moot if AI planner is removed
+- [x] Focus Class: remove history sentinel after session ends so Back never jams (verified: Back during class asks to confirm; after ending, Back leaves to Home)
+- [x] Planner: remove AI planner section entirely (files deleted, no references left)
+- [x] Planner: move Today's to-do card to the top (verified on signed-in Planner)
+- [ ] (Later, if asked) AI plan hand-off: moot — AI planner removed
