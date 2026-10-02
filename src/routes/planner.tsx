@@ -26,7 +26,6 @@ import {
 } from "lucide-react";
 import { DurationWheel } from "@/components/DurationWheel";
 import { TodoList } from "@/components/TodoList";
-import { AiFocusPlan } from "@/components/AiFocusPlan";
 import { requestExactAlarmAccess } from "@/lib/native-notifications";
 
 export const Route = createFileRoute("/planner")({
@@ -99,8 +98,9 @@ function Planner() {
           </button>
         </div>
 
-        <AiFocusPlan />
-
+        <div ref={todoRef} className="mt-5">
+          <TodoList />
+        </div>
 
         <div className="mt-5 rounded-2xl border border-hairline bg-card p-4 shadow-soft">
           <div className="flex items-center gap-3">
@@ -149,11 +149,6 @@ function Planner() {
           </div>
           <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
         </Link>
-
-        <div ref={todoRef} className="mt-5">
-          <TodoList />
-        </div>
-
 
         {hydrated && sorted.length === 0 ? (
           <div className="mt-6 rounded-3xl bg-card p-8 text-center shadow-soft">
