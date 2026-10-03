@@ -14,7 +14,7 @@ import { DailyGoalProgress } from "@/components/DailyGoalProgress";
 import { GroupStudyCard } from "@/components/GroupStudyCard";
 import { SwipeToStart } from "@/components/SwipeToStart";
 import { TabletShell } from "@/components/TabletShell";
-import cozyStudy from "@/assets/cozy-study.jpg";
+import moonlitBotanical from "@/assets/moonlit-botanical-terrarium.jpg";
 
 import { useAppState, stats } from "@/lib/commitx-store";
 import { dailyMessage } from "@/lib/daily-message";
@@ -112,11 +112,11 @@ export function TabletHome() {
           <section className="overflow-hidden rounded-3xl border border-hairline bg-card shadow-soft">
             <div className="relative">
               <img
-                src={cozyStudy}
-                alt="Hand-painted study desk by a sunlit window"
-                width={1024}
-                height={768}
-                loading="lazy"
+                src={moonlitBotanical}
+                alt="Moonlit botanical focus garden"
+                width={1400}
+                height={800}
+                loading="eager"
                 className="h-40 w-full object-cover opacity-95"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent" />

@@ -11,3 +11,4 @@
 
 - Focus-session rewards and forfeits must be derived and recorded transactionally from the user's locked `active_sessions` row, because client-submitted session claims are untrusted.
 - Group state is readable only while the caller has a current `committed` or `joined` membership, because leaving must revoke access immediately.
+- Scope the native app visual theme through the Android-bridge body class; shared public website routes must retain their independent design.
