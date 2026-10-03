@@ -730,3 +730,122 @@ body {
 .landing-root h3 {
   font-family: var(--font-sans);
 }
+
+/* -----------------------------------------------------------------
+   Native CommitX app — Moonlit Flora.
+   The class is attached only when the Android bridge is present, so the
+   public website keeps its independent editorial design and light/dark mode.
+   ----------------------------------------------------------------- */
+body.cx-app-theme {
+  --radius: 1.25rem;
+  --background: oklch(0.2301 0.047 311.15);
+  --foreground: oklch(0.9553 0.007 88.64);
+  --card: oklch(0.285 0.052 303 / 0.76);
+  --card-foreground: oklch(0.9553 0.007 88.64);
+  --popover: oklch(0.275 0.052 303 / 0.96);
+  --popover-foreground: oklch(0.9553 0.007 88.64);
+  --primary: oklch(0.6595 0.1132 298.38);
+  --primary-foreground: oklch(0.18 0.035 310);
+  --secondary: oklch(0.31 0.055 304 / 0.78);
+  --secondary-foreground: oklch(0.9553 0.007 88.64);
+  --muted: oklch(0.31 0.047 304 / 0.7);
+  --muted-foreground: oklch(0.76 0.028 302);
+  --accent: oklch(0.68 0.112 190);
+  --accent-foreground: oklch(0.17 0.035 200);
+  --border: oklch(0.74 0.055 298 / 0.18);
+  --input: oklch(0.74 0.055 298 / 0.22);
+  --ring: oklch(0.6595 0.1132 298.38);
+  --hairline: oklch(0.82 0.035 298 / 0.14);
+  --sand: oklch(0.83 0.11 92);
+  --info: oklch(0.7 0.095 210);
+  --info-foreground: oklch(0.18 0.035 210);
+  --frame: oklch(0.18 0.044 312);
+  --clay: oklch(0.4800 0.0758 191.29);
+  /* Tailwind's inline theme aliases can otherwise retain values resolved on
+     the document root. Rebind them inside the native app scope. */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-hairline: var(--hairline);
+  --color-sand: var(--sand);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-frame: var(--frame);
+  --color-clay: var(--clay);
+  --gradient-warm: linear-gradient(160deg, oklch(0.285 0.06 306), oklch(0.2301 0.047 311.15) 42%, oklch(0.20 0.045 285));
+  --gradient-primary: linear-gradient(135deg, oklch(0.6595 0.1132 298.38), oklch(0.58 0.105 283));
+  --gradient-sun: radial-gradient(circle, oklch(0.72 0.11 298 / 0.48), transparent 70%);
+  --shadow-soft: 0 1px 0 oklch(0.95 0.02 300 / 0.06) inset, 0 14px 34px -18px oklch(0.08 0.03 310 / 0.8);
+  --shadow-lift: 0 1px 0 oklch(0.95 0.02 300 / 0.08) inset, 0 26px 58px -22px oklch(0.07 0.04 310 / 0.9);
+  background-image: var(--gradient-warm);
+  color-scheme: dark;
+  font-family: "Manrope", ui-sans-serif, system-ui, sans-serif;
+}
+
+body.cx-app-theme h1,
+body.cx-app-theme h2,
+body.cx-app-theme h3,
+body.cx-app-theme .font-display {
+  font-family: "Sora", ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0;
+}
+
+body.cx-app-theme .bg-card {
+  backdrop-filter: blur(20px) saturate(125%);
+  -webkit-backdrop-filter: blur(20px) saturate(125%);
+}
+
+body.cx-app-theme .shadow-soft,
+body.cx-app-theme .shadow-lift {
+  border-color: var(--hairline);
+}
+
+body.cx-app-theme nav.fixed {
+  inset-inline: 0.75rem;
+  bottom: 0.75rem;
+  border: 1px solid var(--hairline);
+  border-radius: 1.25rem;
+  background: oklch(0.255 0.052 306 / 0.86);
+  box-shadow: var(--shadow-lift);
+}
+
+body.cx-app-theme nav.fixed > div {
+  padding-bottom: 0.35rem;
+  padding-top: 0.35rem;
+}
+
+body.cx-app-theme input,
+body.cx-app-theme textarea,
+body.cx-app-theme select {
+  color: var(--foreground);
+  caret-color: var(--primary);
+}
+
+body.cx-app-theme input::placeholder,
+body.cx-app-theme textarea::placeholder {
+  color: var(--muted-foreground);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.cx-app-theme *,
+  body.cx-app-theme *::before,
+  body.cx-app-theme *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

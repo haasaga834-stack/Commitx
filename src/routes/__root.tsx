@@ -333,6 +333,14 @@ function StudyReminders() {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  // The sculptural botanical theme belongs to the installed CommitX app only.
+  // Scoping it on body keeps every public website route visually unchanged.
+  useEffect(() => {
+    if (!hasNativeBridge()) return;
+    document.body.classList.add("cx-app-theme");
+    return () => document.body.classList.remove("cx-app-theme");
+  }, []);
+
   // Offline support: registers the generated worker in published production only.
   useEffect(() => {
     registerAppServiceWorker();

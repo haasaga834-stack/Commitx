@@ -10,7 +10,7 @@ import { SwipeToStart } from "@/components/SwipeToStart";
 import { TabletHome } from "@/components/TabletHome";
 import { useIsTablet } from "@/lib/use-tablet";
 import { cn } from "@/lib/utils";
-import cozyStudy from "@/assets/cozy-study.jpg";
+import moonlitBotanical from "@/assets/moonlit-botanical-terrarium.jpg";
 
 import { useAppState, stats } from "@/lib/commitx-store";
 import { Landing } from "@/components/Landing";
@@ -207,12 +207,11 @@ function MobileHome() {
         >
           <div className="relative">
             <img
-              src={cozyStudy}
-              alt="Hand-painted study desk by a sunlit window"
-              width={1024}
-              height={768}
-              loading="lazy"
-              className="h-28 w-full object-cover opacity-95"
+              src={moonlitBotanical}
+              alt="Moonlit botanical focus garden"
+              width={1400}
+              height={800}
+              className="h-36 w-full object-cover opacity-95"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent" />
             <h2 className="absolute bottom-2 left-4 flex items-center gap-1.5 font-display text-lg font-semibold text-foreground">
