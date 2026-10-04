@@ -17,6 +17,12 @@
 
     <!-- Focus Shield needs to read labels/icons of the apps it can protect. -->
     <queries>
+        <!-- Launcher apps are visible to the user and can be selected individually
+             without requesting broad QUERY_ALL_PACKAGES visibility. -->
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
         <package android:name="com.instagram.android" />
         <package android:name="com.google.android.youtube" />
         <package android:name="com.facebook.katana" />
