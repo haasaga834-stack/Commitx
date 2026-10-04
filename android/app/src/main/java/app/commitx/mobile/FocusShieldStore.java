@@ -115,6 +115,11 @@ final class FocusShieldStore {
         Map<String, ApplicationInfo> result = new TreeMap<>();
         Intent launcher = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER);
         try {
+            ResolveInfo homeApp = pm.resolveActivity(
+                    new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME),
+                    PackageManager.MATCH_DEFAULT_ONLY);
+            String homePackage = homeApp != null && homeApp.activityInfo != null
+                    ? homeApp.activityInfo.packageName : null;
             List<ResolveInfo> matches = pm.queryIntentActivities(launcher, 0);
             for (ResolveInfo match : matches) {
                 if (match.activityInfo == null || match.activityInfo.applicationInfo == null) continue;
@@ -129,10 +134,7 @@ final class FocusShieldStore {
                         || pkg.equals("com.android.systemui")) continue;
                 // Never block a home/launcher app: users must be able to leave
                 // the blocked app and get back to CommitX.
-                Intent home = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME);
-                if (pm.resolveActivity(home, PackageManager.MATCH_DEFAULT_ONLY) != null
-                        && pkg.equals(pm.resolveActivity(home, PackageManager.MATCH_DEFAULT_ONLY)
-                                .activityInfo.packageName)) continue;
+                if (pkg.equals(homePackage)) continue;
                 result.put(pkg, info);
             }
         } catch (Throwable ignored) {}

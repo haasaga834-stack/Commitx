@@ -40,6 +40,7 @@ export function FocusShieldSetup({
   const [step, setStep] = useState<Step>("intro");
   const [selected, setSelected] = useState<string[]>([]);
   const [apps, setApps] = useState<ShieldAppOption[]>([]);
+  const [appSearch, setAppSearch] = useState("");
   const [usage, setUsage] = useState(false);
   const [overlay, setOverlay] = useState(false);
 
@@ -49,6 +50,7 @@ export function FocusShieldSetup({
     if (!open) {
       setStep("intro");
       setSelected([]);
+      setAppSearch("");
       return;
     }
     setApps(shieldApps());
@@ -83,10 +85,17 @@ export function FocusShieldSetup({
     }).filter((g) => g.present.length > 0);
   }, [apps]);
 
-  const allPackages = useMemo(() => groups.flatMap((g) => g.present), [groups]);
-  const selectedLabels = groups
-    .filter((g) => g.present.some((p) => selected.includes(p)))
-    .map((g) => g.label);
+  const groupPackages = useMemo(() => new Set(groups.flatMap((g) => g.present)), [groups]);
+  const moreApps = useMemo(() => apps.filter((app) => !groupPackages.has(app.pkg)), [apps, groupPackages]);
+  const visibleMoreApps = useMemo(
+    () => moreApps.filter((app) => app.label.toLowerCase().includes(appSearch.trim().toLowerCase())),
+    [moreApps, appSearch],
+  );
+  const allPackages = useMemo(() => apps.map((app) => app.pkg), [apps]);
+  const selectedLabels = [
+    ...groups.filter((g) => g.present.some((p) => selected.includes(p))).map((g) => g.label),
+    ...moreApps.filter((app) => selected.includes(app.pkg)).map((app) => app.label),
+  ];
 
   if (!open) return null;
 
@@ -97,6 +106,10 @@ export function FocusShieldSetup({
       const on = present.some((p) => prev.includes(p));
       return on ? prev.filter((p) => !present.includes(p)) : [...prev, ...present];
     });
+  }
+
+  function toggleApp(pkg: string) {
+    setSelected((prev) => prev.includes(pkg) ? prev.filter((p) => p !== pkg) : [...prev, pkg]);
   }
 
   function finish() {
@@ -148,9 +161,9 @@ export function FocusShieldSetup({
         {step === "apps" && (
           <>
             <Header title="Choose apps to block" onBack={() => setStep("intro")} />
-            {groups.length === 0 ? (
+            {apps.length === 0 ? (
               <p className="mt-4 rounded-2xl border border-hairline bg-background p-4 text-xs text-muted-foreground">
-                None of the supported apps were found on this device.
+                No selectable apps were found on this device.
               </p>
             ) : (
               <>
@@ -207,6 +220,42 @@ export function FocusShieldSetup({
                     );
                   })}
                 </ul>
+                {moreApps.length > 0 && (
+                  <div className="mt-5">
+                    <h3 className="text-sm font-semibold">More apps</h3>
+                    <input
+                      type="search"
+                      value={appSearch}
+                      onChange={(event) => setAppSearch(event.target.value)}
+                      placeholder="Search installed apps"
+                      aria-label="Search installed apps"
+                      className="mt-2 w-full rounded-xl border border-hairline bg-background px-3 py-2 text-sm"
+                    />
+                    <ul className="mt-3 space-y-2">
+                      {visibleMoreApps.map((app) => (
+                        <li key={app.pkg}>
+                          <button
+                            onClick={() => toggleApp(app.pkg)}
+                            className={cn(
+                              "flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition-colors",
+                              selected.includes(app.pkg) ? "border-primary bg-accent/10" : "border-hairline bg-background",
+                            )}
+                          >
+                            {app.icon ? (
+                              <img src={app.icon} alt="" className="h-9 w-9 shrink-0 rounded-xl object-contain" />
+                            ) : (
+                              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-secondary text-xs font-semibold">{app.label.slice(0, 1)}</span>
+                            )}
+                            <span className="flex-1 text-sm font-medium">{app.label}</span>
+                            <span className={cn("flex h-6 w-6 items-center justify-center rounded-full border", selected.includes(app.pkg) ? "border-primary bg-primary text-primary-foreground" : "border-hairline")}>
+                              {selected.includes(app.pkg) && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
+                            </span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </>
             )}
             <div className="mt-6 grid grid-cols-2 gap-3">
