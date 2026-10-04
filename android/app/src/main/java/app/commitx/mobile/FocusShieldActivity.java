@@ -89,7 +89,8 @@ public class FocusShieldActivity extends Activity {
                         .setAction(Intent.ACTION_MAIN)
                         .addCategory(Intent.CATEGORY_LAUNCHER)
                         .putExtra(MainActivity.EXTRA_ROUTE, "/session")
-                        .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP
+                         .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+                                 | Intent.FLAG_ACTIVITY_SINGLE_TOP
                                 | Intent.FLAG_ACTIVITY_NEW_TASK));
             } catch (Throwable ignored) {}
             finish();

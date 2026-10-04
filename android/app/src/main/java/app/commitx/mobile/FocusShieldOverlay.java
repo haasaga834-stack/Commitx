@@ -36,6 +36,7 @@ final class FocusShieldOverlay {
     private TextView messageView;
     private long endsAt;
     private String shownFor;
+    private long returningToCommitXUntil;
 
     FocusShieldOverlay(Context ctx) {
         this.ctx = ctx;
@@ -47,6 +48,7 @@ final class FocusShieldOverlay {
 
     /** Shows (or updates) the reminder for the given blocked package. */
     void show(String blockedPackage, long endsAtMs) {
+        if (System.currentTimeMillis() < returningToCommitXUntil) return;
         this.endsAt = endsAtMs;
         if (root != null) {
             if (!blockedPackage.equals(shownFor)) {
@@ -91,17 +93,23 @@ final class FocusShieldOverlay {
             back.setBackground(bg);
             back.setPadding(dp(24), dp(14), dp(24), dp(14));
             back.setOnClickListener(v -> {
-                hide();
                 try {
-                    // Same as the timer notification: open the live timer
-                    // screen so the running session is restored, not reset.
+                    // Launch while our overlay is still visible: Android permits
+                    // this user-initiated activity start, but may reject it after
+                    // the overlay is removed. Keep the shield from immediately
+                    // covering the timer while Android switches foreground apps.
+                    returningToCommitXUntil = System.currentTimeMillis() + 5000L;
                     ctx.startActivity(new Intent(ctx, MainActivity.class)
                             .setAction(Intent.ACTION_MAIN)
                             .addCategory(Intent.CATEGORY_LAUNCHER)
                             .putExtra(MainActivity.EXTRA_ROUTE, "/session")
-                            .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP
+                             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+                                     | Intent.FLAG_ACTIVITY_SINGLE_TOP
                                     | Intent.FLAG_ACTIVITY_NEW_TASK));
-                } catch (Throwable ignored) {}
+                    hide();
+                } catch (Throwable ignored) {
+                    returningToCommitXUntil = 0L;
+                }
             });
             view.addView(back);
 

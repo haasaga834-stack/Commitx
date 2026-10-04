@@ -2,9 +2,11 @@ package app.commitx.mobile;
 
 import android.app.AppOpsManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
@@ -15,10 +17,15 @@ import android.util.Base64;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Focus Shield state + capability checks.
@@ -102,18 +109,55 @@ final class FocusShieldStore {
         }
     }
 
-    /** Installed supported apps as a JSON array of {pkg,label,icon}. */
+    /** User-launchable apps; system components and CommitX itself cannot be blocked. */
+    private static Map<String, ApplicationInfo> selectableApps(Context ctx) {
+        PackageManager pm = ctx.getPackageManager();
+        Map<String, ApplicationInfo> result = new TreeMap<>();
+        Intent launcher = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER);
+        try {
+            ResolveInfo homeApp = pm.resolveActivity(
+                    new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME),
+                    PackageManager.MATCH_DEFAULT_ONLY);
+            String homePackage = homeApp != null && homeApp.activityInfo != null
+                    ? homeApp.activityInfo.packageName : null;
+            List<ResolveInfo> matches = pm.queryIntentActivities(launcher, 0);
+            for (ResolveInfo match : matches) {
+                if (match.activityInfo == null || match.activityInfo.applicationInfo == null) continue;
+                ApplicationInfo info = match.activityInfo.applicationInfo;
+                String pkg = info.packageName;
+                if (pkg == null || pkg.equals(ctx.getPackageName())
+                        || pkg.equals("com.android.settings")
+                        || pkg.equals("com.google.android.dialer")
+                        || pkg.equals("com.android.dialer")
+                        || pkg.equals("com.android.contacts")
+                        || pkg.equals("com.google.android.contacts")
+                        || pkg.equals("com.android.systemui")) continue;
+                // Never block a home/launcher app: users must be able to leave
+                // the blocked app and get back to CommitX.
+                if (pkg.equals(homePackage)) continue;
+                result.put(pkg, info);
+            }
+        } catch (Throwable ignored) {}
+        // Keep the existing named apps available on devices whose launcher
+        // query is limited by the manufacturer.
+        for (String pkg : SUPPORTED) {
+            if (result.containsKey(pkg)) continue;
+            try { result.put(pkg, pm.getApplicationInfo(pkg, 0)); }
+            catch (Throwable ignored) {}
+        }
+        return result;
+    }
+
+    /** Installed selectable apps as a JSON array of {pkg,label,icon}. */
     static String installedAppsJson(Context ctx) {
         StringBuilder sb = new StringBuilder("[");
         PackageManager pm = ctx.getPackageManager();
         boolean first = true;
-        for (String pkg : SUPPORTED) {
-            ApplicationInfo info;
-            try {
-                info = pm.getApplicationInfo(pkg, 0);
-            } catch (Throwable t) {
-                continue;
-            }
+        List<Map.Entry<String, ApplicationInfo>> entries = new ArrayList<>(selectableApps(ctx).entrySet());
+        Collections.sort(entries, Comparator.comparing(e -> String.valueOf(pm.getApplicationLabel(e.getValue())).toLowerCase()));
+        for (Map.Entry<String, ApplicationInfo> entry : entries) {
+            String pkg = entry.getKey();
+            ApplicationInfo info = entry.getValue();
             String label;
             try {
                 label = String.valueOf(pm.getApplicationLabel(info));
@@ -134,7 +178,7 @@ final class FocusShieldStore {
     private static String iconDataUrl(PackageManager pm, ApplicationInfo info) {
         try {
             Drawable d = pm.getApplicationIcon(info);
-            int size = 96;
+            int size = 48;
             Bitmap bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(bmp);
             d.setBounds(0, 0, size, size);
@@ -152,11 +196,12 @@ final class FocusShieldStore {
         return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", " ");
     }
 
-    /** Persists the shield terms. Only packages we actually support are kept. */
+    /** Persists only apps that are selectable on this device. */
     static void start(Context ctx, Set<String> packages, long endsAtMs) {
         Set<String> clean = new LinkedHashSet<>();
+        Set<String> allowed = selectableApps(ctx).keySet();
         for (String p : packages) {
-            if (SUPPORTED.contains(p)) clean.add(p);
+            if (allowed.contains(p)) clean.add(p);
         }
         prefs(ctx).edit()
                 .putBoolean(KEY_ACTIVE, !clean.isEmpty())
