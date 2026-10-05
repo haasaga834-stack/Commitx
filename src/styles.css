@@ -878,6 +878,21 @@ html:not(.dark) body.cx-app-theme nav.fixed {
   background: oklch(0.98 0.011 165 / 0.93);
 }
 
+/* Only the native Home uses the compact landscape treatment. */
+body.cx-app-theme .cx-home-image-wash {
+  background: linear-gradient(to top, var(--card) 0%, color-mix(in oklch, var(--card) 78%, transparent) 28%, transparent 78%);
+}
+body.cx-app-theme .cx-home-landscape img {
+  filter: brightness(0.62) saturate(0.8);
+}
+html:not(.dark) body.cx-app-theme .cx-home-landscape img {
+  filter: none;
+}
+@media (max-height: 640px) {
+  body.cx-app-theme .cx-home { gap: 0.4rem; padding-top: 0.5rem; }
+  body.cx-app-theme .cx-home-landscape { min-height: 145px; padding-block: 0.7rem; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   body.cx-app-theme *,
   body.cx-app-theme *::before,
