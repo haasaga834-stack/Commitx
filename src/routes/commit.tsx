@@ -31,6 +31,7 @@ const commitSearch = z.object({
   plan: z.coerce.number().optional(),
   /** Mode preselected from the public landing page. */
   mode: z.enum(["standard", "verified"]).optional(),
+  duration: z.coerce.number().min(25).max(360).optional(),
 });
 
 export const Route = createFileRoute("/commit")({
@@ -58,7 +59,7 @@ function fmtDuration(min: number) {
 function Commit() {
   const navigate = useNavigate();
   const isTablet = useIsTablet();
-  const { plan: fromPlan, mode: fromMode } = Route.useSearch();
+  const { plan: fromPlan, mode: fromMode, duration: fromDuration } = Route.useSearch();
   const usePlanDuration = fromPlan === 1;
   const { state, hydrated } = useAppState();
   const { user, loading: authLoading } = useAuth();
@@ -95,7 +96,7 @@ function Commit() {
   // The study plan is the single source of truth for commitment time.
   const nextPlan = useMemo(() => upcomingPlan(plans), [plans]);
   const planDuration = nextPlan?.plan.durationMinutes ?? 0;
-  const [pickedDuration, setPickedDuration] = useState(60);
+  const [pickedDuration, setPickedDuration] = useState(fromDuration ?? 60);
   const duration = usePlanDuration ? planDuration : pickedDuration;
 
 

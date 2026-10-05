@@ -1,16 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Bell, CalendarDays, Clock, Hourglass as HourglassIcon, Leaf, Sparkles } from "lucide-react";
+import { ArrowRight, Bell, Leaf, Users } from "lucide-react";
 import { MobileShell } from "@/components/BottomNav";
 import { CxCoin } from "@/components/CxCoin";
 import { CxCoinPopup } from "@/components/CxCoinPopup";
-import { DailyGoalProgress } from "@/components/DailyGoalProgress";
-import { GroupStudyCard } from "@/components/GroupStudyCard";
-import { SwipeToStart } from "@/components/SwipeToStart";
 import { TabletHome } from "@/components/TabletHome";
 import { useIsTablet } from "@/lib/use-tablet";
 import { cn } from "@/lib/utils";
-import moonlitBotanical from "@/assets/moonlit-botanical-terrarium.jpg";
+import focusMountains from "@/assets/focus-mountains.jpg";
 
 import { useAppState, stats } from "@/lib/commitx-store";
 import { Landing } from "@/components/Landing";
@@ -21,11 +18,10 @@ import { dailyMessage } from "@/lib/daily-message";
 import {
   usePlans,
   useTodos,
-  occursOn,
   upcomingPlan,
   formatTime,
-  formatDuration,
-  priorityLabel,
+  useDailyGoal,
+  formatGoalHours,
 } from "@/lib/planner";
 
 const HOME_TITLE = "CommitX — For the things you said you'd do.";
@@ -140,6 +136,7 @@ function MobileHome() {
   const s = useMemo(() => stats(state.sessions), [state.sessions]);
   const { plans, hydrated: plansHydrated } = usePlans();
   const { todos } = useTodos();
+  const { goalHours } = useDailyGoal();
   const firstName = state.profile.name.split(" ")[0];
   const message = useMemo(() => dailyMessage(), []);
 
@@ -150,40 +147,30 @@ function MobileHome() {
     return () => clearInterval(id);
   }, []);
 
-  // Today's scheduled sessions from real planner data, earliest first.
-  const todays = useMemo(
-    () =>
-      plans
-        .map((p) => ({ plan: p, at: occursOn(p, now) }))
-        .filter((r): r is { plan: typeof plans[number]; at: number } => r.at !== null)
-        .sort((x, y) => x.at - y.at),
-    [plans, now],
-  );
-
-  // Most relevant upcoming session (today's remaining ones win, else the next day).
   const next = useMemo(() => upcomingPlan(plans, now), [plans, now]);
+  const taskCount = plansHydrated ? plans.length + todos.filter((t) => !t.done).length : 0;
+  const goalPct = Math.min(100, Math.round((s.todayMinutes / Math.max(1, goalHours * 60)) * 100));
+  const goalValue = s.todayMinutes >= 60
+    ? `${Math.floor(s.todayMinutes / 60)}h ${s.todayMinutes % 60 ? `${s.todayMinutes % 60}m` : ""}`
+    : `${s.todayMinutes}m`;
 
   return (
     <MobileShell>
-      <div className="px-5 pt-12">
-        {/* Header */}
-        <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 animate-fade-up">
+      <main className="cx-home mx-auto flex min-h-[calc(100dvh-92px)] max-w-md flex-col gap-3 px-4 pb-2 pt-5">
+        <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
           <div className="min-w-0">
-            <p className="text-xs text-muted-foreground">{greeting()},</p>
-            <h1 className="mt-0.5 flex min-w-0 items-center gap-1.5 text-2xl font-semibold text-foreground">
+            <h1 className="truncate font-display text-[clamp(20px,5.5vw,27px)] font-semibold text-foreground">
               <span className="sr-only">CommitX study dashboard — </span>
-              <span className="truncate">{hydrated ? firstName : "\u00A0"}</span>
-              <Leaf className="h-4 w-4 shrink-0 text-primary" />
+              {greeting()}, {hydrated ? firstName : "\u00A0"}
             </h1>
-            <p className="mt-1 text-[11px] text-muted-foreground">
+            <p className="truncate text-xs text-muted-foreground">
               {hydrated ? message : "\u00A0"}
             </p>
           </div>
-
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5">
             <CxCoinPopup coins={state.coins} hydrated={hydrated}>
               <TopChip
-                icon={<CxCoin className="h-4 w-4" />}
+                icon={<CxCoin className="h-5 w-5" />}
                 value={hydrated ? String(state.coins) : "—"}
                 srLabel="Cx Coins"
                 clickable
@@ -193,202 +180,65 @@ function MobileHome() {
               to="/settings"
               hash="notifications"
               aria-label="Notification settings"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-card text-foreground shadow-soft"
+              className="flex h-9 w-9 shrink-0 items-center justify-center text-foreground"
             >
-              <Bell className="h-4 w-4" />
+              <Bell className="h-5 w-5" />
             </Link>
           </div>
         </header>
 
-        {/* What should I do next? */}
-        <section
-          className="mt-5 overflow-hidden rounded-3xl border border-hairline bg-card shadow-soft animate-fade-up"
-          style={{ animationDelay: "60ms" }}
-        >
-          <div className="relative">
-            <img
-              src={moonlitBotanical}
-              alt="Moonlit botanical focus garden"
-              width={1400}
-              height={800}
-              className="h-36 w-full object-cover opacity-95"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent" />
-            <h2 className="absolute bottom-2 left-4 flex items-center gap-1.5 font-display text-lg font-semibold text-foreground">
-              What should I do next?
-              <Sparkles className="h-4 w-4 text-accent" />
-            </h2>
-          </div>
-
-          <div className="p-4 pt-2">
-            <div className="rounded-2xl bg-background p-3.5">
-              {plansHydrated && next ? (
-                <>
-                  <p className="truncate text-base font-semibold text-foreground">
-                    {next.plan.subject}
-                  </p>
-                  {next.plan.topic ? (
-                    <p className="truncate text-xs text-foreground/80">{next.plan.topic}</p>
-                  ) : null}
-                  <p className="mt-0.5 text-[11px] text-muted-foreground">
-                    Scheduled {formatTime(next.plan.time)} ·{" "}
-                    {priorityLabel(next.plan.priority)} Priority
-                  </p>
-
-                  <div className="mt-3">
-                    <MiniFact
-                      icon={<Clock className="h-3.5 w-3.5" />}
-                      label="Target duration"
-                      value={formatDuration(next.plan.durationMinutes)}
-                    />
-                  </div>
-                </>
-
-              ) : (
-                <>
-                  <p className="text-base font-semibold text-foreground">
-                    {plansHydrated ? "Nothing scheduled today" : "\u00A0"}
-                  </p>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground">
-                    Add a study plan, or start a commitment right now.
-                  </p>
-                </>
-              )}
-            </div>
-
-            <div className="mt-3.5">
-              <SwipeToStart
-                label="Swipe to Start Commitment"
-                onStart={() =>
-                    next
-                      ? navigate({ to: "/commit", search: { plan: 1 } })
-                      : navigate({ to: "/planner" })
-                  }
-              />
-            </div>
+        <section className="cx-home-landscape relative flex min-h-0 flex-1 flex-col justify-end overflow-hidden rounded-[24px] border border-hairline bg-card px-5 py-5 shadow-soft">
+          <img src={focusMountains} alt="Soft green mountains at sunrise" width={1536} height={1024} className="absolute inset-0 h-full w-full object-cover object-center" />
+          <div className="cx-home-image-wash absolute inset-0" />
+          <div className="relative z-10">
+            <h2 className="font-display text-[30px] font-semibold leading-tight text-foreground">Ready to focus?</h2>
+            <Link to={next ? "/commit" : "/commit"} search={next ? { plan: 1 } : {}} className="mt-2 inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-soft">
+              <Leaf className="h-4 w-4" /> Start Focus Session
+            </Link>
+            <p className="mt-2 truncate text-xs text-foreground">
+              {plansHydrated && next ? `${next.plan.subject} · ${formatTime(next.plan.time)}` : "Nothing scheduled · Tap to begin"}
+            </p>
           </div>
         </section>
 
-        {/* Today's Plan */}
-        <section
-          className="mt-4 rounded-3xl border border-hairline bg-card p-4 shadow-soft animate-fade-up"
-          style={{ animationDelay: "120ms" }}
-        >
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="font-display text-base font-semibold text-foreground">
-              Today's Plan
-            </h2>
-            <Link to="/planner" className="text-[11px] font-medium text-primary">
-              View all
-            </Link>
-          </div>
-
-          {plansHydrated && (todays.length > 0 || todos.length > 0) ? (
-            <ul className="mt-3 divide-y divide-hairline">
-              {todays.slice(0, 3).map(({ plan }) => (
-                <li key={plan.id} className="flex items-center gap-3 py-2.5">
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-medium text-foreground">
-                      {plan.subject}
-                    </span>
-                    <span className="block text-[11px] text-muted-foreground">
-                      {formatDuration(plan.durationMinutes)}
-                    </span>
-                  </span>
-                  <span className="shrink-0 text-[11px] text-muted-foreground">
-                    Today, {formatTime(plan.time)}
-                  </span>
-                </li>
-              ))}
-              {todos.slice(0, 4).map((t) => (
-                <li key={t.id} className="flex items-center gap-3 py-2.5">
-                  <span className="min-w-0 flex-1">
-                    <span
-                      className={`block truncate text-sm font-medium ${
-                        t.done ? "text-muted-foreground line-through" : "text-foreground"
-                      }`}
-                    >
-                      {t.text}
-                    </span>
-                    <span className="block text-[11px] text-muted-foreground">To-do</span>
-                  </span>
-                  <span className="shrink-0 text-[11px] text-muted-foreground">
-                    {t.done ? "Done" : "Today"}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-3 text-xs text-muted-foreground">
-              {plansHydrated ? "Nothing planned for today yet." : "\u00A0"}
-            </p>
-          )}
-
-          <Link
-            to="/planner"
-            className="mt-3 flex items-center gap-2 rounded-2xl bg-background px-3.5 py-2.5"
-          >
-            <CalendarDays className="h-4 w-4 shrink-0 text-primary" />
-            <span className="min-w-0 flex-1 truncate text-xs text-foreground">
-              {plansHydrated
-                ? `${todays.length + todos.length} ${
-                    todays.length + todos.length === 1 ? "task" : "tasks"
-                  } planned`
-                : "\u00A0"}
-            </span>
-            <span className="shrink-0 text-[11px] text-muted-foreground">Open</span>
+        <section aria-label="Today at a glance">
+          <h2 className="mb-1 font-display text-lg font-semibold text-foreground">Today at a Glance</h2>
+          <Link to="/planner" className="flex h-[84px] items-center gap-3 rounded-[20px] border border-hairline bg-card px-3 shadow-soft">
+            <div className="relative flex h-[64px] w-[64px] shrink-0 items-center justify-center">
+              <svg viewBox="0 0 64 64" className="absolute inset-0 h-full w-full -rotate-90" aria-hidden="true">
+                <circle cx="32" cy="32" r="27" fill="none" stroke="var(--muted)" strokeWidth="7" />
+                <circle cx="32" cy="32" r="27" fill="none" stroke="var(--primary)" strokeWidth="7" strokeLinecap="round" strokeDasharray={`${hydrated ? goalPct * 1.696 : 0} 170`} />
+              </svg>
+              <span className="text-sm font-semibold tabular-nums text-foreground">{hydrated ? goalValue : "—"}<span className="text-[10px] font-normal">/{formatGoalHours(goalHours)}</span></span>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-display text-base font-semibold text-foreground">{taskCount} {taskCount === 1 ? "task" : "tasks"} planned</p>
+              <p className="text-[11px] text-muted-foreground">Stay consistent and keep it simple.</p>
+            </div>
+            <ArrowRight className="h-4 w-4 shrink-0 text-primary" />
           </Link>
         </section>
 
-        {/* Commit Now */}
-        <section
-          className="mt-4 animate-fade-up"
-          style={{ animationDelay: "240ms" }}
-        >
-          <div className="relative flex items-center justify-center gap-3">
-            <h2 className="font-display text-base font-semibold text-foreground">
-              Commit Now
-            </h2>
-            <Link
-              to="/history"
-              className="absolute right-0 text-[11px] font-medium text-primary"
-            >
-              View all
-            </Link>
+        <section aria-label="Quick Commit">
+          <div className="mb-1 flex items-baseline justify-between">
+            <h2 className="font-display text-lg font-semibold text-foreground">Quick Commit</h2>
+            <Link to="/history" className="text-[11px] text-primary">History</Link>
           </div>
-
-
-          <div className="mt-2.5 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-3xl border border-hairline bg-card p-4 shadow-soft">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/15 text-primary">
-              <HourglassIcon className="h-4.5 w-4.5" />
-            </span>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-foreground">
-                No active commitment
-              </p>
-              <p className="truncate text-[11px] text-muted-foreground">
-                Start one and stay consistent
-              </p>
-            </div>
-            <Link
-              to="/commit"
-              className="shrink-0 rounded-full bg-primary px-4 py-2 text-xs font-medium text-primary-foreground"
-            >
-              Start Now
-            </Link>
+          <div className="grid grid-cols-3 gap-2">
+            {[25, 50, 90].map((minutes) => (
+              <Link key={minutes} to="/commit" search={{ duration: minutes }} className="flex h-10 items-center justify-center gap-1 rounded-full border border-hairline bg-card text-sm font-medium text-foreground shadow-soft">
+                <Leaf className="h-4 w-4 text-primary" /> {minutes} min
+              </Link>
+            ))}
           </div>
         </section>
 
-        {/* Daily goal */}
-        <div className="mt-4 mb-4 animate-fade-up" style={{ animationDelay: "300ms" }}>
-          <DailyGoalProgress todayMinutes={s.todayMinutes} hydrated={hydrated} />
-        </div>
-
-        {/* Group Study */}
-        <div className="mb-4 animate-fade-up" style={{ animationDelay: "360ms" }}>
-          <GroupStudyCard />
-        </div>
-      </div>
+        <Link to="/group" className="flex min-h-[68px] items-center gap-3 rounded-[20px] border border-hairline bg-card px-3 shadow-soft">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-secondary text-primary"><Users className="h-5 w-5" /></span>
+          <span className="min-w-0 flex-1"><span className="block truncate font-display text-base font-semibold text-foreground">Group Study</span><span className="block truncate text-[11px] text-muted-foreground">Learn together. Stay accountable.</span></span>
+          <ArrowRight className="h-4 w-4 shrink-0 text-primary" />
+        </Link>
+      </main>
     </MobileShell>
   );
 }
@@ -422,26 +272,3 @@ function TopChip({
   );
 }
 
-function MiniFact({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-center gap-2 rounded-xl bg-card px-2.5 py-2">
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent/15 text-primary">
-        {icon}
-      </span>
-      <span className="min-w-0">
-        <span className="block truncate text-sm font-semibold text-foreground tabular-nums">
-          {value}
-        </span>
-        <span className="block truncate text-[10px] text-muted-foreground">{label}</span>
-      </span>
-    </div>
-  );
-}
