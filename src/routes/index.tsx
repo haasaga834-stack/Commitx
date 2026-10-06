@@ -158,10 +158,13 @@ function MobileHome() {
       <main className="cx-home mx-auto flex h-[calc(100dvh-112px)] max-w-md flex-col gap-3 px-4 pb-2 pt-5">
         <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
           <div className="min-w-0">
-            <h1 className="truncate font-display text-[clamp(20px,5.5vw,27px)] font-semibold text-foreground">
+            <h1 className="font-display text-[15px] font-medium leading-snug text-muted-foreground">
               <span className="sr-only">CommitX study dashboard — </span>
-              {greeting()}, {hydrated ? firstName : "\u00A0"}
+              {greeting()}
             </h1>
+            <p className="truncate font-display text-[clamp(20px,5.5vw,26px)] font-semibold leading-tight text-foreground">
+              {hydrated ? firstName : "\u00A0"}
+            </p>
             <p className="truncate text-xs text-muted-foreground">
               {hydrated ? message : "\u00A0"}
             </p>
@@ -190,11 +193,11 @@ function MobileHome() {
           <img src={focusMountains} alt="Soft green mountains at sunrise" width={1536} height={1024} className="absolute inset-0 h-full w-full object-cover object-center" />
           <div className="cx-home-image-wash absolute inset-0" />
           <div className="relative z-10">
-            <h2 className="font-display text-[30px] font-semibold leading-tight text-foreground">Ready to focus?</h2>
-            <Link to={next ? "/commit" : "/commit"} search={next ? { plan: 1 } : {}} className="mt-2 inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-soft">
+            <h2 className="font-display text-[24px] font-semibold leading-tight text-foreground">Ready to focus?</h2>
+            <Link to="/commit" search={next ? { plan: 1 } : {}} className="mt-1.5 inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-soft">
               <Leaf className="h-4 w-4" /> Start Focus Session
             </Link>
-            <p className="mt-2 truncate text-xs text-foreground">
+            <p className="mt-1.5 truncate text-xs text-foreground">
               {plansHydrated && next ? `${next.plan.subject} · ${formatTime(next.plan.time)}` : "Nothing scheduled · Tap to begin"}
             </p>
           </div>
