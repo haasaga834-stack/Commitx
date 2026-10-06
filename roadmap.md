@@ -5,8 +5,8 @@
 - [x] Planner: move Today's to-do card to the top (verified on signed-in Planner)
 - [ ] (Later, if asked) AI plan hand-off: moot — AI planner removed
 - [ ] Redesign only the signed-in CommitX app UI using the botanical reference; keep the public website and all functionality unchanged
-- [ ] Make native app light and dark modes visibly distinct while keeping website styling independent
-- [ ] Fix Focus Shield's Back to CommitX action so it returns to the running timer
-- [ ] Expand Focus Shield app selection beyond the currently listed apps
-- [ ] Fit the signed-in native app Home into one phone screen using the supplied visual reference; leave public website untouched
-- [ ] Make Verified session notification taps reopen the running session reliably
+- [x] Make native app light and dark modes visibly distinct while keeping website styling independent
+- [x] Fix Focus Shield's Back to CommitX action so it returns to the running timer
+- [x] Expand Focus Shield app selection beyond the currently listed apps
+- [x] Fit the signed-in native app Home into one phone screen using the supplied visual reference; leave public website untouched
+- [x] Make Verified session notification taps reopen the running session reliably

@@ -131,7 +131,6 @@ function Home() {
 }
 
 function MobileHome() {
-  const navigate = useNavigate();
   const { state, hydrated } = useAppState();
   const s = useMemo(() => stats(state.sessions), [state.sessions]);
   const { plans, hydrated: plansHydrated } = usePlans();
@@ -156,7 +155,7 @@ function MobileHome() {
 
   return (
     <MobileShell>
-      <main className="cx-home mx-auto flex min-h-[calc(100dvh-92px)] max-w-md flex-col gap-3 px-4 pb-2 pt-5">
+      <main className="cx-home mx-auto flex h-[calc(100dvh-112px)] max-w-md flex-col gap-3 px-4 pb-2 pt-5">
         <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
           <div className="min-w-0">
             <h1 className="truncate font-display text-[clamp(20px,5.5vw,27px)] font-semibold text-foreground">

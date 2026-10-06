@@ -336,7 +336,17 @@ public class MainActivity extends Activity {
         super.onNewIntent(intent);
         setIntent(intent);
         String route = intent == null ? null : intent.getStringExtra(EXTRA_ROUTE);
-        if (route != null && !route.trim().isEmpty() && webView != null && canReloadForRoute()) {
+        // A live session notification should only bring the existing timer to
+        // the foreground. Reloading the WebView here destroys the mounted
+        // Verified timer before its persisted ticket can be reconciled.
+        boolean openingLiveSession = route != null
+                && route.replaceFirst("^/", "").startsWith("session")
+                && sessionLockActive;
+        if (!openingLiveSession
+                && route != null
+                && !route.trim().isEmpty()
+                && webView != null
+                && canReloadForRoute()) {
             webView.loadUrl(startUrlFor(intent));
         }
         String callback = oauthCallbackFrom(intent);
