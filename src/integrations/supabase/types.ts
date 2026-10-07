@@ -104,6 +104,30 @@ export type Database = {
         }
         Relationships: []
       }
+      coin_adjustments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          reason: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       focus_class_presence: {
         Row: {
           completed_at: string | null
@@ -155,6 +179,7 @@ export type Database = {
           goal: string
           id: string
           mode: string
+          source_key: string | null
           status: string
           user_id: string
           value: number
@@ -167,6 +192,7 @@ export type Database = {
           goal?: string
           id?: string
           mode?: string
+          source_key?: string | null
           status?: string
           user_id: string
           value?: number
@@ -178,6 +204,52 @@ export type Database = {
           duration_minutes?: number
           goal?: string
           id?: string
+          mode?: string
+          source_key?: string | null
+          status?: string
+          user_id?: string
+          value?: number
+        }
+        Relationships: []
+      }
+      focus_sessions_duplicates_archive: {
+        Row: {
+          archived_at: string
+          coins_earned: number
+          coins_spent: number
+          created_at: string
+          duration_minutes: number
+          goal: string
+          id: string
+          kept_session_id: string
+          mode: string
+          status: string
+          user_id: string
+          value: number
+        }
+        Insert: {
+          archived_at?: string
+          coins_earned: number
+          coins_spent: number
+          created_at: string
+          duration_minutes: number
+          goal: string
+          id: string
+          kept_session_id: string
+          mode: string
+          status: string
+          user_id: string
+          value: number
+        }
+        Update: {
+          archived_at?: string
+          coins_earned?: number
+          coins_spent?: number
+          created_at?: string
+          duration_minutes?: number
+          goal?: string
+          id?: string
+          kept_session_id?: string
           mode?: string
           status?: string
           user_id?: string
@@ -331,6 +403,54 @@ export type Database = {
           referred_device_hash?: string | null
           referred_id?: string
           referrer_id?: string
+        }
+        Relationships: []
+      }
+      session_claims_archive: {
+        Row: {
+          archived_at: string
+          consumed_at: string | null
+          consumed_session_id: string | null
+          duration_minutes: number
+          failure_reason: string | null
+          goal: string
+          id: string
+          mode: string
+          platform: string | null
+          started_at: string
+          status: string
+          user_id: string
+          value: number
+        }
+        Insert: {
+          archived_at?: string
+          consumed_at?: string | null
+          consumed_session_id?: string | null
+          duration_minutes: number
+          failure_reason?: string | null
+          goal?: string
+          id?: string
+          mode: string
+          platform?: string | null
+          started_at: string
+          status: string
+          user_id: string
+          value?: number
+        }
+        Update: {
+          archived_at?: string
+          consumed_at?: string | null
+          consumed_session_id?: string | null
+          duration_minutes?: number
+          failure_reason?: string | null
+          goal?: string
+          id?: string
+          mode?: string
+          platform?: string | null
+          started_at?: string
+          status?: string
+          user_id?: string
+          value?: number
         }
         Relationships: []
       }
@@ -651,6 +771,7 @@ export type Database = {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
+      ledger_coin_balance: { Args: { _user_id: string }; Returns: number }
       my_focus_totals: {
         Args: never
         Returns: {
@@ -660,11 +781,16 @@ export type Database = {
           total_minutes: number
         }[]
       }
+      recompute_wallet: { Args: { _user_id: string }; Returns: number }
       record_focus_session_from_active: {
         Args: {
+          _duration_minutes?: number
+          _ended_at?: string
+          _mode?: string
           _requested_status: string
           _session_id: string
           _user_id: string
+          _value?: number
         }
         Returns: {
           accepted: boolean
