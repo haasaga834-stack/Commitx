@@ -92,6 +92,13 @@
       "when": 1790817769128,
       "tag": "0012_revoke_left_group_member_access",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1791337413960,
+      "tag": "0013_session_ledger_single_source_of_truth",
+      "breakpoints": true
     }
   ]
 }
