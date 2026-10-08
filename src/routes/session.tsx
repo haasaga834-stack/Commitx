@@ -65,6 +65,7 @@ import { isOnline } from "@/lib/connectivity";
 import { z } from "zod";
 import { useAuth } from "@/lib/use-auth";
 import { recordSessions } from "@/lib/wallet.functions";
+import { markSessionSynced } from "@/lib/cloud-sync";
 
 declare global {
   interface Window {
@@ -1110,32 +1111,46 @@ function LiveSession() {
       coinsEarned,
     };
     let authoritativeCoins: number | null = null;
+    let refused = false;
     if (isOnline()) {
+      const payload = {
+        sessions: [{
+          id: session.id,
+          goal: session.goal,
+          durationMinutes: session.durationMinutes,
+          value: session.value,
+          mode: session.mode,
+          status: session.status,
+          endedAt: session.date,
+        }],
+      };
       try {
-        const result = await recordSessions({
-          data: {
-            sessions: [{
-              id: session.id,
-              goal: session.goal,
-              durationMinutes: session.durationMinutes,
-              value: session.value,
-              mode: session.mode,
-              status: session.status,
-            }],
-          },
-        });
-        if (result.ids.includes(session.id)) authoritativeCoins = result.coins;
+        let result = await recordSessions({ data: payload });
+        if (result.rejected.includes(session.id)) {
+          // One short retry absorbs a few seconds of device/server clock drift.
+          await new Promise((r) => setTimeout(r, 1500));
+          result = await recordSessions({ data: payload });
+        }
+        if (result.ids.includes(session.id)) {
+          authoritativeCoins = result.coins;
+          markSessionSynced(session.id);
+        } else if (result.rejected.includes(session.id)) {
+          // The server has no genuine claim for this outcome: nothing to count.
+          authoritativeCoins = result.coins;
+          refused = true;
+        }
       } catch {
         // Keep the active server record intact so cloud sync can retry safely.
       }
     }
     // Completing returns the committed coins untouched and adds the hourly
-    // reward; failing forfeits the committed coins.
+    // reward; failing forfeits the committed coins. The server's numbers win.
     setState((s) => ({
       ...s,
-      sessions: [session, ...s.sessions],
+      sessions: refused ? s.sessions : [session, ...s.sessions],
       coins: authoritativeCoins ?? Math.max(0, s.coins - coinsSpent + coinsEarned),
     }));
+    if (refused) markSessionSynced(session.id);
     if (status === "completed") {
       log("Session Completed");
       if (typeof navigator !== "undefined" && "vibrate" in navigator) {
