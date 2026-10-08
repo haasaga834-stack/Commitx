@@ -70,22 +70,8 @@ export const claimReferral = createServerFn({ method: "POST" })
       .update({ referred_by: referrer.id, device_hash: data.deviceHash || null })
       .eq("id", context.userId);
 
-    // Both sides earn 100 Cx Coins, once.
-    const { data: wallets } = await supabaseAdmin
-      .from("wallets")
-      .select("user_id, coin_balance")
-      .in("user_id", [referrer.id, context.userId]);
-
-    const balanceOf = (id: string) =>
-      wallets?.find((w) => w.user_id === id)?.coin_balance ?? 0;
-
-    await supabaseAdmin.from("wallets").upsert(
-      [
-        { user_id: referrer.id, coin_balance: balanceOf(referrer.id) + REFERRAL_REWARD },
-        { user_id: context.userId, coin_balance: balanceOf(context.userId) + REFERRAL_REWARD },
-      ],
-      { onConflict: "user_id" },
-    );
+    // Both sides earn 100 Cx Coins, once: the referral row itself is the
+    // ledger entry, and the database recomputes both wallets from it.
 
     return {
       ok: true as const,
@@ -100,15 +86,33 @@ export const deleteAccount = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const userId = context.userId;
 
+    // The friend on the other side of a referral keeps their bonus: record it
+    // as an explicit adjustment before the shared referral row goes away.
+    const { data: refs } = await supabaseAdmin
+      .from("referrals")
+      .select("referrer_id, referred_id, bonus_amount")
+      .or(`referrer_id.eq.${userId},referred_id.eq.${userId}`);
+    const kept = (refs ?? [])
+      .map((r) => ({
+        user_id: r.referrer_id === userId ? r.referred_id : r.referrer_id,
+        amount: r.bonus_amount,
+        reason: "referral_bonus_kept_after_friend_deleted_account",
+      }))
+      .filter((r) => r.user_id && r.user_id !== userId && r.amount > 0);
+    if (kept.length > 0) await supabaseAdmin.from("coin_adjustments").insert(kept);
+
     await supabaseAdmin.from("focus_sessions").delete().eq("user_id", userId);
     await supabaseAdmin.from("referrals").delete().eq("referred_id", userId);
     await supabaseAdmin.from("referrals").delete().eq("referrer_id", userId);
+    await supabaseAdmin.from("coin_adjustments").delete().eq("user_id", userId);
     await supabaseAdmin.from("profiles").update({ referred_by: null }).eq("referred_by", userId);
     await supabaseAdmin.from("study_plans").delete().eq("user_id", userId);
     await supabaseAdmin.from("todos").delete().eq("user_id", userId);
     await supabaseAdmin.from("academic_subjects").delete().eq("user_id", userId);
     await supabaseAdmin.from("user_settings").delete().eq("user_id", userId);
     await supabaseAdmin.from("active_sessions").delete().eq("user_id", userId);
+    await supabaseAdmin.from("session_claims_archive").delete().eq("user_id", userId);
+    await supabaseAdmin.from("focus_sessions_duplicates_archive").delete().eq("user_id", userId);
     await supabaseAdmin.from("group_members").delete().eq("user_id", userId);
     await supabaseAdmin.from("study_groups").delete().eq("creator_id", userId);
     await supabaseAdmin.from("wallets").delete().eq("user_id", userId);

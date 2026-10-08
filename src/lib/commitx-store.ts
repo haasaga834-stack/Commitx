@@ -162,7 +162,11 @@ export function canAfford(value: number, coins: number) {
 /** Stable local ID used to de-duplicate offline-created session records. */
 export function createLocalSessionId() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  // Older WebViews: still a valid v4 UUID so the server can record it.
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+  });
 }
 
 

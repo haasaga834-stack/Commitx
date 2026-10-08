@@ -222,32 +222,48 @@ async function push(userId: string) {
 
   // Balances and session rewards are recomputed server-side; the client only
   // reports what happened and then adopts the authoritative result.
-  const unsynced = state.sessions.filter((s) => !syncedSessionIds.has(s.id));
-  if (unsynced.length === 0) return;
+  // Oldest first, so each outcome is matched to the session claim it ended.
+  for (let batch = 0; batch < 10; batch++) {
+    const unsynced = getState()
+      .sessions.filter((s) => !syncedSessionIds.has(s.id))
+      .reverse()
+      .slice(0, 20);
+    if (unsynced.length === 0) break;
 
-  const result = await recordSessions({
-    data: {
-      sessions: unsynced.slice(0, 20).map((s) => ({
-        ...(uuidRe.test(s.id) ? { id: s.id } : {}),
-        goal: s.goal || "Focus",
-        durationMinutes: Math.max(0, Math.round(s.durationMinutes)),
-        value: Math.max(0, Math.round(s.value)),
-        mode: s.mode,
-        status: s.status,
-      })),
-    },
-  });
+    const result = await recordSessions({
+      data: {
+        sessions: unsynced.map((s) => ({
+          ...(uuidRe.test(s.id) ? { id: s.id } : {}),
+          goal: (s.goal || "Focus").slice(0, 80),
+          durationMinutes: Math.min(720, Math.max(0, Math.round(s.durationMinutes))),
+          value: Math.min(500, Math.max(0, Math.round(s.value))),
+          mode: s.mode,
+          status: s.status,
+          ...(Number.isFinite(s.date) && s.date > 0 ? { endedAt: Math.round(s.date) } : {}),
+        })),
+      },
+    });
 
-  for (const s of unsynced.slice(0, 20)) syncedSessionIds.add(s.id);
-  for (const id of result.ids) syncedSessionIds.add(id);
-  writeSyncedIds(userId);
+    // Only the server's answer decides. Accepted sessions are now part of the
+    // shared history; refused ones (no genuine claim, unfinished, already
+    // settled) are removed so no screen keeps counting time or coins for them.
+    const refused = new Set<string>(result.rejected);
+    for (const s of unsynced) if (!uuidRe.test(s.id)) refused.add(s.id);
+    for (const id of result.ids) syncedSessionIds.add(id);
+    for (const id of refused) syncedSessionIds.add(id);
+    writeSyncedIds(userId);
 
-  applyingRemote = true;
-  hydrateState({
-    ...getState(),
-    coins: result.coins,
-  });
-  applyingRemote = false;
+    applyingRemote = true;
+    const current = getState();
+    hydrateState({
+      ...current,
+      sessions: refused.size
+        ? current.sessions.filter((s) => !refused.has(s.id))
+        : current.sessions,
+      coins: result.coins,
+    });
+    applyingRemote = false;
+  }
 
   // Standings just moved — refresh any leaderboard on screen right away.
   announceLeaderboardChange();
@@ -370,6 +386,38 @@ let stopFocusPull: (() => void) | null = null;
 /** Ask for a fresh copy of sessions, coins and hours (e.g. when opening Profile). */
 export function refreshFromCloud() {
   if (currentUserId && isOnline() && !pendingPush) schedulePull(currentUserId);
+}
+
+/** Local sessions the server has not answered for yet (offline / retrying). */
+export function getPendingSessions(sessions: Session[] = getState().sessions) {
+  if (!currentUserId) return [];
+  return sessions.filter((s) => !syncedSessionIds.has(s.id));
+}
+
+/** Marks a session the server already accepted, so it is never re-sent. */
+export function markSessionSynced(id: string) {
+  syncedSessionIds.add(id);
+  if (currentUserId) writeSyncedIds(currentUserId);
+}
+
+/**
+ * Sends every waiting session outcome now (best effort, bounded). Called before
+ * a new commitment so an earlier finished session is recorded against its own
+ * claim before a new one starts.
+ */
+export async function flushPendingSessions(timeoutMs = 6000) {
+  const uid = currentUserId;
+  if (!uid || !isOnline() || getPendingSessions().length === 0) return;
+  if (pushTimer) clearTimeout(pushTimer);
+  pushTimer = null;
+  lastPushAt = Date.now();
+  const run = push(uid)
+    .then(() => setPendingPush(getPendingSessions().length > 0, uid))
+    .catch(() => setPendingPush(true, uid))
+    .finally(() => {
+      lastPushAt = Date.now();
+    });
+  await Promise.race([run, new Promise((r) => setTimeout(r, timeoutMs))]);
 }
 
 export function stopCloudSync() {
