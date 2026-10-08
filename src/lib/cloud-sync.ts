@@ -388,6 +388,38 @@ export function refreshFromCloud() {
   if (currentUserId && isOnline() && !pendingPush) schedulePull(currentUserId);
 }
 
+/** Local sessions the server has not answered for yet (offline / retrying). */
+export function getPendingSessions(sessions: Session[] = getState().sessions) {
+  if (!currentUserId) return [];
+  return sessions.filter((s) => !syncedSessionIds.has(s.id));
+}
+
+/** Marks a session the server already accepted, so it is never re-sent. */
+export function markSessionSynced(id: string) {
+  syncedSessionIds.add(id);
+  if (currentUserId) writeSyncedIds(currentUserId);
+}
+
+/**
+ * Sends every waiting session outcome now (best effort, bounded). Called before
+ * a new commitment so an earlier finished session is recorded against its own
+ * claim before a new one starts.
+ */
+export async function flushPendingSessions(timeoutMs = 6000) {
+  const uid = currentUserId;
+  if (!uid || !isOnline() || getPendingSessions().length === 0) return;
+  if (pushTimer) clearTimeout(pushTimer);
+  pushTimer = null;
+  lastPushAt = Date.now();
+  const run = push(uid)
+    .then(() => setPendingPush(getPendingSessions().length > 0, uid))
+    .catch(() => setPendingPush(true, uid))
+    .finally(() => {
+      lastPushAt = Date.now();
+    });
+  await Promise.race([run, new Promise((r) => setTimeout(r, timeoutMs))]);
+}
+
 export function stopCloudSync() {
   if (stopFocusPull) stopFocusPull();
   stopFocusPull = null;
