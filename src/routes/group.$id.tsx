@@ -24,7 +24,8 @@ import {
   startGroup,
 } from "@/lib/group-study.functions";
 import { MAX_GROUP_SIZE, memberStatusLabel, type GroupStateDTO } from "@/lib/group-study";
-import { setNativeSessionLock } from "@/lib/native-session";
+import { hasNativeBridge, setNativeSessionLock } from "@/lib/native-session";
+import { GroupParticipantsDrawer } from "@/components/GroupParticipantsDrawer";
 import { showSessionProgress, hideSessionProgress } from "@/lib/native-notifications";
 import { useIsTablet } from "@/lib/use-tablet";
 import { GroupLobbyTablet } from "@/components/GroupLobbyTablet";
@@ -91,11 +92,15 @@ function initials(name: string) {
 }
 
 function GroupParticipantSummary({ members }: { members: GroupStateDTO["members"] }) {
+  const [native, setNative] = useState(false);
+  useEffect(() => { setNative(hasNativeBridge()); }, []);
   const present = members.filter((m) => m.status !== "left");
   const focusing = present.filter((m) => m.status === "joined").length;
   const finished = present.filter((m) => m.status === "completed").length;
   const visible = present.slice(0, 6);
   const hidden = present.length - visible.length;
+
+  if (native) return <GroupParticipantsDrawer members={members} />;
 
   return (
     <div className="rounded-4xl border border-hairline bg-card p-7 shadow-soft">
