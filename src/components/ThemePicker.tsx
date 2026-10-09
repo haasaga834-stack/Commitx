@@ -21,6 +21,8 @@ export function ThemePicker({
   subtitle = "One calm scene for the whole session.",
   onCancel,
   onConfirm,
+  error,
+  busyLabel = "Starting…",
 }: {
   open: boolean;
   starting?: boolean;
@@ -29,6 +31,9 @@ export function ThemePicker({
   subtitle?: string;
   onCancel: () => void;
   onConfirm: (theme: SessionThemeId) => void;
+  /** Shown inside the sheet so a failed action never silently closes it. */
+  error?: string | null;
+  busyLabel?: string;
 }) {
   const [selected, setSelected] = useState<SessionThemeId | null>(() => readLastTheme());
 
@@ -95,6 +100,11 @@ export function ThemePicker({
           })}
         </div>
 
+        {error && (
+          <p role="alert" className="mt-4 rounded-2xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            {error}
+          </p>
+        )}
         <button
           disabled={!selected || starting}
           onClick={() => {
@@ -104,7 +114,7 @@ export function ThemePicker({
           }}
           className="mt-5 w-full rounded-full bg-primary px-8 py-4 text-base font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.99] disabled:opacity-50"
         >
-          {starting ? "Starting…" : selected ? confirmLabel : "Select a theme to continue"}
+          {starting ? busyLabel : selected ? confirmLabel : "Select a theme to continue"}
         </button>
         <p className="mt-2.5 text-center text-[11px] uppercase tracking-widest text-muted-foreground">
           Themes are visual only · your session rules never change

@@ -176,12 +176,20 @@ function GroupSession() {
   const leftRef = useRef(false);
 
   const hasDataRef = useRef(false);
+  const goneStreakRef = useRef(0);
 
   const load = useCallback(async () => {
     if (leftRef.current) return null;
     try {
       const next = await fetchState({ data: { id } });
       if ("gone" in next) {
+        // A just-created group must never bounce its creator away on a single
+        // empty read; only leave after repeated confirmations.
+        if (!hasDataRef.current && goneStreakRef.current < 2) {
+          goneStreakRef.current += 1;
+          window.setTimeout(() => void loadRef.current(), 800);
+          return null;
+        }
         // The group was cancelled or deleted — leave quietly instead of erroring.
         leftRef.current = true;
         void navigate({ to: "/group" });
