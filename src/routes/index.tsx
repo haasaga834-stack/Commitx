@@ -156,8 +156,8 @@ function MobileHome() {
   return (
     <MobileShell>
       <main className="cx-home mx-auto flex h-[calc(100dvh-112px)] max-w-md flex-col gap-3 px-4 pb-2 pt-5">
-        <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
-          <div className="min-w-0">
+        <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
+          <div className="min-w-0 pt-3">
             <h1 className="font-display text-[15px] font-medium leading-snug text-muted-foreground">
               <span className="sr-only">CommitX study dashboard — </span>
               {greeting()}
