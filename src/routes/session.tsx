@@ -49,7 +49,8 @@ import {
   setNativeSessionLock,
   setNativeVerifiedModeActive,
 } from "@/lib/native-session";
-import { BellOff, Shield, X } from "lucide-react";
+import { BellOff, Shield } from "lucide-react";
+import { toast } from "sonner";
 import {
   clearShieldPlan,
   readShieldPlan,
@@ -398,7 +399,6 @@ function LiveSession() {
   const [now, setNow] = useState<number>(() => Date.now());
   const [, setPaused] = useState<boolean>(() => runningSinceRef.current === null);
   const [quote] = useState(() => QUOTES[Math.floor(Math.random() * QUOTES.length)]);
-  const [confirmQuit, setConfirmQuit] = useState(false);
   const doneRef = useRef(false);
   const graceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hiddenAtRef = useRef<number | null>(null);
