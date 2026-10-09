@@ -45,7 +45,7 @@ export function GroupSetup({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape" && !busyRef.current) onClose();
     };
     window.addEventListener("keydown", onKey);
     const prev = document.body.style.overflow;
@@ -150,7 +150,13 @@ export function GroupSetup({ onClose }: { onClose: () => void }) {
       role="dialog"
       aria-modal="true"
       aria-label="Group study setup"
-      onClick={onClose}
+      onClick={(e) => {
+        // Only a tap on the backdrop itself closes the setup. Taps inside the
+        // theme sheet (rendered within this tree) must never close it, and the
+        // setup must stay open while a group is being saved.
+        if (e.target !== e.currentTarget || busy || themeOpen) return;
+        onClose();
+      }}
     >
       <div
         className="animate-landing-modal w-full max-w-md rounded-t-[28px] bg-paper p-7 pb-10 shadow-lift sm:rounded-[28px] sm:p-8 sm:pb-8"
