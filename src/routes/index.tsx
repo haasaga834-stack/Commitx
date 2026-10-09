@@ -4,7 +4,7 @@ import { ArrowRight, Bell, Leaf, Users } from "lucide-react";
 import { MobileShell } from "@/components/BottomNav";
 import { CxCoin } from "@/components/CxCoin";
 import { CxCoinPopup } from "@/components/CxCoinPopup";
-import { TabletHome } from "@/components/TabletHome";
+import { TabletLandingHome } from "@/components/TabletLandingHome";
 import { useIsTablet } from "@/lib/use-tablet";
 import { cn } from "@/lib/utils";
 import focusMountains from "@/assets/focus-mountains.jpg";
@@ -126,7 +126,7 @@ function Home() {
   }
   if (!user) return <StartupSplash fading={!loading} />;
 
-  if (isTablet) return <TabletHome />;
+  if (isTablet) return <TabletLandingHome />;
   return <MobileHome />;
 }
 

@@ -14,6 +14,7 @@
 - Screens show recorded server totals plus only not-yet-synced local sessions; sessions the server refuses are removed locally, because max()/local-first merging showed phantom time.
 - Group state is readable only while the caller has a current `committed` or `joined` membership, because leaving must revoke access immediately.
 - Scope the native app visual theme through the Android-bridge body class; shared public website routes must retain their independent design.
+- Native tablet Home uses a dedicated full-width presentation with locally scoped landing tokens and existing app-route actions; all other native screens retain their existing shells, because homepage styling must not change phones, public pages, or session behavior.
 - Check for the Android bridge at each Standard commitment confirmation and offer Focus Shield before themes; never cache a completed Shield step across retries, because backing out must not bypass the choice.
 - Both native Focus Shield entry points use FocusShieldReminderView and dedicated Android color resources so the overlay and fallback screen remain visually consistent without changing website styles or blocking logic.
 - Native running group sessions render GroupParticipantsDrawer after bridge detection; website sessions keep their existing participant summary, and both read the same group state without additional membership requests.

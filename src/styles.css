@@ -878,6 +878,85 @@ html:not(.dark) body.cx-app-theme nav.fixed {
   background: oklch(0.98 0.011 165 / 0.93);
 }
 
+/* Tablet Home recreates the public reference without leaking its palette into
+   phone Home, public pages, or the tablet's other app screens. */
+body.cx-app-theme .cx-tablet-home {
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--paper);
+  --muted-foreground: var(--ink-soft);
+  --border: var(--ink-line);
+  --input: var(--ink-line);
+  --accent: var(--paper-soft);
+  --accent-foreground: var(--ink);
+  --ring: var(--ink);
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-ring: var(--ring);
+  position: relative;
+  min-height: 100dvh;
+  overflow: hidden;
+  font-family: var(--font-sans);
+}
+body.cx-app-theme .cx-tablet-home h1,
+body.cx-app-theme .cx-tablet-home h2 { font-family: var(--font-sans); }
+.cx-tablet-home-image {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 62vh;
+  width: 100%;
+  object-fit: cover;
+  opacity: 0.34;
+}
+.cx-tablet-home-wash {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 62vh;
+  background: linear-gradient(to bottom, transparent, color-mix(in oklab, var(--paper) 32%, transparent) 55%, var(--paper));
+}
+.cx-tablet-home-header { padding-block: max(2rem, env(safe-area-inset-top)) 1.5rem; }
+.cx-tablet-home-hero { padding-block: 2.5rem 4.5rem; }
+.cx-tablet-home-title { font-size: 60px; line-height: 1.08; letter-spacing: 0; }
+.cx-tablet-home-hourglass { max-width: 430px; height: 320px; }
+.cx-tablet-home-badge {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--paper) 85%, transparent);
+  padding: 0.5rem 0.75rem;
+  font-size: 11px;
+  font-weight: 600;
+}
+.cx-tablet-home-group { border-radius: 28px; }
+@media (max-width: 1100px) {
+  .cx-tablet-home-title { font-size: 44px; }
+  .cx-tablet-home-hourglass { height: 280px; }
+  .cx-tablet-home-glass { transform: scale(0.82); }
+  .cx-tablet-home-actions { flex-direction: column; align-items: flex-start; }
+}
+@media (orientation: portrait) {
+  .cx-tablet-home-hero { padding-block: 4rem 5rem; }
+}
+@media (max-height: 700px) and (orientation: landscape) {
+  .cx-tablet-home-header { padding-block: max(1.5rem, env(safe-area-inset-top)) 0.5rem; }
+  .cx-tablet-home-hero { padding-block: 1rem 1.5rem; }
+  .cx-tablet-home-title { font-size: 40px; }
+  .cx-tablet-home-hero h1 { margin-top: 1rem; }
+  .cx-tablet-home-hero p { margin-top: 1rem; }
+  .cx-tablet-home-actions { flex-direction: row; gap: 0.5rem; margin-top: 1.25rem; }
+  .cx-tablet-home-actions a { height: 2.75rem; padding-inline: 1rem; font-size: 12px; }
+  .cx-tablet-home-group { padding-block: 1rem; }
+}
+
 /* Only the native Home uses the compact landscape treatment. */
 body.cx-app-theme .cx-home-image-wash {
   background: linear-gradient(to top, var(--card) 0%, color-mix(in oklch, var(--card) 78%, transparent) 28%, transparent 78%);
