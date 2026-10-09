@@ -49,7 +49,8 @@ import {
   setNativeSessionLock,
   setNativeVerifiedModeActive,
 } from "@/lib/native-session";
-import { BellOff, Shield, X } from "lucide-react";
+import { BellOff, Shield } from "lucide-react";
+import { toast } from "sonner";
 import {
   clearShieldPlan,
   readShieldPlan,
@@ -398,7 +399,6 @@ function LiveSession() {
   const [now, setNow] = useState<number>(() => Date.now());
   const [, setPaused] = useState<boolean>(() => runningSinceRef.current === null);
   const [quote] = useState(() => QUOTES[Math.floor(Math.random() * QUOTES.length)]);
-  const [confirmQuit, setConfirmQuit] = useState(false);
   const doneRef = useRef(false);
   const graceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hiddenAtRef = useRef<number | null>(null);
@@ -632,8 +632,8 @@ function LiveSession() {
   }, []);
 
 
-  // Sessions may only be ended through the in-session End Session flow:
-  // every system back action opens the confirmation dialog instead.
+  // A started session can never be ended early — only completed. Every
+  // system back action is swallowed and the user is told to finish.
   useEffect(() => {
     setNativeSessionLock(true);
 
@@ -646,7 +646,10 @@ function LiveSession() {
 
     const askToLeave = () => {
       if (doneRef.current) return;
-      setConfirmQuit(true);
+      // No way out: a started session can only be completed, never ended.
+      toast("No way out — finish your session 💪", {
+        description: "Your commitment is locked in until the timer ends.",
+      });
       log("Back Intercepted");
     };
 
@@ -1172,10 +1175,6 @@ function LiveSession() {
     });
   }
 
-  function quit() {
-    complete("failed", "quit");
-  }
-
   return (
     <div className="relative flex min-h-dvh flex-col bg-background px-6 pb-10 pt-14">
       <SessionScene
@@ -1189,13 +1188,6 @@ function LiveSession() {
         <p className="text-xs uppercase tracking-widest text-muted-foreground">
           {isVerified ? "Verified session" : "Standard session"}
         </p>
-        <button
-          onClick={() => setConfirmQuit(true)}
-          className="absolute right-0 inline-flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-soft"
-          aria-label="End session"
-        >
-          <X className="h-5 w-5" />
-        </button>
       </div>
 
       {/* Everything stays on one centred axis; the countdown reserves fixed
@@ -1322,34 +1314,6 @@ function LiveSession() {
         </div>
       )}
 
-      {confirmQuit && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/20 backdrop-blur-sm sm:items-center">
-          <div className="w-full max-w-md rounded-t-3xl bg-card p-6 shadow-lift sm:rounded-3xl">
-            <p className="font-display text-xl font-semibold">
-              {isVerified ? "Warning" : "Leave Session?"}
-            </p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {isVerified
-                ? "Ending this session will immediately forfeit your committed amount."
-                : "Ending this session will forfeit your committed amount."}
-            </p>
-            <div className="mt-6 flex flex-col gap-3">
-              <button
-                onClick={() => setConfirmQuit(false)}
-                className="w-full rounded-full border border-hairline bg-background px-5 py-3.5 text-sm font-medium"
-              >
-                {isVerified ? "Stay Focused" : "Stay & Continue"}
-              </button>
-              <button
-                onClick={quit}
-                className="w-full rounded-full bg-destructive px-5 py-3.5 text-sm font-medium text-destructive-foreground"
-              >
-                End Session &amp; Lose Commitment
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
