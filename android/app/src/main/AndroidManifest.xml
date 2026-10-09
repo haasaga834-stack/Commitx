@@ -103,6 +103,15 @@
 
 
         <receiver
+            android:name=".AccountabilityEngine"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="app.commitx.mobile.ACCOUNTABILITY" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
             android:name=".TodoActionReceiver"
             android:exported="false">
             <intent-filter>

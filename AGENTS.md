@@ -18,3 +18,4 @@
 - Check for the Android bridge at each Standard commitment confirmation and offer Focus Shield before themes; never cache a completed Shield step across retries, because backing out must not bypass the choice.
 - Both native Focus Shield entry points use FocusShieldReminderView and dedicated Android color resources so the overlay and fallback screen remain visually consistent without changing website styles or blocking logic.
 - Native running group sessions render GroupParticipantsDrawer after bridge detection; website sessions keep their existing participant summary, and both read the same group state without additional membership requests.
+- Accountability/Roast notifications are decided by the native AccountabilityEngine (AlarmManager, one alarm slot, one notification id) fed by events from src/lib/accountability.ts, because JS timers don't run when the app is closed and a single slot prevents spam.
