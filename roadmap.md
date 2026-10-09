@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Replace the native group participant card with a right-side drawer showing four rows before scrolling
+- [x] Replace the native group participant card with a right-side drawer showing four rows before scrolling (opening, count, scrolling and closing verified in an isolated preview)
 
 - [x] Redesign both native blocked-app reminders with playful roasts and a visible return-to-timer action (Java syntax and resources checked; appearance needs an updated Android install)
 
