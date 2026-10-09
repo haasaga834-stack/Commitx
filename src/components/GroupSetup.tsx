@@ -39,6 +39,8 @@ export function GroupSetup({ onClose }: { onClose: () => void }) {
   const [busy, setBusy] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const busyRef = useRef(false);
+  busyRef.current = busy;
 
   const maxStake = Math.min(MAX_COMMIT, Math.max(MIN_COMMIT, state.coins));
   const canStake = state.coins >= MIN_COMMIT;
