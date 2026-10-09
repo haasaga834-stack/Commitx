@@ -1027,7 +1027,10 @@ function LiveSession() {
     );
   }, [remaining, progress, goal, duration, mode, phase, breakRemaining, dndBlocked, sessionTheme, startedAt, totalMs, elapsedNow, breaksApply, halfwayMs]);
 
-  useEffect(() => () => hideSessionProgress(), []);
+  useEffect(() => () => {
+    // A recorded outcome replaces the live notification and must survive navigation.
+    if (!doneRef.current) hideSessionProgress();
+  }, []);
 
   // Native one-shot alarms keep both sound cues reliable while the WebView is
   // minimized or suspended. Event keys make native alarms and foreground

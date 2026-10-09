@@ -91,7 +91,7 @@ public class VerifiedCountdownService extends Service {
         if (state == null) return;
         clear(ctx);
         NotificationManager manager = CommitXNotifications.manager(ctx);
-        if (manager != null) manager.notify(ID, notification(ctx, state,
+        if (manager != null && canPost(ctx)) manager.notify(ID, notification(ctx, state,
                 "completed".equals(status) ? "completed" : "failed"));
     }
 
@@ -158,7 +158,7 @@ public class VerifiedCountdownService extends Service {
                 ctx.stopService(new Intent(ctx, VerifiedCountdownService.class));
             }
             NotificationManager nm = CommitXNotifications.manager(ctx);
-            if (nm != null) nm.notify(ID, notification(ctx, state, null));
+            if (nm != null && canPost(ctx)) nm.notify(ID, notification(ctx, state, null));
             schedule(ctx, state);
         } catch (Exception ignored) { /* Never interfere with session verification. */ }
     }
@@ -197,7 +197,7 @@ public class VerifiedCountdownService extends Service {
                 .setContentTitle("CommitX").setContentText(terminal ? "Session update" : "Focus session in progress")
                 .setVisibility(Notification.VISIBILITY_PUBLIC).setContentIntent(tap).setShowWhen(false).build();
         Notification.Builder b = builder(ctx).setSmallIcon(R.drawable.ic_verified_countdown)
-                .setContentTitle(title).setContentText(state.optString("goal", "Focus"))
+                .setContentTitle(title).setContentText(state.optString("goal", "Focus") + " · " + message)
                 .setStyle(new Notification.BigTextStyle().bigText(state.optString("goal", "Focus") + "\n" + message))
                 .setSubText("COMMITX · VERIFIED").setColor(ctx.getColor(themeColor(state.optString("theme"))))
                 .setVisibility(Notification.VISIBILITY_PRIVATE).setPublicVersion(publicVersion)
@@ -221,6 +221,12 @@ public class VerifiedCountdownService extends Service {
             case "fireflies": return R.color.countdown_fireflies;
             default: return R.color.countdown_leaves;
         }
+    }
+    private static boolean canPost(Context ctx) {
+        if (Build.VERSION.SDK_INT >= 33 && ctx.checkSelfPermission("android.permission.POST_NOTIFICATIONS")
+                != android.content.pm.PackageManager.PERMISSION_GRANTED) return false;
+        NotificationManager nm = CommitXNotifications.manager(ctx);
+        return nm != null && (Build.VERSION.SDK_INT < 24 || nm.areNotificationsEnabled());
     }
     private static String themeMessage(String theme) {
         switch (theme) {
