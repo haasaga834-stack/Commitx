@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { TodoItem } from "@/lib/planner";
 import { getState, setState } from "@/lib/commitx-store";
+import { countdownPayload, type VerifiedCountdownPayload } from "@/lib/verified-countdown";
 
 function bridge() {
   return typeof window === "undefined" ? undefined : window.CommitXAndroid;
@@ -156,6 +157,25 @@ export function requestExactAlarmAccess() {
 
 
 /* --------------------------- Session progress ---------------------------- */
+
+/** Older installed APKs retain their existing progress notification. */
+export function syncVerifiedCountdown(payload: VerifiedCountdownPayload): boolean {
+  const b = bridge();
+  if (!b?.syncVerifiedCountdown) return false;
+  try {
+    if (!notificationsAllowed()) b.hideSessionProgress?.();
+    else b.syncVerifiedCountdown(JSON.stringify(countdownPayload(payload, Date.now())));
+    return true;
+  } catch { return false; }
+}
+
+export function finishVerifiedCountdown(status: "completed" | "failed") {
+  try {
+    const b = bridge();
+    if (b?.finishVerifiedCountdown) b.finishVerifiedCountdown(status);
+    else b?.hideSessionProgress?.();
+  } catch {}
+}
 
 export function showSessionProgress(title: string, text: string, progress: number) {
   try {

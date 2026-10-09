@@ -599,6 +599,7 @@ public class MainActivity extends Activity {
         if (!verifiedModeActive) return;
         if (authDialog != null && authDialog.isShowing()) return;
         preferences.edit().putString(PENDING_REASON, reason).apply();
+        VerifiedCountdownService.finish(this, "failed");
         injectVerifiedFailure(reason);
     }
 
@@ -1061,7 +1062,18 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void hideSessionProgress() {
+            VerifiedCountdownService.clear(MainActivity.this);
             CommitXNotifications.cancelSession(MainActivity.this);
+        }
+
+        @JavascriptInterface
+        public void syncVerifiedCountdown(String payloadJson) {
+            runOnUiThread(() -> VerifiedCountdownService.sync(MainActivity.this, payloadJson));
+        }
+
+        @JavascriptInterface
+        public void finishVerifiedCountdown(String status) {
+            runOnUiThread(() -> VerifiedCountdownService.finish(MainActivity.this, status));
         }
 
         /* ----------------------------- Screen time --------------------------- */

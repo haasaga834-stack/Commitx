@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Add native Verified lock-screen countdown, theme accents, privacy-safe notification and lifecycle tests
+- [ ] Physical Android lock/background/permission testing — requires an attached physical device
+
 - [x] Update the shared Growing Plant theme to reference-based seed, sprout, leaves, flowers and fruit; growth tests passed and phone/tablet/desktop fit checked
 
 - [x] Match the public homepage reference on Android tablets only; preserve phone home, other app pages, and Android package files (portrait/landscape, theme toggle, and session navigation checked)
