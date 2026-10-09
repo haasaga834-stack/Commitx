@@ -24,7 +24,7 @@ import type { SessionThemeId } from "@/lib/session-themes";
 import { actionErrorMessage } from "@/lib/connectivity";
 import { useAuth } from "@/lib/use-auth";
 import { FocusShieldSetup, type FocusShieldResult } from "@/components/FocusShieldSetup";
-import { writeShieldPlan, clearShieldPlan, shieldSupported } from "@/lib/focus-shield";
+import { writeShieldPlan, clearShieldPlan } from "@/lib/focus-shield";
 
 
 const commitSearch = z.object({
@@ -43,6 +43,8 @@ export const Route = createFileRoute("/commit")({
       { name: "description", content: "Set your goal, duration, value and mode." },
       { property: "og:title", content: "CommitX — New Commitment" },
       { property: "og:description", content: "Set your goal, duration, value and mode." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Commit,
@@ -80,12 +82,6 @@ function Commit() {
   const [themeOpen, setThemeOpen] = useState(false);
   // Focus Shield (Standard only) — optional, decided once per commitment.
   const [shieldOpen, setShieldOpen] = useState(false);
-  const [shieldDecided, setShieldDecided] = useState(false);
-  // Focus Shield is only offered where real device-level blocking exists.
-  const [shieldAvailable, setShieldAvailable] = useState(false);
-  useEffect(() => {
-    setShieldAvailable(shieldSupported());
-  }, []);
 
   const [shieldPlan, setShieldPlan] = useState<FocusShieldResult>({
     enabled: false,
@@ -147,8 +143,9 @@ function Commit() {
       setThemeOpen(true);
       return;
     }
-    // Standard only: offer Focus Shield once, then continue the normal flow.
-    if (shieldAvailable && !shieldDecided) {
+    // Check the bridge at the action, not once on mount. Each new Standard
+    // confirmation must offer Shield, including after backing out of themes.
+    if (hasNativeBridge()) {
       setShieldOpen(true);
       return;
     }
@@ -366,7 +363,6 @@ function Commit() {
         onCancel={() => setShieldOpen(false)}
         onDone={(result) => {
           setShieldPlan(result);
-          setShieldDecided(true);
           setShieldOpen(false);
           setThemeOpen(true);
         }}
@@ -406,7 +402,6 @@ function Commit() {
         onMode={(m) => {
           setMode(m);
           setConfirmVerified(false);
-          setShieldDecided(false);
           setShieldPlan({ enabled: false, packages: [], labels: [] });
           if (m === "verified") setVerifiedWarn(true);
         }}
@@ -428,7 +423,7 @@ function Commit() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center pb-12">
+    <div className={cn("flex min-h-screen flex-col items-center justify-center pb-12", native ? "pt-[max(3rem,env(safe-area-inset-top))]" : "pt-6")}>
       <div className="w-full max-w-md px-6">
 
         <div className="flex items-center justify-between">
@@ -616,7 +611,6 @@ function Commit() {
               onClick={() => {
                 setMode("verified");
                 setConfirmVerified(false);
-                setShieldDecided(false);
                 setShieldPlan({ enabled: false, packages: [], labels: [] });
                 setVerifiedWarn(true);
               }}
@@ -668,7 +662,7 @@ function Commit() {
           {starting
             ? "Starting…"
             : (mode === "verified" && !confirmVerified) ||
-                (mode === "standard" && shieldAvailable && !shieldDecided)
+                (mode === "standard" && native)
               ? "Continue"
               : "Commit Now"}
 
