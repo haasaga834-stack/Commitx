@@ -428,8 +428,9 @@ function Commit() {
   }
 
   return (
-    <div className="min-h-screen pb-12">
-      <div className="mx-auto max-w-md px-6 pt-14">
+    <div className="flex min-h-screen flex-col items-center justify-center pb-12">
+      <div className="w-full max-w-md px-6">
+
         <div className="flex items-center justify-between">
           <Link
             to="/"
@@ -443,13 +444,13 @@ function Commit() {
           <div className="w-10" />
         </div>
 
-        <h1 className="mt-8 text-3xl font-semibold">Make a promise.</h1>
+        <h1 className="mt-3 text-2xl font-semibold">Make a promise.</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Choose your terms — you'll keep them.
         </p>
 
         {/* Goal */}
-        <section className="mt-8">
+        <section className="mt-4">
           <Label>Goal</Label>
           <div className="mt-3 flex flex-wrap gap-2">
             {GOALS.map((g) => (
@@ -478,7 +479,7 @@ function Commit() {
         </section>
 
         {/* Duration — preloaded from the plan when swiped, otherwise chosen here */}
-        <section className="mt-8">
+        <section className="mt-4">
           <div className="flex items-baseline justify-between">
             <Label>Duration</Label>
             <span className="font-display text-2xl font-semibold text-primary">
@@ -528,7 +529,7 @@ function Commit() {
 
         {/* Value — signed-in only; guests focus without staking coins */}
         {guest ? (
-          <section className="mt-8">
+          <section className="mt-4">
             <div className="rounded-2xl bg-card px-4 py-3.5 shadow-soft">
               <p className="text-sm font-medium text-foreground">No coins needed</p>
               <p className="mt-1 text-xs text-muted-foreground">
@@ -546,7 +547,7 @@ function Commit() {
             )}
           </section>
         ) : (
-        <section className="mt-8">
+        <section className="mt-4">
           <div className="flex items-baseline justify-between">
             <Label>Commitment</Label>
             <span className="text-[11px] text-muted-foreground">
@@ -571,18 +572,12 @@ function Commit() {
             step={10}
             value={value}
             onChange={(e) => clampValue(Number(e.target.value))}
-            className="mt-4 w-full accent-[color:var(--color-primary)]"
+            className="mt-3 w-full accent-[color:var(--color-primary)]"
           />
 
-          {/* Cx Coin balance preview */}
-          <div className="mt-4 rounded-2xl bg-card px-4 py-3 shadow-soft">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Your Cx Coins</span>
-              <span className="tabular-nums">
-                {hydrated ? coinLabel(state.coins) : "—"}
-              </span>
-            </div>
-          </div>
+          <p className="mt-2 text-right text-[11px] text-muted-foreground">
+            Your Cx Coins: {hydrated ? coinLabel(state.coins) : "—"}
+          </p>
           {error && (
             <p className="mt-3 rounded-2xl bg-destructive/10 px-4 py-2 text-xs text-destructive">
               {error}
@@ -592,16 +587,16 @@ function Commit() {
         )}
 
         {/* Mode */}
-        <section className="mt-8">
+        <section className="mt-4">
           <Label>Mode</Label>
-          <div className="mt-3 space-y-3">
+          <div className="mt-2.5 grid grid-cols-2 gap-2.5">
             <ModeCard
               title="Standard"
               subtitle="Flexible focus"
               points={[
-                "App switching allowed with a warning",
-                "Incoming calls allowed",
-                "Timer pauses in background and resumes on return",
+                "App switching allowed",
+                "Calls allowed",
+                "Timer pauses in background",
               ]}
               selected={mode === "standard"}
               onClick={() => {
@@ -613,9 +608,9 @@ function Commit() {
               title="Verified"
               subtitle="Strict accountability"
               points={[
-                "Home, Recents, or app switch fails",
-                "Do Not Disturb required; 60s emergency call grace",
-                "Split-screen fails on Android",
+                "Leaving the app fails",
+                "DND required, 60s call grace",
+                "Split-screen fails",
               ]}
               selected={mode === "verified"}
               onClick={() => {
@@ -668,7 +663,7 @@ function Commit() {
         <button
           onClick={begin}
           disabled={starting}
-          className="mt-10 block w-full disabled:opacity-60 rounded-full bg-primary px-8 py-5 text-center text-base font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.98]"
+          className="mt-5 block w-full disabled:opacity-60 rounded-full bg-primary px-8 py-4 text-center text-base font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.98]"
         >
           {starting
             ? "Starting…"
@@ -712,16 +707,16 @@ function ModeCard({
     <button
       onClick={onClick}
       className={cn(
-        "w-full rounded-3xl border p-5 text-left transition-all",
+        "w-full rounded-2xl border p-4 text-left transition-all",
         selected
           ? "border-primary bg-card shadow-lift"
           : "border-hairline bg-card shadow-soft",
       )}
     >
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="font-display text-lg font-semibold">{title}</p>
-          <p className="text-xs text-muted-foreground">{subtitle}</p>
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="font-display text-base font-semibold">{title}</p>
+          <p className="text-[11px] text-muted-foreground">{subtitle}</p>
         </div>
         <div
           className={cn(
@@ -732,10 +727,10 @@ function ModeCard({
           {selected && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
         </div>
       </div>
-      <ul className="mt-3 space-y-1.5 text-sm text-muted-foreground">
+      <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
         {points.map((p) => (
           <li key={p} className="flex gap-2">
-            <span className="mt-2 h-1 w-1 rounded-full bg-muted-foreground/60" />
+            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted-foreground/60" />
             {p}
           </li>
         ))}
