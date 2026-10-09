@@ -189,7 +189,11 @@ final class MotivationStore {
             PendingIntent pi = pending(ctx, morning, PendingIntent.FLAG_UPDATE_CURRENT);
             if (pi == null) return;
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !am.canScheduleExactAlarms()) {
+                // Exact-alarm access is off by default on Android 14+: fall back
+                // to an inexact alarm instead of silently scheduling nothing.
+                am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, fireAt, pi);
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, fireAt, pi);
             } else {
                 am.setExact(AlarmManager.RTC_WAKEUP, fireAt, pi);
