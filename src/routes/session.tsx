@@ -61,7 +61,7 @@ import {
 } from "@/lib/focus-shield";
 
 
-import { showSessionProgress, hideSessionProgress } from "@/lib/native-notifications";
+import { showSessionProgress, hideSessionProgress, syncVerifiedCountdown, finishVerifiedCountdown } from "@/lib/native-notifications";
 import { isOnline } from "@/lib/connectivity";
 import { z } from "zod";
 import { useAuth } from "@/lib/use-auth";
@@ -95,6 +95,8 @@ export const Route = createFileRoute("/session")({
       { name: "description", content: "Stay with your promise." },
       { property: "og:title", content: "CommitX — Active session" },
       { property: "og:description", content: "Stay with your promise." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Session,
@@ -993,6 +995,14 @@ function LiveSession() {
   // Live study-progress notification (Android): timer + progress bar.
   useEffect(() => {
     if (doneRef.current) return;
+    if (mode === "verified" && syncVerifiedCountdown({
+      id: String(startedAt), goal, theme: sessionTheme, durationMs: totalMs,
+      remainingMs: Math.max(0, totalMs - elapsedNow()),
+      running: runningSinceRef.current !== null && !dndBlocked,
+      phase, breakEndsAt: breakStartedAtRef.current === null ? null : breakStartedAtRef.current + RECOVERY_BREAK_MS,
+      breakAt: breaksApply && breaksTakenRef.current === 0 && runningSinceRef.current !== null
+        ? Date.now() + Math.max(0, halfwayMs - elapsedNow()) : null,
+    })) return;
     const label = mode === "verified" ? "Verified session" : "Standard session";
     if (phase === "recovery_break") {
       showSessionProgress(
@@ -1015,7 +1025,7 @@ function LiveSession() {
       `${goal} \u00B7 ${Math.round(progress * 100)}% of ${duration} min complete`,
       progress * 100,
     );
-  }, [remaining, progress, goal, duration, mode, phase, breakRemaining]);
+  }, [remaining, progress, goal, duration, mode, phase, breakRemaining, dndBlocked, sessionTheme, startedAt, totalMs, elapsedNow, breaksApply, halfwayMs]);
 
   useEffect(() => () => hideSessionProgress(), []);
 
@@ -1060,7 +1070,8 @@ function LiveSession() {
     setNativeSessionLock(false);
     setNativeVerifiedModeActive(false);
     clearActiveVerifiedSession();
-    hideSessionProgress();
+    if (mode === "verified") finishVerifiedCountdown(status);
+    else hideSessionProgress();
     // Focus Shield always releases the moment a session ends, however it ended.
     stopShield();
     setShieldOn(false);

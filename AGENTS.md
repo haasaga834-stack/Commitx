@@ -20,3 +20,4 @@
 - Native running group sessions render GroupParticipantsDrawer after bridge detection; website sessions keep their existing participant summary, and both read the same group state without additional membership requests.
 - Accountability/Roast notifications are decided by the native AccountabilityEngine (AlarmManager, one alarm slot, one notification id) fed by events from src/lib/accountability.ts, because JS timers don't run when the app is closed and a single slot prevents spam.
 - Personal, group and preview Growing Plant visuals share a presentation-only component driven by existing session progress, so device layouts and growth never alter session tracking.
+- Verified lock-screen notifications use a persisted native foreground-service projection of the existing session timestamps; notification expiry never awards coins or finalizes a session, because verification and the server ledger remain authoritative.

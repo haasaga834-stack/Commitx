@@ -31,6 +31,8 @@ declare global {
 
       showSessionProgress?: (title: string, text: string, progress: number) => void;
       hideSessionProgress?: () => void;
+      syncVerifiedCountdown?: (payloadJson: string) => void;
+      finishVerifiedCountdown?: (status: string) => void;
       scheduleWellnessSound?: (eventKey: string, kind: string, fireAtMs: number) => void;
       playWellnessSound?: (eventKey: string, kind: string) => void;
       cancelWellnessSounds?: (sessionPrefix: string) => void;
