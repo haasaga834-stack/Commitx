@@ -92,6 +92,15 @@
 
         <!-- Watches the foreground app while Focus Shield is on. -->
         <service
+            android:name=".VerifiedCountdownService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Displays the remaining time of a user-started Verified study commitment on the lock screen, including recovery-break state; stops at timer expiry or an existing verification outcome." />
+        </service>
+        <receiver android:name=".VerifiedCountdownReceiver" android:exported="false" />
+
+        <service
             android:name=".FocusShieldService"
             android:exported="false"
             android:foregroundServiceType="specialUse">
