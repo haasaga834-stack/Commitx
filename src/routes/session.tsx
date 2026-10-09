@@ -1175,10 +1175,6 @@ function LiveSession() {
     });
   }
 
-  function quit() {
-    complete("failed", "quit");
-  }
-
   return (
     <div className="relative flex min-h-dvh flex-col bg-background px-6 pb-10 pt-14">
       <SessionScene
@@ -1318,34 +1314,6 @@ function LiveSession() {
         </div>
       )}
 
-      {confirmQuit && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/20 backdrop-blur-sm sm:items-center">
-          <div className="w-full max-w-md rounded-t-3xl bg-card p-6 shadow-lift sm:rounded-3xl">
-            <p className="font-display text-xl font-semibold">
-              {isVerified ? "Warning" : "Leave Session?"}
-            </p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {isVerified
-                ? "Ending this session will immediately forfeit your committed amount."
-                : "Ending this session will forfeit your committed amount."}
-            </p>
-            <div className="mt-6 flex flex-col gap-3">
-              <button
-                onClick={() => setConfirmQuit(false)}
-                className="w-full rounded-full border border-hairline bg-background px-5 py-3.5 text-sm font-medium"
-              >
-                {isVerified ? "Stay Focused" : "Stay & Continue"}
-              </button>
-              <button
-                onClick={quit}
-                className="w-full rounded-full bg-destructive px-5 py-3.5 text-sm font-medium text-destructive-foreground"
-              >
-                End Session &amp; Lose Commitment
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
