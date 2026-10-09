@@ -155,7 +155,7 @@ function MobileHome() {
 
   return (
     <MobileShell>
-      <main className="cx-home mx-auto flex h-[calc(100dvh-112px)] max-w-md flex-col gap-3 px-4 pb-2 pt-5">
+      <main className="cx-home mx-auto flex h-[calc(100dvh-88px)] max-w-md flex-col gap-3 px-4 pb-2 pt-5">
         <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
           <div className="min-w-0 pt-8">
             <h1 className="font-display text-[15px] font-medium leading-snug text-muted-foreground">
@@ -169,7 +169,7 @@ function MobileHome() {
               {hydrated ? message : "\u00A0"}
             </p>
           </div>
-          <div className="flex shrink-0 items-center gap-1.5">
+          <div className="flex shrink-0 items-center gap-1.5 pt-8">
             <CxCoinPopup coins={state.coins} hydrated={hydrated}>
               <TopChip
                 icon={<CxCoin className="h-5 w-5" />}
