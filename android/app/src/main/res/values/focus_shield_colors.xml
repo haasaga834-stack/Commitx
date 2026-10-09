@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="shield_background">#151B1B</color>
+    <color name="shield_surface">#223331</color>
+    <color name="shield_foreground">#F3F8F5</color>
+    <color name="shield_muted">#B2C1BC</color>
+    <color name="shield_primary">#A4E5BB</color>
+    <color name="shield_on_primary">#152B20</color>
+    <color name="shield_roast">#FFAC96</color>
+</resources>

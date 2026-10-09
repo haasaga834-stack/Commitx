@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Redesign both native blocked-app reminders with playful roasts and a visible return-to-timer action
+
 - [x] Lower the commitment header away from the Android status area
 - [x] Always offer Focus Shield for each native Standard confirmation
 - [x] Keep Focus Shield Continue visible while scrolling installed apps

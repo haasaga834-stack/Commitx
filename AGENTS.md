@@ -15,3 +15,4 @@
 - Group state is readable only while the caller has a current `committed` or `joined` membership, because leaving must revoke access immediately.
 - Scope the native app visual theme through the Android-bridge body class; shared public website routes must retain their independent design.
 - Check for the Android bridge at each Standard commitment confirmation and offer Focus Shield before themes; never cache a completed Shield step across retries, because backing out must not bypass the choice.
+- Both native Focus Shield entry points use FocusShieldReminderView and dedicated Android color resources so the overlay and fallback screen remain visually consistent without changing website styles or blocking logic.
