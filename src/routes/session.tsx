@@ -632,8 +632,8 @@ function LiveSession() {
   }, []);
 
 
-  // Sessions may only be ended through the in-session End Session flow:
-  // every system back action opens the confirmation dialog instead.
+  // A started session can never be ended early — only completed. Every
+  // system back action is swallowed and the user is told to finish.
   useEffect(() => {
     setNativeSessionLock(true);
 
