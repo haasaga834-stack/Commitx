@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { accountabilityDrafted, accountabilityStarted } from "@/lib/accountability";
 import { ChevronLeft, Check, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -95,6 +96,20 @@ function Commit() {
   const planDuration = nextPlan?.plan.durationMinutes ?? 0;
   const [pickedDuration, setPickedDuration] = useState(fromDuration ?? 60);
   const duration = usePlanDuration ? planDuration : pickedDuration;
+
+  // Accountability: leaving the commit screen without starting counts as an
+  // unstarted commitment (only after a real look, not a quick bounce).
+  const startedCommitRef = useRef(false);
+  const durationRef = useRef(duration);
+  durationRef.current = duration;
+  useEffect(() => {
+    const openedAt = Date.now();
+    return () => {
+      if (!startedCommitRef.current && Date.now() - openedAt > 10_000 && durationRef.current > 0) {
+        accountabilityDrafted(durationRef.current);
+      }
+    };
+  }, []);
 
 
   const native = hasNativeBridge();
@@ -245,6 +260,8 @@ function Commit() {
         theme,
       });
 
+      startedCommitRef.current = true;
+      accountabilityStarted(duration, Date.now());
       navigate({
         to: "/session",
         search: {

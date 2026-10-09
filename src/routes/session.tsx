@@ -66,6 +66,7 @@ import { isOnline } from "@/lib/connectivity";
 import { z } from "zod";
 import { useAuth } from "@/lib/use-auth";
 import { recordSessions } from "@/lib/wallet.functions";
+import { accountabilityEnded } from "@/lib/accountability";
 import { markSessionSynced } from "@/lib/cloud-sync";
 
 declare global {
@@ -170,6 +171,7 @@ function Session() {
       hideSessionProgress();
       const failure = finalizePendingVerifiedFailure();
       if (failure) {
+        accountabilityEnded("failed", failure.duration, 0);
         markSessionEnded({
           goal: failure.goal,
           duration: failure.duration,
@@ -1064,6 +1066,7 @@ function LiveSession() {
     setShieldOn(false);
 
     cancelWellnessSounds(wellnessSessionKey);
+    accountabilityEnded(status, duration, elapsedNow() / 60000);
     // Permanent end marker + server slot release: the timer can never be
     // restarted or resurrected by back navigation, refresh or app restart.
     markSessionEnded({
