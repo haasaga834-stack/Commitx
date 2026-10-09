@@ -444,13 +444,13 @@ function Commit() {
           <div className="w-10" />
         </div>
 
-        <h1 className="mt-5 text-2xl font-semibold">Make a promise.</h1>
+        <h1 className="mt-3 text-2xl font-semibold">Make a promise.</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Choose your terms — you'll keep them.
         </p>
 
         {/* Goal */}
-        <section className="mt-5">
+        <section className="mt-4">
           <Label>Goal</Label>
           <div className="mt-3 flex flex-wrap gap-2">
             {GOALS.map((g) => (
@@ -479,7 +479,7 @@ function Commit() {
         </section>
 
         {/* Duration — preloaded from the plan when swiped, otherwise chosen here */}
-        <section className="mt-5">
+        <section className="mt-4">
           <div className="flex items-baseline justify-between">
             <Label>Duration</Label>
             <span className="font-display text-2xl font-semibold text-primary">
@@ -529,7 +529,7 @@ function Commit() {
 
         {/* Value — signed-in only; guests focus without staking coins */}
         {guest ? (
-          <section className="mt-5">
+          <section className="mt-4">
             <div className="rounded-2xl bg-card px-4 py-3.5 shadow-soft">
               <p className="text-sm font-medium text-foreground">No coins needed</p>
               <p className="mt-1 text-xs text-muted-foreground">
@@ -547,7 +547,7 @@ function Commit() {
             )}
           </section>
         ) : (
-        <section className="mt-5">
+        <section className="mt-4">
           <div className="flex items-baseline justify-between">
             <Label>Commitment</Label>
             <span className="text-[11px] text-muted-foreground">
@@ -593,7 +593,7 @@ function Commit() {
         )}
 
         {/* Mode */}
-        <section className="mt-5">
+        <section className="mt-4">
           <Label>Mode</Label>
           <div className="mt-2.5 grid grid-cols-2 gap-2.5">
             <ModeCard
@@ -669,7 +669,7 @@ function Commit() {
         <button
           onClick={begin}
           disabled={starting}
-          className="mt-6 block w-full disabled:opacity-60 rounded-full bg-primary px-8 py-4 text-center text-base font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.98]"
+          className="mt-5 block w-full disabled:opacity-60 rounded-full bg-primary px-8 py-4 text-center text-base font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.98]"
         >
           {starting
             ? "Starting…"
