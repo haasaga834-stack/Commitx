@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Session-theme accents only; Android owns the notification surface/text. -->
+    <color name="countdown_leaves">#C27A42</color>
+    <color name="countdown_fireflies">#9B8C32</color>
+    <color name="countdown_tree">#39805A</color>
+    <color name="countdown_moon">#777DB6</color>
+    <color name="countdown_lotus">#B66592</color>
+</resources>
