@@ -79,7 +79,6 @@ export function GroupSetup({ onClose }: { onClose: () => void }) {
       setError(actionErrorMessage(e, "Could not create the group."));
     } finally {
       setBusy(false);
-      setThemeOpen(false);
     }
   }
 
@@ -405,7 +404,12 @@ export function GroupSetup({ onClose }: { onClose: () => void }) {
         confirmLabel="Create group"
         title="Choose the group's mood"
         subtitle="Everyone in this group studies inside the scene you pick."
-        onCancel={() => setThemeOpen(false)}
+        error={themeOpen ? error : null}
+        busyLabel="Creating group…"
+        onCancel={() => {
+          if (busy) return;
+          setThemeOpen(false);
+        }}
         onConfirm={(theme) => void onCreate(theme)}
       />
     </div>
