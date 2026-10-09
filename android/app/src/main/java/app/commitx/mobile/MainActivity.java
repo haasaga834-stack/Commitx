@@ -1014,6 +1014,8 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void setMotivationNotifications(boolean on) {
             MotivationStore.setEnabled(MainActivity.this, on);
+            if (on) AccountabilityEngine.reconcile(MainActivity.this);
+            else { AccountabilityEngine.cancelAll(MainActivity.this); AccountabilityEngine.clearShown(MainActivity.this); }
         }
 
         /** Re-arms without duplicating; safe to call on every app start. */
@@ -1022,6 +1024,33 @@ public class MainActivity extends Activity {
             MotivationStore.reconcile(MainActivity.this);
         }
 
+
+        /* ----------------------- Accountability / Roast Mode ----------------- */
+
+        @JavascriptInterface
+        public void setAccountabilityStyle(String style) {
+            AccountabilityEngine.setStyle(MainActivity.this, style);
+        }
+
+        @JavascriptInterface
+        public void accountabilityDrafted(int targetMin) {
+            AccountabilityEngine.onDrafted(MainActivity.this, targetMin);
+        }
+
+        @JavascriptInterface
+        public void accountabilityStarted(int targetMin, double startedAtMs) {
+            AccountabilityEngine.onStarted(MainActivity.this, targetMin, (long) startedAtMs);
+        }
+
+        @JavascriptInterface
+        public void accountabilityEnded(String status, int targetMin, int doneMin, int streak, int failStreak) {
+            AccountabilityEngine.onEnded(MainActivity.this, status, targetMin, doneMin, streak, failStreak);
+        }
+
+        @JavascriptInterface
+        public void accountabilityAppOpened(int streak, int failStreak) {
+            AccountabilityEngine.onAppOpened(MainActivity.this, streak, failStreak);
+        }
 
         /* ----------------------- Study progress notification ----------------- */
 
