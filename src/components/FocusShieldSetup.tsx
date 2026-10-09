@@ -261,20 +261,20 @@ export function FocusShieldSetup({
               </>
             )}
             </div>
-            <div className="shrink-0 border-t border-hairline bg-card pt-3">
-              <p className="mb-2 text-xs text-muted-foreground">{selected.length} selected</p>
+            <div className="mx-1 mt-3 shrink-0 rounded-3xl border border-hairline bg-background p-3 shadow-lift">
+              <p className="mb-2 px-1 text-xs text-muted-foreground">{selected.length} selected</p>
               <div className="grid grid-cols-2 gap-3">
               <Button
                 variant="secondary"
                 onClick={onCancel}
-                className="h-12 rounded-2xl"
+                className="h-12 rounded-full"
               >
                 Cancel
               </Button>
               <Button
                 disabled={selected.length === 0}
                 onClick={() => setStep(permissionsReady ? "ready" : "permissions")}
-                className="h-12 rounded-2xl"
+                className="h-12 rounded-full"
               >
                 Continue
               </Button>
