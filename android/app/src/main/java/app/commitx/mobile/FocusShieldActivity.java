@@ -4,19 +4,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.TypedValue;
-import android.view.Gravity;
-import android.view.View;
-import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import app.commitx.mobile.R;
 
 import android.app.Activity;
 
@@ -55,32 +47,8 @@ public class FocusShieldActivity extends Activity {
         endsAt = getIntent() == null ? 0L : getIntent().getLongExtra(EXTRA_ENDS_AT, 0L);
         String label = labelFor(pkg);
 
-        LinearLayout root = new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setGravity(Gravity.CENTER);
-        root.setBackgroundColor(Color.parseColor("#F8F9F6"));
-        int pad = dp(28);
-        root.setPadding(pad, pad, pad, pad);
-
-        root.addView(text("\uD83D\uDEE1 Focus Shield Active", 22, "#2E7D32", true));
-        root.addView(spacer(dp(14)));
-        root.addView(text(label + " is blocked during your commitment.", 16, "#1F2937", false));
-        root.addView(spacer(dp(22)));
-        root.addView(text("Time remaining", 12, "#6B7280", false));
-        remainingView = text(formatRemaining(), 40, "#2E7D32", true);
-        root.addView(remainingView);
-        root.addView(spacer(dp(28)));
-
-        Button back = new Button(this);
-        back.setAllCaps(false);
-        back.setText("Back to CommitX");
-        back.setTextColor(Color.WHITE);
-        GradientDrawable bg = new GradientDrawable();
-        bg.setColor(Color.parseColor("#2E7D32"));
-        bg.setCornerRadius(dp(28));
-        back.setBackground(bg);
-        back.setPadding(dp(24), dp(14), dp(24), dp(14));
-        back.setOnClickListener(v -> {
+        FocusShieldReminderView root = new FocusShieldReminderView(this, label,
+                formatRemaining(), v -> {
             try {
                 // Return straight to the live timer screen — the web layer
                 // re-enters the stored running session (same id, same clock),
@@ -95,7 +63,7 @@ public class FocusShieldActivity extends Activity {
             } catch (Throwable ignored) {}
             finish();
         });
-        root.addView(back);
+        remainingView = root.remainingView;
 
         setContentView(root);
         handler.post(tickRemaining);
@@ -148,24 +116,4 @@ public class FocusShieldActivity extends Activity {
         }
     }
 
-    private TextView text(String value, int sp, String color, boolean bold) {
-        TextView tv = new TextView(this);
-        tv.setText(value);
-        tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
-        tv.setTextColor(Color.parseColor(color));
-        tv.setGravity(Gravity.CENTER);
-        if (bold) tv.setTypeface(tv.getTypeface(), android.graphics.Typeface.BOLD);
-        return tv;
-    }
-
-    private View spacer(int height) {
-        View v = new View(this);
-        v.setLayoutParams(new LinearLayout.LayoutParams(1, height));
-        return v;
-    }
-
-    private int dp(int value) {
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value,
-                getResources().getDisplayMetrics());
-    }
 }

@@ -4,19 +4,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.graphics.PixelFormat;
-import android.graphics.Typeface;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 /**
@@ -33,7 +27,7 @@ final class FocusShieldOverlay {
 
     private View root;
     private TextView remainingView;
-    private TextView messageView;
+    private FocusShieldReminderView reminderView;
     private long endsAt;
     private String shownFor;
     private long returningToCommitXUntil;
@@ -53,9 +47,8 @@ final class FocusShieldOverlay {
         if (root != null) {
             if (!blockedPackage.equals(shownFor)) {
                 shownFor = blockedPackage;
-                if (messageView != null) {
-                    messageView.setText(labelFor(blockedPackage)
-                            + " is blocked during your commitment.");
+                if (reminderView != null) {
+                    reminderView.setAppLabel(labelFor(blockedPackage));
                 }
             }
             return;
@@ -65,34 +58,8 @@ final class FocusShieldOverlay {
             WindowManager wm = (WindowManager) ctx.getSystemService(Context.WINDOW_SERVICE);
             if (wm == null) return;
 
-            LinearLayout view = new LinearLayout(ctx);
-            view.setOrientation(LinearLayout.VERTICAL);
-            view.setGravity(Gravity.CENTER);
-            view.setBackgroundColor(Color.parseColor("#F8F9F6"));
-            int pad = dp(28);
-            view.setPadding(pad, pad, pad, pad);
-
-            view.addView(text("\uD83D\uDEE1 Focus Shield Active", 22, "#2E7D32", true));
-            view.addView(spacer(dp(14)));
-            messageView = text(labelFor(blockedPackage) + " is blocked during your commitment.",
-                    16, "#1F2937", false);
-            view.addView(messageView);
-            view.addView(spacer(dp(22)));
-            view.addView(text("Time remaining", 12, "#6B7280", false));
-            remainingView = text(formatRemaining(), 40, "#2E7D32", true);
-            view.addView(remainingView);
-            view.addView(spacer(dp(28)));
-
-            Button back = new Button(ctx);
-            back.setAllCaps(false);
-            back.setText("Back to CommitX");
-            back.setTextColor(Color.WHITE);
-            GradientDrawable bg = new GradientDrawable();
-            bg.setColor(Color.parseColor("#2E7D32"));
-            bg.setCornerRadius(dp(28));
-            back.setBackground(bg);
-            back.setPadding(dp(24), dp(14), dp(24), dp(14));
-            back.setOnClickListener(v -> {
+            FocusShieldReminderView view = new FocusShieldReminderView(ctx,
+                    labelFor(blockedPackage), formatRemaining(), v -> {
                 try {
                     // Launch while our overlay is still visible: Android permits
                     // this user-initiated activity start, but may reject it after
@@ -111,7 +78,8 @@ final class FocusShieldOverlay {
                     returningToCommitXUntil = 0L;
                 }
             });
-            view.addView(back);
+            reminderView = view;
+            remainingView = view.remainingView;
 
             int type = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                     ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
@@ -140,7 +108,7 @@ final class FocusShieldOverlay {
         View v = root;
         root = null;
         remainingView = null;
-        messageView = null;
+        reminderView = null;
         shownFor = null;
         if (v == null) return;
         try {
@@ -184,24 +152,4 @@ final class FocusShieldOverlay {
         }
     }
 
-    private TextView text(String value, int sp, String color, boolean bold) {
-        TextView tv = new TextView(ctx);
-        tv.setText(value);
-        tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
-        tv.setTextColor(Color.parseColor(color));
-        tv.setGravity(Gravity.CENTER);
-        if (bold) tv.setTypeface(tv.getTypeface(), Typeface.BOLD);
-        return tv;
-    }
-
-    private View spacer(int height) {
-        View v = new View(ctx);
-        v.setLayoutParams(new LinearLayout.LayoutParams(1, height));
-        return v;
-    }
-
-    private int dp(int value) {
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value,
-                ctx.getResources().getDisplayMetrics());
-    }
 }
