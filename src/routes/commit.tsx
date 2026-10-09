@@ -17,6 +17,7 @@ import { useIsTablet } from "@/lib/use-tablet";
 import { z } from "zod";
 import { usePlans, upcomingPlan } from "@/lib/planner";
 import { claimActiveDbSession, releaseActiveDbSession } from "@/lib/active-session";
+import { flushPendingSessions } from "@/lib/cloud-sync";
 import { clearEndedSession, writeActiveVerifiedSession } from "@/lib/verified-mode";
 import { ThemePicker } from "@/components/ThemePicker";
 import type { SessionThemeId } from "@/lib/session-themes";
@@ -197,6 +198,10 @@ function Commit() {
       clearShieldPlan();
     }
     try {
+
+      // Record any earlier finished session against its own claim first, so
+      // it can never be lost or mixed up with the new commitment.
+      await flushPendingSessions();
 
       // Only one active session per user — the database is the source of truth.
       const claim = await claimActiveDbSession({

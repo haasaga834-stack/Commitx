@@ -398,6 +398,7 @@ export function getPendingSessions(sessions: Session[] = getState().sessions) {
 export function markSessionSynced(id: string) {
   syncedSessionIds.add(id);
   if (currentUserId) writeSyncedIds(currentUserId);
+  announceLeaderboardChange();
 }
 
 /**

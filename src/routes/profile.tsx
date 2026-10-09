@@ -4,12 +4,12 @@ import { useAppState, stats, setState, formatCoins } from "@/lib/commitx-store";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Pencil, Check, Trophy, Clock, Camera, Settings as SettingsIcon } from "lucide-react";
 import { fileToProfilePhoto } from "@/lib/profile-photo";
-import { refreshFromCloud } from "@/lib/cloud-sync";
+import { getPendingSessions, refreshFromCloud } from "@/lib/cloud-sync";
 import { supabase } from "@/integrations/supabase/client";
 
 import { formatHours } from "@/lib/analytics-data";
 
-import { useLeaderboard } from "@/lib/community";
+import { LEADERBOARD_REFRESH_EVENT, useLeaderboard } from "@/lib/community";
 
 
 
@@ -44,16 +44,33 @@ function Profile() {
     load();
     const onFocus = () => load();
     window.addEventListener("focus", onFocus);
-    return () => { alive = false; window.removeEventListener("focus", onFocus); };
-  }, [state.sessions.length]);
-  // Backend records are authoritative; local unsynced sessions can only add.
+    // Re-read the recorded totals the moment a session reaches the server.
+    window.addEventListener(LEADERBOARD_REFRESH_EVENT, onFocus);
+    return () => {
+      alive = false;
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener(LEADERBOARD_REFRESH_EVENT, onFocus);
+    };
+  }, [state.sessions]);
+  // Recorded sessions are the single source of truth. Only outcomes still
+  // waiting to reach the server (offline) are added on top — never a max().
+  const pending = useMemo(() => {
+    const list = getPendingSessions(state.sessions);
+    const completed = list.filter((x) => x.status === "completed");
+    return {
+      totalMinutes: completed.reduce((sum, x) => sum + x.durationMinutes, 0),
+      completed: completed.length,
+      failed: list.filter((x) => x.status === "failed").length,
+      coinsEarned: completed.reduce((sum, x) => sum + (x.coinsEarned ?? 0), 0),
+    };
+  }, [state.sessions]);
   const s = server
     ? {
         ...local,
-        totalMinutes: Math.max(local.totalMinutes, server.total_minutes),
-        completed: Math.max(local.completed, server.completed),
-        failed: Math.max(local.failed, server.failed),
-        coinsEarned: Math.max(local.coinsEarned, server.coins_earned),
+        totalMinutes: server.total_minutes + pending.totalMinutes,
+        completed: server.completed + pending.completed,
+        failed: server.failed + pending.failed,
+        coinsEarned: server.coins_earned + pending.coinsEarned,
       }
     : local;
   const [editing, setEditing] = useState(false);
