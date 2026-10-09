@@ -1,5 +1,9 @@
 # Roadmap
 
+- [ ] Lower the commitment header away from the Android status area
+- [ ] Always offer Focus Shield for each native Standard confirmation
+- [ ] Keep Focus Shield Continue visible while scrolling installed apps
+
 - [x] Focus Class: remove history sentinel after session ends so Back never jams (verified: Back during class asks to confirm; after ending, Back leaves to Home)
 - [x] Planner: remove AI planner section entirely (files deleted, no references left)
 - [x] Planner: move Today's to-do card to the top (verified on signed-in Planner)

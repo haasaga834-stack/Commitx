@@ -14,3 +14,4 @@
 - Screens show recorded server totals plus only not-yet-synced local sessions; sessions the server refuses are removed locally, because max()/local-first merging showed phantom time.
 - Group state is readable only while the caller has a current `committed` or `joined` membership, because leaving must revoke access immediately.
 - Scope the native app visual theme through the Android-bridge body class; shared public website routes must retain their independent design.
+- Check for the Android bridge at each Standard commitment confirmation and offer Focus Shield before themes; never cache a completed Shield step across retries, because backing out must not bypass the choice.

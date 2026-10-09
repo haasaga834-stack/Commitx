@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Shield, ShieldCheck, Check, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   FOCUS_SHIELD_GROUPS,
   openUsageAccess,
@@ -118,7 +119,7 @@ export function FocusShieldSetup({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 backdrop-blur-sm sm:items-center">
-      <div className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-4xl bg-card p-6 pb-10 shadow-lift sm:rounded-4xl sm:pb-6">
+      <div className={cn("max-h-[92dvh] w-full max-w-md rounded-t-4xl bg-card p-6 pb-10 shadow-lift sm:rounded-4xl sm:pb-6", step === "apps" ? "flex h-[92dvh] flex-col overflow-hidden" : "overflow-y-auto")}>
         {step === "intro" && (
           <>
             <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-accent/15 text-primary">
@@ -161,6 +162,7 @@ export function FocusShieldSetup({
         {step === "apps" && (
           <>
             <Header title="Choose apps to block" onBack={() => setStep("intro")} />
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
             {apps.length === 0 ? (
               <p className="mt-4 rounded-2xl border border-hairline bg-background p-4 text-xs text-muted-foreground">
                 No selectable apps were found on this device.
@@ -258,20 +260,25 @@ export function FocusShieldSetup({
                 )}
               </>
             )}
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <button
+            </div>
+            <div className="shrink-0 border-t border-hairline bg-card pt-3">
+              <p className="mb-2 text-xs text-muted-foreground">{selected.length} selected</p>
+              <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant="secondary"
                 onClick={onCancel}
-                className="rounded-2xl bg-secondary px-4 py-3 text-sm font-medium text-secondary-foreground"
+                className="h-12 rounded-2xl"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 disabled={selected.length === 0}
                 onClick={() => setStep(permissionsReady ? "ready" : "permissions")}
-                className="rounded-2xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
+                className="h-12 rounded-2xl"
               >
                 Continue
-              </button>
+              </Button>
+              </div>
             </div>
           </>
         )}
