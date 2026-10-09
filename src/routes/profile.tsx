@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 import { formatHours } from "@/lib/analytics-data";
 
-import { useLeaderboard } from "@/lib/community";
+import { LEADERBOARD_REFRESH_EVENT, useLeaderboard } from "@/lib/community";
 
 
 
@@ -44,11 +44,26 @@ function Profile() {
     load();
     const onFocus = () => load();
     window.addEventListener("focus", onFocus);
-    return () => { alive = false; window.removeEventListener("focus", onFocus); };
-  }, [state.sessions.length]);
+    // Re-read the recorded totals the moment a session reaches the server.
+    window.addEventListener(LEADERBOARD_REFRESH_EVENT, onFocus);
+    return () => {
+      alive = false;
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener(LEADERBOARD_REFRESH_EVENT, onFocus);
+    };
+  }, [state.sessions]);
   // Recorded sessions are the single source of truth. Only outcomes still
   // waiting to reach the server (offline) are added on top — never a max().
-  const pending = stats(getPendingSessions(state.sessions));
+  const pending = useMemo(() => {
+    const list = getPendingSessions(state.sessions);
+    const completed = list.filter((x) => x.status === "completed");
+    return {
+      totalMinutes: completed.reduce((sum, x) => sum + x.durationMinutes, 0),
+      completed: completed.length,
+      failed: list.filter((x) => x.status === "failed").length,
+      coinsEarned: completed.reduce((sum, x) => sum + (x.coinsEarned ?? 0), 0),
+    };
+  }, [state.sessions]);
   const s = server
     ? {
         ...local,
