@@ -4,7 +4,7 @@ import { useAppState, stats, setState, formatCoins } from "@/lib/commitx-store";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Pencil, Check, Trophy, Clock, Camera, Settings as SettingsIcon } from "lucide-react";
 import { fileToProfilePhoto } from "@/lib/profile-photo";
-import { refreshFromCloud } from "@/lib/cloud-sync";
+import { getPendingSessions, refreshFromCloud } from "@/lib/cloud-sync";
 import { supabase } from "@/integrations/supabase/client";
 
 import { formatHours } from "@/lib/analytics-data";
@@ -46,14 +46,16 @@ function Profile() {
     window.addEventListener("focus", onFocus);
     return () => { alive = false; window.removeEventListener("focus", onFocus); };
   }, [state.sessions.length]);
-  // Backend records are authoritative; local unsynced sessions can only add.
+  // Recorded sessions are the single source of truth. Only outcomes still
+  // waiting to reach the server (offline) are added on top — never a max().
+  const pending = stats(getPendingSessions(state.sessions));
   const s = server
     ? {
         ...local,
-        totalMinutes: Math.max(local.totalMinutes, server.total_minutes),
-        completed: Math.max(local.completed, server.completed),
-        failed: Math.max(local.failed, server.failed),
-        coinsEarned: Math.max(local.coinsEarned, server.coins_earned),
+        totalMinutes: server.total_minutes + pending.totalMinutes,
+        completed: server.completed + pending.completed,
+        failed: server.failed + pending.failed,
+        coinsEarned: server.coins_earned + pending.coinsEarned,
       }
     : local;
   const [editing, setEditing] = useState(false);
