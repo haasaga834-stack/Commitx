@@ -646,7 +646,10 @@ function LiveSession() {
 
     const askToLeave = () => {
       if (doneRef.current) return;
-      setConfirmQuit(true);
+      // No way out: a started session can only be completed, never ended.
+      toast("No way out — finish your session 💪", {
+        description: "Your commitment is locked in until the timer ends.",
+      });
       log("Back Intercepted");
     };
 
@@ -1189,13 +1192,6 @@ function LiveSession() {
         <p className="text-xs uppercase tracking-widest text-muted-foreground">
           {isVerified ? "Verified session" : "Standard session"}
         </p>
-        <button
-          onClick={() => setConfirmQuit(true)}
-          className="absolute right-0 inline-flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-soft"
-          aria-label="End session"
-        >
-          <X className="h-5 w-5" />
-        </button>
       </div>
 
       {/* Everything stays on one centred axis; the countdown reserves fixed
