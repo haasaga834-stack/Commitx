@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Match the public homepage reference on Android tablets only; preserve phone home, other app pages, and Android package files
+- [x] Match the public homepage reference on Android tablets only; preserve phone home, other app pages, and Android package files (portrait/landscape, theme toggle, and session navigation checked)
 
 - [x] Replace the native group participant card with a right-side drawer showing four rows before scrolling (opening, count, scrolling and closing verified in an isolated preview)
 
