@@ -28,6 +28,7 @@ import {
 } from "@/lib/group-study.functions";
 import { MAX_GROUP_SIZE, type GroupDTO, type InvitePreviewDTO } from "@/lib/group-study.shared";
 import { actionErrorMessage, isOnline, OFFLINE_ACTION_MESSAGE } from "@/lib/connectivity";
+import { hasNativeBridge } from "@/lib/native-session";
 
 export const Route = createFileRoute("/group/")({
   head: () => ({
@@ -59,6 +60,7 @@ function fmtDuration(min: number) {
 
 function GroupIndex() {
   const isTablet = useIsTablet();
+  const compact = hasNativeBridge() && !isTablet;
   const navigate = useNavigate();
   const { state, hydrated } = useAppState();
   const create = useServerFn(createGroup);
@@ -266,11 +268,12 @@ function GroupIndex() {
         className={cn(
           "mt-8 text-center font-display text-3xl font-semibold",
           isTablet && "mt-6 text-[2rem]",
+          compact && "mt-3 text-xl leading-tight",
         )}
       >
         Lock in with your people. 🎯
       </h1>
-      <p className="mt-2 text-center text-sm text-muted-foreground">
+      <p className={cn("mt-2 text-center text-sm text-muted-foreground", compact && "mt-1 text-xs")}>
         Pick a time, commit together, and see who makes it to the finish.
       </p>
     </div>
@@ -358,6 +361,7 @@ function GroupIndex() {
       className={cn(
         "rounded-3xl border border-hairline bg-card p-5 shadow-soft",
         isTablet && "p-6",
+        compact && "rounded-2xl p-3",
       )}
     >
       <div className="flex items-center gap-3">
@@ -372,7 +376,7 @@ function GroupIndex() {
         </div>
       </div>
 
-      <div className="mt-5">
+      <div className={cn("mt-5", compact && "mt-2")}>
         <div className="flex items-baseline justify-between gap-3">
           <Label>Duration</Label>
           <span className="font-display text-xl font-semibold text-primary tabular-nums">
@@ -386,18 +390,18 @@ function GroupIndex() {
           step={5}
           value={duration}
           onChange={(e) => setDuration(Number(e.target.value))}
-          className="mt-3 w-full accent-[color:var(--color-primary)]"
+          className={cn("mt-3 w-full accent-[color:var(--color-primary)]", compact && "mt-1")}
         />
       </div>
 
-      <div className="mt-5">
+      <div className={cn("mt-5", compact && "mt-2")}>
         <div className="flex items-baseline justify-between gap-3">
           <Label>Commitment each</Label>
           <span className="text-[11px] text-muted-foreground">
             {formatCoins(MIN_COMMIT)} – {coinLabel(MAX_COMMIT)}
           </span>
         </div>
-        <div className="mt-3 flex items-center rounded-2xl border border-hairline bg-background px-4 py-3">
+        <div className={cn("mt-3 flex items-center rounded-2xl border border-hairline bg-background px-4 py-3", compact && "mt-1 rounded-xl py-2")}>
           <span className="text-xs font-semibold text-muted-foreground">Cx</span>
           <input
             type="number"
@@ -412,20 +416,21 @@ function GroupIndex() {
             className="ml-2 w-full bg-transparent text-lg font-medium outline-none"
           />
         </div>
-        <p className="mt-2 text-[11px] text-muted-foreground">
+        <p className={cn("mt-2 text-[11px] text-muted-foreground", compact && "mt-1")}>
           Your Cx Coins: {hydrated ? coinLabel(state.coins) : "—"}
         </p>
       </div>
 
-      <div className="mt-5">
+      <div className={cn("mt-5", compact && "mt-2")}>
         <Label>Session type</Label>
-        <div className="mt-3 grid grid-cols-2 gap-3">
+        <div className={cn("mt-3 grid grid-cols-2 gap-3", compact && "mt-1 gap-2")}>
           {(["standard", "verified"] as const).map((m) => (
             <button
               key={m}
               onClick={() => setMode(m)}
               className={cn(
                 "rounded-2xl border px-4 py-3 text-left text-sm transition-all",
+                compact && "rounded-xl px-3 py-2",
                 mode === m ? "border-primary bg-card shadow-lift" : "border-hairline bg-background",
               )}
             >
@@ -456,7 +461,7 @@ function GroupIndex() {
       <button
         onClick={onCreate}
         disabled={busy || !!openGroup}
-        className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-sm font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.98] disabled:opacity-60"
+        className={cn("mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-sm font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.98] disabled:opacity-60", compact && "mt-3 min-h-11 px-3 py-2.5")}
       >
         {openGroup
           ? "Finish your current group first"
@@ -469,12 +474,12 @@ function GroupIndex() {
   );
 
   const joinCard = (
-    <section className="rounded-3xl border border-hairline bg-card p-5 shadow-soft">
+    <section className={cn("rounded-3xl border border-hairline bg-card p-5 shadow-soft", compact && "rounded-2xl p-3")}>
       <h2 className="font-display text-base font-semibold">Join with a code</h2>
       <p className="mt-1 text-xs text-muted-foreground">
         Got an invite? Enter the 6-character code to see the terms.
       </p>
-      <div className="mt-3 flex gap-2">
+      <div className={cn("mt-3 flex gap-2", compact && "mt-2")}>
         <input
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase().slice(0, 6))}
@@ -500,7 +505,7 @@ function GroupIndex() {
 
   const page = (
 
-    <div className={cn("min-h-screen pb-16", isTablet && "min-h-0 pb-0")}>
+    <div className={cn("min-h-screen pb-16", isTablet && "min-h-0 pb-0", compact && "pb-4")}>
       {isTablet ? (
         <div className="mx-auto w-full max-w-5xl">
           {header}
@@ -514,7 +519,7 @@ function GroupIndex() {
           </div>
         </div>
       ) : (
-        <div className="mx-auto flex max-w-md flex-col gap-5 px-6 pt-14">
+        <div className={cn("mx-auto flex max-w-md flex-col gap-5 px-6 pt-14", compact && "gap-3 px-4 pt-[max(3rem,env(safe-area-inset-top))]")}>
           {header}
           {statusCard}
           {groupsCard}
