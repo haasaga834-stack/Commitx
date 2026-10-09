@@ -21,6 +21,12 @@ env:
   COMMITX_KEY_ALIAS: commitx
   COMMITX_KEY_PASSWORD: commitx
 
+  # Play Store version. This is the single place to change it.
+  # Bump COMMITX_VERSION_CODE by 1 before every new upload — Play rejects an
+  # upload whose version code is not higher than the last one it received.
+  COMMITX_VERSION_CODE: "1"
+  COMMITX_VERSION_NAME: "1.0.0"
+
 jobs:
   build-apk:
     runs-on: ubuntu-latest
@@ -117,14 +123,12 @@ jobs:
         working-directory: android
         env:
           GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
-          COMMITX_VERSION_CODE: ${{ github.run_number }}
-          COMMITX_VERSION_NAME: 1.0.${{ github.run_number }}
         run: gradle :app:assembleRelease :app:bundleRelease --no-daemon --stacktrace < /dev/null
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: commitx-apk-${{ github.run_number }}
+          name: commitx-apk-v${{ env.COMMITX_VERSION_NAME }}-run${{ github.run_number }}
           path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
 
