@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useLocation, useRouter } from "@tanstack/react-router";
 import { MobileShell } from "@/components/BottomNav";
 import { NotificationsCard } from "@/components/NotificationsCard";
+import { AccountabilityCard } from "@/components/AccountabilityCard";
 import { ScreenTimeCard } from "@/components/ScreenTimeCard";
 import { ReviewModeration } from "@/components/ReviewModeration";
 import { CxCoin } from "@/components/CxCoin";
@@ -261,6 +262,7 @@ function Settings() {
         </p>
         <div className="mt-4 grid gap-4">
           <NotificationsCard />
+          <AccountabilityCard />
           <div id="screen-time">
             <ScreenTimeCard />
           </div>

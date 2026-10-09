@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { accountabilityAppOpened } from "@/lib/accountability";
 import {
   Outlet,
   createRootRouteWithContext,
@@ -321,8 +322,12 @@ function StudyReminders() {
   // restart or a foreground return never schedules a duplicate.
   useEffect(() => {
     reconcileMotivationNotifications();
+    accountabilityAppOpened();
     const onVisible = () => {
-      if (document.visibilityState === "visible") reconcileMotivationNotifications();
+      if (document.visibilityState === "visible") {
+        reconcileMotivationNotifications();
+        accountabilityAppOpened();
+      }
     };
     document.addEventListener("visibilitychange", onVisible);
     return () => document.removeEventListener("visibilitychange", onVisible);
