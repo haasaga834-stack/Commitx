@@ -572,18 +572,12 @@ function Commit() {
             step={10}
             value={value}
             onChange={(e) => clampValue(Number(e.target.value))}
-            className="mt-4 w-full accent-[color:var(--color-primary)]"
+            className="mt-3 w-full accent-[color:var(--color-primary)]"
           />
 
-          {/* Cx Coin balance preview */}
-          <div className="mt-4 rounded-2xl bg-card px-4 py-3 shadow-soft">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Your Cx Coins</span>
-              <span className="tabular-nums">
-                {hydrated ? coinLabel(state.coins) : "—"}
-              </span>
-            </div>
-          </div>
+          <p className="mt-2 text-right text-[11px] text-muted-foreground">
+            Your Cx Coins: {hydrated ? coinLabel(state.coins) : "—"}
+          </p>
           {error && (
             <p className="mt-3 rounded-2xl bg-destructive/10 px-4 py-2 text-xs text-destructive">
               {error}
