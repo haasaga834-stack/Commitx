@@ -444,15 +444,15 @@ function Commit() {
           <div className="w-10" />
         </div>
 
-        <h1 className="mt-3 text-2xl font-semibold">Make a promise.</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <h1 className="mt-3 text-center text-2xl font-semibold">Make a promise.</h1>
+        <p className="mt-2 text-center text-sm text-muted-foreground">
           Choose your terms — you'll keep them.
         </p>
 
         {/* Goal */}
         <section className="mt-4">
-          <Label>Goal</Label>
-          <div className="mt-3 flex flex-wrap gap-2">
+          <Label className="text-center">Goal</Label>
+          <div className="mt-3 flex flex-wrap justify-center gap-2">
             {GOALS.map((g) => (
               <button
                 key={g}
@@ -682,9 +682,9 @@ function Commit() {
   );
 }
 
-function Label({ children }: { children: React.ReactNode }) {
+function Label({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+    <p className={cn("text-[11px] font-medium uppercase tracking-widest text-muted-foreground", className)}>
       {children}
     </p>
   );
