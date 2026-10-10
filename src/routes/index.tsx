@@ -1,6 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { ArrowRight, Bell, Leaf, Users } from "lucide-react";
+import { ArrowRight, Bell, ClipboardCheck, Leaf, Plus, Sprout, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { HOME_QUICK_COMMIT_MINUTES } from "@/lib/home-presets";
+import homeStudyGroup from "@/assets/home-study-group.png";
 import { MobileShell } from "@/components/BottomNav";
 import { CxCoin } from "@/components/CxCoin";
 import { CxCoinPopup } from "@/components/CxCoinPopup";
@@ -154,22 +157,19 @@ function MobileHome() {
     : `${s.todayMinutes}m`;
 
   return (
-    <MobileShell>
-      <main className="cx-home mx-auto flex h-[calc(100dvh-88px)] max-w-md flex-col gap-3 px-4 pb-2 pt-5">
-        <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
-          <div className="min-w-0 pt-8">
-            <h1 className="font-display text-[15px] font-medium leading-snug text-muted-foreground">
+    <MobileShell className="cx-phone-home-shell">
+      <main className="cx-home mx-auto flex max-w-md flex-col">
+        <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-2 gap-y-1">
+          <div className="min-w-0">
+            <h1 className="font-display text-base font-medium leading-snug text-foreground">
               <span className="sr-only">CommitX study dashboard — </span>
               {greeting()}
             </h1>
-            <p className="truncate font-display text-[clamp(20px,5.5vw,26px)] font-semibold leading-tight text-foreground">
+            <p className="truncate font-display text-[22px] font-semibold leading-tight text-foreground">
               {hydrated ? firstName : "\u00A0"}
             </p>
-            <p className="truncate text-xs text-muted-foreground">
-              {hydrated ? message : "\u00A0"}
-            </p>
           </div>
-          <div className="flex shrink-0 items-center gap-1.5 pt-8">
+          <div className="flex shrink-0 items-center gap-2">
             <CxCoinPopup coins={state.coins} hydrated={hydrated}>
               <TopChip
                 icon={<CxCoin className="h-5 w-5" />}
@@ -184,28 +184,30 @@ function MobileHome() {
               aria-label="Notification settings"
               className="flex h-9 w-9 shrink-0 items-center justify-center text-foreground"
             >
-              <Bell className="h-5 w-5" />
+               <Bell className="h-6 w-6" />
             </Link>
           </div>
+          <p className="col-span-2 truncate text-xs leading-5 text-muted-foreground">{hydrated ? message : "\u00A0"}</p>
         </header>
 
-        <section className="cx-home-landscape relative flex min-h-0 flex-1 flex-col justify-end overflow-hidden rounded-[24px] border border-hairline bg-card px-5 py-5 shadow-soft">
+        <section className="cx-home-landscape relative flex flex-1 flex-col justify-end overflow-hidden rounded-[24px] border border-hairline bg-card px-5 py-5 shadow-soft">
           <img src={focusMountains} alt="Soft green mountains at sunrise" width={1536} height={1024} className="absolute inset-0 h-full w-full object-cover object-center" />
           <div className="cx-home-image-wash absolute inset-0" />
           <div className="relative z-10">
-            <h2 className="font-display text-[24px] font-semibold leading-tight text-foreground">Ready to focus?</h2>
-            <Link to="/commit" search={next ? { plan: 1 } : {}} className="mt-1.5 inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-soft">
-              <Leaf className="h-4 w-4" /> Start Focus Session
-            </Link>
-            <p className="mt-1.5 truncate text-xs text-foreground">
+            {plansHydrated && next && <span className="cx-home-plan mb-2 inline-flex max-w-full items-center gap-1.5 rounded-full px-2.5 py-1 text-xs"><Leaf className="h-4 w-4 shrink-0" /><span className="truncate">{next.plan.subject} · {formatTime(next.plan.time)}</span></span>}
+            <h2 className="cx-home-hero-title font-display text-[25px] font-semibold leading-tight">Ready to focus?</h2>
+            <Button asChild className="cx-home-start mt-2 h-11 gap-2 rounded-full px-4 text-sm font-semibold">
+              <Link to="/commit" search={next ? { plan: 1 } : {}}><Leaf className="h-5 w-5" /> Start Focus Session</Link>
+            </Button>
+            <p className="cx-home-hero-caption mt-2 truncate text-xs">
               {plansHydrated && next ? `${next.plan.subject} · ${formatTime(next.plan.time)}` : "Nothing scheduled · Tap to begin"}
             </p>
           </div>
         </section>
 
         <section aria-label="Today at a glance">
-          <h2 className="mb-1 font-display text-lg font-semibold text-foreground">Today at a Glance</h2>
-          <Link to="/planner" className="flex h-[84px] items-center gap-3 rounded-[20px] border border-hairline bg-card px-3 shadow-soft">
+          <h2 className="mb-1.5 font-display text-xl font-semibold text-foreground">Today at a Glance</h2>
+          <Link to="/planner" className="cx-home-glance flex h-[80px] items-center gap-3 rounded-[20px] border border-hairline bg-card px-3 shadow-soft">
             <div className="relative flex h-[64px] w-[64px] shrink-0 items-center justify-center">
               <svg viewBox="0 0 64 64" className="absolute inset-0 h-full w-full -rotate-90" aria-hidden="true">
                 <circle cx="32" cy="32" r="27" fill="none" stroke="var(--muted)" strokeWidth="7" />
@@ -215,8 +217,8 @@ function MobileHome() {
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium tabular-nums text-muted-foreground">{hydrated ? goalValue.trim() : "—"} / {formatGoalHours(goalHours)}</p>
-              <p className="truncate font-display text-base font-semibold text-foreground">{taskCount} {taskCount === 1 ? "task" : "tasks"} planned</p>
-              <p className="text-[11px] text-muted-foreground">Stay consistent and keep it simple.</p>
+               <p className="flex items-center gap-1.5 font-display text-base font-semibold text-foreground"><span className="truncate">{taskCount} {taskCount === 1 ? "task" : "tasks"} planned</span><ClipboardCheck className="h-4 w-4 shrink-0 text-muted-foreground" /></p>
+               <p className="text-[10px] leading-4 text-muted-foreground">Stay consistent and keep it simple.</p>
             </div>
             <ArrowRight className="h-4 w-4 shrink-0 text-primary" />
           </Link>
@@ -224,22 +226,24 @@ function MobileHome() {
 
         <section aria-label="Quick Commit">
           <div className="mb-1 flex items-baseline justify-between">
-            <h2 className="font-display text-lg font-semibold text-foreground">Quick Commit</h2>
-            <Link to="/history" className="text-[11px] text-primary">History</Link>
+            <h2 className="font-display text-xl font-semibold text-foreground">Quick Commit</h2>
+            <Link to="/history" className="text-xs text-primary">History</Link>
           </div>
-          <div className="grid grid-cols-3 gap-2">
-            {[25, 50, 90].map((minutes) => (
-              <Link key={minutes} to="/commit" search={{ duration: minutes }} className="flex h-10 items-center justify-center gap-1 rounded-full border border-hairline bg-card text-sm font-medium text-foreground shadow-soft">
-                <Leaf className="h-4 w-4 text-primary" /> {minutes} min
-              </Link>
+          <div className="cx-home-quick grid grid-cols-[1fr_1fr_1fr_1.05fr] gap-1.5">
+            {HOME_QUICK_COMMIT_MINUTES.map((minutes) => (
+              <Button asChild key={minutes} variant="outline" className={cn("h-10 gap-1 rounded-full px-1 text-xs font-medium", minutes === 60 && "cx-home-quick-featured")}>
+                <Link to="/commit" search={{ duration: minutes }}>{minutes === 60 ? <Sprout className="h-4 w-4" /> : <Leaf className="h-4 w-4" />} {minutes} min</Link>
+              </Button>
             ))}
+            <Button asChild variant="outline" className="h-10 gap-1 rounded-full px-1 text-xs font-medium"><Link to="/commit">Custom <Plus className="h-3.5 w-3.5" /></Link></Button>
           </div>
         </section>
 
-        <Link to="/group" className="flex min-h-[68px] items-center gap-3 rounded-[20px] border border-hairline bg-card px-3 shadow-soft">
+        <Link to="/group" className="cx-home-group relative flex min-h-[64px] items-center gap-3 overflow-hidden rounded-[20px] border border-hairline bg-card px-3 shadow-soft">
+          <img src={homeStudyGroup} alt="" aria-hidden="true" loading="lazy" width={1152} height={576} className="pointer-events-none absolute bottom-0 right-3 h-16 w-28 object-contain opacity-25" />
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-secondary text-primary"><Users className="h-5 w-5" /></span>
-          <span className="min-w-0 flex-1"><span className="block truncate font-display text-base font-semibold text-foreground">Group Study</span><span className="block truncate text-[11px] text-muted-foreground">Learn together. Stay accountable.</span></span>
-          <ArrowRight className="h-4 w-4 shrink-0 text-primary" />
+           <span className="relative min-w-0 flex-1"><span className="block truncate font-display text-lg font-semibold text-foreground">Group Study</span><span className="block truncate text-[11px] text-muted-foreground">Learn together. Stay accountable.</span></span>
+           <ArrowRight className="relative h-5 w-5 shrink-0 text-primary" />
         </Link>
       </main>
     </MobileShell>
@@ -260,7 +264,7 @@ function TopChip({
   return (
     <div
       className={cn(
-        "flex items-center gap-1.5 rounded-full bg-card px-3 py-2 shadow-soft",
+        "cx-home-coins flex items-center gap-1.5 rounded-full px-2.5 py-2 shadow-soft",
         clickable && "cursor-pointer transition-transform active:scale-95 hover:shadow-lift",
       )}
       aria-label={srLabel}
@@ -268,7 +272,7 @@ function TopChip({
       tabIndex={clickable ? 0 : undefined}
     >
       {icon}
-      <span className="text-xs font-semibold text-foreground tabular-nums">
+      <span className="text-sm font-semibold tabular-nums">
         {value}
       </span>
     </div>
