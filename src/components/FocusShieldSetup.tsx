@@ -22,8 +22,8 @@ export interface FocusShieldResult {
 }
 
 /**
- * Optional Focus Shield flow shown after Standard → Continue.
- * Skipping keeps the existing Standard flow untouched.
+ * Optional Focus Shield flow shown after Verified → Continue.
+ * Skipping continues to theme selection.
  */
 export function FocusShieldSetup({
   open,
@@ -332,7 +332,7 @@ export function FocusShieldSetup({
             <h2 className="mt-4 font-display text-xl font-semibold">Focus Shield Ready</h2>
             <dl className="mt-4 space-y-2 rounded-2xl border border-hairline bg-background p-4 text-sm">
               <Row label="Duration" value={durationLabel} />
-              <Row label="Mode" value="Standard" />
+              <Row label="Mode" value="Verified" />
               <Row label="Focus Shield" value="ON" />
               <Row
                 label="Blocked apps"

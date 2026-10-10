@@ -292,12 +292,20 @@ function LiveSession() {
    */
   const [shieldOn, setShieldOn] = useState(false);
   useEffect(() => {
-    if (isVerified) return;
     const plan = readShieldPlan();
     clearShieldPlan();
-    if (!plan?.enabled || !plan.packages.length) return;
+    if (!plan?.enabled || !plan.packages.length) {
+      // App restarted mid-session: the native shield keeps its own wall-clock
+      // expiry, so only reflect it here — never restart or extend it.
+      if (!shieldActive()) return;
+      setShieldOn(true);
+      const id = window.setInterval(() => setShieldOn(shieldActive()), 5000);
+      return () => window.clearInterval(id);
+    }
 
-    const endsAt = Date.now() + duration * 60 * 1000;
+    // Blocked apps stay blocked until the committed time (plus any break) ends.
+    const endsAt =
+      Date.now() + duration * 60 * 1000 + (breaksApply ? RECOVERY_BREAK_MS : 0);
     const ok = startShield(plan.packages, endsAt);
     const live = ok && shieldActive();
     setShieldOn(live);
@@ -402,6 +410,8 @@ function LiveSession() {
 
   const [now, setNow] = useState<number>(() => Date.now());
   const [, setPaused] = useState<boolean>(() => runningSinceRef.current === null);
+  // Standard sessions only: cancelling ends the session and forfeits the stake.
+  const [confirmCancel, setConfirmCancel] = useState(false);
   const [quote] = useState(() => QUOTES[Math.floor(Math.random() * QUOTES.length)]);
   const doneRef = useRef(false);
   const graceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -725,6 +735,12 @@ function LiveSession() {
 
     const failNow = (reason: VerifiedFailureReason) => {
       if (doneRef.current || phaseRef.current !== "focus") return;
+      // Android app: switching apps is allowed in Verified Mode — Focus
+      // Shield keeps the selected apps blocked instead. Leaving never fails.
+      if (!isWebRuntime()) {
+        log("Verified Leave Allowed", { reason });
+        return;
+      }
       clearGrace();
       log("Verified Failure", { reason });
       markActiveVerifiedSessionPendingFailure(reason);
@@ -747,7 +763,9 @@ function LiveSession() {
         // On the web, leaving the page fails immediately (handled by the
         // web-only effect below) — no grace window there.
         if (isWebRuntime()) return;
-        startGrace("hidden");
+        // Android app: app switching is allowed; persist the clock only.
+        hiddenAtRef.current = Date.now();
+        persist();
       } else {
         const away = hiddenAtRef.current ? Date.now() - hiddenAtRef.current : 0;
         hiddenAtRef.current = null;
@@ -765,11 +783,12 @@ function LiveSession() {
       // beforeunload/reload markers without misclassifying a device lock.
       if (isWebRuntime()) return;
       if (event.persisted) return;
-      markActiveVerifiedSessionPendingFailure("browser_unload");
+      // Android app: a closed/restarted app restores the session instead.
+      persist();
     };
     const onBeforeUnload = () => {
       if (isWebRuntime()) return;
-      if (phaseRef.current === "focus") markActiveVerifiedSessionPendingFailure("browser_unload");
+      if (phaseRef.current === "focus") persist();
     };
     const onNativeUserLeaveHint = (event: Event) =>
       failNow(eventReason(event, "android_user_leave"));
@@ -1227,12 +1246,12 @@ function LiveSession() {
               {coinLabel(value)} committed
             </p>
           )}
-          {isVerified && !onBreak && (
+          {isVerified && !onBreak && isWebRuntime() && (
             <p className="mt-6 rounded-full bg-foreground/5 px-4 py-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">
               Leaving CommitX fails this session
             </p>
           )}
-          {!isVerified && shieldOn && (
+          {shieldOn && (
             <p className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-4 py-1.5 text-[11px] font-medium uppercase tracking-widest text-primary">
               <Shield className="h-3.5 w-3.5" />
               Focus Shield ON
@@ -1249,6 +1268,15 @@ function LiveSession() {
 
 
       <div className="relative z-10 mx-auto w-full max-w-md pb-2 text-center">
+        {!isVerified && (
+          <button
+            type="button"
+            onClick={() => setConfirmCancel(true)}
+            className="mx-auto mb-5 block rounded-full border border-hairline bg-background/70 px-5 py-2 text-xs font-medium text-muted-foreground backdrop-blur"
+          >
+            Cancel session
+          </button>
+        )}
         <span className="mx-auto block h-px w-16 bg-hairline" />
         <p className="mt-5 px-2 font-display text-base leading-relaxed text-foreground/80">
           “{quote}”
@@ -1331,6 +1359,35 @@ function LiveSession() {
         </div>
       )}
 
+      {confirmCancel && !isVerified && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/20 backdrop-blur-sm sm:items-center">
+          <div className="w-full max-w-md rounded-t-3xl bg-card p-6 shadow-lift sm:rounded-3xl">
+            <p className="font-display text-xl font-semibold">Cancel session?</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {value > 0
+                ? `Cancelling ends this session and forfeits your ${coinLabel(value)}.`
+                : "Cancelling ends this session now."}
+            </p>
+            <div className="mt-6 flex flex-col gap-3">
+              <button
+                onClick={() => setConfirmCancel(false)}
+                className="w-full rounded-full bg-primary px-5 py-3.5 text-sm font-medium text-primary-foreground"
+              >
+                Keep focusing
+              </button>
+              <button
+                onClick={() => {
+                  setConfirmCancel(false);
+                  complete("failed", "quit");
+                }}
+                className="w-full rounded-full border border-hairline bg-background px-5 py-3.5 text-sm font-medium text-destructive"
+              >
+                Cancel session
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

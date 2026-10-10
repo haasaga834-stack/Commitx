@@ -98,7 +98,11 @@
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Displays the remaining time of a user-started Verified study commitment on the lock screen, including recovery-break state; stops at timer expiry or an existing verification outcome." />
         </service>
-        <receiver android:name=".VerifiedCountdownReceiver" android:exported="false" />
+        <receiver android:name=".VerifiedCountdownReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
 
         <service
             android:name=".FocusShieldService"
