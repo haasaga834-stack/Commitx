@@ -292,12 +292,20 @@ function LiveSession() {
    */
   const [shieldOn, setShieldOn] = useState(false);
   useEffect(() => {
-    if (isVerified) return;
     const plan = readShieldPlan();
     clearShieldPlan();
-    if (!plan?.enabled || !plan.packages.length) return;
+    if (!plan?.enabled || !plan.packages.length) {
+      // App restarted mid-session: the native shield keeps its own wall-clock
+      // expiry, so only reflect it here — never restart or extend it.
+      if (!shieldActive()) return;
+      setShieldOn(true);
+      const id = window.setInterval(() => setShieldOn(shieldActive()), 5000);
+      return () => window.clearInterval(id);
+    }
 
-    const endsAt = Date.now() + duration * 60 * 1000;
+    // Blocked apps stay blocked until the committed time (plus any break) ends.
+    const endsAt =
+      Date.now() + duration * 60 * 1000 + (breaksApply ? RECOVERY_BREAK_MS : 0);
     const ok = startShield(plan.packages, endsAt);
     const live = ok && shieldActive();
     setShieldOn(live);
