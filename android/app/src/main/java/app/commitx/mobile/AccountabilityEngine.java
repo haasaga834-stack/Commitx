@@ -134,16 +134,15 @@ public class AccountabilityEngine extends BroadcastReceiver {
 
     static SharedPreferences prefs(Context c) { return c.getSharedPreferences(PREFS, Context.MODE_PRIVATE); }
 
-    static String style(Context c) { return prefs(c).getString("style", "sarcastic"); }
+    // Built-in tone: legacy preferences must not change the notification style.
+    static String style(Context c) { return "brutal"; }
 
     static boolean masterOn(Context c) { return MotivationStore.enabled(c); }
 
     static void setStyle(Context c, String style) {
-        String s = style == null ? "sarcastic" : style.toLowerCase(java.util.Locale.US);
-        if (!s.matches("gentle|sarcastic|savage|brutal|off")) s = "sarcastic";
-        prefs(c).edit().putString("style", s).apply();
-        if ("off".equals(s)) { cancelAll(c); clearShown(c); }
-        else reconcile(c);
+        // Preserve bridge compatibility while retiring user-selectable tones.
+        prefs(c).edit().putString("style", "brutal").apply();
+        reconcile(c);
     }
 
     /* ------------------------------ Events ------------------------------ */
@@ -324,7 +323,7 @@ public class AccountabilityEngine extends BroadcastReceiver {
 
     /* ----------------------------- Helpers ------------------------------ */
 
-    private static boolean enabledNow(Context c) { return masterOn(c) && !"off".equals(style(c)); }
+    private static boolean enabledNow(Context c) { return masterOn(c); }
 
     private static long now() { return System.currentTimeMillis(); }
 

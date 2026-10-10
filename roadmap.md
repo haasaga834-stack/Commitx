@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Remove Accountability Style from Settings and enforce built-in Brutal for current and legacy users; bridge tests passed and Android syntax checked (device delivery requires an updated Android build)
+
 - [ ] Add native Verified lock-screen countdown, theme accents, privacy-safe notification and lifecycle tests
 - [ ] Physical Android lock/background/permission testing — requires an attached physical device
 
