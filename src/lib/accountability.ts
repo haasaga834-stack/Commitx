@@ -3,13 +3,9 @@
  * nudge fires (randomized, cooldowns, daily cap, quiet hours) so it works with
  * the app closed. This module only reports commitment events. No-op on the web.
  */
-import { useEffect, useState } from "react";
 import { getState } from "@/lib/commitx-store";
 
-export type AccountabilityStyle = "gentle" | "sarcastic" | "savage" | "brutal" | "off";
-export const ACCOUNTABILITY_STYLES: AccountabilityStyle[] = ["gentle", "sarcastic", "savage", "brutal", "off"];
-export const DEFAULT_ACCOUNTABILITY_STYLE: AccountabilityStyle = "sarcastic";
-const KEY = "commitx.accountability.style";
+export const DEFAULT_ACCOUNTABILITY_STYLE = "brutal";
 
 type Bridge = {
   setAccountabilityStyle?: (style: string) => void;
@@ -27,29 +23,6 @@ function safe(fn: () => void) {
   try {
     fn();
   } catch {}
-}
-
-export function getAccountabilityStyle(): AccountabilityStyle {
-  if (typeof window === "undefined") return DEFAULT_ACCOUNTABILITY_STYLE;
-  const v = window.localStorage.getItem(KEY) as AccountabilityStyle | null;
-  return v && ACCOUNTABILITY_STYLES.includes(v) ? v : DEFAULT_ACCOUNTABILITY_STYLE;
-}
-
-export function setAccountabilityStyle(style: AccountabilityStyle) {
-  safe(() => window.localStorage.setItem(KEY, style));
-  safe(() => bridge()?.setAccountabilityStyle?.(style));
-  window.dispatchEvent(new Event("commitx-accountability"));
-}
-
-export function useAccountabilityStyle() {
-  const [style, setStyle] = useState<AccountabilityStyle>(DEFAULT_ACCOUNTABILITY_STYLE);
-  useEffect(() => {
-    const sync = () => setStyle(getAccountabilityStyle());
-    sync();
-    window.addEventListener("commitx-accountability", sync);
-    return () => window.removeEventListener("commitx-accountability", sync);
-  }, []);
-  return style;
 }
 
 /** Day streak and consecutive most-recent failures from local history. */
@@ -76,9 +49,9 @@ export function behaviourSnapshot() {
 export function accountabilityAppOpened() {
   const b = bridge();
   if (!b?.accountabilityAppOpened) return;
-  safe(() => b.setAccountabilityStyle?.(getAccountabilityStyle()));
+  safe(() => b.setAccountabilityStyle?.(DEFAULT_ACCOUNTABILITY_STYLE));
   const { streak, failStreak } = behaviourSnapshot();
-  safe(() => b.accountabilityAppOpened!(streak, failStreak));
+  safe(() => b.accountabilityAppOpened?.(streak, failStreak));
 }
 
 export function accountabilityDrafted(targetMin: number) {
@@ -97,6 +70,6 @@ export function accountabilityEnded(status: "completed" | "failed", targetMin: n
   setTimeout(() => {
     const snap = behaviourSnapshot();
     const failStreak = status === "failed" ? Math.max(1, snap.failStreak) : 0;
-    safe(() => b.accountabilityEnded!(status, Math.round(targetMin), Math.max(0, Math.round(doneMin)), snap.streak, failStreak));
+    safe(() => b.accountabilityEnded?.(status, Math.round(targetMin), Math.max(0, Math.round(doneMin)), snap.streak, failStreak));
   }, 1500);
 }
