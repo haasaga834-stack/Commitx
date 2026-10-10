@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Match phone Home to the supplied mint reference and use 30/60/90-minute Quick Commit options; preserve tablet, website and session behavior
+
 - [x] Remove Accountability Style from Settings and enforce built-in Brutal for current and legacy users; bridge tests passed and Android syntax checked (device delivery requires an updated Android build)
 
 - [ ] Add native Verified lock-screen countdown, theme accents, privacy-safe notification and lifecycle tests
