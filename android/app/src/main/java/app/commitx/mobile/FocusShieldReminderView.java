@@ -42,29 +42,25 @@ final class FocusShieldReminderView extends LinearLayout {
         LinearLayout.LayoutParams badgeParams = new LinearLayout.LayoutParams(dp(96), dp(96));
         badgeParams.gravity = Gravity.CENTER;
         content.addView(emblem, badgeParams);
-        gap(content, 22);
-        content.addView(text("CAUGHT IN 4K.", 12, R.color.shield_roast, true), fullWidth());
-        gap(content, 10);
-        content.addView(text("Big goals.\nTiny attention span?", 29, R.color.shield_foreground, true), fullWidth());
-        gap(content, 16);
-        appView = text("", 15, R.color.shield_muted, false);
+        gap(content, 20);
+        content.addView(text("Caught in 4K.", 30, R.color.shield_foreground, true), fullWidth());
+        gap(content, 8);
+        appView = text("", 14, R.color.shield_muted, false);
         setAppLabel(appLabel);
         content.addView(appView, fullWidth());
-        gap(content, 12);
-        content.addView(text("Your thumb tried to quit.\nYour promise didn’t.", 16, R.color.shield_roast, true), fullWidth());
         gap(content, 26);
-        content.addView(text("TIME LEFT TO PROVE YOURSELF", 10, R.color.shield_muted, true), fullWidth());
-        gap(content, 4);
-        remainingView = text(remaining, 44, R.color.shield_primary, true);
+        remainingView = text(remaining, 46, R.color.shield_primary, true);
         remainingView.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
         content.addView(remainingView, fullWidth());
         scroll.addView(content, new ScrollView.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         addView(scroll, new LayoutParams(LayoutParams.MATCH_PARENT, 0, 1f));
 
-        TextView encouragement = text("The comeback starts with one tap.", 12, R.color.shield_muted, false);
-        addView(encouragement, fullWidth());
-        gap(this, 12);
-        Button back = new Button(context);
+        addView(back, new LayoutParams(LayoutParams.MATCH_PARENT, dp(56)));
+    }
+
+    void setAppLabel(String label) {
+        appView.setText("Opening " + label + " already?");
+    }
         back.setAllCaps(false);
         back.setText("Back to CommitX  →");
         back.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
