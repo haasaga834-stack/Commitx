@@ -971,7 +971,42 @@ body.cx-app-theme .cx-tablet-home h2 { font-family: var(--font-sans); }
   .cx-tablet-home-actions { flex-direction: column; align-items: flex-start; }
 }
 @media (orientation: portrait) {
-  .cx-tablet-home-hero { padding-block: 4rem 5rem; }
+  body.cx-app-theme .cx-tablet-home > .relative {
+    display: flex;
+    min-height: 100dvh;
+    flex-direction: column;
+  }
+  .cx-tablet-home main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .cx-tablet-home-hero {
+    flex: 1;
+    padding-block: 2rem;
+  }
+  .cx-tablet-home-group { width: 100%; }
+  .cx-tablet-home main > nav {
+    padding-bottom: max(2rem, env(safe-area-inset-bottom));
+  }
+}
+@media (orientation: portrait) and (min-height: 1000px) {
+  .cx-tablet-home-hero {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(280px, 1fr);
+    gap: 2rem;
+    text-align: center;
+  }
+  .cx-tablet-home-title { font-size: 52px; }
+  .cx-tablet-home-hero > div > p { margin-inline: auto; }
+  .cx-tablet-home-actions {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+  }
+  .cx-tablet-home-hourglass { height: 320px; max-width: 430px; }
+  .cx-tablet-home-glass { transform: none; }
 }
 @media (max-height: 700px) and (orientation: landscape) {
   .cx-tablet-home-header { padding-block: max(1.5rem, env(safe-area-inset-top)) 0.5rem; }
