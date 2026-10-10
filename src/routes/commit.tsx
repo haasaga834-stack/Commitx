@@ -155,15 +155,16 @@ function Commit() {
         setVerifiedWarn(true);
         return;
       }
+      // Verified: Focus Shield first (Android app), then themes. Check the
+      // bridge at the action so backing out never skips the Shield step.
+      if (hasNativeBridge()) {
+        setShieldOpen(true);
+        return;
+      }
       setThemeOpen(true);
       return;
     }
-    // Check the bridge at the action, not once on mount. Each new Standard
-    // confirmation must offer Shield, including after backing out of themes.
-    if (hasNativeBridge()) {
-      setShieldOpen(true);
-      return;
-    }
+    // Standard: straight to theme selection.
     setThemeOpen(true);
   }
 
@@ -203,8 +204,8 @@ function Commit() {
       return;
     }
     setStarting(true);
-    // Focus Shield is Standard-only; Verified sessions never carry a plan.
-    if (mode === "standard" && shieldPlan.enabled && shieldPlan.packages.length) {
+    // Focus Shield belongs to Verified sessions; Standard never carries a plan.
+    if (mode === "verified" && shieldPlan.enabled && shieldPlan.packages.length) {
       writeShieldPlan(shieldPlan);
     } else {
       clearShieldPlan();
@@ -300,14 +301,23 @@ function Commit() {
           Before you start a Verified session
         </h2>
         <p className="mt-2 text-sm text-foreground">
-          Verified Session requires you to stay inside CommitX. You cannot leave the app,
-          switch to another app, or use the Back button during the session.
+          {native
+            ? "Once it starts there is no cancel, pause or end. Apps you pick in Focus Shield stay blocked until the time is up."
+            : "Verified Session requires you to stay inside CommitX. You cannot leave the app, switch to another app, or use the Back button during the session."}
         </p>
         <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
           {[
-            "You cannot leave the app — Home, Recents or switching apps fails the session immediately.",
-            "The Back button is disabled while the session is running.",
-            "Do Not Disturb must stay on; emergency calls have a 60 second grace window.",
+            ...(native
+              ? [
+                  "You can switch to apps you didn't block; blocked apps stay locked until the session ends.",
+                  "No cancel, pause or skip — the Back button can't exit the session.",
+                  "Do Not Disturb must stay on; emergency calls always work.",
+                ]
+              : [
+                  "You cannot leave the app — Home, Recents or switching apps fails the session immediately.",
+                  "The Back button is disabled while the session is running.",
+                  "Do Not Disturb must stay on; emergency calls have a 60 second grace window.",
+                ]),
             "Sessions longer than two hours pause once for a 5-minute break at the halfway point.",
             "Your committed amount is returned only when you finish.",
           ].map((t) => (
@@ -608,7 +618,7 @@ function Commit() {
               points={[
                 "App switching allowed",
                 "Calls allowed",
-                "Timer pauses in background",
+                "Cancel anytime (forfeits stake)",
               ]}
               selected={mode === "standard"}
               onClick={() => {
@@ -620,9 +630,9 @@ function Commit() {
               title="Verified"
               subtitle="Strict accountability"
               points={[
-                "Leaving the app fails",
-                "DND required, 60s call grace",
-                "Split-screen fails",
+                ...(native
+                  ? ["Chosen apps blocked", "No cancel or pause", "DND required"]
+                  : ["Leaving the app fails", "DND required, 60s call grace", "Split-screen fails"]),
               ]}
               selected={mode === "verified"}
               onClick={() => {
@@ -678,8 +688,7 @@ function Commit() {
         >
           {starting
             ? "Starting…"
-            : (mode === "verified" && !confirmVerified) ||
-                (mode === "standard" && native)
+            : (mode === "verified" && (!confirmVerified || native))
               ? "Continue"
               : "Commit Now"}
 

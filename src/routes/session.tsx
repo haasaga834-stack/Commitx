@@ -1359,6 +1359,35 @@ function LiveSession() {
         </div>
       )}
 
+      {confirmCancel && !isVerified && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/20 backdrop-blur-sm sm:items-center">
+          <div className="w-full max-w-md rounded-t-3xl bg-card p-6 shadow-lift sm:rounded-3xl">
+            <p className="font-display text-xl font-semibold">Cancel session?</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {value > 0
+                ? `Cancelling ends this session and forfeits your ${coinLabel(value)}.`
+                : "Cancelling ends this session now."}
+            </p>
+            <div className="mt-6 flex flex-col gap-3">
+              <button
+                onClick={() => setConfirmCancel(false)}
+                className="w-full rounded-full bg-primary px-5 py-3.5 text-sm font-medium text-primary-foreground"
+              >
+                Keep focusing
+              </button>
+              <button
+                onClick={() => {
+                  setConfirmCancel(false);
+                  complete("failed", "quit");
+                }}
+                className="w-full rounded-full border border-hairline bg-background px-5 py-3.5 text-sm font-medium text-destructive"
+              >
+                Cancel session
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
