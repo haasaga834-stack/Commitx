@@ -55,12 +55,7 @@ final class FocusShieldReminderView extends LinearLayout {
         scroll.addView(content, new ScrollView.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         addView(scroll, new LayoutParams(LayoutParams.MATCH_PARENT, 0, 1f));
 
-        addView(back, new LayoutParams(LayoutParams.MATCH_PARENT, dp(56)));
-    }
-
-    void setAppLabel(String label) {
-        appView.setText("Opening " + label + " already?");
-    }
+        Button back = new Button(context);
         back.setAllCaps(false);
         back.setText("Back to CommitX  →");
         back.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
@@ -75,7 +70,7 @@ final class FocusShieldReminderView extends LinearLayout {
     }
 
     void setAppLabel(String label) {
-        appView.setText("Opening " + label + " already?\nThat’s not the plot twist you promised.");
+        appView.setText("Opening " + label + " already?");
     }
 
     private TextView text(String value, int size, int colorId, boolean bold) {
