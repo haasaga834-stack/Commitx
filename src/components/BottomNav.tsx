@@ -65,13 +65,13 @@ function BottomNavBase() {
  */
 export const BottomNav = memo(BottomNavBase);
 
-export function MobileShell({ children }: { children: React.ReactNode }) {
+export function MobileShell({ children, className }: { children: React.ReactNode; className?: string }) {
   const isTablet = useIsTablet();
 
   if (isTablet) return <TabletShell>{children}</TabletShell>;
 
   return (
-    <div className="min-h-dvh overflow-x-hidden bg-background">
+    <div className={cn("min-h-dvh overflow-x-hidden bg-background", className)}>
       <div className="mx-auto w-full max-w-md overflow-x-hidden pb-[88px]">{children}</div>
       <BottomNav />
     </div>

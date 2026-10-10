@@ -1019,19 +1019,76 @@ body.cx-app-theme .cx-tablet-home h2 { font-family: var(--font-sans); }
   .cx-tablet-home-group { padding-block: 1rem; }
 }
 
-/* Only the native Home uses the compact landscape treatment. */
-body.cx-app-theme .cx-home-image-wash {
-  background: linear-gradient(to top, var(--card) 0%, color-mix(in oklch, var(--card) 78%, transparent) 28%, transparent 78%);
+/* Phone Home presentation only; tablet and public Home keep their own themes. */
+body.cx-app-theme .cx-phone-home-shell {
+  --home-hero-ink: oklch(0.99 0.006 160);
+  --home-hero-shade: oklch(0.16 0.018 182);
+  --home-action: oklch(0.43 0.083 184);
+  --home-action-light: oklch(0.54 0.095 174);
+  --home-gold: oklch(0.79 0.105 83);
+  --home-gold-light: oklch(0.94 0.076 91);
+  --home-gold-ink: oklch(0.43 0.08 77);
+  --home-shadow: 0 8px 16px -9px color-mix(in oklch, var(--foreground) 28%, transparent), inset 0 1px 2px color-mix(in oklch, var(--card) 80%, transparent);
+  background-image: var(--gradient-warm);
 }
-body.cx-app-theme .cx-home-landscape img {
-  filter: brightness(0.62) saturate(0.8);
+body.cx-app-theme .cx-phone-home-shell .cx-home {
+  height: calc(100dvh - 88px - env(safe-area-inset-bottom, 0px));
+  min-height: 560px;
+  gap: 14px;
+  padding: max(24px, env(safe-area-inset-top, 0px)) 14px 12px;
 }
-html:not(.dark) body.cx-app-theme .cx-home-landscape img {
-  filter: none;
+body.cx-app-theme .cx-phone-home-shell .cx-home * { letter-spacing: 0; }
+body.cx-app-theme .cx-phone-home-shell .cx-home-landscape {
+  min-height: 180px;
+  box-shadow: var(--shadow-lift);
 }
-@media (max-height: 640px) {
-  body.cx-app-theme .cx-home { gap: 0.4rem; padding-top: 0.5rem; }
-  body.cx-app-theme .cx-home-landscape { min-height: 145px; padding-block: 0.7rem; }
+body.cx-app-theme .cx-phone-home-shell .cx-home-image-wash {
+  background: linear-gradient(to top, var(--home-hero-shade), color-mix(in oklch, var(--home-hero-shade) 68%, transparent) 25%, transparent 72%);
+}
+body.cx-app-theme .cx-phone-home-shell .cx-home-hero-title,
+body.cx-app-theme .cx-phone-home-shell .cx-home-hero-caption { color: var(--home-hero-ink); }
+body.cx-app-theme .cx-phone-home-shell .cx-home-plan {
+  background: color-mix(in oklch, var(--home-hero-ink) 88%, transparent);
+  color: var(--home-hero-shade);
+}
+body.cx-app-theme .cx-phone-home-shell .cx-home-start {
+  color: var(--home-hero-ink);
+  background: linear-gradient(110deg, var(--home-action), var(--home-action-light));
+  border: 1px solid color-mix(in oklch, var(--home-hero-ink) 50%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in oklch, var(--home-action-light) 28%, transparent), 0 0 18px color-mix(in oklch, var(--home-action-light) 45%, transparent);
+}
+body.cx-app-theme .cx-phone-home-shell .cx-home-coins {
+  color: var(--home-gold-ink);
+  background: linear-gradient(120deg, var(--home-gold), var(--home-gold-light) 45%, var(--home-gold));
+  border: 1px solid var(--home-gold-light);
+  box-shadow: 0 5px 12px -4px color-mix(in oklch, var(--home-gold-ink) 35%, transparent), inset 0 1px 3px var(--home-gold-light);
+}
+body.cx-app-theme .cx-phone-home-shell .cx-home-glance,
+body.cx-app-theme .cx-phone-home-shell .cx-home-group { box-shadow: var(--home-shadow); }
+body.cx-app-theme .cx-phone-home-shell .cx-home-quick a { background: transparent; border-color: var(--hairline); }
+body.cx-app-theme .cx-phone-home-shell .cx-home-quick .cx-home-quick-featured {
+  color: var(--home-hero-ink);
+  background: linear-gradient(115deg, var(--home-action-light), var(--home-action));
+  border-color: color-mix(in oklch, var(--home-hero-ink) 70%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--home-action-light) 22%, transparent);
+}
+body.cx-app-theme .cx-phone-home-shell nav.fixed {
+  inset-inline: max(10px, calc((100% - 428px) / 2));
+  bottom: max(8px, env(safe-area-inset-bottom, 0px));
+  border-radius: 22px;
+  background: color-mix(in oklch, var(--card) 75%, var(--background));
+  box-shadow: none;
+}
+body.cx-app-theme .cx-phone-home-shell nav.fixed > div { padding-block: 5px; }
+body.cx-app-theme .cx-phone-home-shell nav.fixed a { gap: 5px; font-size: 11px; }
+body.cx-app-theme .cx-phone-home-shell nav.fixed svg { width: 21px; height: 21px; }
+@media (min-height: 740px) {
+  body.cx-app-theme .cx-phone-home-shell .cx-home { gap: 16px; }
+  body.cx-app-theme .cx-phone-home-shell .cx-home-landscape { padding-block: 22px; }
+}
+@media (max-height: 660px) {
+  body.cx-app-theme .cx-phone-home-shell .cx-home { gap: 9px; padding-top: max(18px, env(safe-area-inset-top, 0px)); }
+  body.cx-app-theme .cx-phone-home-shell .cx-home-landscape { padding-block: 15px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

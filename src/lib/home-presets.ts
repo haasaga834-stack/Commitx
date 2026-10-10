@@ -1,0 +1,1 @@
+export const HOME_QUICK_COMMIT_MINUTES = [30, 60, 90] as const;
