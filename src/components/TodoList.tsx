@@ -45,11 +45,11 @@ export function TodoList({ compact = false, readOnly = false }: Props) {
       </div>
 
       {hydrated && todos.length > 0 && (
-        <ul className="mt-4 grid gap-2">
+        <ul className="mt-4 grid min-w-0 grid-cols-1 gap-2">
           {todos.map((t) => (
             <li
               key={t.id}
-              className="flex items-center gap-3 rounded-2xl bg-background px-3 py-2.5"
+              className="flex min-w-0 items-start gap-3 rounded-2xl bg-background px-3 py-2.5"
             >
               <button
                 onClick={() => toggleTodo(t.id)}
@@ -63,7 +63,7 @@ export function TodoList({ compact = false, readOnly = false }: Props) {
                 <Check className="h-3.5 w-3.5" />
               </button>
               <span
-                className={`min-w-0 flex-1 truncate text-sm ${
+                className={`min-w-0 flex-1 whitespace-normal text-sm leading-6 [overflow-wrap:anywhere] ${
                   t.done ? "text-muted-foreground line-through" : "text-foreground"
                 }`}
               >
