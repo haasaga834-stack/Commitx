@@ -80,6 +80,37 @@ public class VerifiedCountdownService extends Service {
         }
     }
 
+    /** Re-derives elapsedRealtime deadlines from wall-clock fields after a reboot. */
+    static boolean rebase(Context ctx, JSONObject state) {
+        try {
+            long now = System.currentTimeMillis();
+            long elapsed = SystemClock.elapsedRealtime();
+            String phase = state.optString("phase");
+            if (!"focus".equals(phase) && !"recovery_break".equals(phase)) return false;
+            long endsAt = state.isNull("endsAt") ? 0 : state.optLong("endsAt");
+            long breakAt = state.isNull("breakAt") ? 0 : state.optLong("breakAt");
+            long breakEndsAt = state.isNull("breakEndsAt") ? 0 : state.optLong("breakEndsAt");
+            if (endsAt <= 0 && breakEndsAt <= 0) return false;
+            state.put("endElapsed", endsAt > 0 ? elapsed + Math.max(0, endsAt - now) : 0);
+            state.put("breakElapsed", breakAt > now ? elapsed + (breakAt - now) : 0);
+            state.put("breakEndElapsed", breakEndsAt > 0 ? elapsed + Math.max(0, breakEndsAt - now) : 0);
+            state.put("bootEpoch", now - elapsed);
+            save(ctx, state);
+            return true;
+        } catch (Exception ignored) { return false; }
+    }
+
+    /** Called on BOOT_COMPLETED: restore the live countdown when a session was running. */
+    static void restoreAfterBoot(Context ctx) {
+        JSONObject state = read(ctx);
+        if (state == null || !rebase(ctx, state)) return;
+        try {
+            Intent service = new Intent(ctx, VerifiedCountdownService.class);
+            if (Build.VERSION.SDK_INT >= 26) ctx.startForegroundService(service);
+            else ctx.startService(service);
+        } catch (Exception ignored) { reconcile(ctx, state); }
+    }
+
     static void clear(Context ctx) {
         prefs(ctx).edit().remove("state").apply();
         cancelAlarm(ctx);
@@ -132,10 +163,15 @@ public class VerifiedCountdownService extends Service {
             long elapsed = SystemClock.elapsedRealtime();
             // Never re-use a pre-reboot elapsedRealtime base as a live session.
             if (Math.abs(System.currentTimeMillis() - elapsed - state.optLong("bootEpoch")) > 60000) {
-                clear(ctx);
-                NotificationManager nm = CommitXNotifications.manager(ctx);
-                if (nm != null) nm.cancel(ID);
-                return;
+                // Rebooted: rebuild the monotonic deadlines from the saved
+                // wall-clock timestamps instead of dropping the session.
+                if (!rebase(ctx, state)) {
+                    clear(ctx);
+                    NotificationManager nm = CommitXNotifications.manager(ctx);
+                    if (nm != null) nm.cancel(ID);
+                    return;
+                }
+                elapsed = SystemClock.elapsedRealtime();
             }
             String phase = state.optString("phase");
             long breakAt = state.optLong("breakElapsed");
@@ -199,10 +235,19 @@ public class VerifiedCountdownService extends Service {
         Notification.Builder b = builder(ctx).setSmallIcon(R.drawable.ic_verified_countdown)
                 .setContentTitle(title).setContentText(state.optString("goal", "Focus") + " · " + message)
                 .setStyle(new Notification.BigTextStyle().bigText(state.optString("goal", "Focus") + "\n" + message))
-                .setSubText("COMMITX · VERIFIED").setColor(ctx.getColor(themeColor(state.optString("theme"))))
+                .setSubText("CommitX · Verified session").setColor(ctx.getColor(themeColor(state.optString("theme"))))
                 .setVisibility(Notification.VISIBILITY_PRIVATE).setPublicVersion(publicVersion)
                 .setOngoing(!terminal).setOnlyAlertOnce(true).setAutoCancel(terminal)
                 .setCategory(Notification.CATEGORY_PROGRESS).setContentIntent(tap).setShowWhen(false);
+        try {
+            b.setLargeIcon(android.graphics.BitmapFactory.decodeResource(ctx.getResources(), R.mipmap.ic_launcher));
+        } catch (Exception ignored) { /* Icon is decorative only. */ }
+        long total = Math.max(1, state.optLong("durationMs"));
+        if ("focus".equals(phase) || "elapsed".equals(phase) || terminal) {
+            int pct = (int) Math.max(0, Math.min(100, Math.round(100.0 * (total - Math.min(total, remaining)) / total)));
+            if (terminal) pct = "failed".equals(outcome) ? pct : 100;
+            b.setProgress(100, pct, false);
+        }
         // System UI owns this live clock even when the app CPU is asleep.
         // Android formats its chronometer as M:SS/H:MM:SS; title is padded HH:MM:SS.
         if (running && Build.VERSION.SDK_INT >= 24) {

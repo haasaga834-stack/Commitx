@@ -525,7 +525,8 @@ public class MainActivity extends Activity {
     @Override
     protected void onUserLeaveHint() {
         super.onUserLeaveHint();
-        triggerVerifiedFailure("android_user_leave");
+        // Verified Mode allows app switching; Focus Shield blocks chosen apps.
+        // (previously: triggerVerifiedFailure("android_user_leave");)
     }
 
     /**
@@ -543,7 +544,8 @@ public class MainActivity extends Activity {
     public void onMultiWindowModeChanged(boolean isInMultiWindowMode, Configuration newConfig) {
         super.onMultiWindowModeChanged(isInMultiWindowMode, newConfig);
         if (isInMultiWindowMode) {
-            triggerVerifiedFailure("multi_window");
+            // Verified Mode allows app switching; Focus Shield blocks chosen apps.
+        // (previously: triggerVerifiedFailure("multi_window");)
         }
     }
 
@@ -551,7 +553,8 @@ public class MainActivity extends Activity {
     public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode, Configuration newConfig) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig);
         if (isInPictureInPictureMode) {
-            triggerVerifiedFailure("split_screen");
+            // Verified Mode allows app switching; Focus Shield blocks chosen apps.
+        // (previously: triggerVerifiedFailure("split_screen");)
         }
     }
 
