@@ -4,6 +4,8 @@ import { setNativeSessionLock, setNativeVerifiedModeActive } from "@/lib/native-
 import { Hourglass } from "@/components/Hourglass";
 import { z } from "zod";
 import { coinLabel } from "@/lib/commitx-store";
+import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const search = z.object({
   goal: z.string().default("Focus"),
@@ -20,6 +22,8 @@ export const Route = createFileRoute("/failed")({
       { name: "description", content: "The promise wasn't kept this time." },
       { property: "og:title", content: "CommitX — Commitment failed" },
       { property: "og:description", content: "The promise wasn't kept this time." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Failed,
@@ -93,16 +97,16 @@ function Failed() {
   return (
     <div className="fixed inset-0 z-50 flex min-h-screen flex-col items-center justify-center bg-background px-6">
       <Hourglass size={200} state="failed" />
-      <div className="mt-10 flex items-center gap-2">
-        <span className="text-2xl" aria-hidden>
-          ❌
+      <div className="mt-8 flex w-full max-w-xs flex-col items-center gap-3 text-center">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-destructive/10 text-destructive" aria-hidden="true">
+          <X className="h-6 w-6" strokeWidth={2.5} />
         </span>
-        <h1 className="font-display text-3xl font-semibold animate-fade-up">
+        <h1 className="w-full min-w-0 text-center font-display text-3xl font-semibold leading-tight animate-fade-up">
           Commitment Failed
         </h1>
       </div>
       <p
-        className="mt-1 text-sm text-muted-foreground animate-fade-up"
+        className="mt-2 w-full max-w-xs break-words text-center text-sm text-muted-foreground animate-fade-up"
         style={{ animationDelay: "80ms" }}
       >
         {goal}
@@ -121,19 +125,15 @@ function Failed() {
       )}
 
       <p
-        className="mt-5 rounded-2xl bg-foreground/5 px-5 py-3 text-sm text-foreground animate-fade-up"
+        className="mt-5 w-full max-w-xs rounded-2xl bg-foreground/5 px-5 py-3 text-center text-sm text-foreground animate-fade-up"
         style={{ animationDelay: "180ms" }}
       >
         {coinLabel(value)} forfeited from your Cx Coin balance
       </p>
 
-      <Link
-        to="/"
-        replace
-        className="mt-10 inline-block w-full max-w-xs rounded-full bg-foreground px-8 py-4 text-center text-base font-medium text-background shadow-soft"
-      >
-        Return Home
-      </Link>
+      <Button asChild className="mt-8 h-14 w-full max-w-xs rounded-full bg-foreground px-8 text-center text-base font-medium text-background shadow-soft hover:bg-foreground/90">
+        <Link to="/" replace>Return Home</Link>
+      </Button>
     </div>
   );
 }
