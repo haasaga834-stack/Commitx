@@ -211,9 +211,10 @@ function MobileHome() {
                 <circle cx="32" cy="32" r="27" fill="none" stroke="var(--muted)" strokeWidth="7" />
                 <circle cx="32" cy="32" r="27" fill="none" stroke="var(--primary)" strokeWidth="7" strokeLinecap="round" strokeDasharray={`${hydrated ? goalPct * 1.696 : 0} 170`} />
               </svg>
-              <span className="text-sm font-semibold tabular-nums text-foreground">{hydrated ? goalValue : "—"}<span className="text-[10px] font-normal">/{formatGoalHours(goalHours)}</span></span>
+              <span className="text-xs font-semibold tabular-nums text-foreground">{hydrated ? `${goalPct}%` : "—"}</span>
             </div>
             <div className="min-w-0 flex-1">
+              <p className="text-xs font-medium tabular-nums text-muted-foreground">{hydrated ? goalValue.trim() : "—"} / {formatGoalHours(goalHours)}</p>
               <p className="truncate font-display text-base font-semibold text-foreground">{taskCount} {taskCount === 1 ? "task" : "tasks"} planned</p>
               <p className="text-[11px] text-muted-foreground">Stay consistent and keep it simple.</p>
             </div>
