@@ -410,6 +410,8 @@ function LiveSession() {
 
   const [now, setNow] = useState<number>(() => Date.now());
   const [, setPaused] = useState<boolean>(() => runningSinceRef.current === null);
+  // Standard sessions only: cancelling ends the session and forfeits the stake.
+  const [confirmCancel, setConfirmCancel] = useState(false);
   const [quote] = useState(() => QUOTES[Math.floor(Math.random() * QUOTES.length)]);
   const doneRef = useRef(false);
   const graceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -733,6 +735,12 @@ function LiveSession() {
 
     const failNow = (reason: VerifiedFailureReason) => {
       if (doneRef.current || phaseRef.current !== "focus") return;
+      // Android app: switching apps is allowed in Verified Mode — Focus
+      // Shield keeps the selected apps blocked instead. Leaving never fails.
+      if (!isWebRuntime()) {
+        log("Verified Leave Allowed", { reason });
+        return;
+      }
       clearGrace();
       log("Verified Failure", { reason });
       markActiveVerifiedSessionPendingFailure(reason);
@@ -755,7 +763,9 @@ function LiveSession() {
         // On the web, leaving the page fails immediately (handled by the
         // web-only effect below) — no grace window there.
         if (isWebRuntime()) return;
-        startGrace("hidden");
+        // Android app: app switching is allowed; persist the clock only.
+        hiddenAtRef.current = Date.now();
+        persist();
       } else {
         const away = hiddenAtRef.current ? Date.now() - hiddenAtRef.current : 0;
         hiddenAtRef.current = null;
@@ -773,11 +783,12 @@ function LiveSession() {
       // beforeunload/reload markers without misclassifying a device lock.
       if (isWebRuntime()) return;
       if (event.persisted) return;
-      markActiveVerifiedSessionPendingFailure("browser_unload");
+      // Android app: a closed/restarted app restores the session instead.
+      persist();
     };
     const onBeforeUnload = () => {
       if (isWebRuntime()) return;
-      if (phaseRef.current === "focus") markActiveVerifiedSessionPendingFailure("browser_unload");
+      if (phaseRef.current === "focus") persist();
     };
     const onNativeUserLeaveHint = (event: Event) =>
       failNow(eventReason(event, "android_user_leave"));
@@ -1235,12 +1246,12 @@ function LiveSession() {
               {coinLabel(value)} committed
             </p>
           )}
-          {isVerified && !onBreak && (
+          {isVerified && !onBreak && isWebRuntime() && (
             <p className="mt-6 rounded-full bg-foreground/5 px-4 py-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">
               Leaving CommitX fails this session
             </p>
           )}
-          {!isVerified && shieldOn && (
+          {shieldOn && (
             <p className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-4 py-1.5 text-[11px] font-medium uppercase tracking-widest text-primary">
               <Shield className="h-3.5 w-3.5" />
               Focus Shield ON
@@ -1257,6 +1268,15 @@ function LiveSession() {
 
 
       <div className="relative z-10 mx-auto w-full max-w-md pb-2 text-center">
+        {!isVerified && (
+          <button
+            type="button"
+            onClick={() => setConfirmCancel(true)}
+            className="mx-auto mb-5 block rounded-full border border-hairline bg-background/70 px-5 py-2 text-xs font-medium text-muted-foreground backdrop-blur"
+          >
+            Cancel session
+          </button>
+        )}
         <span className="mx-auto block h-px w-16 bg-hairline" />
         <p className="mt-5 px-2 font-display text-base leading-relaxed text-foreground/80">
           “{quote}”
