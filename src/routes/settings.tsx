@@ -183,7 +183,6 @@ function Settings() {
         </div>
 
         {/* Appearance */}
-        <p className="mt-6 ">{SECTION && ""}</p>
         <p className={SECTION + " mt-6"}>Appearance</p>
         <div className="mt-2 overflow-hidden rounded-3xl bg-card shadow-soft">
           <div className={ROW + " justify-between"}>
