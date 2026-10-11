@@ -2,7 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { MobileShell } from "@/components/BottomNav";
 import { useAppState, stats, setState, formatCoins } from "@/lib/commitx-store";
 import { useState, useEffect, useMemo, useRef } from "react";
-import { Pencil, Check, Trophy, Clock, Camera, Settings as SettingsIcon } from "lucide-react";
+import { Pencil, Check, Trophy, Clock, Camera, ChevronDown, Settings as SettingsIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { fileToProfilePhoto } from "@/lib/profile-photo";
 import { useOnlineUsers } from "@/lib/presence";
 import { getPendingSessions, refreshFromCloud } from "@/lib/cloud-sync";
@@ -18,6 +20,8 @@ export const Route = createFileRoute("/profile")({
       { name: "description", content: "Your discipline, in numbers." },
       { property: "og:title", content: "CommitX — Profile" },
       { property: "og:description", content: "Your discipline, in numbers." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Profile,
@@ -72,6 +76,7 @@ function Profile() {
       }
     : local;
   const [editing, setEditing] = useState(false);
+  const [sexPickerOpen, setSexPickerOpen] = useState(false);
   const [draft, setDraft] = useState(state.profile);
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [photoError, setPhotoError] = useState("");
@@ -226,14 +231,18 @@ function Profile() {
             onChange={(v) => setDraft({ ...draft, age: v })}
             draft={draft.age}
           />
-          <Field
-            label="Sex"
-            value={state.profile.sex}
-            editing={editing}
-            onChange={(v) => setDraft({ ...draft, sex: v })}
-            draft={draft.sex}
-            divider
-          />
+          <Button
+            variant="ghost"
+            onClick={() => setSexPickerOpen(true)}
+            aria-label="Select sex"
+            className="h-auto min-w-0 flex-col items-start gap-0.5 whitespace-normal rounded-none border-l border-hairline px-3 py-0 text-left"
+          >
+            <span className="text-[10px] font-normal uppercase tracking-wider text-muted-foreground">Sex</span>
+            <span className="flex w-full items-center gap-1 text-sm font-medium">
+              <span className="min-w-0 break-words">{(editing ? draft.sex : state.profile.sex) || "—"}</span>
+              <ChevronDown className="ml-auto shrink-0 text-muted-foreground" />
+            </span>
+          </Button>
           <Field
             label="Education"
             value={state.profile.education}
@@ -247,20 +256,16 @@ function Profile() {
         <p className="mt-6 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
           Dashboard
         </p>
-        <div className="mt-2 grid grid-cols-2 overflow-hidden rounded-3xl bg-card shadow-soft">
-          {tiles.map((t, i) => (
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          {tiles.map((t) => (
             <div
               key={t.label}
-              className={cn(
-                "min-w-0 px-3.5 py-2.5",
-                i % 2 === 1 && "border-l border-hairline",
-                i < tiles.length - 2 && "border-b border-hairline",
-              )}
+              className="min-w-0 rounded-3xl bg-card px-4 py-3 shadow-soft"
             >
               <p className="truncate text-[10px] uppercase tracking-wider text-muted-foreground">
                 {t.label}
               </p>
-              <p className="mt-0.5 font-display text-lg font-semibold tabular-nums">
+              <p className="mt-1 break-words font-display text-lg font-semibold tabular-nums">
                 {t.value}
               </p>
             </div>
@@ -281,6 +286,32 @@ function Profile() {
 
         <div className="h-4" />
       </div>
+      <Dialog open={sexPickerOpen} onOpenChange={setSexPickerOpen}>
+        <DialogContent aria-describedby={undefined} className="w-[calc(100%-2.5rem)] max-w-xs gap-4 rounded-3xl border-0 bg-card p-5 sm:rounded-3xl">
+          <DialogTitle className="text-center font-display tracking-normal">Sex</DialogTitle>
+          <div className="grid gap-1.5">
+            {["Male", "Female", "Prefer not to say"].map((option) => {
+              const selected = option === (editing ? draft.sex : state.profile.sex);
+              return (
+                <Button
+                  key={option}
+                  variant="ghost"
+                  aria-pressed={selected}
+                  className={cn("h-11 justify-between rounded-xl px-4", selected ? "bg-primary/10 text-primary" : "bg-background text-foreground")}
+                  onClick={() => {
+                    setDraft((prev) => ({ ...prev, sex: option }));
+                    if (!editing) setState((prev) => ({ ...prev, profile: { ...prev.profile, sex: option } }));
+                    setSexPickerOpen(false);
+                  }}
+                >
+                  {option}
+                  {selected && <Check aria-hidden="true" />}
+                </Button>
+              );
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
     </MobileShell>
   );
 }
