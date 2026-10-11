@@ -25,7 +25,8 @@ import type { SessionThemeId } from "@/lib/session-themes";
 import { actionErrorMessage } from "@/lib/connectivity";
 import { useAuth } from "@/lib/use-auth";
 import { FocusShieldSetup, type FocusShieldResult } from "@/components/FocusShieldSetup";
-import { writeShieldPlan, clearShieldPlan } from "@/lib/focus-shield";
+import { writeShieldPlan, clearShieldPlan, shieldSupported, shieldHasUsageAccess, shieldHasOverlayAccess } from "@/lib/focus-shield";
+import { canConfirmShield } from "@/lib/focus-shield-defaults";
 
 
 const commitSearch = z.object({
@@ -81,7 +82,7 @@ function Commit() {
   const [starting, setStarting] = useState(false);
   // A session may only begin once a theme has been picked and confirmed.
   const [themeOpen, setThemeOpen] = useState(false);
-  // Focus Shield (Standard only) — optional, decided once per commitment.
+  // Native Verified requires fresh Focus Shield setup for each confirmation.
   const [shieldOpen, setShieldOpen] = useState(false);
 
   const [shieldPlan, setShieldPlan] = useState<FocusShieldResult>({
@@ -142,7 +143,7 @@ function Commit() {
 
   const affordable = useMemo(() => canAfford(value, state.coins), [value, state.coins]);
 
-  /** Validates the terms, then opens Focus Shield (Standard) or the theme selector. */
+  /** Validates the terms, then opens native Verified Shield or theme selection. */
   function begin() {
     if (starting) return;
     if (!validate()) return;
@@ -158,6 +159,7 @@ function Commit() {
       // Verified: Focus Shield first (Android app), then themes. Check the
       // bridge at the action so backing out never skips the Shield step.
       if (hasNativeBridge()) {
+        setShieldPlan({ enabled: false, packages: [], labels: [] });
         setShieldOpen(true);
         return;
       }
@@ -201,6 +203,14 @@ function Commit() {
     if (starting) return;
     if (!validate()) {
       setThemeOpen(false);
+      return;
+    }
+    if (mode === "verified" && hasNativeBridge() && (!shieldPlan.enabled || !canConfirmShield(
+      shieldSupported(), shieldHasUsageAccess(), shieldHasOverlayAccess(), shieldPlan.packages,
+    ))) {
+      setThemeOpen(false);
+      setError("Turn on Focus Shield and grant both permissions before starting Verified.");
+      setShieldOpen(true);
       return;
     }
     setStarting(true);
