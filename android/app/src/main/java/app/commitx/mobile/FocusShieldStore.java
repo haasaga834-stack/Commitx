@@ -66,6 +66,24 @@ final class FocusShieldStore {
             "com.king.candycrushsaga",
             "com.ea.gp.fifamobile");
 
+    private static final Set<String> SOCIAL = new HashSet<>(Arrays.asList(
+            "com.instagram.android", "com.instagram.lite", "com.google.android.youtube",
+            "com.facebook.katana", "com.facebook.lite", "com.whatsapp", "com.whatsapp.w4b",
+            "com.facebook.orca", "com.reddit.frontpage", "com.twitter.android",
+            "com.snapchat.android", "com.zhiliaoapp.musically", "com.ss.android.ugc.trill",
+            "org.telegram.messenger", "org.thunderdog.challegram", "com.discord",
+            "com.pinterest", "com.linkedin.android", "com.bsky.app", "com.instagram.barcelona"));
+
+    @SuppressWarnings("deprecation")
+    private static boolean defaultBlocked(ApplicationInfo info) {
+        if (SOCIAL.contains(info.packageName)) return true;
+        if (SUPPORTED.contains(info.packageName) && !info.packageName.equals("com.android.chrome")) return true;
+        if ((info.flags & ApplicationInfo.FLAG_IS_GAME) != 0) return true;
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                && (info.category == ApplicationInfo.CATEGORY_GAME
+                || info.category == ApplicationInfo.CATEGORY_SOCIAL);
+    }
+
     private FocusShieldStore() {}
 
     private static SharedPreferences prefs(Context ctx) {
@@ -140,7 +158,9 @@ final class FocusShieldStore {
         } catch (Throwable ignored) {}
         // Keep the existing named apps available on devices whose launcher
         // query is limited by the manufacturer.
-        for (String pkg : SUPPORTED) {
+        Set<String> known = new LinkedHashSet<>(SUPPORTED);
+        known.addAll(SOCIAL);
+        for (String pkg : known) {
             if (result.containsKey(pkg)) continue;
             try { result.put(pkg, pm.getApplicationInfo(pkg, 0)); }
             catch (Throwable ignored) {}
@@ -168,7 +188,8 @@ final class FocusShieldStore {
             if (!first) sb.append(',');
             first = false;
             sb.append("{\"pkg\":\"").append(escape(pkg)).append("\",")
-              .append("\"label\":\"").append(escape(label)).append("\"");
+              .append("\"label\":\"").append(escape(label)).append("\"")
+              .append(",\"defaultBlocked\":").append(defaultBlocked(info));
             if (icon != null) sb.append(",\"icon\":\"").append(icon).append("\"");
             sb.append('}');
         }

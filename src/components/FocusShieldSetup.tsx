@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Shield, ShieldCheck, Check, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { canConfirmShield, defaultShieldPackages } from "@/lib/focus-shield-defaults";
 import {
   FOCUS_SHIELD_GROUPS,
   openUsageAccess,
@@ -22,8 +23,7 @@ export interface FocusShieldResult {
 }
 
 /**
- * Optional Focus Shield flow shown after Verified → Continue.
- * Skipping continues to theme selection.
+ * Required Focus Shield flow shown after native Verified → Continue.
  */
 export function FocusShieldSetup({
   open,
@@ -44,6 +44,7 @@ export function FocusShieldSetup({
   const [appSearch, setAppSearch] = useState("");
   const [usage, setUsage] = useState(false);
   const [overlay, setOverlay] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const supported = shieldSupported();
 
@@ -52,9 +53,12 @@ export function FocusShieldSetup({
       setStep("intro");
       setSelected([]);
       setAppSearch("");
+      setError(null);
       return;
     }
-    setApps(shieldApps());
+    const installed = shieldApps();
+    setApps(installed);
+    setSelected(defaultShieldPackages(installed));
   }, [open]);
 
   // Re-verify permissions whenever the user comes back from Android settings.
@@ -114,6 +118,12 @@ export function FocusShieldSetup({
   }
 
   function finish() {
+    if (!canConfirmShield(supported, shieldHasUsageAccess(), shieldHasOverlayAccess(), selected)) {
+      setError("Select apps and grant both permissions to continue.");
+      setStep("permissions");
+      return;
+    }
+    setError(null);
     onDone({ enabled: true, packages: selected, labels: selectedLabels });
   }
 
@@ -121,13 +131,13 @@ export function FocusShieldSetup({
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 backdrop-blur-sm sm:items-center">
       <div className={cn("max-h-[92dvh] w-full max-w-md rounded-t-4xl bg-card p-6 pb-10 shadow-lift sm:rounded-4xl sm:pb-6", step === "apps" ? "flex h-[92dvh] flex-col overflow-hidden" : "overflow-y-auto")}>
         {step === "intro" && (
-          <>
-            <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-accent/15 text-primary">
+          <div className="text-center">
+            <span className="mx-auto inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-accent/15 text-primary">
               <Shield className="h-5 w-5" />
             </span>
             <h2 className="mt-4 font-display text-xl font-semibold">Focus Shield</h2>
             <p className="mt-2 text-sm text-foreground">
-              Want to block distracting apps during this commitment?
+              Block distractions. Keep your promise.
             </p>
             {!supported ? (
               <p className="mt-4 rounded-2xl border border-hairline bg-background p-4 text-xs text-muted-foreground">
@@ -136,27 +146,20 @@ export function FocusShieldSetup({
               </p>
             ) : (
               <p className="mt-4 rounded-2xl border border-hairline bg-background p-4 text-xs text-muted-foreground">
-                Your apps stay installed and visible. While the session runs, opening a
-                blocked app shows a CommitX reminder instead. Access is restored
-                automatically the moment the session ends.
+                Social apps and games are selected by default. Add any others you need.
+                Apps stay installed and unlock when your session ends.
               </p>
             )}
             <div className="mt-6 space-y-3">
-              <button
+              <Button
                 disabled={!supported}
                 onClick={() => setStep("apps")}
-                className="w-full rounded-full bg-primary px-6 py-4 text-sm font-medium text-primary-foreground disabled:opacity-50"
+                className="h-12 w-full rounded-full"
               >
                 Turn On Focus Shield
-              </button>
-              <button
-                onClick={() => onDone({ enabled: false, packages: [], labels: [] })}
-                className="w-full rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground"
-              >
-                Skip for now
-              </button>
+              </Button>
             </div>
-          </>
+          </div>
         )}
 
         {step === "apps" && (
@@ -290,6 +293,7 @@ export function FocusShieldSetup({
               Focus Shield can only protect your session with your explicit permission.
               Nothing is blocked until both are granted.
             </p>
+            {error && <p role="alert" className="mt-3 text-sm text-destructive">{error}</p>}
 
             <PermissionRow
               granted={usage}
@@ -307,19 +311,20 @@ export function FocusShieldSetup({
             />
 
             <div className="mt-6 grid grid-cols-2 gap-3">
-              <button
-                onClick={() => onDone({ enabled: false, packages: [], labels: [] })}
-                className="rounded-2xl bg-secondary px-4 py-3 text-sm font-medium text-secondary-foreground"
+              <Button
+                variant="secondary"
+                onClick={onCancel}
+                className="h-12 rounded-full"
               >
-                Skip Shield
-              </button>
-              <button
-                disabled={!permissionsReady}
+                Cancel
+              </Button>
+              <Button
+                disabled={!canConfirmShield(supported, usage, overlay, selected)}
                 onClick={() => setStep("ready")}
-                className="rounded-2xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
+                className="h-12 rounded-full"
               >
                 Continue
-              </button>
+              </Button>
             </div>
           </>
         )}
@@ -346,13 +351,13 @@ export function FocusShieldSetup({
               >
                 Change apps
               </button>
-              <button
-                disabled={starting}
+              <Button
+                disabled={starting || !canConfirmShield(supported, usage, overlay, selected)}
                 onClick={finish}
-                className="rounded-2xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground disabled:opacity-60"
+                className="h-12 rounded-full"
               >
-                {starting ? "Starting…" : "Start Commitment"}
-              </button>
+                {starting ? "Starting…" : "Continue"}
+              </Button>
             </div>
           </>
         )}
