@@ -27,6 +27,8 @@ import { MAX_GROUP_SIZE, memberStatusLabel, type GroupStateDTO } from "@/lib/gro
 import { hasNativeBridge, setNativeSessionLock } from "@/lib/native-session";
 import { GroupParticipantsDrawer } from "@/components/GroupParticipantsDrawer";
 import { showSessionProgress, hideSessionProgress } from "@/lib/native-notifications";
+import { FocusShieldSetup, type FocusShieldResult } from "@/components/FocusShieldSetup";
+import { shieldSupported, startShield, stopShield } from "@/lib/focus-shield";
 import { useIsTablet } from "@/lib/use-tablet";
 import { GroupLobbyTablet } from "@/components/GroupLobbyTablet";
 import { actionErrorMessage, OFFLINE_ACTION_MESSAGE } from "@/lib/connectivity";
@@ -333,12 +335,43 @@ function GroupSession() {
 
   useEffect(() => () => hideSessionProgress(), []);
 
+  /** Each member picks their own Focus Shield apps for native Verified groups. */
+  const shieldKey = `commitx-group-shield-${id}`;
+  const nativeShield = isVerified && hasNativeBridge() && shieldSupported();
+  const [shieldPlan, setShieldPlan] = useState<FocusShieldResult | null>(null);
+  const [shieldOpen, setShieldOpen] = useState(false);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(shieldKey);
+      if (raw) setShieldPlan(JSON.parse(raw) as FocusShieldResult);
+    } catch {}
+  }, [shieldKey]);
+  const saveShield = (plan: FocusShieldResult) => {
+    setShieldPlan(plan);
+    setShieldOpen(false);
+    try { localStorage.setItem(shieldKey, JSON.stringify(plan)); } catch {}
+  };
+  useEffect(() => {
+    if (!nativeShield || !isActive || !stillIn || !endsAt || !shieldPlan?.packages.length) return;
+    if (endsAt <= Date.now()) return;
+    startShield(shieldPlan.packages, endsAt);
+  }, [nativeShield, isActive, stillIn, endsAt, shieldPlan]);
+  useEffect(() => {
+    if (!nativeShield) return;
+    if (group?.status === "ended" || (isActive && !stillIn)) {
+      stopShield();
+      try { localStorage.removeItem(shieldKey); } catch {}
+    }
+  }, [nativeShield, group?.status, isActive, stillIn, shieldKey]);
+
   const settle = useCallback(
     async (status: "completed" | "failed", reason?: string) => {
       if (doneRef.current || !group) return;
       doneRef.current = true;
       setNativeSessionLock(false);
       hideSessionProgress();
+      stopShield();
+      try { localStorage.removeItem(`commitx-group-shield-${id}`); } catch {}
       try {
         await finish({
           data: { id, status: status === "completed" ? "completed" : "failed" },
@@ -411,7 +444,32 @@ function GroupSession() {
 
   const active = data!.members.filter((m) => m.status !== "left");
   // Only the host starts, and never alone.
-  const canStart = data!.isCreator && active.length >= 2;
+  const canStart =
+    data!.isCreator && active.length >= 2 && (!nativeShield || Boolean(shieldPlan?.packages.length));
+
+  const shieldCard = nativeShield && group.status === "lobby" ? (
+    <section className="mt-4 rounded-3xl border border-hairline bg-card p-4 text-center shadow-soft">
+      <p className="font-display text-sm font-semibold">Focus Shield</p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        {shieldPlan?.packages.length
+          ? `${shieldPlan.packages.length} apps will be blocked during this session.`
+          : "Required for Verified. Choose the apps you want blocked."}
+      </p>
+      <button
+        onClick={() => setShieldOpen(true)}
+        className="mt-3 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-xs font-medium text-primary-foreground"
+      >
+        <ShieldCheck className="h-4 w-4" />
+        {shieldPlan?.packages.length ? "Change apps" : "Turn On Focus Shield"}
+      </button>
+      <FocusShieldSetup
+        open={shieldOpen}
+        durationLabel={`${group.duration_minutes} min`}
+        onCancel={() => setShieldOpen(false)}
+        onDone={saveShield}
+      />
+    </section>
+  ) : null;
 
   const copyCode = () => {
     try {
@@ -494,6 +552,7 @@ function GroupSession() {
   if (!isActive) {
     if (isTablet) {
       return (
+        <>
         <GroupLobbyTablet
           group={group}
           members={data!.members}
@@ -507,6 +566,8 @@ function GroupSession() {
           onLeave={onLeave}
           actionError={actionError}
         />
+        {shieldCard && <div className="mx-auto max-w-md px-5 pb-10">{shieldCard}</div>}
+        </>
       );
     }
     const others = active.length - 1;
@@ -608,6 +669,8 @@ function GroupSession() {
               )}
             </ul>
           </section>
+
+          {shieldCard}
 
           {actionError && (
             <p className="mt-4 rounded-2xl bg-destructive/10 px-4 py-2.5 text-xs text-destructive">

@@ -154,7 +154,7 @@ export function FocusShieldSetup({
               </p>
             ) : (
               <p className="mt-4 rounded-2xl border border-hairline bg-background p-4 text-xs text-muted-foreground">
-                Social apps and games are selected by default. Add any others you need.
+                Social apps and games are always blocked. Add any others you need.
                 Apps stay installed and unlock when your session ends.
               </p>
             )}
