@@ -591,8 +591,10 @@ public class MainActivity extends Activity {
             return;
         }
 
-        if (webView != null && webView.canGoBack()) {
-            webView.goBack();
+        // Any other page: go to Home instead of closing the app.
+        if (webView != null) {
+            evalOnWeb("window.CommitXNav&&window.CommitXNav.goHome?window.CommitXNav.goHome():window.location.assign('/')");
+            atRootScreen = true;
             return;
         }
         super.onBackPressed();

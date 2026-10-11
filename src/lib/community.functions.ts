@@ -6,6 +6,7 @@ export interface LeaderRowDTO {
   user_id: string;
   display_name: string;
   total_minutes: number;
+  avatar_url: string | null;
 }
 
 /** Top study-hour totals across all users (aggregate only, no PII beyond display name). */

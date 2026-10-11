@@ -5,6 +5,7 @@ export interface LeaderRow {
   userId: string;
   name: string;
   minutes: number;
+  photo: string | null;
 }
 
 /** Fired whenever a finished session reaches the cloud, on any device. */
@@ -62,6 +63,7 @@ export function useLeaderboard(limit = 10) {
             userId: r.user_id,
             name: r.display_name,
             minutes: Number(r.total_minutes) || 0,
+            photo: r.avatar_url ?? null,
           })),
         );
       } catch {

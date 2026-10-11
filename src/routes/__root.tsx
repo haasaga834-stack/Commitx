@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { accountabilityAppOpened } from "@/lib/accountability";
+import { usePresenceTracker } from "@/lib/presence";
 import {
   Outlet,
   createRootRouteWithContext,
@@ -337,6 +338,16 @@ function StudyReminders() {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const navRouter = useRouter();
+  usePresenceTracker();
+
+  // Android back gesture from any non-Home page returns to Home.
+  useEffect(() => {
+    (window as unknown as { CommitXNav?: { goHome: () => void } }).CommitXNav = {
+      goHome: () => void navRouter.navigate({ to: "/" }),
+    };
+  }, [navRouter]);
+
 
   // The sculptural botanical theme belongs to the installed CommitX app only.
   // Scoping it on body keeps every public website route visually unchanged.
