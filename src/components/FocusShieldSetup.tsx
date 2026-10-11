@@ -35,7 +35,7 @@ export function FocusShieldSetup({
   open: boolean;
   durationLabel: string;
   starting?: boolean;
-  onCancel: () => void;
+  onCancel?: () => void;
   onDone: (result: FocusShieldResult) => void;
 }) {
   const [step, setStep] = useState<Step>("intro");
@@ -274,7 +274,8 @@ export function FocusShieldSetup({
             </div>
             <div className="mx-1 mt-3 shrink-0 rounded-3xl border border-hairline bg-background p-3 shadow-lift">
               <p className="mb-2 px-1 text-xs text-muted-foreground">{selected.length} selected</p>
-              <div className="grid grid-cols-2 gap-3">
+              <div className={onCancel ? "grid grid-cols-2 gap-3" : ""}>
+              {onCancel && (
               <Button
                 variant="secondary"
                 onClick={onCancel}
@@ -282,6 +283,7 @@ export function FocusShieldSetup({
               >
                 Cancel
               </Button>
+              )}
               <Button
                 disabled={selected.length === 0}
                 onClick={() => setStep(permissionsReady ? "ready" : "permissions")}
@@ -318,7 +320,8 @@ export function FocusShieldSetup({
               onAction={requestShieldOverlayAccess}
             />
 
-            <div className="mt-6 grid grid-cols-2 gap-3">
+            <div className={onCancel ? "mt-6 grid grid-cols-2 gap-3" : "mt-6"}>
+              {onCancel && (
               <Button
                 variant="secondary"
                 onClick={onCancel}
@@ -326,6 +329,7 @@ export function FocusShieldSetup({
               >
                 Cancel
               </Button>
+              )}
               <Button
                 disabled={!canConfirmShield(supported, usage, overlay, selected)}
                 onClick={() => setStep("ready")}

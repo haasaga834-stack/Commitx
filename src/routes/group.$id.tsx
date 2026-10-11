@@ -346,6 +346,11 @@ function GroupSession() {
       if (raw) setShieldPlan(JSON.parse(raw) as FocusShieldResult);
     } catch {}
   }, [shieldKey]);
+  /** Verified groups: Focus Shield is mandatory for every member — no skip. */
+  const shieldRequired = nativeShield && group?.status === "lobby" && !shieldPlan?.packages.length;
+  useEffect(() => {
+    if (shieldRequired) setShieldOpen(true);
+  }, [shieldRequired]);
   const saveShield = (plan: FocusShieldResult) => {
     setShieldPlan(plan);
     setShieldOpen(false);
@@ -466,7 +471,7 @@ function GroupSession() {
       <FocusShieldSetup
         open={shieldOpen}
         durationLabel={`${group.duration_minutes} min`}
-        onCancel={() => setShieldOpen(false)}
+        onCancel={shieldPlan?.packages.length ? () => setShieldOpen(false) : undefined}
         onDone={saveShield}
       />
     </section>
