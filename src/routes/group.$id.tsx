@@ -341,16 +341,24 @@ function GroupSession() {
   const [shieldPlan, setShieldPlan] = useState<FocusShieldResult | null>(null);
   const [shieldOpen, setShieldOpen] = useState(false);
   useEffect(() => {
+    setShieldOpen(false);
+    let plan: FocusShieldResult | null = null;
     try {
       const raw = localStorage.getItem(shieldKey);
-      if (raw) setShieldPlan(JSON.parse(raw) as FocusShieldResult);
+      if (raw) plan = JSON.parse(raw) as FocusShieldResult;
     } catch {}
+    setShieldPlan(plan);
   }, [shieldKey]);
-  /** Verified groups: Focus Shield is mandatory for every member — no skip. */
-  const shieldRequired = nativeShield && group?.status === "lobby" && !shieldPlan?.packages.length;
+  /** Standard groups never show Focus Shield. */
   useEffect(() => {
-    if (shieldRequired) setShieldOpen(true);
-  }, [shieldRequired]);
+    if (!nativeShield) setShieldOpen(false);
+  }, [nativeShield]);
+  /** Verified groups: Focus Shield is mandatory for every member before start. */
+  const shieldRequired = nativeShield && group?.status === "lobby" && !shieldPlan?.packages.length;
+  const [shieldDismissed, setShieldDismissed] = useState(false);
+  useEffect(() => {
+    if (shieldRequired && !shieldDismissed) setShieldOpen(true);
+  }, [shieldRequired, shieldDismissed]);
   const saveShield = (plan: FocusShieldResult) => {
     setShieldPlan(plan);
     setShieldOpen(false);
@@ -471,7 +479,10 @@ function GroupSession() {
       <FocusShieldSetup
         open={shieldOpen}
         durationLabel={`${group.duration_minutes} min`}
-        onCancel={shieldPlan?.packages.length ? () => setShieldOpen(false) : undefined}
+        onCancel={() => {
+          setShieldOpen(false);
+          setShieldDismissed(true);
+        }}
         onDone={saveShield}
       />
     </section>
