@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Replace Profile's divided statistics panel with separate compact rounded cards and add a Sex selection pop-up; preserve statistics and existing profile saving.
+
 - [x] Compact the Profile and Settings screens (identity card, three-column details, single dashboard panel, tighter leaderboard rows; settings quick tiles, grouped rows, tighter referral/account cards); all fields, stats, leaderboard rows and actions kept, checked signed-in at 360x685
 
 - [x] Smooth native launch handoff and shorten native onboarding to one welcome; 11 tests passed, welcome dismissal checked in browser, Home/website/session UI preserved
