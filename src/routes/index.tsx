@@ -78,9 +78,7 @@ function StartupSplash({ fading = false }: { fading?: boolean }) {
         fading && "pointer-events-none opacity-0",
       )}
     >
-      <span className="flex h-16 w-16 items-center justify-center rounded-3xl bg-primary font-display text-2xl font-semibold text-primary-foreground shadow-lift">
-        Cx
-      </span>
+      <img src="/favicon.png" alt="" className="h-20 w-20 object-contain" />
       <span className="h-6 w-6 animate-spin rounded-full border-2 border-hairline border-t-primary" />
     </div>
   );
@@ -127,7 +125,7 @@ function Home() {
       </>
     );
   }
-  if (!user) return <StartupSplash fading={!loading} />;
+  if (!user) return <StartupSplash />;
 
   if (isTablet) return <TabletLandingHome />;
   return <MobileHome />;
