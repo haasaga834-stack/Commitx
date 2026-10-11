@@ -762,6 +762,7 @@ export type Database = {
       leaderboard_top: {
         Args: { _limit?: number }
         Returns: {
+          avatar_url: string
           display_name: string
           total_minutes: number
           user_id: string
