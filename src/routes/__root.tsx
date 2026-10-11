@@ -28,6 +28,8 @@ import { AmbientNature } from "../components/AmbientNature";
 import { OfflineNotice } from "../components/OfflineNotice";
 import { Onboarding } from "../components/Onboarding";
 import { useOnboarding } from "../lib/onboarding";
+import { NativeWelcome } from "../components/NativeWelcome";
+import { isNativeLaunchReady, shouldShowNativeWelcome } from "../lib/app-launch";
 
 function NotFoundComponent() {
   return (
@@ -251,15 +253,23 @@ function AuthGate({ children }: { children: ReactNode }) {
   // Dismiss the native Android startup screen only once the first real screen
   // can be shown, so a cold start never flashes an empty page.
   useEffect(() => {
+    if (!hasNativeBridge()) return;
+    if (!isNativeLaunchReady(loading, Boolean(user), pathname)) return;
     if (loading && !isPublic) return;
+    let paintFrame = 0;
     const frame = requestAnimationFrame(() => {
-      try {
-        (window as unknown as { CommitXAndroid?: { appReady?: () => void } })
-          .CommitXAndroid?.appReady?.();
-      } catch {}
+      paintFrame = requestAnimationFrame(() => {
+        try {
+          (window as unknown as { CommitXAndroid?: { appReady?: () => void } })
+            .CommitXAndroid?.appReady?.();
+        } catch {}
+      });
     });
-    return () => cancelAnimationFrame(frame);
-  }, [loading, isPublic]);
+    return () => {
+      cancelAnimationFrame(frame);
+      cancelAnimationFrame(paintFrame);
+    };
+  }, [loading, isPublic, user, pathname]);
 
 
   if (loading && !isPublic) {
@@ -275,7 +285,11 @@ function AuthGate({ children }: { children: ReactNode }) {
     <>
       {children}
       {user && pathname !== "/auth" && needsOnboarding ? (
-        <Onboarding onDone={() => void complete()} />
+        hasNativeBridge() ? (
+          shouldShowNativeWelcome(pathname, Boolean(readRestorableActiveSession())) ? (
+            <NativeWelcome onDone={() => void complete()} />
+          ) : null
+        ) : <Onboarding onDone={() => void complete()} />
       ) : null}
     </>
   );

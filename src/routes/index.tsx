@@ -127,7 +127,7 @@ function Home() {
       </>
     );
   }
-  if (!user) return <StartupSplash fading={!loading} />;
+  if (!user) return <StartupSplash />;
 
   if (isTablet) return <TabletLandingHome />;
   return <MobileHome />;

@@ -1,5 +1,8 @@
 # Roadmap
 
+- [x] Smooth native launch handoff and shorten native onboarding to one welcome; 11 tests passed, welcome dismissal checked in browser, Home/website/session UI preserved
+- [ ] Verify updated native launch on a physical Android phone — requires an attached device and updated install
+
 - [x] Center Focus Shield setup, remove native Verified skip paths, and default-select recognized social apps/games; four rule tests and simulated Android setup-to-theme flow passed
 - [ ] Verify native app category detection and blocking on a physical Android phone — requires an attached device and updated install
 

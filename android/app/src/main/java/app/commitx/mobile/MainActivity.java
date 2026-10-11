@@ -120,7 +120,6 @@ public class MainActivity extends Activity {
         current = this;
         preferences = getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         CommitXNotifications.ensureChannels(this);
-        requestNotificationPermissionIfNeeded();
         ScreenTimeTracker.scheduleChecks(this);
         PlanStore.scheduleAll(this);
         MotivationStore.reconcile(this);
@@ -251,15 +250,6 @@ public class MainActivity extends Activity {
         logo.setImageResource(R.drawable.splash_logo);
         int size = Math.round(getResources().getDisplayMetrics().density * 108);
         column.addView(logo, new android.widget.LinearLayout.LayoutParams(size, size));
-
-        android.widget.ProgressBar spinner = new android.widget.ProgressBar(this);
-        spinner.setIndeterminate(true);
-        android.widget.LinearLayout.LayoutParams spinnerParams =
-                new android.widget.LinearLayout.LayoutParams(
-                        android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
-                        android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
-        spinnerParams.topMargin = Math.round(getResources().getDisplayMetrics().density * 28);
-        column.addView(spinner, spinnerParams);
 
         FrameLayout.LayoutParams columnParams = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
@@ -790,7 +780,14 @@ public class MainActivity extends Activity {
         /** The web layer reports that the first screen is painted and usable. */
         @JavascriptInterface
         public void appReady() {
-            runOnUiThread(MainActivity.this::hideSplash);
+            runOnUiThread(() -> {
+                if (splashHidden) return;
+                hideSplash();
+                // Let the first screen settle before displaying the existing OS prompt.
+                if (webView != null) webView.postDelayed(() -> {
+                    if (!isFinishing() && !isDestroyed()) requestNotificationPermissionIfNeeded();
+                }, 600);
+            });
         }
 
         @JavascriptInterface
