@@ -166,6 +166,11 @@ export function FocusShieldSetup({
               >
                 Turn On Focus Shield
               </Button>
+              {onCancel && (
+                <Button variant="secondary" onClick={onCancel} className="h-12 w-full rounded-full">
+                  Cancel
+                </Button>
+              )}
             </div>
           </div>
         )}
