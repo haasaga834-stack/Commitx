@@ -305,7 +305,7 @@ function LeaderRow({
         </span>
         )}
         {isOnline && (
-          <span aria-label="Online" className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-success ring-2 ring-card" />
+          <span aria-label="Online" className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-online ring-2 ring-card" />
         )}
       </div>
       <div className="min-w-0 flex-1">
