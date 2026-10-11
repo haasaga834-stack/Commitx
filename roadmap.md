@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Compact the Profile and Settings screens (identity card, three-column details, single dashboard panel, tighter leaderboard rows; settings quick tiles, grouped rows, tighter referral/account cards); all fields, stats, leaderboard rows and actions kept, checked signed-in at 360x685
+
 - [x] Smooth native launch handoff and shorten native onboarding to one welcome; 11 tests passed, welcome dismissal checked in browser, Home/website/session UI preserved
 - [ ] Verify updated native launch on a physical Android phone — requires an attached device and updated install
 

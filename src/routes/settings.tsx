@@ -3,8 +3,6 @@ import { MobileShell } from "@/components/BottomNav";
 import { NotificationsCard } from "@/components/NotificationsCard";
 import { ReviewModeration } from "@/components/ReviewModeration";
 import { CxCoin } from "@/components/CxCoin";
-
-
 import { useTheme } from "@/lib/theme";
 import { coinLabel, REFERRAL_REWARD } from "@/lib/commitx-store";
 import { ACTIVE_VERIFIED_SESSION_KEY } from "@/lib/verified-mode";
@@ -44,6 +42,12 @@ function revealSection(id: string) {
   window.setTimeout(() => el.classList.remove("cx-attention"), 3200);
 }
 
+const TILE = "flex items-center gap-2.5 rounded-2xl bg-card p-3 text-left shadow-soft";
+const TILE_ICON = "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary";
+const TILE_LABEL = "min-w-0 text-xs font-medium leading-tight text-foreground";
+const ROW = "flex items-center gap-3 px-3 py-3";
+const ROW_ICON = "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-secondary";
+const SECTION = "text-[10px] uppercase tracking-[0.2em] text-muted-foreground";
 
 function Settings() {
   const router = useRouter();
@@ -136,82 +140,57 @@ function Settings() {
     }
   }
 
-
   return (
     <MobileShell>
-      <div className="px-6 pt-14">
-        <div className="flex items-center gap-3">
+      <div className="px-5 pt-8">
+        <div className="flex items-center gap-2.5">
           <Link
             to="/profile"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-soft"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-card shadow-soft"
             aria-label="Back"
           >
             <ArrowLeft className="h-4 w-4" />
           </Link>
-          <h1 className="font-display text-2xl font-semibold">Settings</h1>
+          <h1 className="font-display text-xl font-semibold">Settings</h1>
         </div>
 
-        {/* Quick actions */}
-        <div className="mt-6 grid grid-cols-2 gap-3">
-          <Link
-            to="/how-it-works"
-            className="flex flex-col items-center gap-2 rounded-3xl bg-card p-4 text-center shadow-soft"
-          >
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/15 text-primary">
+        {/* Quick actions — four slim tiles */}
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <Link to="/how-it-works" className={TILE}>
+            <span className={TILE_ICON}>
               <BookOpen className="h-4 w-4" />
             </span>
-            <span className="text-xs font-medium leading-tight text-foreground">
-              How CommitX works
-            </span>
+            <span className={TILE_LABEL}>How CommitX works</span>
           </Link>
-          <button
-            onClick={rateApp}
-            className="flex flex-col items-center gap-2 rounded-3xl bg-card p-4 text-center shadow-soft"
-          >
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/15 text-primary">
+          <button onClick={rateApp} className={TILE}>
+            <span className={TILE_ICON}>
               <Star className="h-4 w-4" />
             </span>
-            <span className="text-xs font-medium leading-tight text-foreground">
-              Rate CommitX
-            </span>
+            <span className={TILE_LABEL}>Rate CommitX</span>
           </button>
-          <Link
-            to="/about"
-            className="flex flex-col items-center gap-2 rounded-3xl bg-card p-4 text-center shadow-soft"
-          >
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/15 text-primary">
+          <Link to="/about" className={TILE}>
+            <span className={TILE_ICON}>
               <Info className="h-4 w-4" />
             </span>
-            <span className="text-xs font-medium leading-tight text-foreground">
-              About us
-            </span>
+            <span className={TILE_LABEL}>About us</span>
           </Link>
-          <Link
-            to="/wallet"
-            className="flex flex-col items-center gap-2 rounded-3xl bg-card p-4 text-center shadow-soft"
-          >
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/15 text-primary">
+          <Link to="/wallet" className={TILE}>
+            <span className={TILE_ICON}>
               <CxCoin className="h-4 w-4" />
             </span>
-            <span className="text-xs font-medium leading-tight text-foreground">
-              Cx Coins
-            </span>
+            <span className={TILE_LABEL}>Cx Coins</span>
           </Link>
-
         </div>
 
-
         {/* Appearance */}
-        <p className="mt-9 text-xs uppercase tracking-widest text-muted-foreground">
-          Appearance
-        </p>
-        <div className="mt-4 rounded-3xl bg-card p-5 shadow-soft">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-secondary">
+        <p className={SECTION + " mt-6"}>Appearance</p>
+        <div className="mt-2 overflow-hidden rounded-3xl bg-card shadow-soft">
+          <div className={ROW + " justify-between"}>
+            <div className="flex min-w-0 items-center gap-3">
+              <span className={ROW_ICON}>
                 {isDark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
               </span>
-              <div>
+              <div className="min-w-0">
                 <p className="text-sm font-medium">Dark mode</p>
                 <p className="text-xs text-muted-foreground">Saved on this device</p>
               </div>
@@ -222,7 +201,7 @@ function Settings() {
               aria-label="Toggle dark mode"
               onClick={() => setMode(isDark ? "light" : "dark")}
               className={
-                "relative h-7 w-12 rounded-full transition-colors " +
+                "relative h-7 w-12 shrink-0 rounded-full transition-colors " +
                 (isDark ? "bg-primary" : "bg-muted")
               }
             >
@@ -234,15 +213,10 @@ function Settings() {
               />
             </button>
           </div>
-        </div>
 
-        {!native && (
-          <div className="mt-4 grid gap-3">
-            <Link
-              to="/contact"
-              className="flex items-center gap-3 rounded-3xl bg-card p-5 shadow-soft"
-            >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/15 text-primary">
+          {!native && (
+            <Link to="/contact" className={ROW + " border-t border-hairline"}>
+              <span className={ROW_ICON + " text-primary"}>
                 <Mail className="h-4 w-4" />
               </span>
               <span className="min-w-0 flex-1 text-sm font-medium text-foreground">
@@ -250,23 +224,20 @@ function Settings() {
               </span>
               <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
             </Link>
-          </div>
-        )}
-
+          )}
+        </div>
 
         {/* Notifications & screen time */}
-        <p className="mt-9 text-xs uppercase tracking-widest text-muted-foreground">
-          Notifications
-        </p>
-        <div className="mt-4 grid gap-4">
+        <p className={SECTION + " mt-6"}>Notifications</p>
+        <div className="mt-2 overflow-hidden rounded-3xl bg-card shadow-soft">
           <NotificationsCard />
           {native && (
             <Link
               id="screen-time"
               to="/screen-time"
-              className="flex items-center gap-3 rounded-3xl bg-card p-5 shadow-soft"
+              className={ROW + " border-t border-hairline"}
             >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-secondary">
+              <span className={ROW_ICON}>
                 <Smartphone className="h-4 w-4" />
               </span>
               <span className="min-w-0 flex-1">
@@ -279,11 +250,8 @@ function Settings() {
         </div>
 
         {/* Referral */}
-        <p className="mt-9 text-xs uppercase tracking-widest text-muted-foreground">
-          Referrals
-        </p>
-
-        <div className="mt-4 rounded-3xl bg-card p-5 shadow-soft">
+        <p className={SECTION + " mt-6"}>Referrals</p>
+        <div className="mt-2 rounded-3xl bg-card p-4 shadow-soft">
           <p className="text-sm font-medium">Invite friends</p>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
             When a friend signs up with your code, you receive{" "}
@@ -292,7 +260,7 @@ function Settings() {
           </p>
           <button
             onClick={copyReferral}
-            className="mt-4 flex w-full items-center justify-between rounded-2xl border border-dashed border-hairline px-4 py-3"
+            className="mt-3 flex w-full items-center justify-between rounded-2xl border border-dashed border-hairline px-3.5 py-2.5"
           >
             <span className="font-mono text-sm text-foreground">{referralCode || "…"}</span>
             {copied ? (
@@ -303,54 +271,50 @@ function Settings() {
           </button>
 
           {!alreadyReferred ? (
-            <div className="mt-5 border-t border-hairline pt-5">
+            <div className="mt-4 border-t border-hairline pt-4">
               <p className="text-sm font-medium">Have a referral code?</p>
-              <div className="mt-3 flex gap-2">
+              <div className="mt-2 flex gap-2">
                 <input
                   value={codeInput}
                   onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
                   placeholder="CX123ABC"
-                  className="flex-1 rounded-2xl border border-hairline bg-background px-4 py-3 font-mono text-sm outline-none focus:border-primary"
+                  className="min-w-0 flex-1 rounded-xl border border-hairline bg-background px-3 py-2 font-mono text-sm outline-none focus:border-primary"
                 />
                 <button
                   onClick={submitCode}
                   disabled={claiming || !codeInput}
-                  className="rounded-2xl bg-primary px-5 py-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
+                  className="shrink-0 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
                 >
                   Apply
                 </button>
               </div>
-              {claimMsg && <p className="mt-3 text-xs text-muted-foreground">{claimMsg}</p>}
+              {claimMsg && <p className="mt-2 text-xs text-muted-foreground">{claimMsg}</p>}
             </div>
           ) : (
-            <p className="mt-5 border-t border-hairline pt-5 text-xs text-muted-foreground">
+            <p className="mt-4 border-t border-hairline pt-4 text-xs text-muted-foreground">
               A referral code has already been applied to this account.
             </p>
           )}
         </div>
 
-
         {/* Danger zone */}
-        <p className="mt-9 text-xs uppercase tracking-widest text-muted-foreground">
-          Account
-        </p>
-        <div className="mt-4 rounded-3xl bg-card p-5 shadow-soft">
+        <p className={SECTION + " mt-6"}>Account</p>
+        <div className="mt-2 rounded-3xl bg-card p-4 shadow-soft">
           <div className="flex items-start gap-3">
-            <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-destructive/10">
+            <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-destructive/10">
               <ShieldAlert className="h-4 w-4 text-destructive" />
             </span>
-            <div>
+            <div className="min-w-0">
               <p className="text-sm font-medium">Delete account</p>
               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                 Permanently erases your profile, wallet, sessions, streaks, Cx
                 Coins, referrals and settings. This cannot be undone.
-
               </p>
             </div>
           </div>
           <button
             onClick={() => setConfirming(true)}
-            className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-destructive px-4 py-3 text-sm font-medium text-destructive-foreground"
+            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-destructive px-4 py-2.5 text-sm font-medium text-destructive-foreground"
           >
             <Trash2 className="h-4 w-4" />
             Delete my account
@@ -360,41 +324,41 @@ function Settings() {
               await signOutEverywhere();
               router.navigate({ to: "/auth" });
             }}
-            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-secondary px-4 py-3 text-sm font-medium text-secondary-foreground"
+            className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-secondary px-4 py-2.5 text-sm font-medium text-secondary-foreground"
           >
             <LogOut className="h-4 w-4" />
             Sign out
           </button>
         </div>
-      </div>
 
+        <div className="h-4" />
+      </div>
 
       <ReviewModeration />
 
       {confirming && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-t-4xl bg-card p-6 pb-10 shadow-lift">
-            <h2 className="font-display text-xl font-semibold">Delete account?</h2>
+          <div className="w-full max-w-md rounded-t-4xl bg-card p-5 pb-8 shadow-lift">
+            <h2 className="font-display text-lg font-semibold">Delete account?</h2>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               This permanently removes your profile, Cx Coins, session
               history, streaks, Cx Coins and referral records. It cannot be
               undone.
             </p>
-            <div className="mt-6 grid grid-cols-2 gap-3">
+            <div className="mt-5 grid grid-cols-2 gap-3">
               <button
                 onClick={() => setConfirming(false)}
-                className="rounded-2xl bg-secondary px-4 py-3 text-sm font-medium text-secondary-foreground"
+                className="rounded-2xl bg-secondary px-4 py-2.5 text-sm font-medium text-secondary-foreground"
               >
                 Cancel
               </button>
               <button
                 onClick={deleteAccount}
                 disabled={deleting}
-                className="rounded-2xl bg-destructive px-4 py-3 text-sm font-medium text-destructive-foreground disabled:opacity-60"
+                className="rounded-2xl bg-destructive px-4 py-2.5 text-sm font-medium text-destructive-foreground disabled:opacity-60"
               >
                 {deleting ? "Deleting…" : "Delete forever"}
               </button>
-
             </div>
           </div>
         </div>
