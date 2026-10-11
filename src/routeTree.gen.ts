@@ -27,6 +27,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as ScreenTimeRouteImport } from './routes/screen-time'
 import { Route as SessionRouteImport } from './routes/session'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -132,6 +133,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ScreenTimeRoute = ScreenTimeRouteImport.update({
+  id: '/screen-time',
+  path: '/screen-time',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SessionRoute = SessionRouteImport.update({
   id: '/session',
   path: '/session',
@@ -222,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/screen-time': typeof ScreenTimeRoute
   '/session': typeof SessionRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -256,6 +263,7 @@ export interface FileRoutesByTo {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/screen-time': typeof ScreenTimeRoute
   '/session': typeof SessionRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -291,6 +299,7 @@ export interface FileRoutesById {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/screen-time': typeof ScreenTimeRoute
   '/session': typeof SessionRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -327,6 +336,7 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/profile'
     | '/reset-password'
+    | '/screen-time'
     | '/session'
     | '/settings'
     | '/sitemap.xml'
@@ -361,6 +371,7 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/profile'
     | '/reset-password'
+    | '/screen-time'
     | '/session'
     | '/settings'
     | '/sitemap.xml'
@@ -395,6 +406,7 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/profile'
     | '/reset-password'
+    | '/screen-time'
     | '/session'
     | '/settings'
     | '/sitemap.xml'
@@ -430,6 +442,7 @@ export interface RootRouteChildren {
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ScreenTimeRoute: typeof ScreenTimeRoute
   SessionRoute: typeof SessionRoute
   SettingsRoute: typeof SettingsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -574,6 +587,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/screen-time': {
+      id: '/screen-time'
+      path: '/screen-time'
+      fullPath: '/screen-time'
+      preLoaderRoute: typeof ScreenTimeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/session': {
       id: '/session'
       path: '/session'
@@ -694,6 +714,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ScreenTimeRoute: ScreenTimeRoute,
   SessionRoute: SessionRoute,
   SettingsRoute: SettingsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
