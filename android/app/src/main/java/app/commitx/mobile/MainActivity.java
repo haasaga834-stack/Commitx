@@ -121,6 +121,7 @@ public class MainActivity extends Activity {
         preferences = getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         CommitXNotifications.ensureChannels(this);
         ScreenTimeTracker.scheduleChecks(this);
+        CommitXNotifications.showScreenTimeDaily(this);
         PlanStore.scheduleAll(this);
         MotivationStore.reconcile(this);
         CommitXNotifications.showTodos(this);
@@ -552,6 +553,7 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         injectPendingFailureIfNeeded();
+        CommitXNotifications.showScreenTimeDaily(this);
         PlanStore.scheduleAll(this);
         WellnessSoundStore.reconcile(this);
     }
@@ -1107,6 +1109,13 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public String screenTimeToday() {
             return ScreenTimeTracker.toJson(MainActivity.this);
+        }
+
+        @JavascriptInterface
+        public String screenTimeDetails() {
+            String json = ScreenTimeDetails.toJson(MainActivity.this);
+            CommitXNotifications.showScreenTimeDaily(MainActivity.this);
+            return json;
         }
 
         @JavascriptInterface

@@ -14,9 +14,11 @@ public class ScreenTimeReceiver extends BroadcastReceiver {
         String action = intent.getAction();
         if (Intent.ACTION_BOOT_COMPLETED.equals(action)) {
             ScreenTimeTracker.scheduleChecks(context);
+            CommitXNotifications.showScreenTimeDaily(context);
             return;
         }
         if (!ACTION_CHECK.equals(action)) return;
+        CommitXNotifications.showScreenTimeDaily(context);
         ScreenTimeTracker.checkLimit(context);
     }
 }

@@ -314,3 +314,45 @@ export function useScreenTime(intervalMs = 60_000) {
 
   return { screenTime: data, refresh, updateLimit };
 }
+
+/* --------------------------- Screen time details -------------------------- */
+
+export interface ScreenTimeApp {
+  packageName: string;
+  label: string;
+  minutes: number;
+  isCommitX: boolean;
+  icon?: string;
+}
+
+export interface ScreenTimeDetails {
+  supported: boolean;
+  granted: boolean;
+  totalMinutes: number;
+  commitxMinutes: number;
+  otherMinutes: number;
+  hourly: number[];
+  apps: ScreenTimeApp[];
+  week: { dayStart: number; minutes: number }[];
+}
+
+/** Real per-app usage from Android UsageStatsManager; null outside the Android app. */
+export function readScreenTimeDetails(): ScreenTimeDetails | null {
+  try {
+    const raw = bridge()?.screenTimeDetails?.();
+    if (!raw) return null;
+    const d = JSON.parse(raw) as Partial<ScreenTimeDetails>;
+    return {
+      supported: Boolean(d.supported),
+      granted: Boolean(d.granted),
+      totalMinutes: d.totalMinutes ?? 0,
+      commitxMinutes: d.commitxMinutes ?? 0,
+      otherMinutes: d.otherMinutes ?? 0,
+      hourly: d.hourly ?? [],
+      apps: d.apps ?? [],
+      week: d.week ?? [],
+    };
+  } catch {
+    return null;
+  }
+}

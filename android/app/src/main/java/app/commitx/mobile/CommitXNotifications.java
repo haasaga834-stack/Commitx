@@ -22,6 +22,8 @@ final class CommitXNotifications {
     static final int ID_TODOS = 1001;
     static final int ID_SESSION = 1002;
     static final int ID_SCREEN_TIME = 1003;
+    static final int ID_SCREEN_TIME_DAILY = 1004;
+    static final String CHANNEL_SCREEN_TIME_DAILY = "commitx_screen_time_daily";
     static final int ID_PLAN_BASE = 1100;
     static final int ID_MOTIVATION_BASE = 1200;
 
@@ -50,6 +52,12 @@ final class CommitXNotifications {
         NotificationChannel limit = new NotificationChannel(
                 CHANNEL_SCREEN_TIME, "Screen time limit", NotificationManager.IMPORTANCE_DEFAULT);
         limit.setDescription("Alerts you when your daily screen time limit is reached.");
+
+        NotificationChannel daily = new NotificationChannel(
+                CHANNEL_SCREEN_TIME_DAILY, "Daily screen time", NotificationManager.IMPORTANCE_LOW);
+        daily.setDescription("A quiet, persistent summary of today's screen time.");
+        daily.setShowBadge(false);
+        nm.createNotificationChannel(daily);
 
         NotificationChannel plans = new NotificationChannel(
                 CHANNEL_PLANS, "Study reminders", NotificationManager.IMPORTANCE_HIGH);
@@ -276,6 +284,33 @@ final class CommitXNotifications {
                 .setContentIntent(openApp(ctx, "", 12));
 
         nm.notify(ID_SCREEN_TIME, b.build());
+    }
+
+    /** Persistent, silent summary of today's device screen time; tap opens /screen-time. */
+    static void showScreenTimeDaily(Context ctx) {
+        NotificationManager nm = manager(ctx);
+        if (nm == null) return;
+        int[] t = ScreenTimeTracker.totals(ctx, true);
+        if (t == null) {
+            nm.cancel(ID_SCREEN_TIME_DAILY);
+            return;
+        }
+        ensureChannels(ctx);
+        Notification.Builder b = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                ? new Notification.Builder(ctx, CHANNEL_SCREEN_TIME_DAILY)
+                : new Notification.Builder(ctx);
+        String title = "Screen time today: " + ScreenTimeTracker.format(t[0] + t[1]);
+        String text = "CommitX " + ScreenTimeTracker.format(t[0])
+                + " \u00b7 Other apps " + ScreenTimeTracker.format(t[1]);
+        b.setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle(title)
+                .setContentText(text)
+                .setOngoing(true)
+                .setOnlyAlertOnce(true)
+                .setShowWhen(false)
+                .setContentIntent(openApp(ctx, "screen-time", 13));
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) b.setPriority(Notification.PRIORITY_LOW);
+        try { nm.notify(ID_SCREEN_TIME_DAILY, b.build()); } catch (Throwable ignored) {}
     }
 
     /* --------------------------- Study plan reminder ------------------------ */
