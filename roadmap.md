@@ -1,6 +1,7 @@
 # Roadmap
 
-- [ ] Center Focus Shield setup, require Shield for native Verified, and default-select social apps/games; real-device verification requires an attached Android phone and updated install
+- [x] Center Focus Shield setup, remove native Verified skip paths, and default-select recognized social apps/games; four rule tests and simulated Android setup-to-theme flow passed
+- [ ] Verify native app category detection and blocking on a physical Android phone — requires an attached device and updated install
 
 - [x] Match phone Home to the supplied mint reference and use 30/60/90-minute Quick Commit options; phone appearance and links checked, tablet/website/session behavior preserved
 
