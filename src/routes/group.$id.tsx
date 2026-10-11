@@ -402,7 +402,8 @@ function GroupSession() {
 
   /** Verified enforcement: leaving the app fails this participant. */
   useEffect(() => {
-    if (!isActive || !stillIn || !isVerified) return;
+    // Android app: Focus Shield blocks apps instead; switching never fails.
+    if (!isActive || !stillIn || !isVerified || hasNativeBridge()) return;
 
     const clearGrace = () => {
       if (graceRef.current) window.clearTimeout(graceRef.current);
