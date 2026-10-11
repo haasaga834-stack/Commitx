@@ -1046,8 +1046,7 @@ body.cx-app-theme .cx-phone-home-shell .cx-home-landscape {
 body.cx-app-theme .cx-phone-home-shell .cx-home-image-wash {
   background: linear-gradient(to top, var(--home-hero-shade), color-mix(in oklch, var(--home-hero-shade) 68%, transparent) 25%, transparent 72%);
 }
-body.cx-app-theme .cx-phone-home-shell .cx-home-hero-title,
-body.cx-app-theme .cx-phone-home-shell .cx-home-hero-caption { color: var(--home-hero-ink); }
+body.cx-app-theme .cx-phone-home-shell .cx-home-hero-title { color: var(--home-hero-ink); }
 body.cx-app-theme .cx-phone-home-shell .cx-home-plan {
   background: color-mix(in oklch, var(--home-hero-ink) 88%, transparent);
   color: var(--home-hero-shade);
