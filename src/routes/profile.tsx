@@ -4,6 +4,7 @@ import { useAppState, stats, setState, formatCoins } from "@/lib/commitx-store";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Pencil, Check, Trophy, Clock, Camera, Settings as SettingsIcon } from "lucide-react";
 import { fileToProfilePhoto } from "@/lib/profile-photo";
+import { useOnlineUsers } from "@/lib/presence";
 import { getPendingSessions, refreshFromCloud } from "@/lib/cloud-sync";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -120,7 +121,7 @@ function Profile() {
 
   const { rows: cloudLeaders } = useLeaderboard(10);
   const leaderboard = useMemo(
-    () => buildLeaderboard(cloudLeaders, state.profile.name, s.totalMinutes),
+    () => buildLeaderboard(cloudLeaders, state.profile.name, s.totalMinutes, photo || null),
     [cloudLeaders, state.profile.name, s.totalMinutes],
   );
 
@@ -273,8 +274,10 @@ function LeaderRow({
   row,
 }: {
   rank: number;
-  row: { name: string; minutes: number; avatar: string; you: boolean };
+  row: { userId: string | null; photo: string | null; name: string; minutes: number; avatar: string; you: boolean };
 }) {
+  const onlineUsers = useOnlineUsers();
+  const isOnline = row.you || (row.userId != null && onlineUsers.has(row.userId));
   const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : null;
   return (
     <div
@@ -287,9 +290,12 @@ function LeaderRow({
         {medal ?? rank}
       </div>
       <div
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg shadow-inner"
+        className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg shadow-inner"
         style={{ background: row.avatar }}
       >
+        {row.photo ? (
+          <img src={row.photo} alt={`${row.name}'s profile photo`} className="h-10 w-10 rounded-full object-cover" loading="lazy" />
+        ) : (
         <span className="font-display text-sm font-semibold text-white">
           {row.name
             .split(" ")
@@ -297,6 +303,10 @@ function LeaderRow({
             .slice(0, 2)
             .join("")}
         </span>
+        )}
+        {isOnline && (
+          <span aria-label="Online" className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-success ring-2 ring-card" />
+        )}
       </div>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-foreground">
@@ -331,11 +341,14 @@ const AVATARS = [
 
 /** Ranked by total study hours, live from the cloud. */
 function buildLeaderboard(
-  cloudLeaders: { userId: string; name: string; minutes: number }[],
+  cloudLeaders: { userId: string; name: string; minutes: number; photo: string | null }[],
   userName: string,
   userMinutes: number,
+  userPhoto: string | null,
 ) {
-  const rows = cloudLeaders.map((r, i) => ({
+  const rows: { userId: string | null; photo: string | null; name: string; minutes: number; avatar: string; you: boolean }[] = cloudLeaders.map((r, i) => ({
+    userId: r.userId,
+    photo: r.photo,
     name: r.name,
     minutes: r.minutes,
     avatar: AVATARS[i % AVATARS.length],
@@ -343,6 +356,8 @@ function buildLeaderboard(
   }));
   if (!rows.some((r) => r.you)) {
     rows.push({
+      userId: null,
+      photo: userPhoto,
       name: userName,
       minutes: userMinutes,
       avatar: "linear-gradient(135deg,#2E7D32,#4CAF50)",
