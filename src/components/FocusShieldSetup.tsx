@@ -40,6 +40,8 @@ export function FocusShieldSetup({
 }) {
   const [step, setStep] = useState<Step>("intro");
   const [selected, setSelected] = useState<string[]>([]);
+  /** Social apps and games are mandatory in Verified and can never be unselected. */
+  const [locked, setLocked] = useState<string[]>([]);
   const [apps, setApps] = useState<ShieldAppOption[]>([]);
   const [appSearch, setAppSearch] = useState("");
   const [usage, setUsage] = useState(false);
@@ -52,13 +54,16 @@ export function FocusShieldSetup({
     if (!open) {
       setStep("intro");
       setSelected([]);
+      setLocked([]);
       setAppSearch("");
       setError(null);
       return;
     }
     const installed = shieldApps();
     setApps(installed);
-    setSelected(defaultShieldPackages(installed));
+    const defaults = defaultShieldPackages(installed);
+    setLocked(defaults);
+    setSelected(defaults);
   }, [open]);
 
   // Re-verify permissions whenever the user comes back from Android settings.
@@ -109,11 +114,14 @@ export function FocusShieldSetup({
   function toggleGroup(present: string[]) {
     setSelected((prev) => {
       const on = present.some((p) => prev.includes(p));
-      return on ? prev.filter((p) => !present.includes(p)) : [...prev, ...present];
+      return on
+        ? prev.filter((p) => !present.includes(p) || locked.includes(p))
+        : [...new Set([...prev, ...present])];
     });
   }
 
   function toggleApp(pkg: string) {
+    if (locked.includes(pkg)) return;
     setSelected((prev) => prev.includes(pkg) ? prev.filter((p) => p !== pkg) : [...prev, pkg]);
   }
 
@@ -124,7 +132,7 @@ export function FocusShieldSetup({
       return;
     }
     setError(null);
-    onDone({ enabled: true, packages: selected, labels: selectedLabels });
+    onDone({ enabled: true, packages: [...new Set([...locked, ...selected])], labels: selectedLabels });
   }
 
   return (
@@ -180,7 +188,7 @@ export function FocusShieldSetup({
                     Select All
                   </button>
                   <button
-                    onClick={() => setSelected([])}
+                    onClick={() => setSelected(locked)}
                     className="rounded-full border border-hairline bg-background px-4 py-2 text-xs font-medium"
                   >
                     Clear All
