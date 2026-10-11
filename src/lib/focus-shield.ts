@@ -1,12 +1,12 @@
 /**
- * Focus Shield — optional distraction blocking for Standard sessions.
+ * Focus Shield — required distraction blocking for native Verified sessions.
  *
  * The actual app restriction is enforced by the native Android layer
  * (FocusShieldService + FocusShieldActivity). This module is only a thin,
  * honest wrapper: every call is a no-op on the web, and `shieldActive()` only
  * ever reports true when the native layer confirms protection is running.
  *
- * Verified Mode never touches any of this.
+ * Website sessions retain their existing verification rules without app blocking.
  */
 import { supabase } from "@/integrations/supabase/client";
 import { hasNativeBridge } from "./native-session";
@@ -18,6 +18,8 @@ export interface ShieldAppOption {
   label: string;
   /** Base64 PNG data URL of the launcher icon, when the native layer supplies it. */
   icon?: string;
+  /** Native category detection: social apps and games are initially selected. */
+  defaultBlocked?: boolean;
 }
 
 /** Groups shown in the picker. A group is offered when any package is installed. */
