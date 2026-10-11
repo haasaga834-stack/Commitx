@@ -199,9 +199,6 @@ function MobileHome() {
             <Button asChild className="cx-home-start mt-2 h-11 gap-2 rounded-full px-4 text-sm font-semibold">
               <Link to="/commit" search={next ? { plan: 1 } : {}}><Leaf className="h-5 w-5" /> Start Focus Session</Link>
             </Button>
-            <p className="cx-home-hero-caption mt-2 truncate text-xs">
-              {plansHydrated && next ? `${next.plan.subject} · ${formatTime(next.plan.time)}` : "Nothing scheduled · Tap to begin"}
-            </p>
           </div>
         </section>
 
