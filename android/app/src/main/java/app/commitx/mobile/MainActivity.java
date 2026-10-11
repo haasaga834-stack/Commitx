@@ -553,6 +553,7 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         injectPendingFailureIfNeeded();
+        CommitXNotifications.showScreenTimeDaily(this);
         PlanStore.scheduleAll(this);
         WellnessSoundStore.reconcile(this);
     }

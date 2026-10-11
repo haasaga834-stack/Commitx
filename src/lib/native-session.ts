@@ -41,6 +41,7 @@ declare global {
       hasUsageAccess?: () => boolean;
       openUsageAccessSettings?: () => void;
       screenTimeToday?: () => string;
+      screenTimeDetails?: () => string;
       screenTimeLimit?: () => number;
       setScreenTimeLimit?: (minutes: number) => void;
       rateApp?: () => void;

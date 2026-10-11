@@ -1,7 +1,6 @@
 import { createFileRoute, Link, useLocation, useRouter } from "@tanstack/react-router";
 import { MobileShell } from "@/components/BottomNav";
 import { NotificationsCard } from "@/components/NotificationsCard";
-import { ScreenTimeCard } from "@/components/ScreenTimeCard";
 import { ReviewModeration } from "@/components/ReviewModeration";
 import { CxCoin } from "@/components/CxCoin";
 
@@ -14,7 +13,7 @@ import { claimReferral, deleteAccount as deleteAccountFn } from "@/lib/account.f
 import { getDeviceHash } from "@/lib/device";
 import { signOutEverywhere } from "@/lib/use-auth";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Moon, Sun, Copy, Check, Trash2, ShieldAlert, LogOut, BookOpen, ChevronRight, Star, Info, Mail } from "lucide-react";
+import { ArrowLeft, Moon, Sun, Copy, Check, Trash2, ShieldAlert, LogOut, BookOpen, ChevronRight, Star, Info, Mail, Smartphone } from "lucide-react";
 import { isNativeApp, rateApp } from "@/lib/native-notifications";
 
 export const Route = createFileRoute("/settings")({
@@ -261,9 +260,22 @@ function Settings() {
         </p>
         <div className="mt-4 grid gap-4">
           <NotificationsCard />
-          <div id="screen-time">
-            <ScreenTimeCard />
-          </div>
+          {native && (
+            <Link
+              id="screen-time"
+              to="/screen-time"
+              className="flex items-center gap-3 rounded-3xl bg-card p-5 shadow-soft"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-secondary">
+                <Smartphone className="h-4 w-4" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-medium text-foreground">Screen Time</span>
+                <span className="block text-xs text-muted-foreground">Today, this week and every app</span>
+              </span>
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+            </Link>
+          )}
         </div>
 
         {/* Referral */}
