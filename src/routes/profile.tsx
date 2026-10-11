@@ -7,12 +7,9 @@ import { fileToProfilePhoto } from "@/lib/profile-photo";
 import { useOnlineUsers } from "@/lib/presence";
 import { getPendingSessions, refreshFromCloud } from "@/lib/cloud-sync";
 import { supabase } from "@/integrations/supabase/client";
-
 import { formatHours } from "@/lib/analytics-data";
-
 import { LEADERBOARD_REFRESH_EVENT, useLeaderboard } from "@/lib/community";
-
-
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -93,7 +90,6 @@ function Profile() {
     }
   }
 
-
   useEffect(() => {
     setDraft(state.profile);
   }, [state.profile]);
@@ -125,24 +121,35 @@ function Profile() {
     [cloudLeaders, state.profile.name, s.totalMinutes],
   );
 
+  const tiles = [
+    { label: "Cx Coins", value: hydrated ? formatCoins(state.coins) : "—" },
+    { label: "Coins earned", value: formatCoins(s.coinsEarned) },
+    { label: "Current streak", value: `${s.streak}d` },
+    { label: "Longest streak", value: `${s.longest}d` },
+    { label: "Focus hours", value: totalHours },
+    { label: "Success rate", value: `${s.successRate}%` },
+    { label: "Completed", value: String(s.completed) },
+    { label: "Failed", value: String(s.failed) },
+  ];
+
   return (
     <MobileShell>
-      <div className="px-6 pt-14">
+      <div className="px-5 pt-8">
         <div className="flex items-center justify-between">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
             Profile
           </p>
           <div className="flex items-center gap-2">
             <Link
               to="/settings"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-soft"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-card shadow-soft"
               aria-label="Settings"
             >
               <SettingsIcon className="h-4 w-4" />
             </Link>
             <button
               onClick={() => (editing ? save() : setEditing(true))}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-soft"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-card shadow-soft"
               aria-label={editing ? "Save" : "Edit"}
             >
               {editing ? <Check className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
@@ -150,10 +157,10 @@ function Profile() {
           </div>
         </div>
 
-
-        <div className="mt-8 flex flex-col items-center">
-          <div className="relative">
-            <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-primary font-display text-3xl font-semibold text-primary-foreground shadow-lift">
+        {/* Identity — one compact card instead of a tall centred stack */}
+        <div className="mt-3 flex items-center gap-3.5 rounded-3xl bg-card p-3 shadow-soft">
+          <div className="relative shrink-0">
+            <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-primary font-display text-2xl font-semibold text-primary-foreground shadow-lift">
               {hydrated && photo ? (
                 <img
                   src={photo}
@@ -167,10 +174,10 @@ function Profile() {
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              className="absolute -bottom-1 -right-1 inline-flex h-9 w-9 items-center justify-center rounded-full bg-card shadow-lift"
+              className="absolute -bottom-0.5 -right-0.5 inline-flex h-7 w-7 items-center justify-center rounded-full bg-card shadow-lift"
               aria-label="Change profile photo"
             >
-              <Camera className="h-4 w-4" />
+              <Camera className="h-3.5 w-3.5" />
             </button>
             <input
               ref={fileRef}
@@ -181,35 +188,37 @@ function Profile() {
             />
           </div>
 
-          {photo && (
-            <button
-              type="button"
-              onClick={() => setState((prev) => ({ ...prev, profile: { ...prev.profile, photo: "" } }))}
-              className="mt-3 text-[11px] uppercase tracking-widest text-muted-foreground"
-            >
-              Remove photo
-            </button>
-          )}
-
-          {photoError && (
-            <p className="mt-2 text-xs text-destructive">{photoError}</p>
-          )}
-
-          {editing ? (
-            <input
-              value={draft.name}
-              onChange={(e) => setDraft({ ...draft, name: e.target.value })}
-              className="mt-5 rounded-2xl border border-hairline bg-card px-4 py-2 text-center text-lg font-semibold outline-none focus:border-primary"
-            />
-          ) : (
-            <h1 className="mt-5 font-display text-2xl font-semibold">
-              {state.profile.name}
-            </h1>
-          )}
+          <div className="min-w-0 flex-1">
+            {editing ? (
+              <input
+                value={draft.name}
+                onChange={(e) => setDraft({ ...draft, name: e.target.value })}
+                className="w-full rounded-xl border border-hairline bg-background px-3 py-1.5 text-base font-semibold outline-none focus:border-primary"
+              />
+            ) : (
+              <h1 className="truncate font-display text-xl font-semibold">
+                {state.profile.name}
+              </h1>
+            )}
+            <div className="mt-1 flex items-center gap-3">
+              {photo && (
+                <button
+                  type="button"
+                  onClick={() => setState((prev) => ({ ...prev, profile: { ...prev.profile, photo: "" } }))}
+                  className="text-[10px] uppercase tracking-widest text-muted-foreground"
+                >
+                  Remove photo
+                </button>
+              )}
+              {photoError && (
+                <p className="truncate text-xs text-destructive">{photoError}</p>
+              )}
+            </div>
+          </div>
         </div>
 
-
-        <div className="mt-8 rounded-3xl bg-card p-5 shadow-soft">
+        {/* Details — three columns, one slim card */}
+        <div className="mt-2.5 grid grid-cols-3 rounded-3xl bg-card py-2.5 shadow-soft">
           <Field
             label="Age"
             value={state.profile.age}
@@ -217,53 +226,60 @@ function Profile() {
             onChange={(v) => setDraft({ ...draft, age: v })}
             draft={draft.age}
           />
-          <Divider />
           <Field
             label="Sex"
             value={state.profile.sex}
             editing={editing}
             onChange={(v) => setDraft({ ...draft, sex: v })}
             draft={draft.sex}
+            divider
           />
-          <Divider />
           <Field
             label="Education"
             value={state.profile.education}
             editing={editing}
             onChange={(v) => setDraft({ ...draft, education: v })}
             draft={draft.education}
+            divider
           />
         </div>
 
-        <p className="mt-8 text-xs uppercase tracking-widest text-muted-foreground">
+        <p className="mt-6 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
           Dashboard
         </p>
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Stat label="Cx Coins" value={hydrated ? formatCoins(state.coins) : "—"} />
-          <Stat label="Coins earned" value={formatCoins(s.coinsEarned)} />
-          <Stat label="Current streak" value={`${s.streak}d`} />
-          <Stat label="Longest streak" value={`${s.longest}d`} />
-          <Stat label="Focus hours" value={totalHours} />
-          <Stat label="Success rate" value={`${s.successRate}%`} />
-          <Stat label="Completed" value={String(s.completed)} />
-          <Stat label="Failed" value={String(s.failed)} />
+        <div className="mt-2 grid grid-cols-2 overflow-hidden rounded-3xl bg-card shadow-soft">
+          {tiles.map((t, i) => (
+            <div
+              key={t.label}
+              className={cn(
+                "min-w-0 px-3.5 py-2.5",
+                i % 2 === 1 && "border-l border-hairline",
+                i < tiles.length - 2 && "border-b border-hairline",
+              )}
+            >
+              <p className="truncate text-[10px] uppercase tracking-wider text-muted-foreground">
+                {t.label}
+              </p>
+              <p className="mt-0.5 font-display text-lg font-semibold tabular-nums">
+                {t.value}
+              </p>
+            </div>
+          ))}
         </div>
 
-        <div className="mt-8 flex items-center justify-between">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground">
+        <div className="mt-6 flex items-center justify-between">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
             Top 10 · Study Hours
           </p>
           <Trophy className="h-4 w-4 text-primary" />
         </div>
-        <div className="mt-4 space-y-2">
+        <div className="mt-2 space-y-1.5">
           {leaderboard.map((row, i) => (
             <LeaderRow key={row.name + i} rank={i + 1} row={row} />
           ))}
         </div>
 
         <div className="h-4" />
-
-
       </div>
     </MobileShell>
   );
@@ -281,45 +297,46 @@ function LeaderRow({
   const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : null;
   return (
     <div
-      className={`flex items-center gap-3 rounded-2xl px-4 py-3 shadow-soft transition-all animate-fade-up ${
-        row.you ? "bg-primary/8 ring-1 ring-primary/40" : "bg-card"
-      }`}
+      className={cn(
+        "flex items-center gap-2.5 rounded-2xl px-3 py-2 shadow-soft transition-all animate-fade-up",
+        row.you ? "bg-primary/8 ring-1 ring-primary/40" : "bg-card",
+      )}
       style={{ animationDelay: `${rank * 40}ms` }}
     >
-      <div className="w-6 shrink-0 text-center text-sm font-semibold tabular-nums text-muted-foreground">
+      <div className="w-5 shrink-0 text-center text-xs font-semibold tabular-nums text-muted-foreground">
         {medal ?? rank}
       </div>
       <div
-        className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg shadow-inner"
+        className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm shadow-inner"
         style={{ background: row.avatar }}
       >
         {row.photo ? (
-          <img src={row.photo} alt={`${row.name}'s profile photo`} className="h-10 w-10 rounded-full object-cover" loading="lazy" />
+          <img src={row.photo} alt={`${row.name}'s profile photo`} className="h-8 w-8 rounded-full object-cover" loading="lazy" />
         ) : (
-        <span className="font-display text-sm font-semibold text-white">
-          {row.name
-            .split(" ")
-            .map((p) => p[0])
-            .slice(0, 2)
-            .join("")}
-        </span>
+          <span className="font-display text-[11px] font-semibold text-white">
+            {row.name
+              .split(" ")
+              .map((p) => p[0])
+              .slice(0, 2)
+              .join("")}
+          </span>
         )}
         {isOnline && (
-          <span aria-label="Online" className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-online ring-2 ring-card" />
+          <span aria-label="Online" className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-online ring-2 ring-card" />
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-foreground">
+        <p className="truncate text-xs font-medium text-foreground">
           {row.name}
           {row.you && (
-            <span className="ml-2 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] uppercase tracking-wider text-primary">
+            <span className="ml-1.5 rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-primary">
               You
             </span>
           )}
         </p>
       </div>
-      <div className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold tabular-nums text-foreground">
-        <Clock className="h-3.5 w-3.5 text-primary" />
+      <div className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold tabular-nums text-foreground">
+        <Clock className="h-3 w-3 text-primary" />
         {formatHours(row.minutes)}
       </div>
     </div>
@@ -374,42 +391,31 @@ function Field({
   editing,
   draft,
   onChange,
+  divider,
 }: {
   label: string;
   value: string;
   editing: boolean;
   draft: string;
   onChange: (v: string) => void;
+  divider?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between py-2.5">
-      <span className="text-sm text-muted-foreground">{label}</span>
+    <div className={cn("min-w-0 px-3", divider && "border-l border-hairline")}>
+      <p className="truncate text-[10px] uppercase tracking-wider text-muted-foreground">
+        {label}
+      </p>
       {editing ? (
         <input
           value={draft}
           onChange={(e) => onChange(e.target.value)}
-          className="max-w-[60%] rounded-lg border border-hairline bg-background px-3 py-1 text-right text-sm outline-none focus:border-primary"
+          className="mt-1 w-full rounded-lg border border-hairline bg-background px-2 py-1 text-sm outline-none focus:border-primary"
         />
       ) : (
-        <span className="text-sm font-medium">{value}</span>
+        <p className="mt-0.5 truncate text-sm font-medium" title={value}>
+          {value || "—"}
+        </p>
       )}
     </div>
   );
 }
-
-function Divider() {
-  return <div className="h-px bg-hairline" />;
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-2xl bg-card p-4 shadow-soft">
-      <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-        {label}
-      </p>
-      <p className="mt-1 font-display text-2xl font-semibold">{value}</p>
-    </div>
-  );
-}
-
-
