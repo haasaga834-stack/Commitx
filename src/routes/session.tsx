@@ -1166,6 +1166,12 @@ function LiveSession() {
         }],
       };
       try {
+        // A long session can outlive the sign-in token; refresh it first so
+        // the outcome is saved now instead of failing with an auth error.
+        try {
+          const { data: auth } = await sbClient.auth.getSession();
+          if (auth.session?.user.id) await hasLiveSession(auth.session.user.id);
+        } catch {}
         let result = await recordSessions({ data: payload });
         if (result.rejected.includes(session.id)) {
           // One short retry absorbs a few seconds of device/server clock drift.
