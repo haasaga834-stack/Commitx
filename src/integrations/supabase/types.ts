@@ -807,14 +807,17 @@ export type Database = {
         Args: { _user_id: string }
         Returns: undefined
       }
+      settle_all_unreported_claims: { Args: never; Returns: number }
       settle_expired_study_group: {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
+      settle_my_unreported_sessions: { Args: never; Returns: number }
       settle_study_group_member: {
         Args: { _group_id: string; _status: string; _user_id: string }
         Returns: string
       }
+      settle_unreported_claims: { Args: { _user_id: string }; Returns: number }
       start_study_group: {
         Args: { _group_id: string; _user_id: string }
         Returns: {
