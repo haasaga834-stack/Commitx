@@ -491,6 +491,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         if (current == this) current = null;
+        stopWatchingReconnect();
         super.onDestroy();
     }
 
