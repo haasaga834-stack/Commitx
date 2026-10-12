@@ -68,6 +68,8 @@ import { useAuth } from "@/lib/use-auth";
 import { recordSessions } from "@/lib/wallet.functions";
 import { accountabilityEnded } from "@/lib/accountability";
 import { markSessionSynced } from "@/lib/cloud-sync";
+import { hasLiveSession } from "@/lib/session-guard";
+import { supabase as sbClient } from "@/integrations/supabase/client";
 
 declare global {
   interface Window {

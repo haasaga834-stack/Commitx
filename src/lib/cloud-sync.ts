@@ -116,6 +116,11 @@ function sessionSignature(s: Session) {
 export async function pullFromCloud(userId: string) {
   if (!isOnline()) return null;
   if (!(await hasLiveSession(userId))) return null;
+  // Record any finished session whose outcome never reached the server
+  // (app closed, token expired, offline) before reading totals.
+  try {
+    await supabase.rpc("settle_my_unreported_sessions");
+  } catch {}
   const localState = getState();
   const [profileRes, walletRes, sessionsRes] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
