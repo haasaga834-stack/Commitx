@@ -58,6 +58,10 @@ public class MainActivity extends Activity {
 
     private WebView webView;
     private View splashOverlay;
+    private FrameLayout rootLayout;
+    private View offlineOverlay;
+    private String failedUrl;
+    private android.net.ConnectivityManager.NetworkCallback offlineNetworkCallback;
     private volatile boolean splashHidden = false;
     private Dialog authDialog;
     private WebView authWebView;
@@ -217,9 +221,20 @@ public class MainActivity extends Activity {
                     if (callback != null) deliverOAuthCallback(callback);
                 }
             }
+
+            @Override
+            public void onReceivedError(WebView view, WebResourceRequest request,
+                                        android.webkit.WebResourceError error) {
+                if (request == null || !request.isForMainFrame()) return;
+                failedUrl = request.getUrl() == null ? START_URL : request.getUrl().toString();
+                // Never show the browser's raw error page.
+                try { view.stopLoading(); view.loadUrl("about:blank"); } catch (Throwable ignored) {}
+                showOfflineOverlay();
+            }
         });
 
         FrameLayout root = new FrameLayout(this);
+        rootLayout = root;
         root.addView(webView, new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         splashOverlay = buildSplashOverlay();
@@ -257,6 +272,116 @@ public class MainActivity extends Activity {
         columnParams.gravity = android.view.Gravity.CENTER;
         overlay.addView(column, columnParams);
         return overlay;
+    }
+
+    /** Branded native offline screen shown instead of the WebView error page. */
+    private void showOfflineOverlay() {
+        hideSplash();
+        if (rootLayout == null) return;
+        if (offlineOverlay == null) {
+            float d = getResources().getDisplayMetrics().density;
+            FrameLayout overlay = new FrameLayout(this);
+            overlay.setBackgroundColor(Color.parseColor("#F3F6F1"));
+            overlay.setClickable(true);
+            android.widget.LinearLayout col = new android.widget.LinearLayout(this);
+            col.setOrientation(android.widget.LinearLayout.VERTICAL);
+            col.setGravity(android.view.Gravity.CENTER_HORIZONTAL);
+            int pad = Math.round(32 * d);
+            col.setPadding(pad, 0, pad, 0);
+
+            android.widget.TextView emblem = new android.widget.TextView(this);
+            emblem.setText("\uD83C\uDF31");
+            emblem.setTextSize(44);
+            emblem.setGravity(android.view.Gravity.CENTER);
+            android.graphics.drawable.GradientDrawable circle = new android.graphics.drawable.GradientDrawable();
+            circle.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+            circle.setColor(Color.parseColor("#DDEBE2"));
+            emblem.setBackground(circle);
+            int es = Math.round(112 * d);
+            col.addView(emblem, new android.widget.LinearLayout.LayoutParams(es, es));
+
+            android.widget.TextView title = new android.widget.TextView(this);
+            title.setText("You're offline");
+            title.setTextSize(24);
+            title.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+            title.setTextColor(Color.parseColor("#1F2A24"));
+            title.setGravity(android.view.Gravity.CENTER);
+            android.widget.LinearLayout.LayoutParams tp = new android.widget.LinearLayout.LayoutParams(-2, -2);
+            tp.topMargin = Math.round(28 * d);
+            col.addView(title, tp);
+
+            android.widget.TextView body = new android.widget.TextView(this);
+            body.setText("Your focus is safe. CommitX will reconnect automatically when you're back online.");
+            body.setTextSize(14);
+            body.setLineSpacing(0, 1.25f);
+            body.setTextColor(Color.parseColor("#66736B"));
+            body.setGravity(android.view.Gravity.CENTER);
+            android.widget.LinearLayout.LayoutParams bp = new android.widget.LinearLayout.LayoutParams(-2, -2);
+            bp.topMargin = Math.round(10 * d);
+            col.addView(body, bp);
+
+            android.widget.TextView retry = new android.widget.TextView(this);
+            retry.setText("Try again");
+            retry.setTextSize(15);
+            retry.setTextColor(Color.WHITE);
+            retry.setGravity(android.view.Gravity.CENTER);
+            retry.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+            android.graphics.drawable.GradientDrawable pill = new android.graphics.drawable.GradientDrawable();
+            pill.setCornerRadius(28 * d);
+            pill.setColor(Color.parseColor("#2F7D5B"));
+            retry.setBackground(pill);
+            retry.setOnClickListener(v -> retryAfterOffline());
+            android.widget.LinearLayout.LayoutParams rp = new android.widget.LinearLayout.LayoutParams(Math.round(200 * d), Math.round(52 * d));
+            rp.topMargin = Math.round(32 * d);
+            col.addView(retry, rp);
+
+            FrameLayout.LayoutParams cp = new FrameLayout.LayoutParams(-1, -2);
+            cp.gravity = android.view.Gravity.CENTER;
+            overlay.addView(col, cp);
+            offlineOverlay = overlay;
+        }
+        if (offlineOverlay.getParent() == null) {
+            rootLayout.addView(offlineOverlay, new FrameLayout.LayoutParams(-1, -1));
+        }
+        offlineOverlay.setVisibility(View.VISIBLE);
+        watchForReconnect();
+    }
+
+    private void watchForReconnect() {
+        if (offlineNetworkCallback != null) return;
+        try {
+            android.net.ConnectivityManager cm = (android.net.ConnectivityManager)
+                    getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (cm == null) return;
+            offlineNetworkCallback = new android.net.ConnectivityManager.NetworkCallback() {
+                @Override
+                public void onAvailable(android.net.Network network) {
+                    // Give routing a moment to come up before reloading.
+                    if (webView != null) webView.postDelayed(MainActivity.this::retryAfterOffline, 800);
+                }
+            };
+            cm.registerDefaultNetworkCallback(offlineNetworkCallback);
+        } catch (Throwable ignored) { offlineNetworkCallback = null; }
+    }
+
+    private void stopWatchingReconnect() {
+        if (offlineNetworkCallback == null) return;
+        try {
+            android.net.ConnectivityManager cm = (android.net.ConnectivityManager)
+                    getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (cm != null) cm.unregisterNetworkCallback(offlineNetworkCallback);
+        } catch (Throwable ignored) {}
+        offlineNetworkCallback = null;
+    }
+
+    private void retryAfterOffline() {
+        if (offlineOverlay == null || offlineOverlay.getVisibility() != View.VISIBLE) return;
+        if (webView == null) return;
+        offlineOverlay.setVisibility(View.GONE);
+        stopWatchingReconnect();
+        String url = failedUrl == null ? START_URL : failedUrl;
+        webView.clearHistory();
+        webView.loadUrl(url);
     }
 
     /** Fades the startup screen out once the web app reports it is interactive. */
@@ -366,6 +491,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         if (current == this) current = null;
+        stopWatchingReconnect();
         super.onDestroy();
     }
 
