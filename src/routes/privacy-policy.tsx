@@ -123,8 +123,9 @@ const SECTIONS: { title: string; body: string[] }[] = [
     title: "12. Your rights and account deletion",
     body: [
       "You can view and edit your profile, plans, subjects and preferences at any time in the app. You can request a copy of your data, or ask us to correct it, by emailing commitx07@gmail.com.",
-      "You can delete your account yourself: Settings → Delete account. This permanently removes your profile and profile photo, focus session history, live session, study plans, to-dos, subjects, settings, referrals, group memberships and groups you created, your leaderboard entry, your Cx Coin balance and your login credentials. It cannot be undone and Cx Coins are not recoverable.",
-      "If you cannot access the app, email commitx07@gmail.com from your registered address and we will delete the account for you.",
+      "You can delete your account yourself: Settings → Delete account. This permanently removes your profile and profile photo, focus session history, live session, study plans, to-dos, subjects, settings, referrals, group memberships and groups you created, student reviews you submitted, your leaderboard entry, your Cx Coin balance and your login credentials. It cannot be undone and Cx Coins are not recoverable.",
+      "Delete your account without the app: email commitx07@gmail.com from your registered address with the subject \"Delete my CommitX account\". We verify the request and delete the account and all the data listed above within 30 days, then confirm by email.",
+      "Exact-time reminders: if you schedule study plan reminders, CommitX may ask Android for permission to deliver them at the exact time you chose. If you decline, reminders still arrive, possibly a few minutes late.",
       "Depending on where you live, you may also have the right to object to or restrict certain processing, or to complain to your local data protection authority.",
     ],
   },
@@ -175,6 +176,7 @@ function PrivacyPage() {
           {SECTIONS.map((s, i) => (
             <section
               key={s.title}
+              id={s.title.startsWith("12.") ? "delete-account" : undefined}
               className="rounded-3xl bg-card p-5 shadow-soft animate-fade-up"
               style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}
             >
