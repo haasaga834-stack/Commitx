@@ -147,13 +147,6 @@ export function syncStudyPlanReminders(
   } catch {}
 }
 
-/** Requests Android's special exact-alarm access only when a plan needs it. */
-export function requestExactAlarmAccess() {
-  try {
-    const b = bridge();
-    if (b?.canScheduleExactAlarms?.() === false) b.requestExactAlarmAccess?.();
-  } catch {}
-}
 
 
 /* --------------------------- Session progress ---------------------------- */

@@ -1103,24 +1103,6 @@ public class MainActivity extends Activity {
             PlanStore.setEnabled(MainActivity.this, on);
         }
 
-        @JavascriptInterface
-        public boolean canScheduleExactAlarms() {
-            return PlanStore.canScheduleExact(MainActivity.this);
-        }
-
-        @JavascriptInterface
-        public void requestExactAlarmAccess() {
-            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S
-                    || PlanStore.canScheduleExact(MainActivity.this)) return;
-            runOnUiThread(() -> {
-                try {
-                    startActivity(new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
-                            Uri.parse("package:" + getPackageName())));
-                } catch (Throwable ignored) {
-                    openAppNotificationSettings();
-                }
-            });
-        }
 
         /* ----------------------- Wellness break sounds ----------------------- */
 
