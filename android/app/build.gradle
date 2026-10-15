@@ -18,7 +18,7 @@ android {
 
     defaultConfig {
         applicationId "app.commitx.mobile"
-        minSdk 23
+        minSdk 24
         targetSdk 36
 
         versionCode Integer.parseInt(System.getenv("COMMITX_VERSION_CODE") ?: "1")
