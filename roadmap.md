@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Update the public Home title, add /terms to the sitemap, and clarify Android app blocking on Verified Focus; verify the public pages and sitemap.
+- [x] Update the public Home title, add /terms to the sitemap, and clarify Android app blocking on Verified Focus; browser verified titles, rendered blocking information and valid sitemap XML, with a clean preview build.
 
 - [x] Replace Profile's divided statistics panel with separate compact rounded cards and add Male/Female/Prefer not to say selection in a small pop-up; statistics and existing profile saving preserved, preview compiles cleanly. Signed-in interaction check blocked by the sign-in gate.
 
