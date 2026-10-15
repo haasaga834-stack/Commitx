@@ -24,8 +24,6 @@ declare global {
       clearTodoNotification?: () => void;
       syncStudyPlans?: (plansJson: string) => void;
       setPlanRemindersEnabled?: (on: boolean) => void;
-      canScheduleExactAlarms?: () => boolean;
-      requestExactAlarmAccess?: () => void;
       setMotivationNotifications?: (on: boolean) => void;
       reconcileMotivationNotifications?: () => void;
 
