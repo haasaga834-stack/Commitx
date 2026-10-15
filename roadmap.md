@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Update the public Home title, add /terms to the sitemap, and clarify Android app blocking on Verified Focus; verify the public pages and sitemap.
+
 - [x] Replace Profile's divided statistics panel with separate compact rounded cards and add Male/Female/Prefer not to say selection in a small pop-up; statistics and existing profile saving preserved, preview compiles cleanly. Signed-in interaction check blocked by the sign-in gate.
 
 - [x] Compact the Profile and Settings screens (identity card, three-column details, single dashboard panel, tighter leaderboard rows; settings quick tiles, grouped rows, tighter referral/account cards); all fields, stats, leaderboard rows and actions kept, checked signed-in at 360x685

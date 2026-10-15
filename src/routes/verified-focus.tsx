@@ -5,7 +5,7 @@ import { InfoPage } from "@/components/InfoPage";
 const URL = "https://commitx.site/verified-focus";
 const TITLE = "Verified Focus — Distraction-Free Study Sessions | CommitX";
 const DESCRIPTION =
-  "Verified focus is CommitX's strict mode: Do Not Disturb must be on, and leaving the app ends the session. Built for distraction-free study when you need it most.";
+  "Study without distractions with CommitX Verified Focus. Android Focus Shield blocks selected apps until your timer ends; website sessions require you to stay in CommitX.";
 
 export const Route = createFileRoute("/verified-focus")({
   head: () => ({
@@ -47,7 +47,7 @@ function VerifiedFocusPage() {
     <InfoPage
       eyebrow="Verified focus"
       title="Verified focus, for when you cannot afford distractions"
-      intro="Verified is the stricter of CommitX's two modes. The rules are simple: Do Not Disturb on before you start, and stay in CommitX until the timer is done."
+      intro="Verified is the stricter of CommitX's two modes. On Android, required Focus Shield blocks distracting apps until your study timer ends. On the website, leaving CommitX ends the session instead — the website does not block apps."
       primaryCta={{ label: "Try a Verified session", to: "/auth" }}
       primaryNote="Standard focus is the relaxed alternative if Verified feels too strict today."
       featuresHeading="The rules of a Verified session"
@@ -60,15 +60,15 @@ function VerifiedFocusPage() {
         },
         {
           icon: XCircle,
-          title: "Leaving ends the session",
+           title: "App blocking on Android",
           body:
-            "Switching apps, opening Recents, going Home or moving to another tab fails the session. That is what makes completing one mean something.",
+             "Focus Shield is required before an Android Verified session. Recognized social media apps and games are selected by default and cannot be deselected; you choose any extra apps to block. Blocking lasts until the committed duration expires.",
         },
         {
           icon: PhoneCall,
-          title: "Room for emergencies",
+           title: "Emergency access stays available",
           body:
-            "A short grace window covers a genuine interruption such as a quick call, so a real emergency does not cost you the session.",
+             "On Android, calls and unblocked apps remain available, and switching apps does not fail your session. Website Verified sessions use strict leave-fails rules, with a short grace window for genuine interruptions such as a quick call.",
         },
         {
           icon: Smartphone,
@@ -84,20 +84,21 @@ function VerifiedFocusPage() {
         },
         {
           icon: ShieldCheck,
-          title: "Nothing is monitored",
+           title: "Permissions, not screen monitoring",
           body:
-            "CommitX only needs to know whether you stayed in the app and whether Do Not Disturb is on. It does not read your screen or your content.",
+             "Android Focus Shield uses usage access to detect a selected app and display-over-other-apps permission to show a blocking reminder. It does not read your screen or content. The website checks whether you leave CommitX; it cannot block other apps.",
         },
       ]}
       stepsHeading="Starting a Verified session"
       steps={[
         "Turn on Do Not Disturb.",
-        "Set your goal, duration and commitment, then choose Verified.",
-        "Swipe to start and stay in CommitX while the timer runs.",
+         "Set your goal, duration and commitment, then choose Verified. On Android, enable Focus Shield and choose any extra apps to block before selecting your theme.",
+         "Swipe to start. Android blocks selected apps while the timer runs; on the website, stay in CommitX until it ends.",
         "Complete the session to get your commitment back in full.",
       ]}
       notesHeading="Good to know"
       notes={[
+         "Android Verified sessions have no in-app cancel or pause. Blocking ends automatically when the committed duration expires, but Android-level actions such as revoking permissions or force-stopping the app can bypass protection.",
         "A failed Verified session is logged honestly, with the reason it ended.",
         "Sessions longer than two hours still get the single five-minute halfway break.",
         "Once started, a session keeps running even without an internet connection.",
