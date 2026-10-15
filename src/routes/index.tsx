@@ -27,7 +27,7 @@ import {
   formatGoalHours,
 } from "@/lib/planner";
 
-const HOME_TITLE = "CommitX — For the things you said you'd do.";
+const HOME_TITLE = "CommitX — Study Focus Timer & Accountability App";
 const HOME_DESCRIPTION =
   "Decide. Commit. Complete. Start a Standard or Verified focus session with CommitX — no account required to start.";
 
