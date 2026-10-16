@@ -86,6 +86,23 @@ final class FocusShieldStore {
 
     private FocusShieldStore() {}
 
+    private static volatile String cachedApps;
+    private static volatile long cachedAt;
+    private static boolean loadingApps;
+    private static final java.util.concurrent.ExecutorService appLoader = java.util.concurrent.Executors.newSingleThreadExecutor();
+
+    /** Package scans and icon encoding never block a WebView bridge call. */
+    static synchronized void preloadApps(Context ctx, boolean refresh) {
+        if (loadingApps || (!refresh && cachedApps != null && System.currentTimeMillis() - cachedAt < 300000)) return;
+        loadingApps = true;
+        Context app = ctx.getApplicationContext();
+        appLoader.execute(() -> {
+            try { cachedApps = buildInstalledAppsJson(app); cachedAt = System.currentTimeMillis(); }
+            finally { synchronized (FocusShieldStore.class) { loadingApps = false; } }
+            MainActivity.notifyShieldAppsReady();
+        });
+    }
+
     private static SharedPreferences prefs(Context ctx) {
         return ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
     }
@@ -170,6 +187,11 @@ final class FocusShieldStore {
 
     /** Installed selectable apps as a JSON array of {pkg,label,icon}. */
     static String installedAppsJson(Context ctx) {
+        preloadApps(ctx, false);
+        return cachedApps == null ? "[]" : cachedApps;
+    }
+
+    private static String buildInstalledAppsJson(Context ctx) {
         StringBuilder sb = new StringBuilder("[");
         PackageManager pm = ctx.getPackageManager();
         boolean first = true;

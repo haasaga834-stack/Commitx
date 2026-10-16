@@ -1,0 +1,2 @@
+ALTER TABLE public.user_settings ADD COLUMN IF NOT EXISTS study_widget_invited boolean NOT NULL DEFAULT false;
+COMMENT ON COLUMN public.user_settings.study_widget_invited IS 'Once-per-account native study widget invitation; existing user-owned settings RLS applies.';

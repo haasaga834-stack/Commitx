@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Hourglass } from "@/components/Hourglass";
 import { cn } from "@/lib/utils";
 import { formatDuration, savePrimaryPlan, setDailyGoalHours } from "@/lib/planner";
+import { StudyWidgetInvite } from './StudyWidgetInvite';
+import { loadWidgetInvitation, markWidgetInvited } from '@/lib/study-widget';
 
 const GOAL_OPTIONS = [1, 2, 3, 4, 6, 8];
 const SUBJECTS = ["Maths", "Physics", "Chemistry", "Biology", "Coding", "English", "History", "Economics"];
@@ -19,13 +21,26 @@ const TIMES = [
 type Step = 0 | 1 | 2 | 3 | 4;
 
 /** Native first-run: welcome, then a short interactive setup of daily goal + next session. */
-export function NativeWelcome({ onDone }: { onDone: () => void }) {
+export function NativeWelcome({ onDone, userId }: { onDone: () => void; userId: string }) {
   const [step, setStep] = useState<Step>(0);
   const [hours, setHours] = useState(2);
   const [subject, setSubject] = useState("");
   const [duration, setDuration] = useState(60);
   const [time, setTime] = useState("18:00");
   const [saving, setSaving] = useState(false);
+  const [widgetOpen, setWidgetOpen] = useState(false);
+
+  const next = async () => {
+    if (step === 1) {
+      setDailyGoalHours(hours);
+      if (!(await loadWidgetInvitation(userId))) {
+        markWidgetInvited(userId);
+        setWidgetOpen(true);
+        return;
+      }
+    }
+    setStep((step + 1) as Step);
+  };
 
   const finish = async () => {
     setSaving(true);
@@ -74,6 +89,8 @@ export function NativeWelcome({ onDone }: { onDone: () => void }) {
     4: { icon: Clock, title: "When will you start?", sub: "We’ll remind you before it begins." },
   }[step];
   const Icon = meta.icon;
+
+  if (widgetOpen) return <StudyWidgetInvite userId={userId} onDone={() => { setWidgetOpen(false); setStep(2); }} />;
 
   const chip = (active: boolean) =>
     cn("h-11 rounded-full border text-sm font-medium transition-all active:scale-95",
@@ -137,7 +154,7 @@ export function NativeWelcome({ onDone }: { onDone: () => void }) {
             <ArrowLeft />
           </Button>
           {step < 4 ? (
-            <Button disabled={!canNext} onClick={() => setStep((step + 1) as Step)} className="h-12 flex-1 rounded-full">
+            <Button disabled={!canNext} onClick={() => void next()} className="h-12 flex-1 rounded-full">
               Next <ArrowRight aria-hidden="true" />
             </Button>
           ) : (

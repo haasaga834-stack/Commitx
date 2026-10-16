@@ -8,6 +8,7 @@ import {
   openUsageAccess,
   requestShieldOverlayAccess,
   shieldApps,
+  preloadShieldApps,
   shieldHasOverlayAccess,
   shieldHasUsageAccess,
   shieldSupported,
@@ -47,6 +48,7 @@ export function FocusShieldSetup({
   const [usage, setUsage] = useState(false);
   const [overlay, setOverlay] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [appsLoading, setAppsLoading] = useState(false);
 
   const supported = shieldSupported();
 
@@ -59,11 +61,20 @@ export function FocusShieldSetup({
       setError(null);
       return;
     }
-    const installed = shieldApps();
-    setApps(installed);
-    const defaults = defaultShieldPackages(installed);
-    setLocked(defaults);
-    setSelected(defaults);
+    let active = true;
+    const load = () => {
+      if (!active) return;
+      const installed = shieldApps();
+      setApps(installed);
+      setAppsLoading(installed.length === 0 && supported);
+      const defaults = defaultShieldPackages(installed);
+      setLocked(defaults);
+      setSelected((previous) => [...new Set([...defaults, ...previous.filter((pkg) => installed.some((app) => app.pkg === pkg))])]);
+    };
+    preloadShieldApps();
+    const timer = setTimeout(load, 0);
+    window.addEventListener('commitx:shield-apps-ready', load);
+    return () => { active = false; clearTimeout(timer); window.removeEventListener('commitx:shield-apps-ready', load); };
   }, [open]);
 
   // Re-verify permissions whenever the user comes back from Android settings.
@@ -181,7 +192,7 @@ export function FocusShieldSetup({
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
             {apps.length === 0 ? (
               <p className="mt-4 rounded-2xl border border-hairline bg-background p-4 text-xs text-muted-foreground">
-                No selectable apps were found on this device.
+                {appsLoading ? 'Loading your apps…' : 'No selectable apps were found on this device.'}
               </p>
             ) : (
               <>

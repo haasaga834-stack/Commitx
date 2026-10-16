@@ -648,6 +648,7 @@ export type Database = {
           created_at: string
           daily_goal_hours: number
           reminders_enabled: boolean
+          study_widget_invited: boolean
           theme: string
           updated_at: string
           user_id: string
@@ -657,6 +658,7 @@ export type Database = {
           created_at?: string
           daily_goal_hours?: number
           reminders_enabled?: boolean
+          study_widget_invited?: boolean
           theme?: string
           updated_at?: string
           user_id: string
@@ -666,6 +668,7 @@ export type Database = {
           created_at?: string
           daily_goal_hours?: number
           reminders_enabled?: boolean
+          study_widget_invited?: boolean
           theme?: string
           updated_at?: string
           user_id?: string

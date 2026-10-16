@@ -21,3 +21,9 @@ test("timer end clamps at zero without creating a reward or session outcome", ()
   assert.equal(result.endsAt, 2000);
   assert.equal("status" in result, false);
 });
+// Standard uses this same projection in its own service, never the Verified service.
+test("Standard notification catches up after background suspension using its deadline", () => {
+  const start = countdownPayload(session, 1000);
+  assert.equal(Math.max(0, start.endsAt - 31000), 3569000);
+  assert.equal(Math.max(0, start.endsAt - 3601000), 0);
+});

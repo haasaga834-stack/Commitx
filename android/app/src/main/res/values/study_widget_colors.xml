@@ -1,0 +1,9 @@
+<resources>
+    <color name="widget_glass">#E6222428</color>
+    <color name="widget_text">#FAF8F2</color>
+    <color name="widget_muted">#BDBAB3</color>
+    <color name="widget_orange">#FFAE54</color>
+    <color name="widget_yellow">#FFD96A</color>
+    <color name="widget_track">#33FAF8F2</color>
+    <color name="widget_border">#44FAF8F2</color>
+</resources>

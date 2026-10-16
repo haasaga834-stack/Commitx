@@ -68,6 +68,7 @@ interface Bridge {
   focusShieldHasOverlayAccess?: () => boolean;
   requestFocusShieldOverlayAccess?: () => void;
   focusShieldApps?: () => string;
+  preloadFocusShieldApps?: () => void;
   focusShieldStart?: (packagesJson: string, endsAtMs: number) => boolean;
   focusShieldStop?: () => void;
   focusShieldActive?: () => boolean;
@@ -126,6 +127,8 @@ export function shieldApps(): ShieldAppOption[] {
     return [];
   }
 }
+
+export function preloadShieldApps() { try { bridge()?.preloadFocusShieldApps?.(); } catch {} }
 
 /**
  * Asks the native layer to start protection. Returns true only when Android

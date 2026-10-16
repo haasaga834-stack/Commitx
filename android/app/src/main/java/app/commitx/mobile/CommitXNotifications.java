@@ -233,6 +233,10 @@ final class CommitXNotifications {
     static void showSession(Context ctx, String title, String text, int progress) {
         NotificationManager nm = manager(ctx);
         if (nm == null) return;
+        nm.notify(ID_SESSION, sessionBuilder(ctx, title, text, progress).build());
+    }
+
+    static Notification.Builder sessionBuilder(Context ctx, String title, String text, int progress) {
         ensureChannels(ctx);
 
         Notification.Builder b = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
@@ -253,7 +257,7 @@ final class CommitXNotifications {
             b.setVisibility(Notification.VISIBILITY_PUBLIC);
         }
 
-        nm.notify(ID_SESSION, b.build());
+        return b;
     }
 
     static void cancelSession(Context ctx) {

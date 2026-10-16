@@ -1,5 +1,10 @@
 # Roadmap
 
+- [ ] Add compact Android study-goal launcher widget and once-per-account invitation after daily-goal onboarding or existing users' first To-Do opening.
+- [ ] Keep Standard notification countdown running in background without changing Verified behavior or notification appearance.
+- [ ] Preload/cache Focus Shield installed apps for faster setup without changing blocking rules.
+- [ ] Verify new widget pinning, background countdown and Shield speed on Android — requires updated install and physical device.
+
 - [x] Update the public Home title, add /terms to the sitemap, and clarify Android app blocking on Verified Focus; browser verified titles, rendered blocking information and valid sitemap XML, with a clean preview build.
 
 - [x] Replace Profile's divided statistics panel with separate compact rounded cards and add Male/Female/Prefer not to say selection in a small pop-up; statistics and existing profile saving preserved, preview compiles cleanly. Signed-in interaction check blocked by the sign-in gate.

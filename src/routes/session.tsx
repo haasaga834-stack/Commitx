@@ -61,7 +61,7 @@ import {
 } from "@/lib/focus-shield";
 
 
-import { showSessionProgress, hideSessionProgress, syncVerifiedCountdown, finishVerifiedCountdown } from "@/lib/native-notifications";
+import { showSessionProgress, hideSessionProgress, syncVerifiedCountdown, syncStandardCountdown, finishVerifiedCountdown } from "@/lib/native-notifications";
 import { isOnline } from "@/lib/connectivity";
 import { z } from "zod";
 import { useAuth } from "@/lib/use-auth";
@@ -1017,6 +1017,14 @@ function LiveSession() {
   useEffect(() => {
     if (doneRef.current) return;
     if (mode === "verified" && syncVerifiedCountdown({
+      id: String(startedAt), goal, theme: sessionTheme, durationMs: totalMs,
+      remainingMs: Math.max(0, totalMs - elapsedNow()),
+      running: runningSinceRef.current !== null && !dndBlocked,
+      phase, breakEndsAt: breakStartedAtRef.current === null ? null : breakStartedAtRef.current + RECOVERY_BREAK_MS,
+      breakAt: breaksApply && breaksTakenRef.current === 0 && runningSinceRef.current !== null
+        ? Date.now() + Math.max(0, halfwayMs - elapsedNow()) : null,
+    })) return;
+    if (mode === "standard" && syncStandardCountdown({
       id: String(startedAt), goal, theme: sessionTheme, durationMs: totalMs,
       remainingMs: Math.max(0, totalMs - elapsedNow()),
       running: runningSinceRef.current !== null && !dndBlocked,

@@ -30,6 +30,13 @@ declare global {
       showSessionProgress?: (title: string, text: string, progress: number) => void;
       hideSessionProgress?: () => void;
       syncVerifiedCountdown?: (payloadJson: string) => void;
+      syncStandardCountdown?: (payloadJson: string) => void;
+      syncStudyWidget?: (payloadJson: string) => void;
+      requestStudyWidget?: () => boolean;
+      studyWidgetInvitationSeen?: (userId: string) => boolean;
+      markStudyWidgetInvited?: (userId: string) => void;
+      pendingStudyWidgetTodos?: () => string;
+      ackStudyWidgetTodos?: (payloadJson: string) => void;
       finishVerifiedCountdown?: (status: string) => void;
       scheduleWellnessSound?: (eventKey: string, kind: string, fireAtMs: number) => void;
       playWellnessSound?: (eventKey: string, kind: string) => void;
@@ -49,6 +56,7 @@ declare global {
       focusShieldHasOverlayAccess?: () => boolean;
       requestFocusShieldOverlayAccess?: () => void;
       focusShieldApps?: () => string;
+      preloadFocusShieldApps?: () => void;
       focusShieldStart?: (packagesJson: string, endsAtMs: number) => boolean;
       focusShieldStop?: () => void;
       focusShieldActive?: () => boolean;

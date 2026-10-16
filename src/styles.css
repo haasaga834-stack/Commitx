@@ -5,6 +5,11 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --color-widget-glass: oklch(0.23 0.014 65 / 0.92);
+  --color-widget-ink: oklch(0.97 0.012 85);
+  --color-widget-muted: oklch(0.77 0.014 80);
+  --color-widget-orange: oklch(0.76 0.17 55);
+  --color-widget-yellow: oklch(0.88 0.15 90);
   --color-online: oklch(0.72 0.19 150);
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-display: "Fraunces", ui-serif, Georgia, serif;
@@ -82,6 +87,23 @@
   --gradient-primary: linear-gradient(135deg, oklch(0.46 0.090 150), oklch(0.58 0.095 138));
   --gradient-sun: linear-gradient(140deg, oklch(0.86 0.075 88), oklch(0.74 0.115 72));
 }
+
+.cx-widget-glass {
+  --background: var(--color-widget-glass);
+  --foreground: var(--color-widget-ink);
+  --muted-foreground: var(--color-widget-muted);
+  --primary: var(--color-widget-orange);
+  --primary-foreground: var(--color-widget-glass);
+  --card: var(--color-widget-glass);
+  --hairline: color-mix(in oklch, var(--color-widget-ink) 18%, transparent);
+  color: var(--foreground);
+  background: var(--background);
+  border-color: var(--hairline);
+  backdrop-filter: blur(24px);
+  font-family: 'Manrope', sans-serif;
+}
+.cx-widget-glass .font-display { font-family: 'Sora', sans-serif; }
+.cx-widget-demo-ring { background: conic-gradient(var(--color-widget-orange) 0deg, var(--color-widget-yellow) 90deg, var(--hairline) 90deg); }
 
 .dark {
   --background: oklch(0.215 0.022 60);
