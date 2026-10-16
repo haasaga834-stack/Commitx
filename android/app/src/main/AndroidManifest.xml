@@ -130,6 +130,15 @@
                 android:value="Keeps a user-started focus commitment protected by reminding the user when a self-selected app is opened." />
         </service>
 
+        <service
+            android:name=".AppLimitsService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Tracks user-selected daily app usage limits and reminds the user when a limited app is opened after its limit is used up." />
+        </service>
+
 
 
         <receiver
