@@ -6,6 +6,8 @@ import { Hourglass } from "@/components/Hourglass";
 import { cn } from "@/lib/utils";
 import { formatDuration, savePrimaryPlan, setDailyGoalHours } from "@/lib/planner";
 import { StudyWidgetInvite } from './StudyWidgetInvite';
+import { AppLimitsManager } from './AppLimitsManager';
+import { appLimitsAvailable } from '@/lib/app-limits';
 import { loadWidgetInvitation, markWidgetInvited } from '@/lib/study-widget';
 
 const GOAL_OPTIONS = [1, 2, 3, 4, 6, 8];
@@ -29,6 +31,16 @@ export function NativeWelcome({ onDone, userId }: { onDone: () => void; userId: 
   const [time, setTime] = useState("18:00");
   const [saving, setSaving] = useState(false);
   const [widgetOpen, setWidgetOpen] = useState(false);
+  const [limitsOpen, setLimitsOpen] = useState(false);
+
+  const afterGoal = () => {
+    // Optional app-limits step: skippable, and only where Android can enforce it.
+    if (appLimitsAvailable()) {
+      setLimitsOpen(true);
+    } else {
+      setStep(2);
+    }
+  };
 
   const next = async () => {
     if (step === 1) {
@@ -38,6 +50,8 @@ export function NativeWelcome({ onDone, userId }: { onDone: () => void; userId: 
         setWidgetOpen(true);
         return;
       }
+      afterGoal();
+      return;
     }
     setStep((step + 1) as Step);
   };
@@ -90,7 +104,25 @@ export function NativeWelcome({ onDone, userId }: { onDone: () => void; userId: 
   }[step];
   const Icon = meta.icon;
 
-  if (widgetOpen) return <StudyWidgetInvite userId={userId} onDone={() => { setWidgetOpen(false); setStep(2); }} />;
+  if (widgetOpen) return <StudyWidgetInvite userId={userId} onDone={() => { setWidgetOpen(false); afterGoal(); }} />;
+  if (limitsOpen) {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background px-7 text-foreground">
+        <p className="mb-1 font-display text-xl font-semibold">Set App Limits (Optional)</p>
+        <p className="mb-4 text-center text-sm text-muted-foreground">
+          Limit distracting apps — skip if you'd rather do it later.
+        </p>
+        <AppLimitsManager onClose={() => { setLimitsOpen(false); setStep(2); }} />
+        <button
+          type="button"
+          onClick={() => { setLimitsOpen(false); setStep(2); }}
+          className="mt-4 text-sm font-medium text-muted-foreground underline underline-offset-4"
+        >
+          Skip for now
+        </button>
+      </div>
+    );
+  }
 
   const chip = (active: boolean) =>
     cn("h-11 rounded-full border text-sm font-medium transition-all active:scale-95",
