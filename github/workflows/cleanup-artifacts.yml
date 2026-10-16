@@ -1,0 +1,46 @@
+name: Cleanup old artifacts
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'  # Every Sunday at 03:00 UTC
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+
+    steps:
+      - name: Delete artifacts older than 1 day
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MAX_AGE_DAYS: 1
+          REPO_FULL: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          OWNER=${REPO_FULL%/*}
+          REPO=${REPO_FULL#*/}
+          PAGE=1
+          while true; do
+            RESP=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/$OWNER/$REPO/actions/artifacts?per_page=100&page=$PAGE")
+            COUNT=$(echo "$RESP" | jq '.artifacts | length')
+            if [ "$COUNT" -eq 0 ] || [ "$COUNT" = "null" ]; then
+              break
+            fi
+            echo "$RESP" | jq -c '.artifacts[]' | while read -r artifact; do
+              id=$(echo "$artifact" | jq -r '.id')
+              created=$(echo "$artifact" | jq -r '.created_at')
+              age_days=$(( ( $(date +%s) - $(date -d "$created" +%s) ) / 86400 ))
+              if [ "$age_days" -gt "$MAX_AGE_DAYS" ]; then
+                echo "Deleting artifact $id created $created (age ${age_days} days)"
+                curl -s -X DELETE \
+                  -H "Authorization: Bearer $GITHUB_TOKEN" \
+                  -H "Accept: application/vnd.github+json" \
+                  "https://api.github.com/repos/$OWNER/$REPO/actions/artifacts/$id" \
+                  >/dev/null
+              fi
+            done
+            PAGE=$((PAGE + 1))
+          done
