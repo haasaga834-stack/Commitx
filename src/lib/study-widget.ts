@@ -10,7 +10,7 @@ export function widgetInvitationSeen(userId: string) {
 
 /** Account copy prevents the invitation returning after reinstalling or changing phones. */
 export async function loadWidgetInvitation(userId: string) {
-  if (widgetInvitationSeen(userId)) return true;
+  if (widgetInvitationSeen(userId)) { markWidgetInvited(userId); return true; }
   const { data, error } = await supabase.from('user_settings').select('study_widget_invited').eq('user_id', userId).maybeSingle();
   if (error) return true;
   if (data?.study_widget_invited) markWidgetInvitedLocal(userId);
@@ -31,5 +31,6 @@ export function syncStudyWidget(userId: string | null) {
 }
 
 export function requestStudyWidget() {
+  // True means the launcher supports a pin request, not that the user accepted it.
   try { return window.CommitXAndroid?.requestStudyWidget?.() ?? false; } catch { return false; }
 }

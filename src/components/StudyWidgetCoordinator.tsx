@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { subscribe } from '@/lib/commitx-store';
-import { subscribePlannerWidget, getTodos, toggleTodo, useTodos } from '@/lib/planner';
+import { subscribePlannerWidget, getTodos, toggleTodo, useTodos, todayKey } from '@/lib/planner';
+import { supabase } from '@/integrations/supabase/client';
 import { syncStudyWidget, loadWidgetInvitation, markWidgetInvited } from '@/lib/study-widget';
 import { shouldInviteWidget } from '@/lib/study-widget-rules';
 import { hasNativeBridge } from '@/lib/native-session';
@@ -10,19 +11,34 @@ export function StudyWidgetCoordinator({ userId, onboarding }: { userId: string 
   const { hydrated } = useTodos();
   useEffect(() => {
     if (!hasNativeBridge() || !hydrated) return;
-    function reconcile() {
+    let reconciling = false;
+    let active = true;
+    async function reconcile() {
+      if (reconciling || !active) return;
+      reconciling = true;
       if (userId) {
         try {
-          const pending = JSON.parse(window.CommitXAndroid?.pendingStudyWidgetTodos?.() ?? '[]') as { id: string; done: boolean; userId: string }[];
+          const pending = JSON.parse(window.CommitXAndroid?.pendingStudyWidgetTodos?.() ?? '[]') as { id: string; done: boolean; userId: string; day: string }[];
+          const applied: typeof pending = [];
           for (const item of pending) {
             if (item.userId !== userId) continue;
-            const todo = getTodos().find((t) => t.id === item.id);
-            if (todo && todo.done !== item.done) toggleTodo(item.id);
+            // Persist desired state, not a toggle: retries never invert a completed task.
+            // Yesterday's checkbox still reaches its own row after midnight.
+            const { data, error } = await supabase.from('todos').update({ done: item.done })
+              .eq('id', item.id).eq('user_id', userId).eq('day', item.day).select('id');
+            if (!active) return;
+            if (error || !data?.length) continue;
+            if (item.day === todayKey()) {
+              const todo = getTodos().find((t) => t.id === item.id);
+              if (todo && todo.done !== item.done) toggleTodo(item.id);
+            }
+            applied.push(item);
           }
-          window.CommitXAndroid?.ackStudyWidgetTodos?.(JSON.stringify(pending));
+          window.CommitXAndroid?.ackStudyWidgetTodos?.(JSON.stringify(applied));
         } catch {}
       }
-      syncStudyWidget(userId);
+      if (active) syncStudyWidget(userId);
+      reconciling = false;
     }
     reconcile();
     const stopStore = subscribe(() => syncStudyWidget(userId));
@@ -31,19 +47,23 @@ export function StudyWidgetCoordinator({ userId, onboarding }: { userId: string 
     const timer = setInterval(reconcile, 60000);
     window.addEventListener('focus', reconcile);
     document.addEventListener('visibilitychange', onVisible);
-    return () => { stopStore(); stopPlanner(); clearInterval(timer); window.removeEventListener('focus', reconcile); document.removeEventListener('visibilitychange', onVisible); };
+    return () => { active = false; stopStore(); stopPlanner(); clearInterval(timer); window.removeEventListener('focus', reconcile); document.removeEventListener('visibilitychange', onVisible); };
   }, [userId, hydrated]);
   useEffect(() => {
+    let active = true;
+    let requesting = false;
     const request = async () => {
-      if (!userId || !hasNativeBridge()) return;
+      if (!userId || !hasNativeBridge() || requesting) return;
+      requesting = true;
       const seen = await loadWidgetInvitation(userId);
-      if (shouldInviteWidget(true, seen, onboarding, 'todos')) {
+      if (active && shouldInviteWidget(true, seen, onboarding, 'todos')) {
         markWidgetInvited(userId); setInvite(true);
       }
+      requesting = false;
     };
     const onOpened = () => void request();
     window.addEventListener('commitx:todos-opened', onOpened);
-    return () => window.removeEventListener('commitx:todos-opened', onOpened);
+    return () => { active = false; window.removeEventListener('commitx:todos-opened', onOpened); };
   }, [userId, onboarding]);
   return invite && userId ? <StudyWidgetInvite userId={userId} onDone={() => setInvite(false)} /> : null;
 }

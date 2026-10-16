@@ -23,10 +23,9 @@ final class StudyWidgetStore {
             JSONObject next = new JSONObject(json);
             String uid = next.optString("userId", "");
             if (next.isNull("userId")) uid = "";
-            JSONObject previous = read(ctx);
-            // A different account must never inherit checklist taps or private data.
-            if (!uid.equals(previous.optString("userId", ""))) prefs(ctx).edit().remove("pending").apply();
-            if (uid.isEmpty()) { prefs(ctx).edit().remove("state").remove("pending").apply(); StudyGoalWidget.updateAll(ctx); return; }
+            // Clear visible private data on sign-out, but retain account-scoped
+            // unsent actions until their owner returns and confirms cloud writes.
+            if (uid.isEmpty()) { prefs(ctx).edit().remove("state").apply(); StudyGoalWidget.updateAll(ctx); return; }
             JSONArray todos = next.optJSONArray("todos");
             JSONArray actions = pending(ctx);
             if (todos != null) for (int i = 0; i < actions.length(); i++) {
@@ -53,7 +52,10 @@ final class StudyWidgetStore {
                 todo.put("done", !todo.optBoolean("done"));
                 JSONArray actions = pending(ctx);
                 JSONArray next = new JSONArray();
-                for (int j = 0; j < actions.length(); j++) if (!id.equals(actions.getJSONObject(j).optString("id"))) next.put(actions.getJSONObject(j));
+                for (int j = 0; j < actions.length(); j++) {
+                    JSONObject action = actions.getJSONObject(j);
+                    if (!id.equals(action.optString("id")) || !state.optString("userId").equals(action.optString("userId"))) next.put(action);
+                }
                 next.put(new JSONObject().put("id", id).put("done", todo.optBoolean("done")).put("userId", state.optString("userId")).put("day", day()));
                 prefs(ctx).edit().putString("state", state.toString()).putString("pending", next.toString()).apply();
                 break;
@@ -69,7 +71,7 @@ final class StudyWidgetStore {
                 boolean matched = false;
                 for (int j = 0; j < acknowledged.length(); j++) {
                     JSONObject ack = acknowledged.getJSONObject(j);
-                    if (action.optString("id").equals(ack.optString("id")) && action.optString("userId").equals(ack.optString("userId")) && action.optBoolean("done") == ack.optBoolean("done")) matched = true;
+                    if (action.optString("id").equals(ack.optString("id")) && action.optString("userId").equals(ack.optString("userId")) && action.optString("day").equals(ack.optString("day")) && action.optBoolean("done") == ack.optBoolean("done")) matched = true;
                 }
                 if (!matched) next.put(action);
             }
