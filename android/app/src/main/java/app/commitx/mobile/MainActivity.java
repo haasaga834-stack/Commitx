@@ -696,6 +696,7 @@ public class MainActivity extends Activity {
         CommitXNotifications.showScreenTimeDaily(this);
         PlanStore.scheduleAll(this);
         WellnessSoundStore.reconcile(this);
+        AppLimitsService.startIfNeeded(this);
     }
 
     @Override
@@ -1300,6 +1301,34 @@ public class MainActivity extends Activity {
         public void setScreenTimeLimit(int minutes) {
             ScreenTimeTracker.setLimitMinutes(MainActivity.this, minutes);
             ScreenTimeTracker.checkLimit(MainActivity.this);
+        }
+
+        /* ---------------------------- App limits ----------------------------- */
+
+        @JavascriptInterface
+        public boolean appLimitsSupported() {
+            return FocusShieldStore.supported()
+                    && FocusShieldStore.hasUsageAccess(MainActivity.this)
+                    && FocusShieldStore.hasOverlayAccess(MainActivity.this);
+        }
+
+        @JavascriptInterface
+        public String appLimitsJson() {
+            return AppLimitsStore.toJson(MainActivity.this);
+        }
+
+        @JavascriptInterface
+        public void setAppLimit(String pkg, String type, int minutes) {
+            AppLimitsStore.setLimit(MainActivity.this, pkg, type, minutes);
+            AppLimitsService.startIfNeeded(MainActivity.this);
+        }
+
+        @JavascriptInterface
+        public void removeAppLimit(String pkg) {
+            AppLimitsStore.removeLimit(MainActivity.this, pkg);
+            if (!AppLimitsStore.hasLimits(MainActivity.this)) {
+                AppLimitsService.stop(MainActivity.this);
+            }
         }
 
         /* ---------------------------- Focus Shield --------------------------- */

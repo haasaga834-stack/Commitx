@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, Smartphone } from "lucide-react";
+import { ArrowLeft, Smartphone, Timer } from "lucide-react";
 import { MobileShell } from "@/components/BottomNav";
+import { AppLimitsManager } from "@/components/AppLimitsManager";
+import { appLimitsAvailable } from "@/lib/app-limits";
 import {
   formatMinutes,
   isNativeApp,
@@ -30,6 +32,7 @@ function ScreenTimePage() {
   const [native, setNative] = useState<boolean | null>(null);
   const [data, setData] = useState<ScreenTimeDetails | null>(null);
   const [tab, setTab] = useState<"day" | "week">("day");
+  const [limitsOpen, setLimitsOpen] = useState(false);
 
   const refresh = useCallback(() => setData(readScreenTimeDetails()), []);
 
@@ -82,6 +85,24 @@ function ScreenTimePage() {
         ) : data ? (
           <Stats data={data} tab={tab} setTab={setTab} />
         ) : null}
+
+        {native && appLimitsAvailable() && (
+          <button
+            onClick={() => setLimitsOpen(true)}
+            className="mt-4 flex w-full items-center gap-3 rounded-3xl bg-card p-4 text-left shadow-soft transition-transform active:scale-[0.98]"
+          >
+            <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-secondary text-primary">
+              <Timer className="h-4 w-4" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-medium">Manage App Limits</span>
+              <span className="block text-xs text-muted-foreground">
+                Daily time or Reels/Shorts limits per app
+              </span>
+            </span>
+          </button>
+        )}
+        {limitsOpen && <AppLimitsManager onClose={() => setLimitsOpen(false)} />}
       </div>
     </MobileShell>
   );

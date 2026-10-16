@@ -1,0 +1,11 @@
+# Android layer rules
+
+- Both native Focus Shield entry points use FocusShieldReminderView and dedicated Android color resources so the overlay and fallback screen remain visually consistent without changing website styles or blocking logic.
+- Verified lock-screen notifications use a persisted native foreground-service projection of the existing session timestamps; notification expiry never awards coins or finalizes a session, because verification and the server ledger remain authoritative.
+- Standard countdown uses a separate timestamp-projection foreground service and the existing notification builder, because WebView animation callbacks suspend in background and Verified behavior must remain untouched.
+- Focus Shield package scans and icon encoding run on a cached single-thread worker preloaded at launch/resume, because synchronous bridge queries block setup painting.
+- StudyGoalWidget uses account-scoped native presentation mirrors of existing focus sessions/goals/todos; checkbox desired states remain queued until owner-scoped cloud writes succeed, because launcher actions must survive offline use and midnight without creating rewards or crossing accounts.
+- CI publishes the APK/AAB to a rolling `latest-build` GitHub Release (artifacts are optional, 1-day retention), because Actions artifact storage quota blocked downloads.
+- App Usage Limits run in their own native store/service/overlay (AppLimitsStore, AppLimitsService, AppLimitsOverlay), separate from Focus Shield, because daily limits must not interfere with session blocking; reels limits are converted to minutes web-side (~30s each), usage resets naturally at local midnight, and 50%/100% alerts fire once per day per app.
+- The silent ongoing screen-time notification is refreshed by the ScreenTimeReceiver alarm, boot and app resume, because usage data must stay local and current without a foreground service.
+- Accountability/Roast delivery is the native AccountabilityEngine (AlarmManager, one alarm slot, one notification id) fed by events from src/lib/accountability.ts, because closed-app delivery and legacy clients must follow the same policy.

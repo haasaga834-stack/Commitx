@@ -51,3 +51,5 @@
 - [x] Audit session → coins → leaderboard → profile flow; make recorded sessions the single source of truth
 
 - [x] minSdk 23 -> 24 (Play Console minimum requirement)
+
+- [x] App Usage Limits: native store/service/overlay, 50%+100% alerts, midnight reset, Screen Time entry, optional onboarding step

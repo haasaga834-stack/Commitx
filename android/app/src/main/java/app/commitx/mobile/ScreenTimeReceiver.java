@@ -15,6 +15,7 @@ public class ScreenTimeReceiver extends BroadcastReceiver {
         if (Intent.ACTION_BOOT_COMPLETED.equals(action)) {
             ScreenTimeTracker.scheduleChecks(context);
             CommitXNotifications.showScreenTimeDaily(context);
+            AppLimitsService.startIfNeeded(context);
             return;
         }
         if (!ACTION_CHECK.equals(action)) return;
