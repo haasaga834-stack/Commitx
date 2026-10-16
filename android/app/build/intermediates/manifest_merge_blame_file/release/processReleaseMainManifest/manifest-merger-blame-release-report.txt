@@ -1,0 +1,529 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="app.commitx.mobile"
+4    android:versionCode="1"
+5    android:versionName="1.0.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="24"
+9        android:targetSdkVersion="36" />
+10
+11    <uses-permission android:name="android.permission.INTERNET" />
+11-->/dev-server/android/app/src/main/AndroidManifest.xml:4:5-67
+11-->/dev-server/android/app/src/main/AndroidManifest.xml:4:22-64
+12    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+12-->/dev-server/android/app/src/main/AndroidManifest.xml:5:5-79
+12-->/dev-server/android/app/src/main/AndroidManifest.xml:5:22-76
+13    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+13-->/dev-server/android/app/src/main/AndroidManifest.xml:6:5-77
+13-->/dev-server/android/app/src/main/AndroidManifest.xml:6:22-74
+14    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+14-->/dev-server/android/app/src/main/AndroidManifest.xml:7:5-81
+14-->/dev-server/android/app/src/main/AndroidManifest.xml:7:22-78
+15    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
+15-->/dev-server/android/app/src/main/AndroidManifest.xml:8:5-10:47
+15-->/dev-server/android/app/src/main/AndroidManifest.xml:9:9-62
+16    <!--
+17         Focus Shield: CommitX shows its own reminder screen over a blocked app.
+18         No app is ever hidden, disabled, or uninstalled.
+19    -->
+20    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+20-->/dev-server/android/app/src/main/AndroidManifest.xml:13:5-78
+20-->/dev-server/android/app/src/main/AndroidManifest.xml:13:22-75
+21    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+21-->/dev-server/android/app/src/main/AndroidManifest.xml:14:5-77
+21-->/dev-server/android/app/src/main/AndroidManifest.xml:14:22-74
+22    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+22-->/dev-server/android/app/src/main/AndroidManifest.xml:15:5-89
+22-->/dev-server/android/app/src/main/AndroidManifest.xml:15:22-86
+23
+24    <!-- Focus Shield needs to read labels/icons of the apps it can protect. -->
+25    <queries>
+25-->/dev-server/android/app/src/main/AndroidManifest.xml:18:5-46:15
+26
+27        <!--
+28             Launcher apps are visible to the user and can be selected individually
+29             without requesting broad QUERY_ALL_PACKAGES visibility.
+30        -->
+31        <intent>
+31-->/dev-server/android/app/src/main/AndroidManifest.xml:21:9-24:18
+32            <action android:name="android.intent.action.MAIN" />
+32-->/dev-server/android/app/src/main/AndroidManifest.xml:22:13-65
+32-->/dev-server/android/app/src/main/AndroidManifest.xml:22:21-62
+33
+34            <category android:name="android.intent.category.LAUNCHER" />
+34-->/dev-server/android/app/src/main/AndroidManifest.xml:23:13-73
+34-->/dev-server/android/app/src/main/AndroidManifest.xml:23:23-70
+35        </intent>
+36
+37        <package android:name="com.instagram.android" />
+37-->/dev-server/android/app/src/main/AndroidManifest.xml:25:9-57
+37-->/dev-server/android/app/src/main/AndroidManifest.xml:25:18-54
+38        <package android:name="com.google.android.youtube" />
+38-->/dev-server/android/app/src/main/AndroidManifest.xml:26:9-62
+38-->/dev-server/android/app/src/main/AndroidManifest.xml:26:18-59
+39        <package android:name="com.facebook.katana" />
+39-->/dev-server/android/app/src/main/AndroidManifest.xml:27:9-55
+39-->/dev-server/android/app/src/main/AndroidManifest.xml:27:18-52
+40        <package android:name="com.whatsapp" />
+40-->/dev-server/android/app/src/main/AndroidManifest.xml:28:9-48
+40-->/dev-server/android/app/src/main/AndroidManifest.xml:28:18-45
+41        <package android:name="com.facebook.orca" />
+41-->/dev-server/android/app/src/main/AndroidManifest.xml:29:9-53
+41-->/dev-server/android/app/src/main/AndroidManifest.xml:29:18-50
+42        <package android:name="com.reddit.frontpage" />
+42-->/dev-server/android/app/src/main/AndroidManifest.xml:30:9-56
+42-->/dev-server/android/app/src/main/AndroidManifest.xml:30:18-53
+43        <package android:name="com.twitter.android" />
+43-->/dev-server/android/app/src/main/AndroidManifest.xml:31:9-55
+43-->/dev-server/android/app/src/main/AndroidManifest.xml:31:18-52
+44        <package android:name="com.snapchat.android" />
+44-->/dev-server/android/app/src/main/AndroidManifest.xml:32:9-56
+44-->/dev-server/android/app/src/main/AndroidManifest.xml:32:18-53
+45        <package android:name="com.android.chrome" />
+45-->/dev-server/android/app/src/main/AndroidManifest.xml:33:9-54
+45-->/dev-server/android/app/src/main/AndroidManifest.xml:33:18-51
+46        <package android:name="com.dts.freefireth" />
+46-->/dev-server/android/app/src/main/AndroidManifest.xml:34:9-54
+46-->/dev-server/android/app/src/main/AndroidManifest.xml:34:18-51
+47        <package android:name="com.dts.freefiremax" />
+47-->/dev-server/android/app/src/main/AndroidManifest.xml:35:9-55
+47-->/dev-server/android/app/src/main/AndroidManifest.xml:35:18-52
+48        <package android:name="com.pubg.imobile" />
+48-->/dev-server/android/app/src/main/AndroidManifest.xml:36:9-52
+48-->/dev-server/android/app/src/main/AndroidManifest.xml:36:18-49
+49        <package android:name="com.tencent.ig" />
+49-->/dev-server/android/app/src/main/AndroidManifest.xml:37:9-50
+49-->/dev-server/android/app/src/main/AndroidManifest.xml:37:18-47
+50        <package android:name="com.activision.callofduty.shooter" />
+50-->/dev-server/android/app/src/main/AndroidManifest.xml:38:9-69
+50-->/dev-server/android/app/src/main/AndroidManifest.xml:38:18-66
+51        <package android:name="com.supercell.clashofclans" />
+51-->/dev-server/android/app/src/main/AndroidManifest.xml:39:9-62
+51-->/dev-server/android/app/src/main/AndroidManifest.xml:39:18-59
+52        <package android:name="com.supercell.clashroyale" />
+52-->/dev-server/android/app/src/main/AndroidManifest.xml:40:9-61
+52-->/dev-server/android/app/src/main/AndroidManifest.xml:40:18-58
+53        <package android:name="com.supercell.brawlstars" />
+53-->/dev-server/android/app/src/main/AndroidManifest.xml:41:9-60
+53-->/dev-server/android/app/src/main/AndroidManifest.xml:41:18-57
+54        <package android:name="com.mojang.minecraftpe" />
+54-->/dev-server/android/app/src/main/AndroidManifest.xml:42:9-58
+54-->/dev-server/android/app/src/main/AndroidManifest.xml:42:18-55
+55        <package android:name="com.roblox.client" />
+55-->/dev-server/android/app/src/main/AndroidManifest.xml:43:9-53
+55-->/dev-server/android/app/src/main/AndroidManifest.xml:43:18-50
+56        <package android:name="com.king.candycrushsaga" />
+56-->/dev-server/android/app/src/main/AndroidManifest.xml:44:9-59
+56-->/dev-server/android/app/src/main/AndroidManifest.xml:44:18-56
+57        <package android:name="com.ea.gp.fifamobile" />
+57-->/dev-server/android/app/src/main/AndroidManifest.xml:45:9-56
+57-->/dev-server/android/app/src/main/AndroidManifest.xml:45:18-53
+58    </queries>
+59
+60    <application
+60-->/dev-server/android/app/src/main/AndroidManifest.xml:49:5-197:19
+61        android:allowBackup="false"
+61-->/dev-server/android/app/src/main/AndroidManifest.xml:50:9-36
+62        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+62-->[androidx.core:core:1.8.0] /root/.gradle/caches/8.11.1/transforms/5de83010c951330d449044373ffe0bb2/transformed/core-1.8.0/AndroidManifest.xml:24:18-86
+63        android:dataExtractionRules="@xml/data_extraction_rules"
+63-->/dev-server/android/app/src/main/AndroidManifest.xml:51:9-65
+64        android:extractNativeLibs="false"
+65        android:fullBackupContent="false"
+65-->/dev-server/android/app/src/main/AndroidManifest.xml:52:9-42
+66        android:hardwareAccelerated="true"
+66-->/dev-server/android/app/src/main/AndroidManifest.xml:53:9-43
+67        android:icon="@mipmap/ic_launcher"
+67-->/dev-server/android/app/src/main/AndroidManifest.xml:54:9-43
+68        android:label="@string/app_name"
+68-->/dev-server/android/app/src/main/AndroidManifest.xml:56:9-41
+69        android:roundIcon="@mipmap/ic_launcher_round"
+69-->/dev-server/android/app/src/main/AndroidManifest.xml:55:9-54
+70        android:supportsRtl="true"
+70-->/dev-server/android/app/src/main/AndroidManifest.xml:57:9-35
+71        android:theme="@style/AppTheme"
+71-->/dev-server/android/app/src/main/AndroidManifest.xml:58:9-40
+72        android:usesCleartextTraffic="false" >
+72-->/dev-server/android/app/src/main/AndroidManifest.xml:59:9-45
+73        <activity
+73-->/dev-server/android/app/src/main/AndroidManifest.xml:60:9-80:20
+74            android:name="app.commitx.mobile.MainActivity"
+74-->/dev-server/android/app/src/main/AndroidManifest.xml:61:13-41
+75            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode|density|locale|fontScale"
+75-->/dev-server/android/app/src/main/AndroidManifest.xml:62:13-147
+76            android:exported="true"
+76-->/dev-server/android/app/src/main/AndroidManifest.xml:63:13-36
+77            android:launchMode="singleTask"
+77-->/dev-server/android/app/src/main/AndroidManifest.xml:64:13-44
+78            android:resizeableActivity="true"
+78-->/dev-server/android/app/src/main/AndroidManifest.xml:65:13-46
+79            android:screenOrientation="unspecified"
+79-->/dev-server/android/app/src/main/AndroidManifest.xml:66:13-52
+80            android:theme="@style/AppTheme.Splash" >
+80-->/dev-server/android/app/src/main/AndroidManifest.xml:67:13-51
+81            <intent-filter>
+81-->/dev-server/android/app/src/main/AndroidManifest.xml:68:13-71:29
+82                <action android:name="android.intent.action.MAIN" />
+82-->/dev-server/android/app/src/main/AndroidManifest.xml:22:13-65
+82-->/dev-server/android/app/src/main/AndroidManifest.xml:22:21-62
+83
+84                <category android:name="android.intent.category.LAUNCHER" />
+84-->/dev-server/android/app/src/main/AndroidManifest.xml:23:13-73
+84-->/dev-server/android/app/src/main/AndroidManifest.xml:23:23-70
+85            </intent-filter>
+86
+87            <!-- Sole OAuth callback handler: commitx://login-callback/ -->
+88            <intent-filter>
+88-->/dev-server/android/app/src/main/AndroidManifest.xml:74:13-79:29
+89                <action android:name="android.intent.action.VIEW" />
+89-->/dev-server/android/app/src/main/AndroidManifest.xml:75:17-69
+89-->/dev-server/android/app/src/main/AndroidManifest.xml:75:25-66
+90
+91                <category android:name="android.intent.category.DEFAULT" />
+91-->/dev-server/android/app/src/main/AndroidManifest.xml:76:17-76
+91-->/dev-server/android/app/src/main/AndroidManifest.xml:76:27-73
+92                <category android:name="android.intent.category.BROWSABLE" />
+92-->/dev-server/android/app/src/main/AndroidManifest.xml:77:17-78
+92-->/dev-server/android/app/src/main/AndroidManifest.xml:77:27-75
+93
+94                <data
+94-->/dev-server/android/app/src/main/AndroidManifest.xml:78:17-80
+95                    android:host="login-callback"
+95-->/dev-server/android/app/src/main/AndroidManifest.xml:78:48-77
+96                    android:scheme="commitx" />
+96-->/dev-server/android/app/src/main/AndroidManifest.xml:78:23-47
+97            </intent-filter>
+98        </activity>
+99
+100        <!-- Focus Shield reminder screen (shown over a blocked app). -->
+101        <activity
+101-->/dev-server/android/app/src/main/AndroidManifest.xml:83:9-90:47
+102            android:name="app.commitx.mobile.FocusShieldActivity"
+102-->/dev-server/android/app/src/main/AndroidManifest.xml:84:13-48
+103            android:excludeFromRecents="true"
+103-->/dev-server/android/app/src/main/AndroidManifest.xml:85:13-46
+104            android:exported="false"
+104-->/dev-server/android/app/src/main/AndroidManifest.xml:86:13-37
+105            android:launchMode="singleInstance"
+105-->/dev-server/android/app/src/main/AndroidManifest.xml:87:13-48
+106            android:noHistory="true"
+106-->/dev-server/android/app/src/main/AndroidManifest.xml:88:13-37
+107            android:taskAffinity=""
+107-->/dev-server/android/app/src/main/AndroidManifest.xml:89:13-36
+108            android:theme="@style/AppTheme" />
+108-->/dev-server/android/app/src/main/AndroidManifest.xml:90:13-44
+109
+110        <!-- Watches the foreground app while Focus Shield is on. -->
+111        <service
+111-->/dev-server/android/app/src/main/AndroidManifest.xml:93:9-99:19
+112            android:name="app.commitx.mobile.VerifiedCountdownService"
+112-->/dev-server/android/app/src/main/AndroidManifest.xml:94:13-53
+113            android:exported="false"
+113-->/dev-server/android/app/src/main/AndroidManifest.xml:95:13-37
+114            android:foregroundServiceType="specialUse" >
+114-->/dev-server/android/app/src/main/AndroidManifest.xml:96:13-55
+115            <property
+115-->/dev-server/android/app/src/main/AndroidManifest.xml:97:13-98:218
+116                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+116-->/dev-server/android/app/src/main/AndroidManifest.xml:97:23-82
+117                android:value="Displays the remaining time of a user-started Verified study commitment on the lock screen, including recovery-break state; stops at timer expiry or an existing verification outcome." />
+117-->/dev-server/android/app/src/main/AndroidManifest.xml:98:17-215
+118        </service>
+119
+120        <receiver
+120-->/dev-server/android/app/src/main/AndroidManifest.xml:100:9-104:20
+121            android:name="app.commitx.mobile.VerifiedCountdownReceiver"
+121-->/dev-server/android/app/src/main/AndroidManifest.xml:100:19-60
+122            android:exported="false" >
+122-->/dev-server/android/app/src/main/AndroidManifest.xml:100:61-85
+123            <intent-filter>
+123-->/dev-server/android/app/src/main/AndroidManifest.xml:101:13-103:29
+124                <action android:name="android.intent.action.BOOT_COMPLETED" />
+124-->/dev-server/android/app/src/main/AndroidManifest.xml:102:17-79
+124-->/dev-server/android/app/src/main/AndroidManifest.xml:102:25-76
+125            </intent-filter>
+126        </receiver>
+127
+128        <service
+128-->/dev-server/android/app/src/main/AndroidManifest.xml:106:9-109:19
+129            android:name="app.commitx.mobile.StandardCountdownService"
+129-->/dev-server/android/app/src/main/AndroidManifest.xml:106:18-58
+130            android:exported="false"
+130-->/dev-server/android/app/src/main/AndroidManifest.xml:106:59-83
+131            android:foregroundServiceType="specialUse" >
+131-->/dev-server/android/app/src/main/AndroidManifest.xml:106:84-126
+132            <property
+132-->/dev-server/android/app/src/main/AndroidManifest.xml:97:13-98:218
+133                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+133-->/dev-server/android/app/src/main/AndroidManifest.xml:97:23-82
+134                android:value="Displays live remaining time for a user-started Standard study commitment while the app is backgrounded, including recovery breaks; stops at expiry or cancellation. No session rewards are recorded by this service." />
+134-->/dev-server/android/app/src/main/AndroidManifest.xml:98:17-215
+135        </service>
+136
+137        <receiver
+137-->/dev-server/android/app/src/main/AndroidManifest.xml:110:9-112:20
+138            android:name="app.commitx.mobile.StandardCountdownReceiver"
+138-->/dev-server/android/app/src/main/AndroidManifest.xml:110:19-60
+139            android:exported="false" >
+139-->/dev-server/android/app/src/main/AndroidManifest.xml:110:61-85
+140            <intent-filter>
+140-->/dev-server/android/app/src/main/AndroidManifest.xml:101:13-103:29
+141                <action android:name="android.intent.action.BOOT_COMPLETED" />
+141-->/dev-server/android/app/src/main/AndroidManifest.xml:102:17-79
+141-->/dev-server/android/app/src/main/AndroidManifest.xml:102:25-76
+142            </intent-filter>
+143        </receiver>
+144        <receiver
+144-->/dev-server/android/app/src/main/AndroidManifest.xml:113:9-122:20
+145            android:name="app.commitx.mobile.StudyGoalWidget"
+145-->/dev-server/android/app/src/main/AndroidManifest.xml:113:19-50
+146            android:exported="false"
+146-->/dev-server/android/app/src/main/AndroidManifest.xml:113:51-75
+147            android:label="@string/study_widget_name" >
+147-->/dev-server/android/app/src/main/AndroidManifest.xml:113:76-117
+148            <intent-filter>
+148-->/dev-server/android/app/src/main/AndroidManifest.xml:114:13-120:29
+149                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+149-->/dev-server/android/app/src/main/AndroidManifest.xml:115:17-84
+149-->/dev-server/android/app/src/main/AndroidManifest.xml:115:25-81
+150                <action android:name="android.intent.action.DATE_CHANGED" />
+150-->/dev-server/android/app/src/main/AndroidManifest.xml:116:17-77
+150-->/dev-server/android/app/src/main/AndroidManifest.xml:116:25-74
+151                <action android:name="android.intent.action.TIME_SET" />
+151-->/dev-server/android/app/src/main/AndroidManifest.xml:117:17-73
+151-->/dev-server/android/app/src/main/AndroidManifest.xml:117:25-70
+152                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+152-->/dev-server/android/app/src/main/AndroidManifest.xml:118:17-81
+152-->/dev-server/android/app/src/main/AndroidManifest.xml:118:25-78
+153                <action android:name="android.intent.action.BOOT_COMPLETED" />
+153-->/dev-server/android/app/src/main/AndroidManifest.xml:102:17-79
+153-->/dev-server/android/app/src/main/AndroidManifest.xml:102:25-76
+154            </intent-filter>
+155
+156            <meta-data
+156-->/dev-server/android/app/src/main/AndroidManifest.xml:121:13-110
+157                android:name="android.appwidget.provider"
+157-->/dev-server/android/app/src/main/AndroidManifest.xml:121:24-65
+158                android:resource="@xml/study_widget_info" />
+158-->/dev-server/android/app/src/main/AndroidManifest.xml:121:66-107
+159        </receiver>
+160
+161        <service
+161-->/dev-server/android/app/src/main/AndroidManifest.xml:124:9-131:19
+162            android:name="app.commitx.mobile.FocusShieldService"
+162-->/dev-server/android/app/src/main/AndroidManifest.xml:125:13-47
+163            android:exported="false"
+163-->/dev-server/android/app/src/main/AndroidManifest.xml:126:13-37
+164            android:foregroundServiceType="specialUse" >
+164-->/dev-server/android/app/src/main/AndroidManifest.xml:127:13-55
+165            <property
+165-->/dev-server/android/app/src/main/AndroidManifest.xml:97:13-98:218
+166                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+166-->/dev-server/android/app/src/main/AndroidManifest.xml:97:23-82
+167                android:value="Keeps a user-started focus commitment protected by reminding the user when a self-selected app is opened." />
+167-->/dev-server/android/app/src/main/AndroidManifest.xml:98:17-215
+168        </service>
+169
+170        <receiver
+170-->/dev-server/android/app/src/main/AndroidManifest.xml:135:9-142:20
+171            android:name="app.commitx.mobile.AccountabilityEngine"
+171-->/dev-server/android/app/src/main/AndroidManifest.xml:136:13-49
+172            android:exported="false" >
+172-->/dev-server/android/app/src/main/AndroidManifest.xml:137:13-37
+173            <intent-filter>
+173-->/dev-server/android/app/src/main/AndroidManifest.xml:138:13-141:29
+174                <action android:name="app.commitx.mobile.ACCOUNTABILITY" />
+174-->/dev-server/android/app/src/main/AndroidManifest.xml:139:17-76
+174-->/dev-server/android/app/src/main/AndroidManifest.xml:139:25-73
+175                <action android:name="android.intent.action.BOOT_COMPLETED" />
+175-->/dev-server/android/app/src/main/AndroidManifest.xml:102:17-79
+175-->/dev-server/android/app/src/main/AndroidManifest.xml:102:25-76
+176            </intent-filter>
+177        </receiver>
+178        <receiver
+178-->/dev-server/android/app/src/main/AndroidManifest.xml:144:9-152:20
+179            android:name="app.commitx.mobile.TodoActionReceiver"
+179-->/dev-server/android/app/src/main/AndroidManifest.xml:145:13-47
+180            android:exported="false" >
+180-->/dev-server/android/app/src/main/AndroidManifest.xml:146:13-37
+181            <intent-filter>
+181-->/dev-server/android/app/src/main/AndroidManifest.xml:147:13-151:29
+182                <action android:name="app.commitx.mobile.TOGGLE_TODO" />
+182-->/dev-server/android/app/src/main/AndroidManifest.xml:148:17-73
+182-->/dev-server/android/app/src/main/AndroidManifest.xml:148:25-70
+183                <action android:name="app.commitx.mobile.REPOST_TODOS" />
+183-->/dev-server/android/app/src/main/AndroidManifest.xml:149:17-74
+183-->/dev-server/android/app/src/main/AndroidManifest.xml:149:25-71
+184                <action android:name="android.intent.action.BOOT_COMPLETED" />
+184-->/dev-server/android/app/src/main/AndroidManifest.xml:102:17-79
+184-->/dev-server/android/app/src/main/AndroidManifest.xml:102:25-76
+185            </intent-filter>
+186        </receiver>
+187        <receiver
+187-->/dev-server/android/app/src/main/AndroidManifest.xml:154:9-164:20
+188            android:name="app.commitx.mobile.PlanReminderReceiver"
+188-->/dev-server/android/app/src/main/AndroidManifest.xml:155:13-49
+189            android:exported="false" >
+189-->/dev-server/android/app/src/main/AndroidManifest.xml:156:13-37
+190            <intent-filter>
+190-->/dev-server/android/app/src/main/AndroidManifest.xml:157:13-163:29
+191                <action android:name="app.commitx.mobile.PLAN_REMINDER" />
+191-->/dev-server/android/app/src/main/AndroidManifest.xml:158:17-75
+191-->/dev-server/android/app/src/main/AndroidManifest.xml:158:25-72
+192                <action android:name="android.intent.action.BOOT_COMPLETED" />
+192-->/dev-server/android/app/src/main/AndroidManifest.xml:102:17-79
+192-->/dev-server/android/app/src/main/AndroidManifest.xml:102:25-76
+193                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+193-->/dev-server/android/app/src/main/AndroidManifest.xml:160:17-84
+193-->/dev-server/android/app/src/main/AndroidManifest.xml:160:25-81
+194                <action android:name="android.intent.action.TIME_SET" />
+194-->/dev-server/android/app/src/main/AndroidManifest.xml:117:17-73
+194-->/dev-server/android/app/src/main/AndroidManifest.xml:117:25-70
+195                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+195-->/dev-server/android/app/src/main/AndroidManifest.xml:118:17-81
+195-->/dev-server/android/app/src/main/AndroidManifest.xml:118:25-78
+196            </intent-filter>
+197        </receiver>
+198        <receiver
+198-->/dev-server/android/app/src/main/AndroidManifest.xml:166:9-176:20
+199            android:name="app.commitx.mobile.WellnessSoundReceiver"
+199-->/dev-server/android/app/src/main/AndroidManifest.xml:167:13-50
+200            android:exported="false" >
+200-->/dev-server/android/app/src/main/AndroidManifest.xml:168:13-37
+201            <intent-filter>
+201-->/dev-server/android/app/src/main/AndroidManifest.xml:169:13-175:29
+202                <action android:name="app.commitx.mobile.WELLNESS_SOUND" />
+202-->/dev-server/android/app/src/main/AndroidManifest.xml:170:17-76
+202-->/dev-server/android/app/src/main/AndroidManifest.xml:170:25-73
+203                <action android:name="android.intent.action.BOOT_COMPLETED" />
+203-->/dev-server/android/app/src/main/AndroidManifest.xml:102:17-79
+203-->/dev-server/android/app/src/main/AndroidManifest.xml:102:25-76
+204                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+204-->/dev-server/android/app/src/main/AndroidManifest.xml:160:17-84
+204-->/dev-server/android/app/src/main/AndroidManifest.xml:160:25-81
+205                <action android:name="android.intent.action.TIME_SET" />
+205-->/dev-server/android/app/src/main/AndroidManifest.xml:117:17-73
+205-->/dev-server/android/app/src/main/AndroidManifest.xml:117:25-70
+206                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+206-->/dev-server/android/app/src/main/AndroidManifest.xml:118:17-81
+206-->/dev-server/android/app/src/main/AndroidManifest.xml:118:25-78
+207            </intent-filter>
+208        </receiver>
+209        <receiver
+209-->/dev-server/android/app/src/main/AndroidManifest.xml:178:9-185:20
+210            android:name="app.commitx.mobile.MotivationReceiver"
+210-->/dev-server/android/app/src/main/AndroidManifest.xml:179:13-47
+211            android:exported="false" >
+211-->/dev-server/android/app/src/main/AndroidManifest.xml:180:13-37
+212            <intent-filter>
+212-->/dev-server/android/app/src/main/AndroidManifest.xml:181:13-184:29
+213                <action android:name="app.commitx.mobile.MOTIVATION" />
+213-->/dev-server/android/app/src/main/AndroidManifest.xml:182:17-72
+213-->/dev-server/android/app/src/main/AndroidManifest.xml:182:25-69
+214                <action android:name="android.intent.action.BOOT_COMPLETED" />
+214-->/dev-server/android/app/src/main/AndroidManifest.xml:102:17-79
+214-->/dev-server/android/app/src/main/AndroidManifest.xml:102:25-76
+215            </intent-filter>
+216        </receiver>
+217        <receiver
+217-->/dev-server/android/app/src/main/AndroidManifest.xml:188:9-195:20
+218            android:name="app.commitx.mobile.ScreenTimeReceiver"
+218-->/dev-server/android/app/src/main/AndroidManifest.xml:189:13-47
+219            android:exported="false" >
+219-->/dev-server/android/app/src/main/AndroidManifest.xml:190:13-37
+220            <intent-filter>
+220-->/dev-server/android/app/src/main/AndroidManifest.xml:191:13-194:29
+221                <action android:name="app.commitx.mobile.CHECK_SCREEN_TIME" />
+221-->/dev-server/android/app/src/main/AndroidManifest.xml:192:17-79
+221-->/dev-server/android/app/src/main/AndroidManifest.xml:192:25-76
+222                <action android:name="android.intent.action.BOOT_COMPLETED" />
+222-->/dev-server/android/app/src/main/AndroidManifest.xml:102:17-79
+222-->/dev-server/android/app/src/main/AndroidManifest.xml:102:25-76
+223            </intent-filter>
+224        </receiver>
+225
+226        <service
+226-->[androidx.credentials:credentials-play-services-auth:1.3.0] /root/.gradle/caches/8.11.1/transforms/adc2ded79958eeb0bbe1665745592702/transformed/credentials-play-services-auth-1.3.0/AndroidManifest.xml:24:9-32:19
+227            android:name="androidx.credentials.playservices.CredentialProviderMetadataHolder"
+227-->[androidx.credentials:credentials-play-services-auth:1.3.0] /root/.gradle/caches/8.11.1/transforms/adc2ded79958eeb0bbe1665745592702/transformed/credentials-play-services-auth-1.3.0/AndroidManifest.xml:25:13-94
+228            android:enabled="true"
+228-->[androidx.credentials:credentials-play-services-auth:1.3.0] /root/.gradle/caches/8.11.1/transforms/adc2ded79958eeb0bbe1665745592702/transformed/credentials-play-services-auth-1.3.0/AndroidManifest.xml:26:13-35
+229            android:exported="false" >
+229-->[androidx.credentials:credentials-play-services-auth:1.3.0] /root/.gradle/caches/8.11.1/transforms/adc2ded79958eeb0bbe1665745592702/transformed/credentials-play-services-auth-1.3.0/AndroidManifest.xml:27:13-37
+230            <meta-data
+230-->[androidx.credentials:credentials-play-services-auth:1.3.0] /root/.gradle/caches/8.11.1/transforms/adc2ded79958eeb0bbe1665745592702/transformed/credentials-play-services-auth-1.3.0/AndroidManifest.xml:29:13-31:104
+231                android:name="androidx.credentials.CREDENTIAL_PROVIDER_KEY"
+231-->[androidx.credentials:credentials-play-services-auth:1.3.0] /root/.gradle/caches/8.11.1/transforms/adc2ded79958eeb0bbe1665745592702/transformed/credentials-play-services-auth-1.3.0/AndroidManifest.xml:30:17-76
+232                android:value="androidx.credentials.playservices.CredentialProviderPlayServicesImpl" />
+232-->[androidx.credentials:credentials-play-services-auth:1.3.0] /root/.gradle/caches/8.11.1/transforms/adc2ded79958eeb0bbe1665745592702/transformed/credentials-play-services-auth-1.3.0/AndroidManifest.xml:31:17-101
+233        </service>
+234
+235        <activity
+235-->[androidx.credentials:credentials-play-services-auth:1.3.0] /root/.gradle/caches/8.11.1/transforms/adc2ded79958eeb0bbe1665745592702/transformed/credentials-play-services-auth-1.3.0/AndroidManifest.xml:34:9-41:20
+236            android:name="androidx.credentials.playservices.HiddenActivity"
+236-->[androidx.credentials:credentials-play-services-auth:1.3.0] /root/.gradle/caches/8.11.1/transforms/adc2ded79958eeb0bbe1665745592702/transformed/credentials-play-services-auth-1.3.0/AndroidManifest.xml:35:13-76
+237            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+237-->[androidx.credentials:credentials-play-services-auth:1.3.0] /root/.gradle/caches/8.11.1/transforms/adc2ded79958eeb0bbe1665745592702/transformed/credentials-play-services-auth-1.3.0/AndroidManifest.xml:36:13-87
+238            android:enabled="true"
+238-->[androidx.credentials:credentials-play-services-auth:1.3.0] /root/.gradle/caches/8.11.1/transforms/adc2ded79958eeb0bbe1665745592702/transformed/credentials-play-services-auth-1.3.0/AndroidManifest.xml:37:13-35
+239            android:exported="false"
+239-->[androidx.credentials:credentials-play-services-auth:1.3.0] /root/.gradle/caches/8.11.1/transforms/adc2ded79958eeb0bbe1665745592702/transformed/credentials-play-services-auth-1.3.0/AndroidManifest.xml:38:13-37
+240            android:fitsSystemWindows="true"
+240-->[androidx.credentials:credentials-play-services-auth:1.3.0] /root/.gradle/caches/8.11.1/transforms/adc2ded79958eeb0bbe1665745592702/transformed/credentials-play-services-auth-1.3.0/AndroidManifest.xml:39:13-45
+241            android:theme="@style/Theme.Hidden" >
+241-->[androidx.credentials:credentials-play-services-auth:1.3.0] /root/.gradle/caches/8.11.1/transforms/adc2ded79958eeb0bbe1665745592702/transformed/credentials-play-services-auth-1.3.0/AndroidManifest.xml:40:13-48
+242        </activity>
+243        <activity
+243-->[com.google.android.gms:play-services-auth:21.1.1] /root/.gradle/caches/8.11.1/transforms/6a2e17708a0f474caf0dab43bce1b7df/transformed/play-services-auth-21.1.1/AndroidManifest.xml:23:9-27:75
+244            android:name="com.google.android.gms.auth.api.signin.internal.SignInHubActivity"
+244-->[com.google.android.gms:play-services-auth:21.1.1] /root/.gradle/caches/8.11.1/transforms/6a2e17708a0f474caf0dab43bce1b7df/transformed/play-services-auth-21.1.1/AndroidManifest.xml:24:13-93
+245            android:excludeFromRecents="true"
+245-->[com.google.android.gms:play-services-auth:21.1.1] /root/.gradle/caches/8.11.1/transforms/6a2e17708a0f474caf0dab43bce1b7df/transformed/play-services-auth-21.1.1/AndroidManifest.xml:25:13-46
+246            android:exported="false"
+246-->[com.google.android.gms:play-services-auth:21.1.1] /root/.gradle/caches/8.11.1/transforms/6a2e17708a0f474caf0dab43bce1b7df/transformed/play-services-auth-21.1.1/AndroidManifest.xml:26:13-37
+247            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+247-->[com.google.android.gms:play-services-auth:21.1.1] /root/.gradle/caches/8.11.1/transforms/6a2e17708a0f474caf0dab43bce1b7df/transformed/play-services-auth-21.1.1/AndroidManifest.xml:27:13-72
+248        <!--
+249            Service handling Google Sign-In user revocation. For apps that do not integrate with
+250            Google Sign-In, this service will never be started.
+251        -->
+252        <service
+252-->[com.google.android.gms:play-services-auth:21.1.1] /root/.gradle/caches/8.11.1/transforms/6a2e17708a0f474caf0dab43bce1b7df/transformed/play-services-auth-21.1.1/AndroidManifest.xml:33:9-37:51
+253            android:name="com.google.android.gms.auth.api.signin.RevocationBoundService"
+253-->[com.google.android.gms:play-services-auth:21.1.1] /root/.gradle/caches/8.11.1/transforms/6a2e17708a0f474caf0dab43bce1b7df/transformed/play-services-auth-21.1.1/AndroidManifest.xml:34:13-89
+254            android:exported="true"
+254-->[com.google.android.gms:play-services-auth:21.1.1] /root/.gradle/caches/8.11.1/transforms/6a2e17708a0f474caf0dab43bce1b7df/transformed/play-services-auth-21.1.1/AndroidManifest.xml:35:13-36
+255            android:permission="com.google.android.gms.auth.api.signin.permission.REVOCATION_NOTIFICATION"
+255-->[com.google.android.gms:play-services-auth:21.1.1] /root/.gradle/caches/8.11.1/transforms/6a2e17708a0f474caf0dab43bce1b7df/transformed/play-services-auth-21.1.1/AndroidManifest.xml:36:13-107
+256            android:visibleToInstantApps="true" />
+256-->[com.google.android.gms:play-services-auth:21.1.1] /root/.gradle/caches/8.11.1/transforms/6a2e17708a0f474caf0dab43bce1b7df/transformed/play-services-auth-21.1.1/AndroidManifest.xml:37:13-48
+257
+258        <activity
+258-->[com.google.android.gms:play-services-base:18.3.0] /root/.gradle/caches/8.11.1/transforms/1bce7f4d978e25fcf75462e49f6941df/transformed/play-services-base-18.3.0/AndroidManifest.xml:20:9-22:45
+259            android:name="com.google.android.gms.common.api.GoogleApiActivity"
+259-->[com.google.android.gms:play-services-base:18.3.0] /root/.gradle/caches/8.11.1/transforms/1bce7f4d978e25fcf75462e49f6941df/transformed/play-services-base-18.3.0/AndroidManifest.xml:20:19-85
+260            android:exported="false"
+260-->[com.google.android.gms:play-services-base:18.3.0] /root/.gradle/caches/8.11.1/transforms/1bce7f4d978e25fcf75462e49f6941df/transformed/play-services-base-18.3.0/AndroidManifest.xml:22:19-43
+261            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+261-->[com.google.android.gms:play-services-base:18.3.0] /root/.gradle/caches/8.11.1/transforms/1bce7f4d978e25fcf75462e49f6941df/transformed/play-services-base-18.3.0/AndroidManifest.xml:21:19-78
+262
+263        <meta-data
+263-->[com.google.android.gms:play-services-basement:18.3.0] /root/.gradle/caches/8.11.1/transforms/f3beb428283e1a1f3957539fde5e5290/transformed/play-services-basement-18.3.0/AndroidManifest.xml:21:9-23:69
+264            android:name="com.google.android.gms.version"
+264-->[com.google.android.gms:play-services-basement:18.3.0] /root/.gradle/caches/8.11.1/transforms/f3beb428283e1a1f3957539fde5e5290/transformed/play-services-basement-18.3.0/AndroidManifest.xml:22:13-58
+265            android:value="@integer/google_play_services_version" /> <!-- The activities will be merged into the manifest of the hosting app. -->
+265-->[com.google.android.gms:play-services-basement:18.3.0] /root/.gradle/caches/8.11.1/transforms/f3beb428283e1a1f3957539fde5e5290/transformed/play-services-basement-18.3.0/AndroidManifest.xml:23:13-66
+266        <activity
+266-->[com.google.android.play:core-common:2.0.2] /root/.gradle/caches/8.11.1/transforms/c4439b516dbca908616646507790f9e6/transformed/core-common-2.0.2/AndroidManifest.xml:14:9-18:65
+267            android:name="com.google.android.play.core.common.PlayCoreDialogWrapperActivity"
+267-->[com.google.android.play:core-common:2.0.2] /root/.gradle/caches/8.11.1/transforms/c4439b516dbca908616646507790f9e6/transformed/core-common-2.0.2/AndroidManifest.xml:15:13-93
+268            android:exported="false"
+268-->[com.google.android.play:core-common:2.0.2] /root/.gradle/caches/8.11.1/transforms/c4439b516dbca908616646507790f9e6/transformed/core-common-2.0.2/AndroidManifest.xml:16:13-37
+269            android:stateNotNeeded="true"
+269-->[com.google.android.play:core-common:2.0.2] /root/.gradle/caches/8.11.1/transforms/c4439b516dbca908616646507790f9e6/transformed/core-common-2.0.2/AndroidManifest.xml:17:13-42
+270            android:theme="@style/Theme.PlayCore.Transparent" />
+270-->[com.google.android.play:core-common:2.0.2] /root/.gradle/caches/8.11.1/transforms/c4439b516dbca908616646507790f9e6/transformed/core-common-2.0.2/AndroidManifest.xml:18:13-62
+271    </application>
+272
+273</manifest>
