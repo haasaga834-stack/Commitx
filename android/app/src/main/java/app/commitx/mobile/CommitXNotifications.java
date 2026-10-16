@@ -84,6 +84,7 @@ final class CommitXNotifications {
 
         nm.createNotificationChannel(plans);
         nm.createNotificationChannel(motivation);
+        nm.createNotificationChannel(appLimits);
     }
 
 
@@ -321,6 +322,35 @@ final class CommitXNotifications {
                 .setContentIntent(openApp(ctx, "screen-time", 13));
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) b.setPriority(Notification.PRIORITY_LOW);
         try { nm.notify(ID_SCREEN_TIME_DAILY, b.build()); } catch (Throwable ignored) {}
+    }
+
+    /* ----------------------------- App limits ------------------------------- */
+
+    private static void appLimitAlert(Context ctx, String title, String text, String pkg) {
+        NotificationManager nm = manager(ctx);
+        if (nm == null) return;
+        ensureChannels(ctx);
+        Notification.Builder b = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                ? new Notification.Builder(ctx, CHANNEL_APP_LIMITS)
+                : new Notification.Builder(ctx);
+        b.setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle(title)
+                .setContentText(text)
+                .setAutoCancel(true)
+                .setContentIntent(openApp(ctx, "screen-time", 14));
+        try {
+            nm.notify(ID_APP_LIMIT_BASE + Math.abs(pkg.hashCode() % 100), b.build());
+        } catch (Throwable ignored) {}
+    }
+
+    static void showAppLimitHalf(Context ctx, String appLabel) {
+        appLimitAlert(ctx, "Halfway there",
+                "You've completed 50% of your " + appLabel + " limit", appLabel);
+    }
+
+    static void showAppLimitReached(Context ctx, String appLabel) {
+        appLimitAlert(ctx, appLabel + " limit reached",
+                appLabel + " is done for today. Back tomorrow.", appLabel + ":done");
     }
 
     /* --------------------------- Study plan reminder ------------------------ */
