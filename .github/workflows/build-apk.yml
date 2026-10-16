@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   actions: write
 
 # Always build the newest commit; cancel superseded builds so the artifact
@@ -125,17 +125,47 @@ jobs:
           GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
         run: gradle :app:assembleRelease :app:bundleRelease --no-daemon --stacktrace < /dev/null
 
-      - name: Upload APK
+      # Artifacts count against the GitHub Actions storage quota. Remove old
+      # build artifacts first, then publish the files to a rolling GitHub
+      # Release (releases do not use that quota) so downloads never fail.
+      - name: Delete old build artifacts
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --paginate "repos/${{ github.repository }}/actions/artifacts?per_page=100" \
+            --jq '.artifacts[].id' | while read -r id; do
+              gh api -X DELETE "repos/${{ github.repository }}/actions/artifacts/$id" || true
+            done
+
+      - name: Publish APK and AAB to the latest-build release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eux
+          mkdir -p dist
+          cp android/app/build/outputs/apk/release/app-release.apk "dist/commitx-v${COMMITX_VERSION_NAME}.apk"
+          cp android/app/build/outputs/bundle/release/app-release.aab "dist/commitx-v${COMMITX_VERSION_NAME}.aab"
+          gh release delete latest-build --cleanup-tag -y --repo "${{ github.repository }}" || true
+          gh release create latest-build dist/* \
+            --repo "${{ github.repository }}" \
+            --target "${{ github.sha }}" \
+            --prerelease \
+            --title "CommitX latest build (run ${{ github.run_number }})" \
+            --notes "APK for direct install and AAB for Play Console. Built from ${{ github.sha }}."
+
+      - name: Upload APK artifact (optional)
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: commitx-apk-v${{ env.COMMITX_VERSION_NAME }}-run${{ github.run_number }}
           path: android/app/build/outputs/apk/release/app-release.apk
-          if-no-files-found: error
+          retention-days: 1
 
-      - name: Upload AAB (Play Store upload format)
+      - name: Upload AAB artifact (optional)
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
-          name: commitx-aab
+          name: commitx-aab-run${{ github.run_number }}
           path: android/app/build/outputs/bundle/release/app-release.aab
-          if-no-files-found: error
-
+          retention-days: 1
