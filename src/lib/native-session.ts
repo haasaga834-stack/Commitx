@@ -60,6 +60,12 @@ declare global {
       focusShieldStart?: (packagesJson: string, endsAtMs: number) => boolean;
       focusShieldStop?: () => void;
       focusShieldActive?: () => boolean;
+      /* App Usage Limits (daily per-app limits, independent of Focus Shield) */
+      appLimitsSupported?: () => boolean;
+      appLimitsJson?: () => string;
+      setAppLimit?: (pkg: string, type: string, minutes: number) => void;
+      removeAppLimit?: (pkg: string) => void;
+
 
     };
     CommitXSession?: {
