@@ -206,7 +206,8 @@ public class StandardCountdownService extends Service {
         long remaining = running ? VerifiedCountdownClock.remaining(end, SystemClock.elapsedRealtime()) : state.optLong("remainingMs");
         if ("elapsed".equals(phase)) remaining = 0;
         long total = Math.max(1, state.optLong("durationMs"));
-        int pct = (int) Math.max(0, Math.min(100, Math.round(100.0 * (total - Math.min(total, remaining)) / total)));
+        long focusRemaining = "focus".equals(phase) || "elapsed".equals(phase) ? remaining : state.optLong("remainingMs");
+        int pct = (int) Math.max(0, Math.min(100, Math.round(100.0 * (total - Math.min(total, focusRemaining)) / total)));
         String time = String.format(java.util.Locale.US, "%02d:%02d", (long) Math.ceil(remaining / 1000.0) / 60, (long) Math.ceil(remaining / 1000.0) % 60);
         String title = "Standard session · " + time + " left";
         String text = state.optString("goal", "Focus") + " · " + pct + "% of " + total / 60000 + " min complete";
@@ -218,29 +219,11 @@ public class StandardCountdownService extends Service {
         return builder.build();
     }
 
-    private static int themeColor(String theme) {
-        switch (theme) {
-            case "tree": return R.color.countdown_tree;
-            case "moon": return R.color.countdown_moon;
-            case "lotus": return R.color.countdown_lotus;
-            case "fireflies": return R.color.countdown_fireflies;
-            default: return R.color.countdown_leaves;
-        }
-    }
     private static boolean canPost(Context ctx) {
         if (Build.VERSION.SDK_INT >= 33 && ctx.checkSelfPermission("android.permission.POST_NOTIFICATIONS")
                 != android.content.pm.PackageManager.PERMISSION_GRANTED) return false;
         NotificationManager nm = CommitXNotifications.manager(ctx);
         return nm != null && (Build.VERSION.SDK_INT < 24 || nm.areNotificationsEnabled());
-    }
-    private static String themeMessage(String theme) {
-        switch (theme) {
-            case "tree": return "Every focused minute helps your promise grow.";
-            case "moon": return "Quiet mind. Clear promise. Stay with it.";
-            case "lotus": return "Breathe. Settle. Keep the promise you made.";
-            case "fireflies": return "Small sparks of focus become something bright.";
-            default: return "Let distractions fall away. Your promise stays.";
-        }
     }
 
     private static PendingIntent alarm(Context ctx) {

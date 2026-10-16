@@ -23,7 +23,7 @@ function markWidgetInvitedLocal(userId: string) {
 
 export function markWidgetInvited(userId: string) {
   markWidgetInvitedLocal(userId);
-  void supabase.from('user_settings').upsert({ user_id: userId, study_widget_invited: true }, { onConflict: 'user_id' });
+  void supabase.from('user_settings').upsert({ user_id: userId, study_widget_invited: true }, { onConflict: 'user_id' }).then(() => {});
 }
 
 export function syncStudyWidget(userId: string | null) {
