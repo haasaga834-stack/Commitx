@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { subscribe } from '@/lib/commitx-store';
 import { subscribePlannerWidget, getTodos, toggleTodo, useTodos } from '@/lib/planner';
-import { syncStudyWidget, widgetInvitationSeen, markWidgetInvited } from '@/lib/study-widget';
+import { syncStudyWidget, loadWidgetInvitation, markWidgetInvited } from '@/lib/study-widget';
 import { shouldInviteWidget } from '@/lib/study-widget-rules';
 import { hasNativeBridge } from '@/lib/native-session';
 import { StudyWidgetInvite } from './StudyWidgetInvite';
@@ -34,13 +34,16 @@ export function StudyWidgetCoordinator({ userId, onboarding }: { userId: string 
     return () => { stopStore(); stopPlanner(); clearInterval(timer); window.removeEventListener('focus', reconcile); document.removeEventListener('visibilitychange', onVisible); };
   }, [userId, hydrated]);
   useEffect(() => {
-    const request = () => {
-      if (userId && shouldInviteWidget(hasNativeBridge(), widgetInvitationSeen(userId), onboarding, 'todos')) {
+    const request = async () => {
+      if (!userId || !hasNativeBridge()) return;
+      const seen = await loadWidgetInvitation(userId);
+      if (shouldInviteWidget(true, seen, onboarding, 'todos')) {
         markWidgetInvited(userId); setInvite(true);
       }
     };
-    window.addEventListener('commitx:todos-opened', request);
-    return () => window.removeEventListener('commitx:todos-opened', request);
+    const onOpened = () => void request();
+    window.addEventListener('commitx:todos-opened', onOpened);
+    return () => window.removeEventListener('commitx:todos-opened', onOpened);
   }, [userId, onboarding]);
   return invite && userId ? <StudyWidgetInvite userId={userId} onDone={() => setInvite(false)} /> : null;
 }

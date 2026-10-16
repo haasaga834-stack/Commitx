@@ -6,7 +6,7 @@ import { Hourglass } from "@/components/Hourglass";
 import { cn } from "@/lib/utils";
 import { formatDuration, savePrimaryPlan, setDailyGoalHours } from "@/lib/planner";
 import { StudyWidgetInvite } from './StudyWidgetInvite';
-import { markWidgetInvited, widgetInvitationSeen } from '@/lib/study-widget';
+import { loadWidgetInvitation, markWidgetInvited } from '@/lib/study-widget';
 
 const GOAL_OPTIONS = [1, 2, 3, 4, 6, 8];
 const SUBJECTS = ["Maths", "Physics", "Chemistry", "Biology", "Coding", "English", "History", "Economics"];
@@ -30,10 +30,10 @@ export function NativeWelcome({ onDone, userId }: { onDone: () => void; userId: 
   const [saving, setSaving] = useState(false);
   const [widgetOpen, setWidgetOpen] = useState(false);
 
-  const next = () => {
+  const next = async () => {
     if (step === 1) {
       setDailyGoalHours(hours);
-      if (!widgetInvitationSeen(userId)) {
+      if (!(await loadWidgetInvitation(userId))) {
         markWidgetInvited(userId);
         setWidgetOpen(true);
         return;
@@ -154,7 +154,7 @@ export function NativeWelcome({ onDone, userId }: { onDone: () => void; userId: 
             <ArrowLeft />
           </Button>
           {step < 4 ? (
-            <Button disabled={!canNext} onClick={next} className="h-12 flex-1 rounded-full">
+            <Button disabled={!canNext} onClick={() => void next()} className="h-12 flex-1 rounded-full">
               Next <ArrowRight aria-hidden="true" />
             </Button>
           ) : (
