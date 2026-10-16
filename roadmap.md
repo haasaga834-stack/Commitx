@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Fix APK/AAB release compilation failure and verify both artifacts with the full Android release build.
+
 - [x] Add compact Android study-goal launcher widget and once-per-account invitation after daily-goal onboarding or existing users' first To-Do opening; signed-in invitation and real task completion/reload verified, platform limitations documented.
 - [x] Keep Standard notification countdown running in background without changing Verified behavior or notification appearance.
 - [x] Preload/cache Focus Shield installed apps for faster setup without changing blocking rules.
