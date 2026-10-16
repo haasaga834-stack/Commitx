@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTodos, addTodo, toggleTodo, removeTodo } from "@/lib/planner";
 import { Check, ListChecks, Plus, Trash2 } from "lucide-react";
 
@@ -12,12 +12,18 @@ interface Props {
 export function TodoList({ compact = false, readOnly = false }: Props) {
   const { todos, hydrated } = useTodos();
   const [text, setText] = useState("");
+  useEffect(() => {
+    if (readOnly || compact) return;
+    const timer = setTimeout(() => window.dispatchEvent(new Event('commitx:todos-opened')), 150);
+    return () => clearTimeout(timer);
+  }, [readOnly, compact]);
 
   const done = todos.filter((t) => t.done).length;
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
     addTodo(text);
+    window.dispatchEvent(new Event('commitx:todos-opened'));
     setText("");
   }
 

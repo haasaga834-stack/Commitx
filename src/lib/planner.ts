@@ -586,6 +586,13 @@ export function getTodos(): TodoItem[] {
   return todoCache;
 }
 
+/** Native widget observes existing mirrors; never writes session or wallet totals. */
+export function subscribePlannerWidget(listener: () => void) {
+  todoListeners.add(listener);
+  goalListeners.add(listener);
+  return () => { todoListeners.delete(listener); goalListeners.delete(listener); };
+}
+
 export function addTodo(text: string) {
   const t = text.trim();
   if (!t) return;

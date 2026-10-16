@@ -29,6 +29,7 @@ import { OfflineNotice } from "../components/OfflineNotice";
 import { Onboarding } from "../components/Onboarding";
 import { useOnboarding } from "../lib/onboarding";
 import { NativeWelcome } from "../components/NativeWelcome";
+import { StudyWidgetCoordinator } from '../components/StudyWidgetCoordinator';
 import { isNativeLaunchReady, shouldShowNativeWelcome } from "../lib/app-launch";
 
 function NotFoundComponent() {
@@ -284,10 +285,11 @@ function AuthGate({ children }: { children: ReactNode }) {
   return (
     <>
       {children}
+      <StudyWidgetCoordinator userId={user?.id ?? null} onboarding={needsOnboarding} />
       {user && pathname !== "/auth" && needsOnboarding ? (
         hasNativeBridge() ? (
           shouldShowNativeWelcome(pathname, Boolean(readRestorableActiveSession())) ? (
-            <NativeWelcome onDone={() => void complete()} />
+            <NativeWelcome userId={user.id} onDone={() => void complete()} />
           ) : null
         ) : <Onboarding onDone={() => void complete()} />
       ) : null}
