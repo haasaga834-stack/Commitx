@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <bool name="allow_landscape">false</bool>
+    <color name="countdown_fireflies">#9B8C32</color>
+    <color name="countdown_leaves">#C27A42</color>
+    <color name="countdown_lotus">#B66592</color>
+    <color name="countdown_moon">#777DB6</color>
+    <color name="countdown_tree">#39805A</color>
+    <color name="ic_launcher_background">#000000</color>
+    <color name="shield_background">#151B1B</color>
+    <color name="shield_foreground">#F3F8F5</color>
+    <color name="shield_muted">#B2C1BC</color>
+    <color name="shield_on_primary">#152B20</color>
+    <color name="shield_primary">#A4E5BB</color>
+    <color name="shield_roast">#FFAC96</color>
+    <color name="shield_surface">#223331</color>
+    <color name="splash_background">#F8F9F6</color>
+    <color name="system_bars">#F8F9F6</color>
+    <color name="widget_border">#44FAF8F2</color>
+    <color name="widget_glass">#E6222428</color>
+    <color name="widget_muted">#BDBAB3</color>
+    <color name="widget_orange">#FFAE54</color>
+    <color name="widget_text">#FAF8F2</color>
+    <color name="widget_track">#33FAF8F2</color>
+    <color name="widget_yellow">#FFD96A</color>
+    <string name="app_name">CommitX</string>
+    <string name="focus_shield_channel">Focus Shield</string>
+    <string name="focus_shield_on">Focus Shield is on</string>
+    <string name="focus_shield_running">Your selected apps are paused until this commitment ends.</string>
+    <string name="google_web_client_id" translatable="false">1071070006682-q095d7588gsb7ap7joh8t1p5ls3epvtj.apps.googleusercontent.com</string>
+    <string name="study_widget_description">Daily study progress and today’s to-do list</string>
+    <string name="study_widget_name">Study Goal</string>
+    <style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:statusBarColor">@color/system_bars</item>
+        <item name="android:navigationBarColor">@color/system_bars</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowBackground">@color/splash_background</item>
+    </style>
+    <style name="AppTheme.Splash" parent="AppTheme">
+        <item name="android:windowBackground">@drawable/splash</item>
+    </style>
+</resources>
