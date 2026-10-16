@@ -16,3 +16,11 @@ test('invitation is once-only and native-only', () => {
 test('widget displays no more than three tasks and counts remaining tasks', () => {
   assert.deepEqual(widgetTasks([1,2,3,4,5]), { visible: [1,2,3], more: 2 });
 });
+
+test('pending checkbox actions only sync for their owner and keep original day', async () => {
+  const { widgetActionsForUser } = await import('./study-widget-rules');
+  assert.deepEqual(widgetActionsForUser([
+    { id: 'a', userId: 'owner', day: '2026-10-15', done: true },
+    { id: 'b', userId: 'other', day: '2026-10-16', done: false },
+  ], 'owner'), [{ id: 'a', userId: 'owner', day: '2026-10-15', done: true }]);
+});

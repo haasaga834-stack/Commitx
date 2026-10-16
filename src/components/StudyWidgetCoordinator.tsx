@@ -3,7 +3,7 @@ import { subscribe } from '@/lib/commitx-store';
 import { subscribePlannerWidget, getTodos, toggleTodo, useTodos, todayKey } from '@/lib/planner';
 import { supabase } from '@/integrations/supabase/client';
 import { syncStudyWidget, loadWidgetInvitation, markWidgetInvited } from '@/lib/study-widget';
-import { shouldInviteWidget } from '@/lib/study-widget-rules';
+import { shouldInviteWidget, widgetActionsForUser } from '@/lib/study-widget-rules';
 import { hasNativeBridge } from '@/lib/native-session';
 import { StudyWidgetInvite } from './StudyWidgetInvite';
 export function StudyWidgetCoordinator({ userId, onboarding }: { userId: string | null; onboarding: boolean }) {
@@ -20,8 +20,7 @@ export function StudyWidgetCoordinator({ userId, onboarding }: { userId: string 
         try {
           const pending = JSON.parse(window.CommitXAndroid?.pendingStudyWidgetTodos?.() ?? '[]') as { id: string; done: boolean; userId: string; day: string }[];
           const applied: typeof pending = [];
-          for (const item of pending) {
-            if (item.userId !== userId) continue;
+          for (const item of widgetActionsForUser(pending, userId)) {
             // Persist desired state, not a toggle: retries never invert a completed task.
             // Yesterday's checkbox still reaches its own row after midnight.
             const { data, error } = await supabase.from('todos').update({ done: item.done })

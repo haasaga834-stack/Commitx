@@ -3,3 +3,8 @@ export function shouldInviteWidget(native: boolean, seen: boolean, onboarding: b
   return native && !seen && (trigger === 'daily-goal' ? onboarding : !onboarding);
 }
 export function widgetTasks<T>(tasks: T[]) { return { visible: tasks.slice(0, 3), more: Math.max(0, tasks.length - 3) }; }
+
+export interface WidgetTodoAction { id: string; userId: string; day: string; done: boolean }
+export function widgetActionsForUser(actions: WidgetTodoAction[], userId: string) {
+  return actions.filter((action) => action.userId === userId);
+}
