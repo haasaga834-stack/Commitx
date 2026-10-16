@@ -130,6 +130,8 @@ public class MainActivity extends Activity {
         MotivationStore.reconcile(this);
         CommitXNotifications.showTodos(this);
 
+        FocusShieldStore.preloadApps(this, true);
+
 
 
 
@@ -554,6 +556,16 @@ public class MainActivity extends Activity {
 
 
     /** Pushes a notification-initiated toggle into the web layer. */
+    static void notifyShieldAppsReady() {
+        MainActivity activity = current;
+        if (activity != null && activity.webView != null) activity.evalOnWeb("window.dispatchEvent(new Event('commitx:shield-apps-ready'))");
+    }
+
+    static void notifyWidgetChanged() {
+        MainActivity activity = current;
+        if (activity != null && activity.webView != null) activity.evalOnWeb("window.dispatchEvent(new Event('focus'))");
+    }
+
     static boolean notifyTodoToggled(String id) {
         MainActivity activity = current;
         if (activity == null || activity.webView == null) return false;
@@ -678,6 +690,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        FocusShieldStore.preloadApps(this, true);
         injectPendingFailureIfNeeded();
         CommitXNotifications.showScreenTimeDaily(this);
         PlanStore.scheduleAll(this);
@@ -1175,12 +1188,42 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void hideSessionProgress() {
             VerifiedCountdownService.clear(MainActivity.this);
+            StandardCountdownService.clear(MainActivity.this);
             CommitXNotifications.cancelSession(MainActivity.this);
         }
 
         @JavascriptInterface
         public void syncVerifiedCountdown(String payloadJson) {
             runOnUiThread(() -> VerifiedCountdownService.sync(MainActivity.this, payloadJson));
+        }
+
+        @JavascriptInterface
+        public void syncStandardCountdown(String payloadJson) {
+            runOnUiThread(() -> StandardCountdownService.sync(MainActivity.this, payloadJson));
+        }
+
+        @JavascriptInterface
+        public void syncStudyWidget(String payloadJson) { StudyWidgetStore.sync(MainActivity.this, payloadJson); }
+
+        @JavascriptInterface
+        public boolean studyWidgetInvitationSeen(String userId) { return StudyWidgetStore.invited(MainActivity.this, userId); }
+
+        @JavascriptInterface
+        public void markStudyWidgetInvited(String userId) { StudyWidgetStore.markInvited(MainActivity.this, userId); }
+
+        @JavascriptInterface
+        public String pendingStudyWidgetTodos() { return StudyWidgetStore.pending(MainActivity.this).toString(); }
+
+        @JavascriptInterface
+        public void ackStudyWidgetTodos(String json) { StudyWidgetStore.ack(MainActivity.this, json); }
+
+        @JavascriptInterface
+        public boolean requestStudyWidget() {
+            if (Build.VERSION.SDK_INT < 26) return false;
+            android.appwidget.AppWidgetManager manager = android.appwidget.AppWidgetManager.getInstance(MainActivity.this);
+            if (!manager.isRequestPinAppWidgetSupported()) return false;
+            runOnUiThread(() -> manager.requestPinAppWidget(new android.content.ComponentName(MainActivity.this, StudyGoalWidget.class), null, null));
+            return true;
         }
 
         @JavascriptInterface
@@ -1296,6 +1339,9 @@ public class MainActivity extends Activity {
         public String focusShieldApps() {
             return FocusShieldStore.installedAppsJson(MainActivity.this);
         }
+
+        @JavascriptInterface
+        public void preloadFocusShieldApps() { FocusShieldStore.preloadApps(MainActivity.this, false); }
 
         /** Returns true only when native protection is genuinely running. */
         @JavascriptInterface

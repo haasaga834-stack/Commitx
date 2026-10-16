@@ -170,6 +170,16 @@ export function finishVerifiedCountdown(status: "completed" | "failed") {
   } catch {}
 }
 
+export function syncStandardCountdown(payload: VerifiedCountdownPayload): boolean {
+  const b = bridge();
+  if (!b?.syncStandardCountdown) return false;
+  try {
+    if (!notificationsAllowed()) b.hideSessionProgress?.();
+    else b.syncStandardCountdown(JSON.stringify(countdownPayload(payload, Date.now())));
+    return true;
+  } catch { return false; }
+}
+
 export function showSessionProgress(title: string, text: string, progress: number) {
   try {
     if (!notificationsAllowed()) return bridge()?.hideSessionProgress?.();

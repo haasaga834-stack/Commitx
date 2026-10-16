@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">CommitX</string>
+    <string name="study_widget_name">Study Goal</string>
+    <string name="study_widget_description">Daily study progress and today’s to-do list</string>
     <string name="focus_shield_channel">Focus Shield</string>
     <string name="focus_shield_on">Focus Shield is on</string>
     <string name="focus_shield_running">Your selected apps are paused until this commitment ends.</string>
