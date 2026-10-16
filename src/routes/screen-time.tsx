@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, Smartphone } from "lucide-react";
+import { ArrowLeft, Smartphone, Timer } from "lucide-react";
 import { MobileShell } from "@/components/BottomNav";
+import { AppLimitsManager } from "@/components/AppLimitsManager";
+import { appLimitsAvailable } from "@/lib/app-limits";
 import {
   formatMinutes,
   isNativeApp,
@@ -30,6 +32,7 @@ function ScreenTimePage() {
   const [native, setNative] = useState<boolean | null>(null);
   const [data, setData] = useState<ScreenTimeDetails | null>(null);
   const [tab, setTab] = useState<"day" | "week">("day");
+  const [limitsOpen, setLimitsOpen] = useState(false);
 
   const refresh = useCallback(() => setData(readScreenTimeDetails()), []);
 
