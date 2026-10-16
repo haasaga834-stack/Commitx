@@ -29,3 +29,4 @@
 - Widget invitation status is account-backed with local/native mirrors, because onboarding and existing-user To-Do prompts must not repeat after reinstall.
 - Standard countdown uses a separate timestamp-projection foreground service and the existing notification builder, because WebView animation callbacks suspend in background and Verified behavior must remain untouched.
 - Focus Shield package scans and icon encoding run on a cached single-thread worker preloaded at launch/resume, because synchronous bridge queries block setup painting.
+- CI publishes the APK/AAB to a rolling `latest-build` GitHub Release (artifacts are optional, 1-day retention), because Actions artifact storage quota blocked downloads.
