@@ -1,6 +1,6 @@
 # Roadmap
 
-- [x] Add compact Android study-goal launcher widget and once-per-account invitation after daily-goal onboarding or existing users' first To-Do opening.
+- [x] Add compact Android study-goal launcher widget and once-per-account invitation after daily-goal onboarding or existing users' first To-Do opening; signed-in invitation and real task completion/reload verified, platform limitations documented.
 - [x] Keep Standard notification countdown running in background without changing Verified behavior or notification appearance.
 - [x] Preload/cache Focus Shield installed apps for faster setup without changing blocking rules.
 - [ ] Verify new widget pinning, background countdown and Shield speed on Android — requires updated install and physical device.
