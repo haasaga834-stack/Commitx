@@ -18,7 +18,7 @@ export interface ShieldAppOption {
   label: string;
   /** Base64 PNG data URL of the launcher icon, when the native layer supplies it. */
   icon?: string;
-  /** Native category detection: social apps and games are initially selected. */
+  /** Native category/URL-handler detection supplies required distraction defaults. */
   defaultBlocked?: boolean;
 }
 

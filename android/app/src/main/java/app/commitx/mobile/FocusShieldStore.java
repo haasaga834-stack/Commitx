@@ -200,6 +200,9 @@ final class FocusShieldStore {
         // query is limited by the manufacturer.
         Set<String> known = new LinkedHashSet<>(SUPPORTED);
         known.addAll(SOCIAL);
+        known.addAll(browserPackages(ctx));
+        // Keep Telegram selectable even when launcher discovery is manufacturer-limited.
+        known.addAll(Arrays.asList("org.telegram.messenger", "org.telegram.messenger.web", "org.thunderdog.challegram"));
         for (String pkg : known) {
             if (result.containsKey(pkg)) continue;
             try { result.put(pkg, pm.getApplicationInfo(pkg, 0)); }
