@@ -134,6 +134,13 @@
       "when": 1792137030000,
       "tag": "0018_study_widget_invitation_once",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792204832458,
+      "tag": "0019_migration",
+      "breakpoints": true
     }
   ]
 }

@@ -726,6 +726,7 @@ export type Database = {
       finish_web_session: { Args: never; Returns: boolean }
       focus_class_active_count: { Args: never; Returns: number }
       focus_class_complete: { Args: { _presence_key: string }; Returns: number }
+      focus_class_hash_key: { Args: { _k: string }; Returns: string }
       focus_class_leave: { Args: { _presence_key: string }; Returns: number }
       focus_class_touch: {
         Args: {
