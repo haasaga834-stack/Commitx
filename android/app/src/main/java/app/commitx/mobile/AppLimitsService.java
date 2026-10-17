@@ -122,7 +122,9 @@ public class AppLimitsService extends Service {
             if (overlay != null) {
                 if (blockedNow != null) {
                     overlay.show(blockedNow, AppLimitsStore.endOfToday());
-                } else if (overlay.isShowing()) {
+                } else if (fg != null && overlay.isShowing()) {
+                    // No resumed event in the last 60s means the foreground app is
+                    // unchanged (fg == null); only hide when another app is on top.
                     overlay.hide();
                 }
             }
