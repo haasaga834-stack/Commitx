@@ -16,6 +16,17 @@
 
     <!-- Focus Shield needs to read labels/icons of the apps it can protect. -->
     <queries>
+        <!-- Discover installed browser URL handlers without broad package visibility. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="http" />
+        </intent>
         <!-- Launcher apps are visible to the user and can be selected individually
              without requesting broad QUERY_ALL_PACKAGES visibility. -->
         <intent>

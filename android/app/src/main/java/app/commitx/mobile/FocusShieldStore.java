@@ -10,6 +10,7 @@ import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Process;
 import android.provider.Settings;
@@ -71,11 +72,17 @@ final class FocusShieldStore {
             "com.facebook.katana", "com.facebook.lite", "com.whatsapp", "com.whatsapp.w4b",
             "com.facebook.orca", "com.reddit.frontpage", "com.twitter.android",
             "com.snapchat.android", "com.zhiliaoapp.musically", "com.ss.android.ugc.trill",
-            "org.telegram.messenger", "org.thunderdog.challegram", "com.discord",
+            "com.discord",
             "com.pinterest", "com.linkedin.android", "com.bsky.app", "com.instagram.barcelona"));
 
     @SuppressWarnings("deprecation")
-    private static boolean defaultBlocked(ApplicationInfo info) {
+    private static boolean defaultBlocked(ApplicationInfo info, Set<String> browsers) {
+        // Telegram remains selectable, but never a required default (even if SOCIAL).
+        if (info.packageName.equals("org.telegram.messenger")
+                || info.packageName.equals("org.telegram.messenger.web")
+                || info.packageName.equals("org.thunderdog.challegram")) return false;
+        if (browsers.contains(info.packageName) || info.packageName.equals("com.android.chrome")
+                || info.packageName.equals("com.microsoft.emmx")) return true;
         if (SOCIAL.contains(info.packageName)) return true;
         if (SUPPORTED.contains(info.packageName) && !info.packageName.equals("com.android.chrome")) return true;
         if ((info.flags & ApplicationInfo.FLAG_IS_GAME) != 0) return true;
@@ -105,6 +112,22 @@ final class FocusShieldStore {
 
     private static SharedPreferences prefs(Context ctx) {
         return ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+    }
+
+    /** Generic web URL handlers cover installed browsers, not just a fixed brand list. */
+    private static Set<String> browserPackages(Context ctx) {
+        Set<String> result = new HashSet<>();
+        for (String scheme : Arrays.asList("https", "http")) {
+            Intent web = new Intent(Intent.ACTION_VIEW, Uri.parse(scheme + "://example.com/"))
+                    .addCategory(Intent.CATEGORY_BROWSABLE);
+            try {
+                for (ResolveInfo match : ctx.getPackageManager().queryIntentActivities(web, PackageManager.MATCH_ALL)) {
+                    if (match.activityInfo != null) result.add(match.activityInfo.packageName);
+                }
+            } catch (RuntimeException ignored) {}
+        }
+        result.remove(ctx.getPackageName());
+        return result;
     }
 
     /** Foreground-app detection needs Android 5.0+ usage stats. */
@@ -195,6 +218,7 @@ final class FocusShieldStore {
         StringBuilder sb = new StringBuilder("[");
         PackageManager pm = ctx.getPackageManager();
         boolean first = true;
+        Set<String> browsers = browserPackages(ctx);
         List<Map.Entry<String, ApplicationInfo>> entries = new ArrayList<>(selectableApps(ctx).entrySet());
         Collections.sort(entries, Comparator.comparing(e -> String.valueOf(pm.getApplicationLabel(e.getValue())).toLowerCase()));
         for (Map.Entry<String, ApplicationInfo> entry : entries) {
@@ -211,7 +235,7 @@ final class FocusShieldStore {
             first = false;
             sb.append("{\"pkg\":\"").append(escape(pkg)).append("\",")
               .append("\"label\":\"").append(escape(label)).append("\"")
-              .append(",\"defaultBlocked\":").append(defaultBlocked(info));
+              .append(",\"defaultBlocked\":").append(defaultBlocked(info, browsers));
             if (icon != null) sb.append(",\"icon\":\"").append(icon).append("\"");
             sb.append('}');
         }
