@@ -1,5 +1,8 @@
 # Roadmap
 
+- [x] Update native Verified defaults: Telegram optional, detected installed browsers required by default; 14 regression tests passed and Android manifest validated.
+- [ ] Verify browser detection and locked defaults on Android — requires a new APK and physical device; native compilation/device testing unavailable in this turn.
+
 - [x] Fix APK/AAB release compilation failure (missing android.os.Build import in widget pinning); full Gradle assembleRelease and bundleRelease succeeded, both artifacts produced, 7 native countdown assertions passed. GitHub signing identity was not available locally; rerun the workflow for distributable signed files.
 
 - [x] Add compact Android study-goal launcher widget and once-per-account invitation after daily-goal onboarding or existing users' first To-Do opening; signed-in invitation and real task completion/reload verified, platform limitations documented.

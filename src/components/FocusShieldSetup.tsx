@@ -41,7 +41,7 @@ export function FocusShieldSetup({
 }) {
   const [step, setStep] = useState<Step>("intro");
   const [selected, setSelected] = useState<string[]>([]);
-  /** Social apps and games are mandatory in Verified and can never be unselected. */
+  /** Distraction defaults are mandatory in Verified and can never be unselected. */
   const [locked, setLocked] = useState<string[]>([]);
   const [apps, setApps] = useState<ShieldAppOption[]>([]);
   const [appSearch, setAppSearch] = useState("");
@@ -165,7 +165,7 @@ export function FocusShieldSetup({
               </p>
             ) : (
               <p className="mt-4 rounded-2xl border border-hairline bg-background p-4 text-xs text-muted-foreground">
-                Social apps and games are always blocked. Add any others you need.
+                Social apps (except Telegram), games and browsers are always blocked. Add any others you need.
                 Apps stay installed and unlock when your session ends.
               </p>
             )}
