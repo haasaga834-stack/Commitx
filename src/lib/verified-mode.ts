@@ -35,6 +35,8 @@ export function wellnessBreakAtMs(durationMinutes: number) {
 
 
 export interface ActiveVerifiedSession {
+  /** Stable outcome id survives reloads and completion retries. */
+  id?: string;
   goal: string;
   duration: number;
   value: number;
@@ -93,7 +95,7 @@ export function writeActiveVerifiedSession(session: ActiveVerifiedSession) {
   try {
     window.localStorage.setItem(
       ACTIVE_VERIFIED_SESSION_KEY,
-      JSON.stringify({ ...session, lastLifecycleAt: Date.now() }),
+      JSON.stringify({ ...session, id: session.id ?? (readActiveVerifiedSession()?.startedAt === session.startedAt ? readActiveVerifiedSession()?.id : undefined) ?? createLocalSessionId(), lastLifecycleAt: Date.now() }),
     );
   } catch {}
 }
