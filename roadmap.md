@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Diagnose and repair session restart/progress persistence and synchronization races without UI changes.
+- [ ] Verify repeated completion, offline/reconnect, restart, ledger totals and Android countdown regressions.
+
 - [x] Update native Verified defaults: Telegram optional, detected installed browsers required by default; 14 regression tests passed and Android manifest validated.
 - [ ] Verify browser detection and locked defaults on Android — requires a new APK and physical device; native compilation/device testing unavailable in this turn.
 
