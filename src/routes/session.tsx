@@ -65,11 +65,8 @@ import { showSessionProgress, hideSessionProgress, syncVerifiedCountdown, syncSt
 import { isOnline } from "@/lib/connectivity";
 import { z } from "zod";
 import { useAuth } from "@/lib/use-auth";
-import { recordSessions } from "@/lib/wallet.functions";
 import { accountabilityEnded } from "@/lib/accountability";
-import { markSessionSynced } from "@/lib/cloud-sync";
-import { hasLiveSession } from "@/lib/session-guard";
-import { supabase as sbClient } from "@/integrations/supabase/client";
+import { flushPendingSessions } from "@/lib/cloud-sync";
 
 declare global {
   interface Window {
@@ -379,8 +376,7 @@ function LiveSession() {
           const banked =
             (prev.accumulatedMs ?? 0) +
             (prev.runningSince ? Math.max(0, Date.now() - prev.runningSince) : 0);
-          // Never restore something that would instantly finish.
-          if ((prev.phase ?? "focus") === "focus" && banked >= duration * 60 * 1000) return null;
+          // A suspended timer past its deadline must settle, not start again.
           return prev;
         })(),
   ).current;
@@ -1098,6 +1094,20 @@ function LiveSession() {
     doneRef.current = true;
     if (graceTimerRef.current) clearTimeout(graceTimerRef.current);
     graceTimerRef.current = null;
+    const focusedMinutes = elapsedNow() / 60000;
+    const outcomeId = readActiveVerifiedSession()?.id ?? createLocalSessionId();
+    const isGuest = guestRef.current;
+    // Persist the outcome before removing the ticket or awaiting any network.
+    // A killed WebView can then retry this same id instead of losing completion.
+    if (!isGuest) {
+      setState((s) => {
+        if (s.sessions.some((item) => item.id === outcomeId)) return s;
+        const spent = status === "failed" ? Math.min(value, s.coins) : 0;
+        const earned = status === "completed" ? coinsForMinutes(duration) : 0;
+        return { ...s, sessions: [{ id: outcomeId, goal, durationMinutes: duration,
+          value, mode, status, date: Date.now(), coinsSpent: spent, coinsEarned: earned }, ...s.sessions] };
+      });
+    }
     runningSinceRef.current = null;
     setNativeSessionLock(false);
     setNativeVerifiedModeActive(false);
@@ -1109,7 +1119,7 @@ function LiveSession() {
     setShieldOn(false);
 
     cancelWellnessSounds(wellnessSessionKey);
-    accountabilityEnded(status, duration, elapsedNow() / 60000);
+    accountabilityEnded(status, duration, focusedMinutes);
     // Permanent end marker + server slot release: the timer can never be
     // restarted or resurrected by back navigation, refresh or app restart.
     markSessionEnded({
@@ -1126,7 +1136,7 @@ function LiveSession() {
       clearWebSessionTab();
     }
 
-    if (guestRef.current) {
+    if (isGuest) {
       // No account: no coin movement and no saved history.
       if (status === "completed") {
         log("Session Completed");
@@ -1145,67 +1155,8 @@ function LiveSession() {
       return;
     }
 
-    const current = getState();
-    const coinsSpent = status === "failed" ? Math.min(value, current.coins) : 0;
-    const coinsEarned = status === "completed" ? coinsForMinutes(duration) : 0;
-    const session = {
-      id: createLocalSessionId(),
-      goal,
-      durationMinutes: duration,
-      value,
-      mode: mode as Mode,
-      status,
-      date: Date.now(),
-      coinsSpent,
-      coinsEarned,
-    };
-    let authoritativeCoins: number | null = null;
-    let refused = false;
-    if (isOnline()) {
-      const payload = {
-        sessions: [{
-          id: session.id,
-          goal: session.goal,
-          durationMinutes: session.durationMinutes,
-          value: session.value,
-          mode: session.mode,
-          status: session.status,
-          endedAt: session.date,
-        }],
-      };
-      try {
-        // A long session can outlive the sign-in token; refresh it first so
-        // the outcome is saved now instead of failing with an auth error.
-        try {
-          const { data: auth } = await sbClient.auth.getSession();
-          if (auth.session?.user.id) await hasLiveSession(auth.session.user.id);
-        } catch {}
-        let result = await recordSessions({ data: payload });
-        if (result.rejected.includes(session.id)) {
-          // One short retry absorbs a few seconds of device/server clock drift.
-          await new Promise((r) => setTimeout(r, 1500));
-          result = await recordSessions({ data: payload });
-        }
-        if (result.ids.includes(session.id)) {
-          authoritativeCoins = result.coins;
-          markSessionSynced(session.id);
-        } else if (result.rejected.includes(session.id)) {
-          // The server has no genuine claim for this outcome: nothing to count.
-          authoritativeCoins = result.coins;
-          refused = true;
-        }
-      } catch {
-        // Keep the active server record intact so cloud sync can retry safely.
-      }
-    }
-    // Completing returns the committed coins untouched and adds the hourly
-    // reward; failing forfeits the committed coins. The server's numbers win.
-    setState((s) => ({
-      ...s,
-      sessions: refused ? s.sessions : [session, ...s.sessions],
-      coins: authoritativeCoins ?? Math.max(0, s.coins - coinsSpent + coinsEarned),
-    }));
-    if (refused) markSessionSynced(session.id);
+    // All recording uses the same serialized, durable retry queue.
+    void flushPendingSessions();
     if (status === "completed") {
       log("Session Completed");
       if (typeof navigator !== "undefined" && "vibrate" in navigator) {

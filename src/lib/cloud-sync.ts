@@ -64,6 +64,15 @@ let pullQueued = false;
 /** A local write happened while offline and still needs pushing. */
 let pendingPush = false;
 let stopReconnect: (() => void) | null = null;
+let syncGeneration = 0;
+let localRevision = 0;
+let pushInFlight: Promise<void> | null = null;
+let retryAttempt = 0;
+let retryTimer: ReturnType<typeof setTimeout> | null = null;
+
+function ownsSync(userId: string, generation: number) {
+  return currentUserId === userId && syncGeneration === generation;
+}
 
 /**
  * Pull at most once per burst. Realtime fires several events for a single
@@ -108,20 +117,18 @@ function toSession(row: any): Session {
   };
 }
 
-function sessionSignature(s: Session) {
-  return [s.goal, s.durationMinutes, s.value, s.mode, s.status].join("|");
-}
-
 /** Pull profile, wallet and sessions from the cloud into the local store. */
 export async function pullFromCloud(userId: string) {
+  const generation = syncGeneration;
   if (!isOnline()) return null;
   if (!(await hasLiveSession(userId))) return null;
+  if (!ownsSync(userId, generation)) return null;
   // Record any finished session whose outcome never reached the server
   // (app closed, token expired, offline) before reading totals.
   try {
     await supabase.rpc("settle_my_unreported_sessions");
   } catch {}
-  const localState = getState();
+  const revision = localRevision;
   const [profileRes, walletRes, sessionsRes] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
     supabase.from("wallets").select("*").eq("user_id", userId).maybeSingle(),
@@ -130,45 +137,44 @@ export async function pullFromCloud(userId: string) {
       .select("*")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
-      .limit(1000),
+      .range(0, 999),
   ]);
   if (profileRes.error || walletRes.error || sessionsRes.error) {
     throw profileRes.error ?? walletRes.error ?? sessionsRes.error;
   }
+  if (!ownsSync(userId, generation)) return null;
 
   const profile = profileRes.data;
   const wallet = walletRes.data;
   const sessions = sessionsRes.data;
 
-  const rows = sessions ?? [];
+  const rows = [...(sessions ?? [])];
+  // Fetch every recorded row: the first page is not an all-time total.
+  for (let offset = 1000; rows.length === offset; offset += 1000) {
+    const page = await supabase.from("focus_sessions").select("*").eq("user_id", userId)
+      .order("created_at", { ascending: false }).order("id").range(offset, offset + 999);
+    if (page.error) throw page.error;
+    if (!ownsSync(userId, generation)) return null;
+    rows.push(...(page.data ?? []));
+    if ((page.data?.length ?? 0) < 1000) break;
+  }
+  const localState = getState();
   const remoteSessions = rows.map(toSession);
   const remoteIds = new Set(remoteSessions.map((s) => s.id));
-  const remoteSignatures = new Map<string, number>();
-  for (const session of remoteSessions) {
-    const sig = sessionSignature(session);
-    remoteSignatures.set(sig, (remoteSignatures.get(sig) ?? 0) + 1);
-  }
   const localUnsynced = localState.sessions.filter((s) => {
     if (remoteIds.has(s.id) || syncedSessionIds.has(s.id)) return false;
-    const sig = sessionSignature(s);
-    const matchingRemoteCount = remoteSignatures.get(sig) ?? 0;
-    if (matchingRemoteCount > 0) {
-      remoteSignatures.set(sig, matchingRemoteCount - 1);
-      syncedSessionIds.add(s.id);
-      return false;
-    }
     return true;
   });
   // Detect durable local writes before choosing the wallet balance. On a fresh
   // app process the in-memory flag may be false even though offline sessions
   // are still waiting in localStorage.
-  const keepLocalChanges = pendingPush || localUnsynced.length > 0;
+  const keepLocalChanges = pendingPush || localUnsynced.length > 0 || localRevision !== revision;
   syncedSessionIds = new Set([...remoteIds, ...syncedSessionIds]);
   if (currentUserId === userId) writeSyncedIds(userId);
   if (localUnsynced.length > 0) setPendingPush(true, userId);
 
   const next: AppState = {
-    coins: keepLocalChanges ? localState.coins : (wallet?.coin_balance ?? localState.coins),
+    coins: wallet?.coin_balance ?? localState.coins,
     sessions: [...localUnsynced, ...remoteSessions],
     profile: {
       name: keepLocalChanges ? localState.profile.name : (profile?.display_name ?? localState.profile.name),
@@ -205,10 +211,12 @@ export async function pullFromCloud(userId: string) {
 }
 
 async function push(userId: string) {
+  const generation = syncGeneration;
   if (!isOnline() || !(await hasLiveSession(userId))) {
-    setPendingPush(true, userId);
+    if (ownsSync(userId, generation)) setPendingPush(true, userId);
     return;
   }
+  if (!ownsSync(userId, generation)) return;
   const state = getState();
 
   // Profile fields are user-owned preferences and stay a direct write.
@@ -224,6 +232,7 @@ async function push(userId: string) {
     })
     .eq("id", userId);
   if (profileError) throw profileError;
+  if (!ownsSync(userId, generation)) return;
 
   // Balances and session rewards are recomputed server-side; the client only
   // reports what happened and then adopts the authoritative result.
@@ -248,6 +257,7 @@ async function push(userId: string) {
         })),
       },
     });
+    if (!ownsSync(userId, generation)) return;
 
     // Only the server's answer decides. Accepted sessions are now part of the
     // shared history; refused ones (no genuine claim, unfinished, already
@@ -268,6 +278,7 @@ async function push(userId: string) {
       coins: result.coins,
     });
     applyingRemote = false;
+    if (result.retryable?.length) throw new Error("Session recording will be retried.");
   }
 
   // Standings just moved — refresh any leaderboard on screen right away.
@@ -281,25 +292,48 @@ function schedulePush(userId: string) {
       setPendingPush(true, userId);
       return;
     }
-    lastPushAt = Date.now();
-    void push(userId)
-      .then(() => {
-        const hasUnsynced = getState().sessions.some((s) => !syncedSessionIds.has(s.id));
-        setPendingPush(hasUnsynced, userId);
-      })
-      .catch(() => {
-        setPendingPush(true, userId);
-      })
-      .finally(() => {
-        lastPushAt = Date.now();
-      });
+    void runPush(userId);
   }, 400);
+}
+
+function scheduleRetry(userId: string) {
+  if (retryTimer || currentUserId !== userId) return;
+  retryTimer = setTimeout(() => {
+    retryTimer = null;
+    if (currentUserId === userId && pendingPush && isOnline()) void runPush(userId);
+  }, Math.min(60_000, 1000 * 2 ** Math.min(retryAttempt++, 6)));
+}
+
+function runPush(userId: string): Promise<void> {
+  if (pushInFlight) return pushInFlight;
+  const generation = syncGeneration;
+  const revision = localRevision;
+  lastPushAt = Date.now();
+  const run = push(userId).then(() => {
+    if (!ownsSync(userId, generation)) return;
+    const dirty = localRevision !== revision || getPendingSessions().length > 0;
+    setPendingPush(dirty, userId);
+    retryAttempt = 0;
+    if (dirty) scheduleRetry(userId);
+    else schedulePull(userId);
+  }).catch(() => {
+    if (!ownsSync(userId, generation)) return;
+    setPendingPush(true, userId);
+    scheduleRetry(userId);
+  }).finally(() => {
+    if (!ownsSync(userId, generation)) return;
+    pushInFlight = null;
+    lastPushAt = Date.now();
+  });
+  pushInFlight = run;
+  return run;
 }
 
 let channel: ReturnType<typeof supabase.channel> | null = null;
 
 /** Start mirroring local store changes to the cloud for this user. */
 export function startCloudSync(userId: string) {
+  if (currentUserId === userId) return;
   stopCloudSync();
   startConnectivityWatch();
   currentUserId = userId;
@@ -309,41 +343,13 @@ export function startCloudSync(userId: string) {
     stopReconnect = onReconnect(() => {
       const uid = currentUserId;
       if (!uid) return;
-      // Push first (dedup guarded), then pull the authoritative result.
-      if (pendingPush) {
-        void pullFromCloud(uid)
-          .then(() => {
-            if (!pendingPush) return undefined;
-            setPendingPush(false, uid);
-            lastPushAt = Date.now();
-            return push(uid);
-          })
-          .catch(() => {
-            setPendingPush(true, uid);
-          })
-          .finally(() => {
-            lastPushAt = Date.now();
-            schedulePull(uid);
-          });
-      } else {
-        void pullFromCloud(uid)
-          .then(() => {
-            if (!pendingPush) return undefined;
-            setPendingPush(false, uid);
-            lastPushAt = Date.now();
-            return push(uid);
-          })
-          .catch(() => {
-            setPendingPush(true, uid);
-          })
-          .finally(() => {
-            lastPushAt = Date.now();
-          });
-      }
+      if (pendingPush || getPendingSessions().length) void runPush(uid);
+      else schedulePull(uid);
     });
   }
   unsubscribe = subscribe(() => {
     if (applyingRemote || !currentUserId) return;
+    localRevision++;
     const uid = currentUserId;
     // Persist immediately so an app kill before the debounce fires cannot
     // erase knowledge of an offline balance/session update.
@@ -375,7 +381,10 @@ export function startCloudSync(userId: string) {
   if (typeof window !== "undefined") {
     const onBack = () => {
       if (document.visibilityState === "hidden") return;
-      if (currentUserId && isOnline() && !pendingPush) schedulePull(currentUserId);
+      if (currentUserId && isOnline()) {
+        if (pendingPush) void runPush(currentUserId);
+        else schedulePull(currentUserId);
+      }
     };
     window.addEventListener("focus", onBack);
     document.addEventListener("visibilitychange", onBack);
@@ -384,13 +393,17 @@ export function startCloudSync(userId: string) {
       document.removeEventListener("visibilitychange", onBack);
     };
   }
+  if (pendingPush || getPendingSessions().length) schedulePush(userId);
 }
 
 let stopFocusPull: (() => void) | null = null;
 
 /** Ask for a fresh copy of sessions, coins and hours (e.g. when opening Profile). */
 export function refreshFromCloud() {
-  if (currentUserId && isOnline() && !pendingPush) schedulePull(currentUserId);
+  if (currentUserId && isOnline()) {
+    if (pendingPush) void runPush(currentUserId);
+    else schedulePull(currentUserId);
+  }
 }
 
 /** Local sessions the server has not answered for yet (offline / retrying). */
@@ -417,16 +430,17 @@ export async function flushPendingSessions(timeoutMs = 6000) {
   if (pushTimer) clearTimeout(pushTimer);
   pushTimer = null;
   lastPushAt = Date.now();
-  const run = push(uid)
-    .then(() => setPendingPush(getPendingSessions().length > 0, uid))
-    .catch(() => setPendingPush(true, uid))
-    .finally(() => {
-      lastPushAt = Date.now();
-    });
+  const run = runPush(uid);
   await Promise.race([run, new Promise((r) => setTimeout(r, timeoutMs))]);
 }
 
 export function stopCloudSync() {
+  syncGeneration++;
+  pushInFlight = null;
+  pullInFlight = null;
+  if (retryTimer) clearTimeout(retryTimer);
+  retryTimer = null;
+  retryAttempt = 0;
   if (stopFocusPull) stopFocusPull();
   stopFocusPull = null;
   if (unsubscribe) unsubscribe();
