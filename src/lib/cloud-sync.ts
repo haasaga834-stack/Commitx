@@ -80,6 +80,7 @@ function ownsSync(userId: string, generation: number) {
  * queries per event and re-render the whole tree each time.
  */
 function schedulePull(userId: string) {
+  const generation = syncGeneration;
   // Offline: the local store is already the source of truth, so skip the
   // round-trip entirely and let the reconnect hook catch up later.
   if (!isOnline()) return;
@@ -90,6 +91,7 @@ function schedulePull(userId: string) {
   pullInFlight = pullFromCloud(userId)
     .catch(() => {})
     .finally(() => {
+      if (!ownsSync(userId, generation)) return;
       pullInFlight = null;
       if (pullQueued) {
         pullQueued = false;
@@ -137,6 +139,7 @@ export async function pullFromCloud(userId: string) {
       .select("*")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
+      .order("id")
       .range(0, 999),
   ]);
   if (profileRes.error || walletRes.error || sessionsRes.error) {
@@ -214,7 +217,7 @@ async function push(userId: string) {
   const generation = syncGeneration;
   if (!isOnline() || !(await hasLiveSession(userId))) {
     if (ownsSync(userId, generation)) setPendingPush(true, userId);
-    return;
+    throw new Error("Session sync is waiting for connectivity or sign-in.");
   }
   if (!ownsSync(userId, generation)) return;
   const state = getState();

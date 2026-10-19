@@ -38,11 +38,12 @@ export const recordSessions = createServerFn({ method: "POST" })
       .parse(data),
   )
   .handler(
-    async ({ data, context }): Promise<{ ids: string[]; rejected: string[]; coins: number }> => {
+    async ({ data, context }): Promise<{ ids: string[]; rejected: string[]; retryable: string[]; coins: number }> => {
       const { userId } = context;
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const ids: string[] = [];
       const rejected: string[] = [];
+      const retryable: string[] = [];
       let coins: number | null = null;
 
       for (const s of data.sessions) {
@@ -62,19 +63,32 @@ export const recordSessions = createServerFn({ method: "POST" })
         if (error) throw new Error("Could not securely record this session.");
         const row = Array.isArray(rows) ? rows[0] : null;
         if (row?.accepted) ids.push(row.session_id as string);
-        else rejected.push(s.id);
+        else {
+          // A claim created by the server clock can still be a few seconds
+          // short of completion. Do not discard its durable local outcome.
+          const { data: active, error: activeError } = await context.supabase
+            .from("active_sessions").select("started_at,duration_minutes,value,mode,status")
+            .eq("user_id", userId).maybeSingle();
+          if (activeError) throw new Error("Could not check session recording status.");
+          if (s.status === "completed" && active?.status === "active" &&
+            active.duration_minutes === s.durationMinutes && active.value === s.value && active.mode === s.mode &&
+            Date.now() < new Date(active.started_at).getTime() + active.duration_minutes * 60_000) {
+            retryable.push(s.id);
+          } else rejected.push(s.id);
+        }
         if (typeof row?.coin_balance === "number") coins = row.coin_balance;
       }
 
       if (coins === null) {
-        const { data: wallet } = await supabaseAdmin
+        const { data: wallet, error: walletError } = await supabaseAdmin
           .from("wallets")
           .select("coin_balance")
           .eq("user_id", userId)
           .maybeSingle();
-        coins = wallet?.coin_balance ?? 0;
+        if (walletError || !wallet) throw new Error("Could not read the recorded coin balance.");
+        coins = wallet.coin_balance;
       }
 
-      return { ids, rejected, coins };
+      return { ids, rejected, retryable, coins };
     },
   );
