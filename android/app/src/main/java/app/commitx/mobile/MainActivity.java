@@ -1189,9 +1189,11 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void hideSessionProgress() {
-            VerifiedCountdownService.clear(MainActivity.this);
-            StandardCountdownService.clear(MainActivity.this);
-            CommitXNotifications.cancelSession(MainActivity.this);
+            runOnUiThread(() -> {
+                VerifiedCountdownService.clear(MainActivity.this);
+                StandardCountdownService.clear(MainActivity.this);
+                CommitXNotifications.cancelSession(MainActivity.this);
+            });
         }
 
         @JavascriptInterface

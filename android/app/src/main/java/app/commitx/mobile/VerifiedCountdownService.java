@@ -90,6 +90,16 @@ public class VerifiedCountdownService extends Service {
             long endsAt = state.isNull("endsAt") ? 0 : state.optLong("endsAt");
             long breakAt = state.isNull("breakAt") ? 0 : state.optLong("breakAt");
             long breakEndsAt = state.isNull("breakEndsAt") ? 0 : state.optLong("breakEndsAt");
+            if ("focus".equals(phase) && breakAt > 0 && breakAt <= now) {
+                state.put("phase", "recovery_break");
+                state.put("remainingMs", state.optLong("durationMs") / 2);
+                breakEndsAt = breakAt + 300000;
+                state.put("breakEndsAt", breakEndsAt);
+                state.put("endsAt", JSONObject.NULL);
+                state.put("breakAt", JSONObject.NULL);
+                endsAt = 0;
+                breakAt = 0;
+            }
             if (endsAt <= 0 && breakEndsAt <= 0) return false;
             state.put("endElapsed", endsAt > 0 ? elapsed + Math.max(0, endsAt - now) : 0);
             state.put("breakElapsed", breakAt > now ? elapsed + (breakAt - now) : 0);
@@ -179,6 +189,9 @@ public class VerifiedCountdownService extends Service {
                 state.put("phase", "recovery_break");
                 state.put("remainingMs", state.optLong("durationMs") / 2);
                 state.put("breakEndElapsed", breakAt + 300000);
+                state.put("breakEndsAt", state.optLong("breakAt") + 300000);
+                state.put("endsAt", JSONObject.NULL);
+                state.put("breakAt", JSONObject.NULL);
                 state.put("endElapsed", 0);
                 state.put("breakElapsed", 0);
                 save(ctx, state);

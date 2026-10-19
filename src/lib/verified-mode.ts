@@ -123,16 +123,17 @@ export function finalizePendingVerifiedFailure(): VerifiedFailureOutcome | null 
   if (!active || active.mode !== "verified" || !active.pendingFail) return null;
 
   const reason = active.reason || "app_switch";
-  clearActiveVerifiedSession();
+  const id = active.id ?? createLocalSessionId();
 
   setState((state) => {
+    if (state.sessions.some((s) => s.id === id)) return state;
     const coinsSpent = Math.min(active.value || 0, state.coins);
 
     return {
       ...state,
       sessions: [
         {
-          id: createLocalSessionId(),
+          id,
           goal: active.goal || "Focus",
           durationMinutes: active.duration || 0,
           value: active.value || 0,
@@ -143,9 +144,9 @@ export function finalizePendingVerifiedFailure(): VerifiedFailureOutcome | null 
         },
         ...state.sessions,
       ],
-      coins: Math.max(0, state.coins - coinsSpent),
     };
   });
+  clearActiveVerifiedSession();
 
   return {
     goal: active.goal || "Focus",
@@ -245,17 +246,6 @@ export function readRestorableActiveSession(): ActiveVerifiedSession | null {
   const sinceStart = Date.now() - started;
   if (sinceStart < 0) return null;
 
-  // A break / confirmation phase is generously long-lived (the user may come
-  // back much later), but not forever: an abandoned record must never trap the
-  // app on an old timer screen on every launch. A focus phase is tighter.
-  const phase = active.phase ?? "focus";
-  const limit =
-    duration * 60 * 1000 + (phase === "focus" ? 3 * 60 * 60 * 1000 : 12 * 60 * 60 * 1000);
-  if (sinceStart > limit) {
-    // Abandoned: forget it so the app opens normally again.
-    clearActiveVerifiedSession();
-    return null;
-  }
-
+  // Elapsed tickets must settle their existing outcome, never be discarded.
   return active;
 }
