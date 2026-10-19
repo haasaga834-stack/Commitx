@@ -67,6 +67,7 @@ import { z } from "zod";
 import { useAuth } from "@/lib/use-auth";
 import { accountabilityEnded } from "@/lib/accountability";
 import { flushPendingSessions } from "@/lib/cloud-sync";
+import { recoverSessionProgress } from "@/lib/session-recovery";
 
 declare global {
   interface Window {
@@ -367,17 +368,7 @@ function LiveSession() {
           const started = typeof prev.startedAt === "number" ? prev.startedAt : 0;
           const sinceStart = Date.now() - started;
           if (!started || sinceStart < 0) return null;
-          // A focus phase has a bounded lifetime. Break confirmation is
-          // intentionally unbounded, so it must remain restorable until YES.
-          if (
-            (prev.phase ?? "focus") === "focus" &&
-            sinceStart > duration * 60 * 1000 + 3 * 60 * 60 * 1000
-          ) return null;
-          const banked =
-            (prev.accumulatedMs ?? 0) +
-            (prev.runningSince ? Math.max(0, Date.now() - prev.runningSince) : 0);
-          // A suspended timer past its deadline must settle, not start again.
-          return prev;
+          return recoverSessionProgress(prev, Date.now());
         })(),
   ).current;
 
@@ -570,14 +561,14 @@ function LiveSession() {
     const t = Date.now();
     if (phaseRef.current === "focus") {
       if (dndBlocked) return;
+      const elapsed = elapsedNow();
+      if (breaksApply && breaksTakenRef.current === 0 && elapsed >= halfwayMs) {
+        startRecoveryBreak(t - (elapsed - halfwayMs));
+        return;
+      }
       if (canCompleteNow()) {
         complete("completed");
         return;
-      }
-      if (!breaksApply) return;
-      const elapsed = elapsedNow();
-      if (breaksTakenRef.current === 0 && elapsed >= halfwayMs && elapsed < totalMs) {
-        startRecoveryBreak(t - (elapsed - halfwayMs));
       }
       return;
     }

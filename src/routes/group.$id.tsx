@@ -184,11 +184,16 @@ function GroupSession() {
 
   const hasDataRef = useRef(false);
   const goneStreakRef = useRef(0);
+  const loadSequenceRef = useRef(0);
+  const mountedRef = useRef(true);
+  const retryAfterRef = useRef(0);
 
   const load = useCallback(async () => {
     if (leftRef.current) return null;
+    const sequence = ++loadSequenceRef.current;
     try {
       const next = await fetchState({ data: { id } });
+      if (!mountedRef.current || sequence !== loadSequenceRef.current) return null;
       if ("gone" in next) {
         // A just-created group must never bounce its creator away on a single
         // empty read; only leave after repeated confirmations.
@@ -209,6 +214,7 @@ function GroupSession() {
       setError(null);
       return next;
     } catch (e) {
+      if (!mountedRef.current || sequence !== loadSequenceRef.current) return null;
       // A temporary disconnect must never kill the timer — keep the last
       // known state and keep retrying.
       if (hasDataRef.current) setOffline(true);
@@ -221,11 +227,14 @@ function GroupSession() {
   loadRef.current = load;
 
   useEffect(() => {
+    mountedRef.current = true;
     void loadRef.current();
     // Backup poll: realtime is primary, this covers dropped sockets.
     const poll = window.setInterval(() => void loadRef.current(), 5000);
     const tick = window.setInterval(() => setNow(Date.now()), 250);
     return () => {
+      mountedRef.current = false;
+      loadSequenceRef.current++;
       window.clearInterval(poll);
       window.clearInterval(tick);
     };
@@ -379,21 +388,22 @@ function GroupSession() {
 
   const settle = useCallback(
     async (status: "completed" | "failed", reason?: string) => {
-      if (doneRef.current || !group) return;
+      if (doneRef.current || !group || Date.now() < retryAfterRef.current) return;
       doneRef.current = true;
-      setNativeSessionLock(false);
-      hideSessionProgress();
-      stopShield();
-      try { localStorage.removeItem(`commitx-group-shield-${id}`); } catch {}
       try {
         await finish({
           data: { id, status: status === "completed" ? "completed" : "failed" },
         });
       } catch (e) {
         doneRef.current = false;
+        retryAfterRef.current = Date.now() + 3000;
         setActionError(actionErrorMessage(e, "Could not finish the session."));
         return;
       }
+      setNativeSessionLock(false);
+      hideSessionProgress();
+      stopShield();
+      try { localStorage.removeItem(`commitx-group-shield-${id}`); } catch {}
       navigate({
         to: status === "completed" ? "/success" : "/failed",
         search: {

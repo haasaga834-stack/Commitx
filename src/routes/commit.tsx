@@ -19,7 +19,7 @@ import { z } from "zod";
 import { usePlans, upcomingPlan } from "@/lib/planner";
 import { claimActiveDbSession, releaseActiveDbSession } from "@/lib/active-session";
 import { flushPendingSessions } from "@/lib/cloud-sync";
-import { clearEndedSession, writeActiveVerifiedSession } from "@/lib/verified-mode";
+import { clearEndedSession, writeActiveVerifiedSession, readRestorableActiveSession } from "@/lib/verified-mode";
 import { ThemePicker } from "@/components/ThemePicker";
 import type { SessionThemeId } from "@/lib/session-themes";
 import { actionErrorMessage } from "@/lib/connectivity";
@@ -80,6 +80,7 @@ function Commit() {
   const [verifiedWarn, setVerifiedWarn] = useState(false);
   const [dndOn, setDndOn] = useState<boolean | null>(null);
   const [starting, setStarting] = useState(false);
+  const startInFlight = useRef(false);
   // A session may only begin once a theme has been picked and confirmed.
   const [themeOpen, setThemeOpen] = useState(false);
   // Native Verified requires fresh Focus Shield setup for each confirmation.
@@ -200,7 +201,15 @@ function Commit() {
 
   /** Starts the session with the confirmed theme. */
   async function startWithTheme(theme: SessionThemeId) {
-    if (starting) return;
+    if (starting || startInFlight.current) return;
+    const resumeExisting = () => {
+      const active = readRestorableActiveSession();
+      if (!active) return false;
+      void navigate({ to: "/session", search: { goal: active.goal, duration: active.duration,
+        value: active.value, mode: active.mode, theme: active.theme }, replace: true });
+      return true;
+    };
+    if (resumeExisting()) return;
     if (!validate()) {
       setThemeOpen(false);
       return;
@@ -213,6 +222,7 @@ function Commit() {
       setShieldOpen(true);
       return;
     }
+    startInFlight.current = true;
     setStarting(true);
     // Focus Shield belongs to Verified sessions; Standard never carries a plan.
     if (mode === "verified" && shieldPlan.enabled && shieldPlan.packages.length) {
@@ -225,6 +235,7 @@ function Commit() {
       // Record any earlier finished session against its own claim first, so
       // it can never be lost or mixed up with the new commitment.
       await flushPendingSessions();
+      if (resumeExisting()) return;
 
       // Only one active session per user — the database is the source of truth.
       const claim = await claimActiveDbSession({
@@ -286,6 +297,7 @@ function Commit() {
     } catch (e) {
       setError(actionErrorMessage(e, "Could not start the commitment."));
     } finally {
+      startInFlight.current = false;
       setStarting(false);
       setThemeOpen(false);
     }
