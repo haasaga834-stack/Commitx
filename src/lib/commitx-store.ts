@@ -38,6 +38,8 @@ export interface AppState {
 
 const KEY = "commitx-state-v2";
 const LEGACY_KEY = "commitx-state-v1";
+let storeUserId: string | null = null;
+const accountKey = (id: string) => `${KEY}:${id}`;
 
 /** Cx Coin rules. Cx Coins are in-app points: not cash, not withdrawable. */
 export const MIN_COMMIT = 50;
@@ -86,6 +88,11 @@ function read(): AppState {
   if (typeof window === "undefined") return initial;
   try {
     const raw = localStorage.getItem(KEY);
+    if (storeUserId) {
+      const scoped = localStorage.getItem(accountKey(storeUserId));
+      if (scoped) return migrate(JSON.parse(scoped));
+      return { ...initial, coins: 0, sessions: [] };
+    }
     if (raw) return migrate(JSON.parse(raw));
     const legacy = localStorage.getItem(LEGACY_KEY);
     if (legacy) return migrate(JSON.parse(legacy));
@@ -98,6 +105,21 @@ function read(): AppState {
 function write(s: AppState) {
   if (typeof window === "undefined") return;
   localStorage.setItem(KEY, JSON.stringify(s));
+  if (storeUserId) localStorage.setItem(accountKey(storeUserId), JSON.stringify(s));
+}
+
+/** Keep offline outcomes separate when accounts switch on the same device. */
+export function setStoreUser(userId: string | null) {
+  if (storeUserId === userId || typeof window === "undefined") return;
+  const previous = ensure();
+  if (storeUserId) localStorage.setItem(accountKey(storeUserId), JSON.stringify(previous));
+  const legacyOwner = localStorage.getItem(`${KEY}:owner`);
+  if (userId && !legacyOwner && !localStorage.getItem(accountKey(userId))) {
+    localStorage.setItem(accountKey(userId), JSON.stringify(previous));
+    localStorage.setItem(`${KEY}:owner`, userId);
+  }
+  storeUserId = userId;
+  hydrateState(userId ? read() : { ...initial, coins: 0, sessions: [] });
 }
 
 const listeners = new Set<() => void>();

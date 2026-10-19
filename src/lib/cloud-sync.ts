@@ -3,6 +3,7 @@ import {
   getState,
   hydrateState,
   subscribe,
+  setStoreUser,
   type AppState,
   type Session,
 } from "./commitx-store";
@@ -66,6 +67,7 @@ let pendingPush = false;
 let stopReconnect: (() => void) | null = null;
 let syncGeneration = 0;
 let localRevision = 0;
+let ledgerRevision = 0;
 let pushInFlight: Promise<void> | null = null;
 let retryAttempt = 0;
 let retryTimer: ReturnType<typeof setTimeout> | null = null;
@@ -125,12 +127,15 @@ export async function pullFromCloud(userId: string) {
   if (!isOnline()) return null;
   if (!(await hasLiveSession(userId))) return null;
   if (!ownsSync(userId, generation)) return null;
+  if (pushInFlight) await pushInFlight;
+  if (!ownsSync(userId, generation)) return null;
   // Record any finished session whose outcome never reached the server
   // (app closed, token expired, offline) before reading totals.
   try {
     await supabase.rpc("settle_my_unreported_sessions");
   } catch {}
   const revision = localRevision;
+  const ledgerVersion = ledgerRevision;
   const [profileRes, walletRes, sessionsRes] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
     supabase.from("wallets").select("*").eq("user_id", userId).maybeSingle(),
@@ -162,6 +167,7 @@ export async function pullFromCloud(userId: string) {
     if ((page.data?.length ?? 0) < 1000) break;
   }
   const localState = getState();
+  if (ledgerVersion !== ledgerRevision) throw new Error("Recorded sessions changed during refresh.");
   const remoteSessions = rows.map(toSession);
   const remoteIds = new Set(remoteSessions.map((s) => s.id));
   const localUnsynced = localState.sessions.filter((s) => {
@@ -261,6 +267,7 @@ async function push(userId: string) {
       },
     });
     if (!ownsSync(userId, generation)) return;
+    ledgerRevision++;
 
     // Only the server's answer decides. Accepted sessions are now part of the
     // shared history; refused ones (no genuine claim, unfinished, already
@@ -338,6 +345,7 @@ let channel: ReturnType<typeof supabase.channel> | null = null;
 export function startCloudSync(userId: string) {
   if (currentUserId === userId) return;
   stopCloudSync();
+  setStoreUser(userId);
   startConnectivityWatch();
   currentUserId = userId;
   syncedSessionIds = readSyncedIds(userId);
@@ -417,6 +425,7 @@ export function getPendingSessions(sessions: Session[] = getState().sessions) {
 
 /** Marks a session the server already accepted, so it is never re-sent. */
 export function markSessionSynced(id: string) {
+  ledgerRevision++;
   syncedSessionIds.add(id);
   if (currentUserId) writeSyncedIds(currentUserId);
   announceLeaderboardChange();

@@ -55,17 +55,18 @@ export async function getActiveDbSession(): Promise<ActiveDbSession | null> {
   if (!isOnline()) return null;
   const userId = await currentUserId();
   if (!userId) return null;
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("active_sessions")
     .select("*")
     .eq("user_id", userId)
     .maybeSingle();
+  if (error) throw new Error("Could not check the active commitment. Please retry.");
   const row = (data as ActiveDbSession | null) ?? null;
   if (!row) return null;
   // A failed row (web heartbeat timeout, lifecycle failure) is dead: it must
   // never block a new commitment.
   if (row.status === "failed" || isStale(row)) {
-    await releaseActiveDbSession();
+    await releaseActiveDbSession(row);
     return null;
   }
   return row;
@@ -111,18 +112,20 @@ export async function claimActiveDbSession(input: {
     if (error.code === "23505") {
       return { ok: false, reason: "exists", existing: await getActiveDbSession() };
     }
-    // Any other failure (offline, RLS) must not block the user's focus time.
-    return { ok: true };
+    // Never start a supposedly saveable session without its durable claim.
+    throw new Error("Could not save the commitment. Please retry when connected.");
   }
   return { ok: true };
 }
 
 /** Frees the slot — called whenever a session ends (completed or failed). */
-export async function releaseActiveDbSession() {
+export async function releaseActiveDbSession(claim?: ActiveDbSession) {
   if (!isOnline()) return;
-  const userId = await currentUserId();
+  const userId = claim?.user_id ?? await currentUserId();
   if (!userId) return;
   try {
-    await supabase.from("active_sessions").delete().eq("user_id", userId);
+    const target = claim ?? (await supabase.from("active_sessions").select("*").eq("user_id", userId).maybeSingle()).data;
+    if (!target?.started_at) return;
+    await supabase.from("active_sessions").delete().eq("user_id", userId).eq("started_at", target.started_at);
   } catch {}
 }

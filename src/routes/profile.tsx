@@ -7,10 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { fileToProfilePhoto } from "@/lib/profile-photo";
 import { useOnlineUsers } from "@/lib/presence";
-import { getPendingSessions, refreshFromCloud } from "@/lib/cloud-sync";
+import { refreshFromCloud } from "@/lib/cloud-sync";
 import { supabase } from "@/integrations/supabase/client";
 import { formatHours } from "@/lib/analytics-data";
-import { LEADERBOARD_REFRESH_EVENT, useLeaderboard } from "@/lib/community";
+import { useLeaderboard } from "@/lib/community";
+import { useAuth } from "@/lib/use-auth";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/profile")({
@@ -29,52 +30,11 @@ export const Route = createFileRoute("/profile")({
 
 function Profile() {
   const { state, hydrated } = useAppState();
+  const { user } = useAuth();
   const local = stats(state.sessions);
-  const [server, setServer] = useState<null | { total_minutes: number; completed: number; failed: number; coins_earned: number }>(null);
-  useEffect(() => {
-    let alive = true;
-    const load = async () => {
-      const { data: sess } = await supabase.auth.getSession();
-      if (!sess.session) return;
-      const { data } = await supabase.rpc("my_focus_totals");
-      const row = Array.isArray(data) ? data[0] : data;
-      if (alive && row) setServer({
-        total_minutes: Number(row.total_minutes), completed: Number(row.completed),
-        failed: Number(row.failed), coins_earned: Number(row.coins_earned),
-      });
-    };
-    load();
-    const onFocus = () => load();
-    window.addEventListener("focus", onFocus);
-    // Re-read the recorded totals the moment a session reaches the server.
-    window.addEventListener(LEADERBOARD_REFRESH_EVENT, onFocus);
-    return () => {
-      alive = false;
-      window.removeEventListener("focus", onFocus);
-      window.removeEventListener(LEADERBOARD_REFRESH_EVENT, onFocus);
-    };
-  }, [state.sessions]);
-  // Recorded sessions are the single source of truth. Only outcomes still
-  // waiting to reach the server (offline) are added on top — never a max().
-  const pending = useMemo(() => {
-    const list = getPendingSessions(state.sessions);
-    const completed = list.filter((x) => x.status === "completed");
-    return {
-      totalMinutes: completed.reduce((sum, x) => sum + x.durationMinutes, 0),
-      completed: completed.length,
-      failed: list.filter((x) => x.status === "failed").length,
-      coinsEarned: completed.reduce((sum, x) => sum + (x.coinsEarned ?? 0), 0),
-    };
-  }, [state.sessions]);
-  const s = server
-    ? {
-        ...local,
-        totalMinutes: server.total_minutes + pending.totalMinutes,
-        completed: server.completed + pending.completed,
-        failed: server.failed + pending.failed,
-        coinsEarned: server.coins_earned + pending.coinsEarned,
-      }
-    : local;
+  // The shared store holds all recorded pages plus only pending outcomes.
+  // A separate aggregate request cannot race this snapshot or double-count it.
+  const s = local;
   const [editing, setEditing] = useState(false);
   const [sexPickerOpen, setSexPickerOpen] = useState(false);
   const [draft, setDraft] = useState(state.profile);
@@ -122,8 +82,8 @@ function Profile() {
 
   const { rows: cloudLeaders } = useLeaderboard(10);
   const leaderboard = useMemo(
-    () => buildLeaderboard(cloudLeaders, state.profile.name, s.totalMinutes, photo || null),
-    [cloudLeaders, state.profile.name, s.totalMinutes],
+    () => buildLeaderboard(cloudLeaders, state.profile.name, s.totalMinutes, photo || null, user?.id),
+    [cloudLeaders, state.profile.name, s.totalMinutes, photo, user?.id],
   );
 
   const tiles = [
@@ -393,6 +353,7 @@ function buildLeaderboard(
   userName: string,
   userMinutes: number,
   userPhoto: string | null,
+  userId?: string,
 ) {
   const rows: { userId: string | null; photo: string | null; name: string; minutes: number; avatar: string; you: boolean }[] = cloudLeaders.map((r, i) => ({
     userId: r.userId,
@@ -400,11 +361,11 @@ function buildLeaderboard(
     name: r.name,
     minutes: r.minutes,
     avatar: AVATARS[i % AVATARS.length],
-    you: r.name === userName && r.minutes === userMinutes,
+    you: r.userId === userId,
   }));
   if (!rows.some((r) => r.you)) {
     rows.push({
-      userId: null,
+      userId: userId ?? null,
       photo: userPhoto,
       name: userName,
       minutes: userMinutes,
