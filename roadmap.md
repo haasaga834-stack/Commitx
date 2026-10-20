@@ -1,7 +1,8 @@
 # Roadmap
 
-- [ ] Diagnose and repair session restart/progress persistence and synchronization races without UI changes.
-- [ ] Verify repeated completion, offline/reconnect, restart, ledger totals and Android countdown regressions.
+- [x] Diagnose and repair elapsed-ticket restarts, terminal persistence, late lifecycle writes, identical-session deduplication, stale pulls/account responses, missing retries and split statistics snapshots without UI changes.
+- [x] Verify real account offline completion/reload and same-id replay against the database; historical hourly reward replay unchanged; 29 web regressions and 7 native countdown assertions passed. Database checks found no duplicate claims, wallet mismatches or leaderboard mismatches.
+- [ ] Physical Android session/background/reboot and group multi-device checks — requires a connected device and a new APK; bridge simulation and pure Java tests are not device verification.
 
 - [x] Update native Verified defaults: Telegram optional, detected installed browsers required by default; 14 regression tests passed and Android manifest validated.
 - [ ] Verify browser detection and locked defaults on Android — requires a new APK and physical device; native compilation/device testing unavailable in this turn.
