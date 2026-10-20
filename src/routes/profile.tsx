@@ -363,7 +363,13 @@ function buildLeaderboard(
     avatar: AVATARS[i % AVATARS.length],
     you: r.userId === userId,
   }));
-  if (!rows.some((r) => r.you)) {
+  const ownRow = rows.find((r) => r.you);
+  if (ownRow) {
+    ownRow.minutes = userMinutes;
+    ownRow.name = userName;
+    ownRow.photo = userPhoto;
+  }
+  if (userId && !ownRow) {
     rows.push({
       userId: userId ?? null,
       photo: userPhoto,
