@@ -418,6 +418,7 @@ function LiveSession() {
 
 
   const persist = useCallback(() => {
+    if (doneRef.current) return;
     writeActiveVerifiedSession({
       goal,
       duration,
@@ -557,7 +558,7 @@ function LiveSession() {
    * one failure trigger exist.
    */
   const evaluate = useCallback(() => {
-    if (doneRef.current) return;
+    if (doneRef.current || authLoading) return;
     const t = Date.now();
     if (phaseRef.current === "focus") {
       if (dndBlocked) return;
@@ -584,6 +585,7 @@ function LiveSession() {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
+    authLoading,
     dndBlocked,
     breaksApply,
     canCompleteNow,

@@ -91,13 +91,19 @@ function schedulePull(userId: string) {
     return;
   }
   pullInFlight = pullFromCloud(userId)
-    .catch(() => {})
+    .catch(() => {
+      if (ownsSync(userId, generation)) {
+        pullQueued = true;
+      }
+    })
     .finally(() => {
       if (!ownsSync(userId, generation)) return;
       pullInFlight = null;
       if (pullQueued) {
         pullQueued = false;
-        if (currentUserId) schedulePull(currentUserId);
+        if (currentUserId) setTimeout(() => {
+          if (ownsSync(userId, generation)) schedulePull(userId);
+        }, 1500);
       }
     });
 }
@@ -325,7 +331,6 @@ function runPush(userId: string): Promise<void> {
     setPendingPush(dirty, userId);
     retryAttempt = 0;
     if (dirty) scheduleRetry(userId);
-    else schedulePull(userId);
   }).catch(() => {
     if (!ownsSync(userId, generation)) return;
     setPendingPush(true, userId);
@@ -334,6 +339,7 @@ function runPush(userId: string): Promise<void> {
     if (!ownsSync(userId, generation)) return;
     pushInFlight = null;
     lastPushAt = Date.now();
+    if (!pendingPush) schedulePull(userId);
   });
   pushInFlight = run;
   return run;

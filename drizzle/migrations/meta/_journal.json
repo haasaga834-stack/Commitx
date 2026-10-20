@@ -141,6 +141,20 @@
       "when": 1792204832458,
       "tag": "0019_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1792470273135,
+      "tag": "0020_serialize_wallet_recomputation",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1792470636242,
+      "tag": "0021_validate_archived_session_completion",
+      "breakpoints": true
     }
   ]
 }
