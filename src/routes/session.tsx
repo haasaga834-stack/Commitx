@@ -418,6 +418,7 @@ function LiveSession() {
 
 
   const persist = useCallback(() => {
+    if (doneRef.current) return;
     writeActiveVerifiedSession({
       goal,
       duration,
