@@ -141,6 +141,13 @@
       "when": 1792204832458,
       "tag": "0019_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1792470273135,
+      "tag": "0020_serialize_wallet_recomputation",
+      "breakpoints": true
     }
   ]
 }
