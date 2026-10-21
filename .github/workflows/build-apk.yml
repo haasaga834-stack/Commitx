@@ -98,24 +98,36 @@ jobs:
           gradle-version: 8.11.1
 
 
-      # Keep one signing identity across CI runs so a newly downloaded APK can
-      # update the previous build instead of requiring a fresh uninstall.
-      - name: Restore APK signing identity
+      # The Actions cache is kept only as a transition path for keys created
+      # before COMMITX_KEYSTORE_BASE64 existed. Durable storage is the GitHub
+      # secret below; a cache is not key storage.
+      - name: Restore APK signing identity (legacy cache)
         uses: actions/cache@v4
         with:
           path: android/app/commitx.keystore
           key: commitx-apk-signing-v1
 
-      - name: Restore saved upload key and require release credentials
+      # Durable signing: the original upload keystore lives in the
+      # COMMITX_KEYSTORE_BASE64 repository secret and is restored for every
+      # build. If it is missing, the legacy cache value is migrated into the
+      # secret automatically (one time). A replacement key is NEVER generated:
+      # Play rejects updates signed with a different upload key.
+      - name: Restore original upload key from secrets
         env:
           COMMITX_KEYSTORE_BASE64: ${{ secrets.COMMITX_KEYSTORE_BASE64 }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -eu
           mkdir -p android/app
           if [ -n "$COMMITX_KEYSTORE_BASE64" ]; then
             printf '%s' "$COMMITX_KEYSTORE_BASE64" | base64 --decode > "$COMMITX_KEYSTORE_PATH"
+          elif [ -f "$COMMITX_KEYSTORE_PATH" ]; then
+            echo 'Keystore found only in the legacy cache; migrating it into the COMMITX_KEYSTORE_BASE64 secret.'
+            gh secret set COMMITX_KEYSTORE_BASE64 --repo "${{ github.repository }}" < <(base64 -w0 "$COMMITX_KEYSTORE_PATH")
+          else
+            echo 'Original upload keystore not found in secrets or cache. Restore it (COMMITX_KEYSTORE_BASE64); never generate a replacement.'
+            exit 1
           fi
-          test -f "$COMMITX_KEYSTORE_PATH" || { echo 'Saved upload key not found in the build cache. Restore the original key (COMMITX_KEYSTORE_BASE64); never generate a replacement.'; exit 1; }
           keytool -list -keystore "$COMMITX_KEYSTORE_PATH" -alias "$COMMITX_KEY_ALIAS" -storepass:env COMMITX_KEYSTORE_PASSWORD > /dev/null
           # Public certificate only (no private key): used for Play's upload-key reset form.
           mkdir -p dist
