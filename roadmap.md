@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Fix deadline-based Android completion alerts and suppress late alerts on return; preserve existing result recording and recovery.
+
 - [x] Final Play version 2 source audit: retained 2/1.0.1, fixed signing/privacy/social cleanup guards; 50 isolated browser tests, 20 native assertions and signed-in pages/authorization checks pass. Release gate recorded in PLAY_VERSION_2_RELEASE_CHECK.md; no publishing.
 - [ ] Final version 2 upload clearance — blocked on original upload key/credential backup and certificate match, a fresh full Android release build, physical phone/multi-user checks, and owner Play Console declarations/reviewer/safety checks.
 
