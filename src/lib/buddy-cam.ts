@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { RealtimeChannel } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
 /** Pair hash helper (kept for tests); the live room comes from the server-only pair secret. */
@@ -29,7 +28,7 @@ export type CamState = "off" | "starting" | "waiting" | "connected" | "error";
 
 /**
  * Peer-to-peer video between two study buddies. Media never touches a server;
- * only the connection handshake passes through a private realtime channel.
+ * only the connection handshake passes through pair-authorized server functions.
  * The microphone always starts muted; there is no text chat.
  */
 export function useBuddyCam(myId: string | null, buddyId: string | null) {
@@ -40,12 +39,16 @@ export function useBuddyCam(myId: string | null, buddyId: string | null) {
   const [micOn, setMicOn] = useState(false);
   const [camOn, setCamOn] = useState(true);
   const pc = useRef<RTCPeerConnection | null>(null);
-  const ch = useRef<RealtimeChannel | null>(null);
+  const roomRef = useRef<string | null>(null);
+  const poll = useRef<ReturnType<typeof setInterval> | null>(null);
+  const generation = useRef(0);
+  const starting = useRef(false);
   const stream = useRef<MediaStream | null>(null);
   const pendingIce = useRef<RTCIceCandidateInit[]>([]);
 
   const send = (payload: Signal) => {
-    void ch.current?.send({ type: "broadcast", event: "signal", payload });
+    const room = roomRef.current;
+    if (room) void supabase.rpc("send_buddy_cam_signal", { _room: room, _payload: JSON.parse(JSON.stringify(payload)) });
   };
 
   const closePeer = () => {
@@ -57,9 +60,10 @@ export function useBuddyCam(myId: string | null, buddyId: string | null) {
 
   const newPeer = useCallback(() => {
     closePeer();
-    if (!myId || !buddyId || !stream.current) return null;
+    const media = stream.current;
+    if (!myId || !buddyId || !media) return null;
     const peer = new RTCPeerConnection(ICE);
-    stream.current.getTracks().forEach((t) => peer.addTrack(t, stream.current!));
+    media.getTracks().forEach((t) => peer.addTrack(t, media));
     peer.onicecandidate = (e) => {
       if (e.candidate) send({ kind: "ice", from: myId, to: buddyId, candidate: e.candidate.toJSON() });
     };
@@ -79,19 +83,24 @@ export function useBuddyCam(myId: string | null, buddyId: string | null) {
 
   const stop = useCallback(() => {
     if (myId) send({ kind: "bye", from: myId });
+    generation.current++;
+    starting.current = false;
+    if (poll.current) clearInterval(poll.current);
+    poll.current = null;
+    roomRef.current = null;
     closePeer();
     stream.current?.getTracks().forEach((t) => t.stop());
     stream.current = null;
     setLocal(null);
-    if (ch.current) void supabase.removeChannel(ch.current);
-    ch.current = null;
     setMicOn(false);
     setCamOn(true);
     setState("off");
   }, [myId]);
 
   const start = useCallback(async () => {
-    if (!myId || !buddyId || ch.current) return;
+    if (!myId || !buddyId || roomRef.current || starting.current) return;
+    starting.current = true;
+    const attempt = ++generation.current;
     setError(null);
     setState("starting");
     try {
@@ -99,16 +108,21 @@ export function useBuddyCam(myId: string | null, buddyId: string | null) {
         video: { facingMode: "user", width: { ideal: 480 }, height: { ideal: 640 }, frameRate: { ideal: 15, max: 20 } },
         audio: { echoCancellation: true, noiseSuppression: true },
       });
+      if (attempt !== generation.current) { media.getTracks().forEach((t) => t.stop()); return; }
       media.getAudioTracks().forEach((t) => (t.enabled = false));
       stream.current = media;
       setLocal(media);
     } catch {
+      if (attempt !== generation.current) return;
+      starting.current = false;
       setError("Allow camera and microphone access to study together.");
       setState("error");
       return;
     }
 
     const { data: room } = await supabase.rpc("buddy_cam_room");
+    if (attempt !== generation.current) return;
+    starting.current = false;
     if (!room) {
       stream.current?.getTracks().forEach((t) => t.stop());
       stream.current = null;
@@ -117,9 +131,8 @@ export function useBuddyCam(myId: string | null, buddyId: string | null) {
       setState("error");
       return;
     }
-    const channel = supabase.channel(room, { config: { broadcast: { self: false } } });
-    ch.current = channel;
-    channel.on("broadcast", { event: "signal" }, async ({ payload }) => {
+    roomRef.current = room;
+    const receive = async (payload: unknown) => {
       const s = payload as Signal;
       if (s.from !== buddyId) return; // Only the paired buddy may connect.
       if ("to" in s && s.to !== myId) return;
@@ -129,7 +142,7 @@ export function useBuddyCam(myId: string | null, buddyId: string | null) {
             const peer = newPeer();
             if (!peer) return;
             await peer.setLocalDescription(await peer.createOffer());
-            send({ kind: "sdp", from: myId, to: buddyId, sdp: peer.localDescription!.toJSON() });
+            if (peer.localDescription) send({ kind: "sdp", from: myId, to: buddyId, sdp: peer.localDescription.toJSON() });
           } else if (!pc.current) {
             send({ kind: "hello", from: myId });
           }
@@ -139,7 +152,7 @@ export function useBuddyCam(myId: string | null, buddyId: string | null) {
             if (!peer) return;
             await peer.setRemoteDescription(s.sdp);
             await peer.setLocalDescription(await peer.createAnswer());
-            send({ kind: "sdp", from: myId, to: buddyId, sdp: peer.localDescription!.toJSON() });
+            if (peer.localDescription) send({ kind: "sdp", from: myId, to: buddyId, sdp: peer.localDescription.toJSON() });
           } else if (pc.current) {
             await pc.current.setRemoteDescription(s.sdp);
           }
@@ -154,14 +167,33 @@ export function useBuddyCam(myId: string | null, buddyId: string | null) {
       } catch {
         /* a fresh hello retries the handshake */
       }
-    });
-    channel.subscribe((status) => {
-      if (status === "SUBSCRIBED") {
-        setState("waiting");
-        send({ kind: "hello", from: myId });
-      }
-    });
-  }, [myId, buddyId, newPeer]);
+    };
+    let after = 0;
+    let reading = false;
+    let failures = 0;
+    const read = async () => {
+      if (reading || attempt !== generation.current) return;
+      reading = true;
+      try {
+        const result = await supabase.rpc("read_buddy_cam_signals", { _room: room, _after: after });
+        if (attempt !== generation.current) return;
+        if (result.error) {
+          if (++failures >= 3) { stop(); setError("Study cam disconnected. Please reconnect with your buddy."); setState("error"); }
+          return;
+        }
+        failures = 0;
+        if (Array.isArray(result.data)) for (const row of result.data) {
+          if (!row || typeof row !== "object" || Array.isArray(row) || typeof row.id !== "number") continue;
+          after = Math.max(after, row.id);
+          await receive(row.payload);
+        }
+      } finally { reading = false; }
+    };
+    setState("waiting");
+    send({ kind: "hello", from: myId });
+    void read();
+    poll.current = setInterval(() => { void read(); }, 1500);
+  }, [myId, buddyId, newPeer, stop]);
 
   // Re-announce while waiting so a buddy who joins later still connects.
   useEffect(() => {

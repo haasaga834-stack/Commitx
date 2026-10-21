@@ -34,7 +34,7 @@ const SECTIONS: { title: string; body: string[] }[] = [
       "CommitX is a focus and accountability app that helps you commit to study sessions and follow through on them. This Privacy Policy explains what information we collect, why we collect it, how long we keep it, and the choices you have.",
       "It applies to the CommitX Android app and the CommitX website. By creating an account and using CommitX, you agree to the practices described here.",
       "CommitX is developed and operated by Aniket Kumar, an independent individual developer based in India (not a company or organisation). Data controller and contact: Aniket Kumar, commitx07@gmail.com.",
-      "Last updated: 14 September 2026.",
+      "Last updated: 21 October 2026.",
     ],
   },
   {
@@ -48,7 +48,7 @@ const SECTIONS: { title: string; body: string[] }[] = [
     title: "3. Account information you provide",
     body: [
       "When you create an account we store your email address and a display name. If you sign in with Google, Google returns your basic profile details (name, email address and profile picture) and we use them to create your account.",
-      "Optional profile details you can add or leave blank: profile photo, age, sex and education level. These are shown only to you inside the app and are never used for advertising.",
+      "Optional profile details you can add or leave blank: profile photo, age, sex and education level. These are never used for advertising. Your name and photo can appear on the leaderboard and in groups. If you enable Let others find me, signed-in students can also see your age, sex, education, weekly study time and focusing status to find a buddy. Discovery starts off and can be disabled.",
       "If you use a referral code, we store your own referral code, the account that referred you, and a device fingerprint (a short non-reversible value derived from your browser/device) used solely to stop the same device claiming referral rewards more than once.",
     ],
   },
@@ -66,17 +66,18 @@ const SECTIONS: { title: string; body: string[] }[] = [
     title: "5. Group Study and leaderboard visibility",
     body: [
       "If you join a Group Study, the other members of that group can see your display name and your status in that session (committed, focusing, finished or left). They cannot see your other sessions, plans, subjects or balance.",
-      "The community leaderboard shows a public top ten: display name and total completed focus minutes. If you do not want your display name to appear there, change it in your profile or do not complete sessions while signed in. Everyone's own totals are visible only to themselves.",
+      "The community leaderboard shows a public top ten: display name, profile photo, completed focus minutes and active status. If you do not want your display name to appear there, change it in your profile or do not complete sessions while signed in.",
+      "Your paired Study Buddy can see your study status and receive your session goal, start, completion and failure events, plus nudges. Pairing requires an accepted invitation or request. You can remove your buddy; this revokes access to new buddy events and cam signaling. Invitations, requests and event records are stored with your account.",
     ],
   },
   {
     title: "6. Device permissions we ask for (Android)",
     body: [
       "Notifications: to send the session, plan and break reminders you enable. You can deny or revoke this at any time in Android settings.",
-      "Alarms and reminders (exact alarms, restart after reboot): so scheduled study reminders and break sounds fire at the right time and survive a restart.",
-      "Usage access (app usage statistics): optional. Used by the screen-time feature and by Focus Shield to detect which app is in the foreground. This information is processed on your device only — CommitX does not upload your app usage or screen-time history.",
-      "Display over other apps: optional, used only so Focus Shield can show a CommitX reminder screen over an app you selected. Focus Shield never disables, hides, uninstalls or changes any other app.",
-      "Installed-app check: the app checks whether a small fixed list of well-known apps is installed, so the Focus Shield picker can show their names and icons. That list is not sent to our servers; only the packages you actively choose are saved with your session.",
+      "Alarms and restart after reboot: scheduled reminders and timer recovery use Android-supported alarms. This version does not request exact-alarm permission; Android may delay reminders, especially under battery restrictions.",
+      "Usage access: used on-device by Screen Time, App Usage Limits and Focus Shield to measure app usage and detect the foreground app. It is required for native Verified Focus Shield; other optional features can be declined. We do not upload your app usage or screen-time history.",
+      "Display over other apps: used by Focus Shield and App Usage Limits for blocked-app reminders. Required for native Verified Focus Shield. Neither feature disables, hides, uninstalls or changes any other app.",
+      "Installed-app check: Android launcher-app and browser discovery, category metadata and a known-package fallback provide picker names, icons and distraction defaults. The full installed-app inventory is not uploaded; selected Focus Shield packages can be stored with your session. Daily app-limit selections remain on-device.",
       "Do Not Disturb status: Verified Mode reads whether Do Not Disturb is on. Only the on/off state is read, never your notifications.",
       "Camera and microphone are used only when you choose to start the optional Study Buddy cam with your paired buddy. Video and audio travel directly between the two devices, the microphone starts muted, and nothing is recorded or stored on our servers. CommitX does not request access to your location, contacts, call logs, SMS, files or health data.",
     ],
@@ -86,13 +87,13 @@ const SECTIONS: { title: string; body: string[] }[] = [
     body: [
       "To create and secure your account; to run, verify and settle focus sessions; to keep streaks, stats and Cx Coin balances correct; to run Group Study with people you invite; to send the reminders you enable; to prevent referral and reward abuse; and to fix errors and keep the service reliable.",
       "We do not use your study data for advertising, profiling or automated decisions, and we do not sell personal information.",
-      "Product analytics and crash reports: we use PostHog to count anonymous usage events (for example: a session started, completed or abandoned, its mode and a rough duration range, sign-up steps, joining a group) and to receive error reports when the app crashes. These events never include your goals, notes, email or name; they are linked to an internal account ID only so we can fix reliability problems. Session recordings are turned off.",
+      "When configured, PostHog receives pseudonymous usage events linked to an internal account ID, session mode and rough duration range, and generic error categories. Study goals, notes, names, email addresses, session URLs and raw error messages are excluded. Automatic page capture and session recordings are disabled. Analytics remains off when no project token is configured.",
     ],
   },
   {
     title: "8. Where your data is stored",
     body: [
-      "Account and app data is stored in our managed cloud database (hosted infrastructure operated on our behalf), protected by row-level security so records are readable only by your own authenticated account. Data is transmitted over encrypted connections.",
+      "Account and app data is stored in our managed cloud database. Access controls protect private records, with the limited group, leaderboard and buddy visibility described above. Data is transmitted over encrypted connections.",
       "Some preferences and session state are also cached on your device so the app works offline and your timer stays accurate if the app restarts. Clearing app data removes that local copy.",
     ],
   },
@@ -102,6 +103,8 @@ const SECTIONS: { title: string; body: string[] }[] = [
       "Cloud database, authentication and email delivery: our managed backend provider, which processes your data only to provide the service to us.",
       "Google Sign-In (optional) and Google Play services used for in-app sign-in and the in-app review prompt.",
       "Google Fonts, used to load typography on our web pages.",
+      "Study Buddy cam: encrypted WebRTC audio/video is sent directly to your buddy, not recorded or uploaded as media to CommitX. Our managed backend temporarily processes connection signaling (including network-address information); Google STUN helps devices find a connection. Your buddy can learn your network IP address, and CommitX cannot prevent them taking screenshots or recording with another device. Signaling is returned only to the current pair, expires from readable results after 30 seconds and is cleaned up on subsequent signaling activity after two minutes.",
+      "PostHog, when configured, processes pseudonymous usage and diagnostic events. Contact us to request deletion of account-linked analytics; provider retention and backups may not be erased immediately with the app account.",
       "Advertising: our public website pages may show Google AdSense ads, which can set cookies or use identifiers to show and measure ads. This is on the website only — the CommitX Android app does not show ads and does not load ad code. You can manage ad settings at https://myadcenter.google.com. We never send advertising partners your study data, sessions, plans or Cx Coin balance.",
     ],
   },
@@ -124,9 +127,8 @@ const SECTIONS: { title: string; body: string[] }[] = [
     title: "12. Your rights and account deletion",
     body: [
       "You can view and edit your profile, plans, subjects and preferences at any time in the app. You can request a copy of your data, or ask us to correct it, by emailing commitx07@gmail.com.",
-      "You can delete your account yourself: Settings → Delete account. This permanently removes your profile and profile photo, focus session history, live session, study plans, to-dos, subjects, settings, referrals, group memberships and groups you created, student reviews you submitted, your leaderboard entry, your Cx Coin balance and your login credentials. It cannot be undone and Cx Coins are not recoverable.",
+      "You can delete your account yourself: Settings → Delete account. This removes your profile and photo, focus history, live session, plans, to-dos, subjects, settings, referrals, group memberships and owned groups, reviews, leaderboard entry, Cx Coin balance, Study Buddy pairs, requests, events and signaling, and login credentials. Cleanup must succeed before login credentials are removed. It cannot be undone and Cx Coins are not recoverable.",
       "Delete your account without the app: email commitx07@gmail.com from your registered address with the subject \"Delete my CommitX account\". We verify the request and delete the account and all the data listed above within 30 days, then confirm by email.",
-      "Exact-time reminders: if you schedule study plan reminders, CommitX may ask Android for permission to deliver them at the exact time you chose. If you decline, reminders still arrive, possibly a few minutes late.",
       "Depending on where you live, you may also have the right to object to or restrict certain processing, or to complain to your local data protection authority.",
     ],
   },
