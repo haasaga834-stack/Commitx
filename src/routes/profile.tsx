@@ -123,9 +123,6 @@ function Profile() {
           </div>
         </div>
 
-        <div className="mt-3">
-          <BuddyCard />
-        </div>
 
         {/* Identity — one compact card instead of a tall centred stack */}
         <div className="mt-3 flex items-center gap-3.5 rounded-3xl bg-card p-3 shadow-soft">
