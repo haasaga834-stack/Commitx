@@ -48,6 +48,7 @@ function Auth() {
     setNotice(null);
     try {
       if (mode === "signup") {
+        track("signup_started", { method: "email" });
         setPendingReferral(referral);
         const { data, error } = await supabase.auth.signUp({
           email,
