@@ -143,6 +143,33 @@ export type Database = {
         }
         Relationships: []
       }
+      buddy_requests: {
+        Row: {
+          created_at: string
+          from_id: string
+          id: string
+          responded_at: string | null
+          status: string
+          to_id: string
+        }
+        Insert: {
+          created_at?: string
+          from_id: string
+          id?: string
+          responded_at?: string | null
+          status?: string
+          to_id: string
+        }
+        Update: {
+          created_at?: string
+          from_id?: string
+          id?: string
+          responded_at?: string | null
+          status?: string
+          to_id?: string
+        }
+        Relationships: []
+      }
       coin_adjustments: {
         Row: {
           amount: number
@@ -374,6 +401,7 @@ export type Database = {
         Row: {
           age: string
           avatar_url: string | null
+          buddy_discoverable: boolean
           created_at: string
           device_hash: string | null
           display_name: string
@@ -389,6 +417,7 @@ export type Database = {
         Insert: {
           age?: string
           avatar_url?: string | null
+          buddy_discoverable?: boolean
           created_at?: string
           device_hash?: string | null
           display_name?: string
@@ -404,6 +433,7 @@ export type Database = {
         Update: {
           age?: string
           avatar_url?: string | null
+          buddy_discoverable?: boolean
           created_at?: string
           device_hash?: string | null
           display_name?: string
@@ -772,6 +802,7 @@ export type Database = {
     }
     Functions: {
       accept_buddy_invite: { Args: { _code: string }; Returns: boolean }
+      buddy_cam_room: { Args: never; Returns: string }
       buddy_invite_preview: {
         Args: { _code: string }
         Returns: {
@@ -803,6 +834,25 @@ export type Database = {
       }
       current_buddy_id: { Args: { _user_id: string }; Returns: string }
       fail_web_session: { Args: { _reason: string }; Returns: string }
+      find_study_buddies: {
+        Args: {
+          _education?: string
+          _focusing_only?: boolean
+          _limit?: number
+          _sex?: string
+        }
+        Returns: {
+          age: string
+          avatar_url: string
+          display_name: string
+          education: string
+          focusing: boolean
+          requested: boolean
+          sex: string
+          user_id: string
+          week_minutes: number
+        }[]
+      }
       finish_web_session: { Args: never; Returns: boolean }
       focus_class_active_count: { Args: never; Returns: number }
       focus_class_complete: { Args: { _presence_key: string }; Returns: number }
@@ -859,6 +909,19 @@ export type Database = {
       }
       ledger_coin_balance: { Args: { _user_id: string }; Returns: number }
       mark_buddy_events_seen: { Args: never; Returns: number }
+      my_buddy_discoverable: { Args: never; Returns: boolean }
+      my_buddy_requests: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          created_at: string
+          display_name: string
+          education: string
+          from_id: string
+          id: string
+          week_minutes: number
+        }[]
+      }
       my_focus_totals: {
         Args: never
         Returns: {
@@ -913,6 +976,12 @@ export type Database = {
         Returns: undefined
       }
       remove_study_buddy: { Args: never; Returns: boolean }
+      respond_buddy_request: {
+        Args: { _accept: boolean; _id: string }
+        Returns: boolean
+      }
+      send_buddy_request: { Args: { _to: string }; Returns: boolean }
+      set_buddy_discoverable: { Args: { _on: boolean }; Returns: boolean }
       settle_all_unreported_claims: { Args: never; Returns: number }
       settle_expired_study_group: {
         Args: { _group_id: string; _user_id: string }
