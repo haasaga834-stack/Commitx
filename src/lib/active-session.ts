@@ -115,6 +115,7 @@ export async function claimActiveDbSession(input: {
     // Never start a supposedly saveable session without its durable claim.
     throw new Error("Could not save the commitment. Please retry when connected.");
   }
+  track("session_started", { mode: input.mode, duration_bucket: durationBucket(input.duration) });
   return { ok: true };
 }
 
