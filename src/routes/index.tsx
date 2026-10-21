@@ -237,14 +237,14 @@ function MobileHome() {
           </div>
         </section>
 
-        <BuddyCard />
-
         <Link to="/group" className="cx-home-group relative flex min-h-[64px] items-center gap-3 overflow-hidden rounded-[20px] border border-hairline bg-card px-3 shadow-soft">
           <img src={homeStudyGroup} alt="" aria-hidden="true" loading="lazy" width={1152} height={576} className="pointer-events-none absolute bottom-0 right-3 h-16 w-28 object-contain opacity-25" />
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-secondary text-primary"><Users className="h-5 w-5" /></span>
            <span className="relative min-w-0 flex-1"><span className="block truncate font-display text-lg font-semibold text-foreground">Group Study</span><span className="block truncate text-[11px] text-muted-foreground">Learn together. Stay accountable.</span></span>
            <ArrowRight className="relative h-5 w-5 shrink-0 text-primary" />
         </Link>
+
+        <BuddyCard />
       </main>
     </MobileShell>
   );
