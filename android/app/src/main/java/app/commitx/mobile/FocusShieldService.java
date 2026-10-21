@@ -29,6 +29,7 @@ public class FocusShieldService extends Service {
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private FocusShieldOverlay overlay;
+    private boolean foregroundReady;
 
     private final Runnable tick = new Runnable() {
         @Override
@@ -74,12 +75,14 @@ public class FocusShieldService extends Service {
     public void onCreate() {
         super.onCreate();
         overlay = new FocusShieldOverlay(this);
-        if (!startForegroundSafely()) { stopSelf(); return; }
+        foregroundReady = startForegroundSafely();
+        if (!foregroundReady) { stopSelf(); return; }
         handler.post(tick);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (!foregroundReady) { stopSelf(); return START_NOT_STICKY; }
         handler.removeCallbacks(tick);
         handler.post(tick);
         return START_STICKY;

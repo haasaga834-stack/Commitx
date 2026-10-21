@@ -5,7 +5,7 @@ Not an unconditional upload clearance. Source remains versionCode **2**, version
 
 ## Verified
 - Lovable Cloud auth and database respond normally.
-- Existing 51 browser-side regressions pass when each file runs separately. Running all files together exposes shared Bun mock interference, not a reproduced production sync failure.
+- All 50 browser-side tests (including two new redaction tests) pass when each file runs separately. Running all files together exposes shared Bun mock interference, not a reproduced production sync failure.
 - New analytics redaction tests pass; no goals, identity fields, session URLs or raw exceptions are transmitted by the reporting module.
 - Native pure-Java tests: 7 countdown assertions and 13 App Limits assertions pass.
 - Signed-in Profile and Settings load; public privacy, terms and contact load without uncaught browser errors.
