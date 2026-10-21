@@ -21,7 +21,6 @@ final class AppLimitsOverlay {
 
     private View root;
     private long endsAt;
-    private long returningToCommitXUntil;
 
     AppLimitsOverlay(Context ctx) {
         this.ctx = ctx;
@@ -32,7 +31,6 @@ final class AppLimitsOverlay {
     }
 
     void show(String blockedPackage, long endsAtMs) {
-        if (System.currentTimeMillis() < returningToCommitXUntil) return;
         this.endsAt = endsAtMs;
         if (root != null) return; // already covering; message stays the same
         try {
@@ -42,7 +40,6 @@ final class AppLimitsOverlay {
             FocusShieldReminderView view = new FocusShieldReminderView(ctx,
                     AppLimitsStore.labelFor(ctx, blockedPackage), "Back tomorrow", v -> {
                 try {
-                    returningToCommitXUntil = System.currentTimeMillis() + 5000L;
                     ctx.startActivity(new Intent(ctx, MainActivity.class)
                             .setAction(Intent.ACTION_MAIN)
                             .addCategory(Intent.CATEGORY_LAUNCHER)
@@ -50,10 +47,9 @@ final class AppLimitsOverlay {
                             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                                     | Intent.FLAG_ACTIVITY_SINGLE_TOP
                                     | Intent.FLAG_ACTIVITY_NEW_TASK));
-                    hide();
-                } catch (Throwable ignored) {
-                    returningToCommitXUntil = 0L;
-                }
+                    // Keep protecting the limited app until the worker confirms
+                    // CommitX (or another app) resumed. No timed bypass window.
+                } catch (Throwable ignored) {}
             });
 
             int type = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O

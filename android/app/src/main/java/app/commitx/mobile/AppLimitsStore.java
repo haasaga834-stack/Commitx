@@ -81,21 +81,22 @@ final class AppLimitsStore {
         return limits(ctx).length() > 0;
     }
 
-    /** Minutes the package was in the foreground today, or -1 without usage access. */
-    static int usageMinutes(Context ctx, String pkg) {
+    /** One daily aggregation shared by all packages, off the enforcement UI thread. */
+    static Map<String, UsageStats> usageSnapshot(Context ctx) {
         try {
             UsageStatsManager usm =
                     (UsageStatsManager) ctx.getSystemService(Context.USAGE_STATS_SERVICE);
-            if (usm == null) return -1;
-            Map<String, UsageStats> stats =
-                    usm.queryAndAggregateUsageStats(startOfToday(), System.currentTimeMillis());
-            if (stats == null) return -1;
-            UsageStats s = stats.get(pkg);
-            if (s == null) return 0;
-            return (int) (Math.max(0L, s.getTotalTimeInForeground()) / 60000L);
+            if (usm == null) return null;
+            return usm.queryAndAggregateUsageStats(startOfToday(), System.currentTimeMillis());
         } catch (Throwable t) {
-            return -1;
+            return null;
         }
+    }
+
+    static long usageMillis(Map<String, UsageStats> stats, String pkg) {
+        if (stats == null) return -1L;
+        UsageStats s = stats.get(pkg);
+        return s == null ? 0L : Math.max(0L, s.getTotalTimeInForeground());
     }
 
     static String labelFor(Context ctx, String pkg) {
@@ -111,6 +112,7 @@ final class AppLimitsStore {
     /** Limits with live usage, for the web layer: [{pkg,label,type,minutes,usedMinutes}]. */
     static String toJson(Context ctx) {
         JSONObject all = limits(ctx);
+        Map<String, UsageStats> stats = usageSnapshot(ctx);
         StringBuilder sb = new StringBuilder("[");
         boolean first = true;
         Iterator<String> keys = all.keys();
@@ -120,7 +122,7 @@ final class AppLimitsStore {
             if (entry == null) continue;
             int minutes = entry.optInt("minutes", 0);
             if (minutes <= 0) continue;
-            int used = usageMinutes(ctx, pkg);
+            int used = (int) (Math.max(0L, usageMillis(stats, pkg)) / 60000L);
             if (!first) sb.append(',');
             first = false;
             sb.append("{\"pkg\":\"").append(pkg).append("\",")
