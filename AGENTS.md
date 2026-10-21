@@ -13,7 +13,7 @@ Subdirectories have their own AGENTS.md (see android/AGENTS.md) — read it befo
 
 - Android Google auth uses one serialized native chooser/token exchange; no skip flags or browser detours, because they stranded Play users. Eagerly import its adapter on Auth so module downloads cannot stall before the timeout. Website OAuth stays independent.
 
-- Study Buddy invitations use the native Android share sheet or browser Web Share API, with clipboard fallback on older app builds; never launch messaging share websites in a WebView popup, because their custom schemes produce raw browser errors.
+- Buddy invites use native/browser sharing with clipboard fallback; never open messaging sites in WebView popups, which fail on custom schemes.
 
 - Focus-session rewards and forfeits must be derived and recorded transactionally from the user's own session claim (live `active_sessions` row, or its unconsumed `session_claims_archive` copy), each claim consumed once, because client-submitted session claims are untrusted and late syncs must not be lost.
 - Wallet balances are always recomputed from the ledger (`focus_sessions`, `referrals`, `coin_adjustments`) by database triggers; never write `coin_balance` incrementally from app code, because parallel writers caused drift and double credits.
@@ -33,5 +33,6 @@ Subdirectories have their own AGENTS.md (see android/AGENTS.md) — read it befo
 - Screen Time lives on its own /screen-time page fed by native ScreenTimeDetails (UsageStatsManager, on-device only), deep-linked from the persistent notification.
 - Widget invitation status is account-backed with local/native mirrors, because onboarding and existing-user To-Do prompts must not repeat after reinstall.
 - Study Buddy events (started/completed/failed) are emitted by database triggers on `active_sessions`/`focus_sessions`, and group Room Pot shares are paid once per completer as `coin_adjustments` (`group_pot:<group_id>`) inside group settlement, because client-reported outcomes are untrusted and wallets derive only from the ledger.
-- Buddy discovery is opt-in via security-definer RPCs; cam is P2P WebRTC in a server-issued pair room, muted, no chat, so video never touches servers.
+- Buddy discovery is opt-in via RPCs; cam is muted P2P with no chat; pair-authorized signaling RPCs revoke removed-buddy access.
+- Account deletion cleans application data and preserves referrals transactionally before auth deletion, preventing social leftovers and duplicate retry credits.
 - Analytics/crash reporting go only through src/lib/analytics.ts (PostHog, inert without token, no personal content), to keep events privacy-safe.

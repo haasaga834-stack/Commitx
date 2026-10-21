@@ -133,6 +133,7 @@ export function useBuddyCam(myId: string | null, buddyId: string | null) {
     }
     roomRef.current = room;
     const receive = async (payload: unknown) => {
+      if (!payload || typeof payload !== "object") return;
       const s = payload as Signal;
       if (s.from !== buddyId) return; // Only the paired buddy may connect.
       if ("to" in s && s.to !== myId) return;
@@ -186,6 +187,10 @@ export function useBuddyCam(myId: string | null, buddyId: string | null) {
           if (!row || typeof row !== "object" || Array.isArray(row) || typeof row.id !== "number") continue;
           after = Math.max(after, row.id);
           await receive(row.payload);
+        }
+      } catch {
+        if (attempt === generation.current && ++failures >= 3) {
+          stop(); setError("Study cam disconnected. Please reconnect with your buddy."); setState("error");
         }
       } finally { reading = false; }
     };

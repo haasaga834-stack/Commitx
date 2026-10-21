@@ -6,7 +6,7 @@ export function safeAnalyticsProps(props?: AnalyticsProps): AnalyticsProps {
     allowed.has(key) && (typeof value !== "string" || /^[a-zA-Z0-9_<>=+ -]{1,64}$/.test(value))));
 }
 
-export function redactAnalyticsEvent(event: { properties?: Record<string, unknown> } | null) {
+export function redactAnalyticsEvent<T extends { properties?: Record<string, unknown> }>(event: T | null): T | null {
   if (!event?.properties) return event;
   for (const key of ["$current_url", "$referrer", "$pathname", "$initial_current_url", "$initial_referrer", "$initial_pathname"]) {
     if (key in event.properties) event.properties[key] = "[redacted]";
