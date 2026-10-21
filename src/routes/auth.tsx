@@ -16,6 +16,8 @@ export const Route = createFileRoute("/auth")({
       { name: "description", content: "Sign in to CommitX and keep one promise at a time." },
       { property: "og:title", content: "CommitX — Sign in" },
       { property: "og:description", content: "Sign in to CommitX and keep one promise at a time." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Auth,
@@ -130,48 +132,14 @@ function Auth() {
     }
     setBusy(true);
     try {
-      const { hasNativeGoogleSignIn, nativeGoogleSignIn } = await import("@/lib/native-auth");
-      const { canUseNativeOAuth, nativeBrowserGoogleSignIn } = await import("@/lib/native-oauth");
-      // If the in-app chooser already closed without a result on this phone
-      // (Play-signed builds whose key Google doesn't recognise report this
-      // as a "cancel" right after an account is picked), go straight to the
-      // browser flow instead of looping on the broken chooser.
-      const NATIVE_SKIP_KEY = "commitx-google-native-skip";
-      let skipNative = false;
-      try { skipNative = localStorage.getItem(NATIVE_SKIP_KEY) === "1"; } catch {}
-      if (canUseNativeOAuth() && skipNative) {
-        // fall through to browser flow below
-      } else if (hasNativeGoogleSignIn()) {
-        // Some phones never answer the in-app account chooser (no Google
-        // account / outdated Play services), leaving an endless spinner.
-        // Give it a bounded window, then fall back to the browser flow.
-        const nativeResult = await Promise.race([
-          nativeGoogleSignIn().then(
-            () => "ok" as const,
-            (e: unknown) => (e instanceof Error && /cancel/i.test(e.message) ? "cancel" : "fail") as "cancel" | "fail",
-          ),
-          new Promise<"fail">((r) => window.setTimeout(() => r("fail"), 25000)),
-        ]);
-        if (nativeResult === "ok") {
-          try { localStorage.removeItem(NATIVE_SKIP_KEY); } catch {}
-          router.navigate({ to: "/" });
-          return;
+      const { isAndroidSignIn, hasNativeGoogleSignIn, nativeGoogleSignIn } = await import("@/lib/native-auth");
+      if (isAndroidSignIn()) {
+        // Discard the legacy detour even for phones that already stored it.
+        try { localStorage.removeItem("commitx-google-native-skip"); } catch {}
+        if (!hasNativeGoogleSignIn()) {
+          throw new Error("In-app Google sign-in isn't available in this version. Update CommitX or sign in with email.");
         }
-        if (nativeResult === "cancel") {
-          if (canUseNativeOAuth()) {
-            try { localStorage.setItem(NATIVE_SKIP_KEY, "1"); } catch {}
-            setNotice("Google didn't finish signing you in. Tap Continue with Google again to sign in through your browser.");
-          }
-          return;
-        }
-        if (!canUseNativeOAuth()) throw new Error("Google sign-in didn't respond. Please try again or use email.");
-      }
-      // Android shell: Google blocks embedded WebViews, so use the browser
-      // round-trip that returns through commitx://login-callback/.
-      if (canUseNativeOAuth()) {
-        setNotice("Continue in your browser — you'll come straight back to CommitX.");
-        await nativeBrowserGoogleSignIn();
-        setNotice(null);
+        await nativeGoogleSignIn();
         router.navigate({ to: "/" });
         return;
       }
@@ -185,7 +153,10 @@ function Auth() {
       const message = err instanceof Error ? err.message : "";
       // Backing out of the Google account chooser is not a failure.
       if (/cancel/i.test(message)) return;
-      setError(actionErrorMessage(err, message || "Google sign-in failed."));
+      const nativeFailure = /^(native_timeout|native_unavailable|token_parse_failed|GetCredential)/.test(message);
+      setError(actionErrorMessage(err, nativeFailure
+        ? "Google couldn't finish signing you in. Try again in CommitX, or sign in with email."
+        : message || "Google sign-in failed."));
     } finally {
       setBusy(false);
     }

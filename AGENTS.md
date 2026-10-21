@@ -11,6 +11,8 @@
 
 Subdirectories have their own AGENTS.md (see android/AGENTS.md) — read it before changing files there.
 
+- Android Google authentication uses the native Credential Manager bridge with one serialized chooser/token-exchange lifecycle; cancellation never sets persistent skip flags or opens browser OAuth, because retry detours stranded Play Store users outside the app. Website OAuth remains independent.
+
 - Study Buddy invitations use the native Android share sheet or browser Web Share API, with clipboard fallback on older app builds; never launch messaging share websites in a WebView popup, because their custom schemes produce raw browser errors.
 
 - Focus-session rewards and forfeits must be derived and recorded transactionally from the user's own session claim (live `active_sessions` row, or its unconsumed `session_claims_archive` copy), each claim consumed once, because client-submitted session claims are untrusted and late syncs must not be lost.
