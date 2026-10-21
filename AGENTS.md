@@ -34,4 +34,4 @@ Subdirectories have their own AGENTS.md (see android/AGENTS.md) — read it befo
 - Screen Time lives on its own /screen-time page fed by native ScreenTimeDetails (UsageStatsManager, on-device only), deep-linked from the persistent notification.
 - Widget invitation status is account-backed with local/native mirrors, because onboarding and existing-user To-Do prompts must not repeat after reinstall.
 - Study Buddy events (started/completed/failed) are emitted by database triggers on `active_sessions`/`focus_sessions`, and group Room Pot shares are paid once per completer as `coin_adjustments` (`group_pot:<group_id>`) inside group settlement, because client-reported outcomes are untrusted and wallets derive only from the ledger.
-- Study Buddy cam is P2P WebRTC between paired buddies only, signalled on a hashed per-pair broadcast channel, mic muted first, no chat, because video must never touch servers.
+- Buddy discovery is opt-in via security-definer RPCs; cam is P2P WebRTC on a server-issued pair room, mic muted, no chat, so strangers see little and video never touches servers.
