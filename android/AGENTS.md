@@ -11,3 +11,4 @@
 - App Limits detects foreground changes on a dedicated worker using cached exhausted packages and a shared throttled daily usage snapshot; UI only applies the cover, and returning to CommitX clears it on confirmed foreground change rather than a grace timer, because repeated aggregation and timed exemptions delayed blocking.
 - The silent ongoing screen-time notification is refreshed by the ScreenTimeReceiver alarm, boot and app resume, because usage data must stay local and current without a foreground service.
 - Accountability/Roast delivery is the native AccountabilityEngine (AlarmManager, one alarm slot, one notification id) fed by events from src/lib/accountability.ts, because closed-app delivery and legacy clients must follow the same policy.
+- WebView camera/mic grants (Study Buddy cam) are allowed only for CommitX origins after Android runtime permission, because media capture must never extend to arbitrary pages.

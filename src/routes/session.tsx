@@ -69,6 +69,7 @@ import { useAuth } from "@/lib/use-auth";
 import { accountabilityEnded } from "@/lib/accountability";
 import { flushPendingSessions } from "@/lib/cloud-sync";
 import { recoverSessionProgress } from "@/lib/session-recovery";
+import { BuddyCam } from "@/components/BuddyCam";
 
 declare global {
   interface Window {
@@ -1248,6 +1249,7 @@ function LiveSession() {
           Stay with it · turning discipline into impact
         </p>
       </div>
+      <BuddyCam />
 
 
 
