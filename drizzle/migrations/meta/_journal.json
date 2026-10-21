@@ -169,6 +169,13 @@
       "when": 1792592330208,
       "tag": "0023_buddy_code_and_pot_access",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1792603597933,
+      "tag": "0024_buddy_discovery_and_requests",
+      "breakpoints": true
     }
   ]
 }
