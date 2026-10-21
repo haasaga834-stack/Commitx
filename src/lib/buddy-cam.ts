@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
-/** Private room name for exactly one buddy pair (order independent, not readable ids). */
+/** Pair hash helper (kept for tests); the live room comes from the server-only pair secret. */
 export async function buddyCamRoom(a: string, b: string) {
   const pair = [a, b].sort().join(":");
   const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`commitx-cam:${pair}`));
@@ -108,7 +108,16 @@ export function useBuddyCam(myId: string | null, buddyId: string | null) {
       return;
     }
 
-    const channel = supabase.channel(await buddyCamRoom(myId, buddyId), { config: { broadcast: { self: false } } });
+    const { data: room } = await supabase.rpc("buddy_cam_room");
+    if (!room) {
+      stream.current?.getTracks().forEach((t) => t.stop());
+      stream.current = null;
+      setLocal(null);
+      setError("Study cam works only with your current study buddy.");
+      setState("error");
+      return;
+    }
+    const channel = supabase.channel(room, { config: { broadcast: { self: false } } });
     ch.current = channel;
     channel.on("broadcast", { event: "signal" }, async ({ payload }) => {
       const s = payload as Signal;
