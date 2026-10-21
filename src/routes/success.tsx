@@ -135,7 +135,7 @@ function Success() {
           value={`${streakValue}d`}
           highlight
         />
-        <StatTile icon={<Clock className="h-4 w-4" />} label="Focus total" value={focusHours} />
+        <StatTile icon={<Clock className="h-4 w-4" />} label="Focus" value={focusHours} />
         <StatTile icon={<CxCoin className="h-4 w-4" />} label="Cx Coins" value={String(coins)} />
         <StatTile icon={<Target className="h-4 w-4" />} label="Success" value={`${successRate}%`} />
       </div>
