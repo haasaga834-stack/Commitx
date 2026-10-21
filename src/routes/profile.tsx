@@ -197,12 +197,12 @@ function Profile() {
             variant="ghost"
             onClick={() => setSexPickerOpen(true)}
             aria-label="Select sex"
-            className="h-auto min-w-0 flex-col items-start gap-0.5 whitespace-normal rounded-none border-l border-hairline px-3 py-0 text-left"
+            className="h-auto min-w-0 flex-col items-center gap-0.5 whitespace-normal rounded-none border-l border-hairline px-3 py-0 text-center"
           >
             <span className="text-[10px] font-normal uppercase tracking-wider text-muted-foreground">Sex</span>
-            <span className="flex w-full items-center gap-1 text-sm font-medium">
+            <span className="flex w-full items-center justify-center gap-1 text-sm font-medium">
               <span className="min-w-0 break-words">{(editing ? draft.sex : state.profile.sex) || "—"}</span>
-              <ChevronDown className="ml-auto shrink-0 text-muted-foreground" />
+              <ChevronDown className="shrink-0 text-muted-foreground" />
             </span>
           </Button>
           <Field
@@ -222,12 +222,12 @@ function Profile() {
           {tiles.map((t) => (
             <div
               key={t.label}
-              className="min-w-0 rounded-3xl bg-card px-4 py-3 shadow-soft"
+              className="min-w-0 rounded-3xl bg-card px-4 py-3 text-center shadow-soft"
             >
               <p className="truncate text-[10px] uppercase tracking-wider text-muted-foreground">
                 {t.label}
               </p>
-              <p className="mt-1 break-words font-display text-lg font-semibold tabular-nums">
+              <p className="mt-1 break-words text-center font-display text-lg font-semibold tabular-nums">
                 {t.value}
               </p>
             </div>
@@ -401,7 +401,7 @@ function Field({
   divider?: boolean;
 }) {
   return (
-    <div className={cn("min-w-0 px-3", divider && "border-l border-hairline")}>
+    <div className={cn("min-w-0 px-3 text-center", divider && "border-l border-hairline")}>
       <p className="truncate text-[10px] uppercase tracking-wider text-muted-foreground">
         {label}
       </p>
@@ -409,10 +409,10 @@ function Field({
         <input
           value={draft}
           onChange={(e) => onChange(e.target.value)}
-          className="mt-1 w-full rounded-lg border border-hairline bg-background px-2 py-1 text-sm outline-none focus:border-primary"
+          className="mt-1 w-full rounded-lg border border-hairline bg-background px-2 py-1 text-center text-sm outline-none focus:border-primary"
         />
       ) : (
-        <p className="mt-0.5 truncate text-sm font-medium" title={value}>
+        <p className="mt-0.5 truncate text-center text-sm font-medium" title={value}>
           {value || "—"}
         </p>
       )}
