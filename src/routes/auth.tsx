@@ -8,6 +8,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { setPendingReferral } from "@/lib/pending-referral";
 import { WELCOME_COINS, REFERRAL_REWARD, coinLabel } from "@/lib/commitx-store";
 import { actionErrorMessage, isOnline, OFFLINE_ACTION_MESSAGE } from "@/lib/connectivity";
+import { isAndroidSignIn, hasNativeGoogleSignIn, nativeGoogleSignIn } from "@/lib/native-auth";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -132,7 +133,6 @@ function Auth() {
     }
     setBusy(true);
     try {
-      const { isAndroidSignIn, hasNativeGoogleSignIn, nativeGoogleSignIn } = await import("@/lib/native-auth");
       if (isAndroidSignIn()) {
         // Discard the legacy detour even for phones that already stored it.
         try { localStorage.removeItem("commitx-google-native-skip"); } catch {}

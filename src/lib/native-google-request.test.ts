@@ -47,4 +47,25 @@ describe("in-app Google sign-in lifecycle", () => {
     })).rejects.toThrow("bridge_failed");
     expect(cleared).toBe(true);
   });
+  test("a stalled token exchange times out and allows a fresh native attempt", async () => {
+    let callbacks: Parameters<Parameters<typeof requestNativeGoogleSignIn>[0]["install"]>[0] | undefined;
+    let cleared = 0;
+    let release: (() => void) | undefined;
+    const pending = requestNativeGoogleSignIn({
+      start: () => {}, install: value => { callbacks = value; },
+      clear: () => { cleared++; }, timeoutMs: 5,
+      exchange: () => new Promise<void>(resolve => { release = resolve; }),
+    });
+    const rejected = pending.catch(error => error);
+    callbacks?.onGoogleIdToken("test-only-token");
+    expect((await rejected).message).toBe("native_timeout");
+    expect(cleared).toBe(1);
+    release?.();
+    await Promise.resolve();
+    expect(cleared).toBe(1);
+    const retry = harness();
+    retry.callbacks()?.onGoogleIdToken("retry-test-token");
+    await retry.promise;
+    expect(retry.exchanges()).toBe(1);
+  });
 });
