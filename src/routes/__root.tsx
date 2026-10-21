@@ -217,6 +217,8 @@ const PUBLIC_PATHS = [
   // Public front door + guest session flow (no account required to start).
   "/",
   "/commit",
+  "/support",
+  "/changelog",
   "/session",
   "/success",
   "/failed",
