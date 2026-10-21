@@ -62,6 +62,7 @@ public class StandardCountdownService extends Service {
             long now = System.currentTimeMillis();
             long elapsed = SystemClock.elapsedRealtime();
             JSONObject previous = read(ctx);
+            if (previous == null || !previous.optString("id").equals(input.optString("id"))) SessionCompletionAlerts.cancel(ctx);
             // Once the clock reached zero, wait for the existing session finalizer.
             if (previous != null && previous.optString("id").equals(input.optString("id"))
                     && "elapsed".equals(previous.optString("phase"))) return;
@@ -130,6 +131,10 @@ public class StandardCountdownService extends Service {
     static void finish(Context ctx, String status) {
         JSONObject state = read(ctx);
         if (state == null) return;
+        if ("completed".equals(status) && SessionCompletionPolicy.shouldHandle(state.optString("phase"),
+                state.optLong("endElapsed"), SystemClock.elapsedRealtime(), SessionCompletionAlerts.handled(ctx, state.optString("id")))) {
+            SessionCompletionAlerts.reached(ctx, state, "Standard");
+        }
         clear(ctx);
         NotificationManager manager = CommitXNotifications.manager(ctx);
         if (manager != null && canPost(ctx)) manager.notify(ID, notification(ctx, state,
@@ -200,7 +205,8 @@ public class StandardCountdownService extends Service {
             if ("recovery_break".equals(phase) && elapsed >= state.optLong("breakEndElapsed")) {
                 state.put("phase", "awaiting_confirmation");
                 save(ctx, state);
-            } else if ("focus".equals(phase) && state.optLong("endElapsed") > 0 && elapsed >= state.optLong("endElapsed")) {
+            } else if (SessionCompletionPolicy.shouldHandle(phase, state.optLong("endElapsed"), elapsed, false)) {
+                SessionCompletionAlerts.reached(ctx, state, "Standard");
                 state.put("phase", "elapsed");
                 save(ctx, state);
                 cancelAlarm(ctx);
@@ -218,6 +224,7 @@ public class StandardCountdownService extends Service {
         boolean running = ("focus".equals(phase) || "recovery_break".equals(phase)) && end > 0;
         long remaining = running ? VerifiedCountdownClock.remaining(end, SystemClock.elapsedRealtime()) : state.optLong("remainingMs");
         if ("elapsed".equals(phase)) remaining = 0;
+        if ("elapsed".equals(phase) && outcome == null) outcome = "elapsed";
         long total = Math.max(1, state.optLong("durationMs"));
         long focusRemaining = "focus".equals(phase) || "elapsed".equals(phase) ? remaining : state.optLong("remainingMs");
         int pct = (int) Math.max(0, Math.min(100, Math.round(100.0 * (total - Math.min(total, focusRemaining)) / total)));
@@ -228,7 +235,7 @@ public class StandardCountdownService extends Service {
         if ("awaiting_confirmation".equals(phase)) { title = "Your break is over. Ready to focus back?"; text = "Return to CommitX and tap YES when you're ready."; }
         if (outcome != null) {
             running = false;
-            title = "completed".equals(outcome) ? "Standard session completed" : "Standard session ended";
+            title = "elapsed".equals(outcome) ? "Standard timer finished" : "completed".equals(outcome) ? "Standard session completed" : "Standard session ended";
             text = "Open CommitX to view your session result.";
             if ("completed".equals(outcome)) pct = 100;
         }

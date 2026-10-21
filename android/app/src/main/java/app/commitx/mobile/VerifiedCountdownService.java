@@ -62,6 +62,7 @@ public class VerifiedCountdownService extends Service {
             long now = System.currentTimeMillis();
             long elapsed = SystemClock.elapsedRealtime();
             JSONObject previous = read(ctx);
+            if (previous == null || !previous.optString("id").equals(input.optString("id"))) SessionCompletionAlerts.cancel(ctx);
             // Once the clock reached zero, wait for the existing session finalizer.
             if (previous != null && previous.optString("id").equals(input.optString("id"))
                     && "elapsed".equals(previous.optString("phase"))) return;
@@ -130,6 +131,10 @@ public class VerifiedCountdownService extends Service {
     static void finish(Context ctx, String status) {
         JSONObject state = read(ctx);
         if (state == null) return;
+        if ("completed".equals(status) && SessionCompletionPolicy.shouldHandle(state.optString("phase"),
+                state.optLong("endElapsed"), SystemClock.elapsedRealtime(), SessionCompletionAlerts.handled(ctx, state.optString("id")))) {
+            SessionCompletionAlerts.reached(ctx, state, "Verified");
+        }
         clear(ctx);
         NotificationManager manager = CommitXNotifications.manager(ctx);
         if (manager != null && canPost(ctx)) manager.notify(ID, notification(ctx, state,
@@ -200,7 +205,8 @@ public class VerifiedCountdownService extends Service {
             if ("recovery_break".equals(phase) && elapsed >= state.optLong("breakEndElapsed")) {
                 state.put("phase", "awaiting_confirmation");
                 save(ctx, state);
-            } else if ("focus".equals(phase) && state.optLong("endElapsed") > 0 && elapsed >= state.optLong("endElapsed")) {
+            } else if (SessionCompletionPolicy.shouldHandle(phase, state.optLong("endElapsed"), elapsed, false)) {
+                SessionCompletionAlerts.reached(ctx, state, "Verified");
                 state.put("phase", "elapsed");
                 save(ctx, state);
                 cancelAlarm(ctx);
