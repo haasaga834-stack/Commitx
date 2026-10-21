@@ -21,16 +21,6 @@ export const Route = createFileRoute("/changelog")({
 
 const RELEASES: { version: string; date: string; items: string[] }[] = [
   {
-    version: "1.0.2",
-    date: "October 2026",
-    items: [
-      "Timers recover after app updates, restarts and clock or time-zone changes.",
-      "Press back again on Home to exit — no more accidental closes.",
-      "Smoother opening screen.",
-      "Crash reporting so we can fix problems faster.",
-    ],
-  },
-  {
     version: "1.0.1",
     date: "October 2026",
     items: [
@@ -38,6 +28,11 @@ const RELEASES: { version: string; date: string; items: string[] }[] = [
       "Room Pot for Group Study.",
       "App Usage Limits and a study goal home-screen widget.",
       "Smoother Google sign-in that stays inside the app.",
+
+      "Timers recover after app updates, restarts and clock or time-zone changes.",
+      "Press back again on Home to exit — no more accidental closes.",
+      "Smoother opening screen.",
+      "Crash reporting so we can fix problems faster.",
     ],
   },
   {
