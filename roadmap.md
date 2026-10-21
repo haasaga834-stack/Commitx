@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Diagnose and fix completion loading, unintended sign-out and reconnect/sign-in failures shown in the October 21 recordings; preserve screens and session rules, add targeted regressions and verify recovery.
+
 - [x] Diagnose and repair elapsed-ticket restarts, terminal persistence, late lifecycle writes, identical-session deduplication, stale pulls/account responses, missing retries and split statistics snapshots without UI changes.
 - [x] Verify real account offline completion/reload and same-id replay against the database; historical hourly reward replay unchanged; 29 web regressions and 7 native countdown assertions passed. Database checks found no duplicate claims, wallet mismatches or leaderboard mismatches.
 - [ ] Physical Android session/background/reboot and group multi-device checks — requires a connected device and a new APK; bridge simulation and pure Java tests are not device verification.
