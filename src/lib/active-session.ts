@@ -1,3 +1,4 @@
+import { durationBucket, track } from "./analytics";
 import { supabase } from "@/integrations/supabase/client";
 import { isOnline } from "./connectivity";
 import { hasNativeBridge } from "./native-session";
