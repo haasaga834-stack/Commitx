@@ -74,7 +74,7 @@ public class FocusShieldService extends Service {
     public void onCreate() {
         super.onCreate();
         overlay = new FocusShieldOverlay(this);
-        startForegroundSafely();
+        if (!startForegroundSafely()) { stopSelf(); return; }
         handler.post(tick);
     }
 
@@ -98,7 +98,7 @@ public class FocusShieldService extends Service {
         return null;
     }
 
-    private void startForegroundSafely() {
+    private boolean startForegroundSafely() {
         try {
             NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && nm != null) {
@@ -131,7 +131,8 @@ public class FocusShieldService extends Service {
             } else {
                 startForeground(NOTIF_ID, notification);
             }
-        } catch (Throwable ignored) {}
+            return true;
+        } catch (RuntimeException denied) { return false; }
     }
 
     /** Most recent foreground package from usage events (usage access required). */

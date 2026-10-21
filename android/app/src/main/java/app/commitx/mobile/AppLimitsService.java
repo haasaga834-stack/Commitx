@@ -83,7 +83,7 @@ public class AppLimitsService extends Service {
     public void onCreate() {
         super.onCreate();
         overlay = new AppLimitsOverlay(this);
-        startForegroundSafely();
+        if (!startForegroundSafely()) { stopSelf(); return; }
         workerThread = new HandlerThread("commitx-app-limits");
         workerThread.start();
         worker = new Handler(workerThread.getLooper());
@@ -172,7 +172,7 @@ public class AppLimitsService extends Service {
         });
     }
 
-    private void startForegroundSafely() {
+    private boolean startForegroundSafely() {
         try {
             NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && nm != null) {
@@ -203,7 +203,8 @@ public class AppLimitsService extends Service {
             } else {
                 startForeground(NOTIF_ID, notification);
             }
-        } catch (Throwable ignored) {}
+            return true;
+        } catch (RuntimeException denied) { return false; }
     }
 
     private String foregroundPackage() {
