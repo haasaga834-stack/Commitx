@@ -1,5 +1,8 @@
 # Roadmap
 
+- [x] Add personal Standard/Verified deadline alerts with durable deduplication, foreground suppression and no late result/accountability alert on return; 9 new native policy assertions, 7 clock assertions, 9 web regressions and Android 16 service compilation passed. Existing reward/recovery paths unchanged.
+- [ ] Verify completion alert at expiry while locked/away and result page on return on Android — requires a freshly built APK/AAB and physical device; exact delivery may be delayed by Android without exact-alarm access or after force-stop.
+
 - [x] Final Play version 2 source audit: retained 2/1.0.1, fixed signing/privacy/social cleanup guards; 50 isolated browser tests, 20 native assertions and signed-in pages/authorization checks pass. Release gate recorded in PLAY_VERSION_2_RELEASE_CHECK.md; no publishing.
 - [ ] Final version 2 upload clearance — blocked on original upload key/credential backup and certificate match, a fresh full Android release build, physical phone/multi-user checks, and owner Play Console declarations/reviewer/safety checks.
 

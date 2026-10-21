@@ -71,6 +71,7 @@ public class MainActivity extends Activity {
     private volatile boolean verifiedModeActive = false;
     private volatile boolean sessionLockActive = false;
     private volatile boolean atRootScreen = true;
+    private volatile boolean resumed = false;
     private volatile String pendingOAuthCallback = null;
 
 
@@ -660,6 +661,18 @@ public class MainActivity extends Activity {
         if (activity != null && activity.webView != null) activity.evalOnWeb("window.dispatchEvent(new Event('focus'))");
     }
 
+    static boolean isViewingSession() {
+        MainActivity activity = current;
+        if (activity == null || !activity.resumed || activity.webView == null) return false;
+        String url = activity.webView.getUrl();
+        return url != null && "/session".equals(Uri.parse(url).getPath());
+    }
+
+    static void notifySessionDeadline() {
+        MainActivity activity = current;
+        if (activity != null) activity.evalOnWeb("window.dispatchEvent(new Event('focus'))");
+    }
+
     static boolean notifyTodoToggled(String id) {
         MainActivity activity = current;
         if (activity == null || activity.webView == null) return false;
@@ -784,12 +797,19 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        resumed = true;
         FocusShieldStore.preloadApps(this, true);
         injectPendingFailureIfNeeded();
         CommitXNotifications.showScreenTimeDaily(this);
         PlanStore.scheduleAll(this);
         WellnessSoundStore.reconcile(this);
         AppLimitsService.startIfNeeded(this);
+    }
+
+    @Override
+    protected void onPause() {
+        resumed = false;
+        super.onPause();
     }
 
     @Override
@@ -1365,6 +1385,11 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void finishVerifiedCountdown(String status) {
             runOnUiThread(() -> VerifiedCountdownService.finish(MainActivity.this, status));
+        }
+
+        @JavascriptInterface
+        public void finishStandardCountdown(String status) {
+            runOnUiThread(() -> StandardCountdownService.finish(MainActivity.this, status));
         }
 
         /* ----------------------------- Screen time --------------------------- */

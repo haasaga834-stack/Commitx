@@ -180,6 +180,14 @@ export function syncStandardCountdown(payload: VerifiedCountdownPayload): boolea
   } catch { return false; }
 }
 
+export function finishStandardCountdown(status: "completed" | "failed") {
+  try {
+    const b = bridge();
+    if (b?.finishStandardCountdown) b.finishStandardCountdown(status);
+    else b?.hideSessionProgress?.();
+  } catch {}
+}
+
 export function showSessionProgress(title: string, text: string, progress: number) {
   try {
     if (!notificationsAllowed()) return bridge()?.hideSessionProgress?.();

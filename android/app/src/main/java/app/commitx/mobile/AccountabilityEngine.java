@@ -171,6 +171,7 @@ public class AccountabilityEngine extends BroadcastReceiver {
     }
 
     static void onEnded(Context c, String status, int targetMin, int doneMin, int streak, int failStreak) {
+        boolean deadlineHandled = SessionCompletionAlerts.handled(c, String.valueOf(prefs(c).getLong("active_started", 0)));
         SharedPreferences.Editor e = prefs(c).edit()
                 .remove("active_target").remove("active_started")
                 .putString("last_status", status).putInt("last_target", targetMin)
@@ -180,7 +181,7 @@ public class AccountabilityEngine extends BroadcastReceiver {
         e.apply();
         cancel(c, REQ_NEAR_END);
         if ("completed".equals(status)) {
-            fire(c, K_KEPT, true);
+            if (!deadlineHandled) fire(c, K_KEPT, true);
             // Next nudge: tomorrow, protect the streak (randomized).
             armMain(c, streak >= 2 ? K_STREAK : K_INACTIVE, randomBetween(18 * 60, 26 * 60));
         } else {

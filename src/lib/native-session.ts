@@ -39,6 +39,7 @@ declare global {
       pendingStudyWidgetTodos?: () => string;
       ackStudyWidgetTodos?: (payloadJson: string) => void;
       finishVerifiedCountdown?: (status: string) => void;
+      finishStandardCountdown?: (status: string) => void;
       scheduleWellnessSound?: (eventKey: string, kind: string, fireAtMs: number) => void;
       playWellnessSound?: (eventKey: string, kind: string) => void;
       cancelWellnessSounds?: (sessionPrefix: string) => void;

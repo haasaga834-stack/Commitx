@@ -62,7 +62,7 @@ import {
 } from "@/lib/focus-shield";
 
 
-import { showSessionProgress, hideSessionProgress, syncVerifiedCountdown, syncStandardCountdown, finishVerifiedCountdown } from "@/lib/native-notifications";
+import { showSessionProgress, hideSessionProgress, syncVerifiedCountdown, syncStandardCountdown, finishVerifiedCountdown, finishStandardCountdown } from "@/lib/native-notifications";
 import { isOnline } from "@/lib/connectivity";
 import { z } from "zod";
 import { useAuth } from "@/lib/use-auth";
@@ -1109,7 +1109,7 @@ function LiveSession() {
     setNativeVerifiedModeActive(false);
     clearActiveVerifiedSession();
     if (mode === "verified") finishVerifiedCountdown(status);
-    else hideSessionProgress();
+    else finishStandardCountdown(status);
     // Focus Shield always releases the moment a session ends, however it ended.
     stopShield();
     setShieldOn(false);
