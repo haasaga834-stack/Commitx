@@ -315,8 +315,8 @@ function Commit() {
   /* Verified session warning + DND gate — shared by both layouts. */
   const overlay = verifiedWarn ? (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 backdrop-blur-sm sm:items-center">
-      <div className="w-full max-w-md rounded-t-4xl bg-card p-6 pb-10 shadow-lift sm:rounded-4xl sm:pb-6">
-        <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-accent/15 text-primary">
+      <div className="w-full max-w-md rounded-t-4xl bg-card p-6 pb-10 text-center shadow-lift sm:rounded-4xl sm:pb-6">
+        <span className="mx-auto inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-accent/15 text-primary">
           <ShieldCheck className="h-5 w-5" />
         </span>
         <h2 className="mt-4 font-display text-xl font-semibold">
@@ -327,7 +327,7 @@ function Commit() {
             ? "Once it starts there is no cancel, pause or end. Apps you pick in Focus Shield stay blocked until the time is up."
             : "Verified Session requires you to stay inside CommitX. You cannot leave the app, switch to another app, or use the Back button during the session."}
         </p>
-        <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+        <ul className="mx-auto mt-3 max-w-sm space-y-2 text-left text-sm text-muted-foreground">
           {[
             ...(native
               ? [
@@ -356,7 +356,7 @@ function Commit() {
               Do Not Disturb is enforced in the CommitX Android app.
             </p>
           ) : dndOn === true ? (
-            <p className="flex items-center gap-2 text-sm font-medium text-primary">
+            <p className="flex items-center justify-center gap-2 text-sm font-medium text-primary">
               <Check className="h-4 w-4" strokeWidth={3} />
               DND Enabled ✓
             </p>

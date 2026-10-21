@@ -359,10 +359,10 @@ export function FocusShieldSetup({
 
         {step === "ready" && (
           <>
-            <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-accent/15 text-primary">
+            <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-accent/15 text-primary">
               <ShieldCheck className="h-5 w-5" />
             </span>
-            <h2 className="mt-4 font-display text-xl font-semibold">Focus Shield Ready</h2>
+            <h2 className="mt-4 text-center font-display text-xl font-semibold">Focus Shield Ready</h2>
             <dl className="mt-4 space-y-2 rounded-2xl border border-hairline bg-background p-4 text-sm">
               <Row label="Duration" value={durationLabel} />
               <Row label="Mode" value="Verified" />
