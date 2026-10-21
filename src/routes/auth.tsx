@@ -1,3 +1,4 @@
+import { track } from "@/lib/analytics";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,6 +48,7 @@ function Auth() {
     setNotice(null);
     try {
       if (mode === "signup") {
+        track("signup_started", { method: "email" });
         setPendingReferral(referral);
         const { data, error } = await supabase.auth.signUp({
           email,
@@ -57,6 +59,7 @@ function Auth() {
           },
         });
         if (error) throw error;
+        track("signup_completed", { method: "email", confirmed: Boolean(data.session) });
         if (data.session) {
           setNotice("Account created. You can start committing now.");
           router.navigate({ to: "/" });

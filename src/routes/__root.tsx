@@ -20,6 +20,7 @@ import {
 } from "../lib/verified-mode";
 import { releaseActiveDbSession } from "../lib/active-session";
 import { useAuth } from "../lib/use-auth";
+import { identifyUser, initAnalytics } from "../lib/analytics";
 import { useStudyReminders } from "../lib/planner";
 import { reconcileMotivationNotifications } from "../lib/native-notifications";
 import { hasNativeBridge } from "../lib/native-session";
@@ -216,6 +217,8 @@ const PUBLIC_PATHS = [
   // Public front door + guest session flow (no account required to start).
   "/",
   "/commit",
+  "/support",
+  "/changelog",
   "/session",
   "/success",
   "/failed",
@@ -248,6 +251,13 @@ function AuthGate({ children }: { children: ReactNode }) {
   const pathname = router.state.location.pathname;
   const { needsOnboarding, complete } = useOnboarding(user?.id ?? null);
   const isPublic = isPublicPath(pathname);
+
+  useEffect(() => {
+    initAnalytics();
+  }, []);
+  useEffect(() => {
+    if (!loading) identifyUser(user?.id ?? null);
+  }, [user?.id, loading]);
 
   useEffect(() => {
     if (loading) return;

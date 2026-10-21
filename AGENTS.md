@@ -26,7 +26,6 @@ Subdirectories have their own AGENTS.md (see android/AGENTS.md) — read it befo
 - Native tablet Home uses a dedicated full-width presentation with locally scoped landing tokens and existing app-route actions; all other native screens retain their existing shells, because homepage styling must not change phones, public pages, or session behavior.
 - Native phone Home scopes its presentation tokens and bottom-navigation styling to its own MobileShell class, so Home updates cannot restyle tablet Home, public pages or other app screens.
 - Require Focus Shield before themes at each native Verified confirmation, with live permissions rechecked and installed-app defaults provided by native category metadata/browser URL-handler discovery plus known-package fallback and explicit default exclusions; Standard and website flows stay separate so setup cannot be skipped or bleed into unrelated modes.
-- In the Android app, Verified sessions never fail on app switching/multi-window; enforcement is Focus Shield blocking (wall-clock expiry, restored on boot) plus locked back navigation, while the website keeps its strict leave-fails rules.
 - Native running group sessions render GroupParticipantsDrawer after bridge detection; website keeps its participant summary; both read the same group state.
 - Accountability/Roast notifications enforce the built-in tone in both the web and native layers rather than saved user preferences, while preserving the master notification switch and OS permissions.
 - Personal, group and preview Growing Plant visuals share a presentation-only component driven by existing session progress, so device layouts and growth never alter session tracking.
@@ -34,4 +33,5 @@ Subdirectories have their own AGENTS.md (see android/AGENTS.md) — read it befo
 - Screen Time lives on its own /screen-time page fed by native ScreenTimeDetails (UsageStatsManager, on-device only), deep-linked from the persistent notification.
 - Widget invitation status is account-backed with local/native mirrors, because onboarding and existing-user To-Do prompts must not repeat after reinstall.
 - Study Buddy events (started/completed/failed) are emitted by database triggers on `active_sessions`/`focus_sessions`, and group Room Pot shares are paid once per completer as `coin_adjustments` (`group_pot:<group_id>`) inside group settlement, because client-reported outcomes are untrusted and wallets derive only from the ledger.
-- Buddy discovery is opt-in via security-definer RPCs; cam is P2P WebRTC on a server-issued pair room, mic muted, no chat, so strangers see little and video never touches servers.
+- Buddy discovery is opt-in via security-definer RPCs; cam is P2P WebRTC in a server-issued pair room, muted, no chat, so video never touches servers.
+- Analytics/crash reporting go only through src/lib/analytics.ts (PostHog, inert without token, no personal content), to keep events privacy-safe.

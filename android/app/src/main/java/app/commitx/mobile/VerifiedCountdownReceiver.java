@@ -9,7 +9,8 @@ import org.json.JSONObject;
 public class VerifiedCountdownReceiver extends BroadcastReceiver {
     @Override public void onReceive(Context context, Intent intent) {
         String action = intent != null ? intent.getAction() : null;
-        if (Intent.ACTION_BOOT_COMPLETED.equals(action) || Intent.ACTION_LOCKED_BOOT_COMPLETED.equals(action)) {
+        if (Intent.ACTION_BOOT_COMPLETED.equals(action) || Intent.ACTION_LOCKED_BOOT_COMPLETED.equals(action)
+                || Intent.ACTION_MY_PACKAGE_REPLACED.equals(action)) {
             VerifiedCountdownService.restoreAfterBoot(context);
             // Blocked apps stay blocked until the committed time; the store
             // already expires itself on its wall-clock end time.

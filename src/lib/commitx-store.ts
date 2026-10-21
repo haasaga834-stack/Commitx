@@ -1,4 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
+import { durationBucket, track } from "./analytics";
 
 export type Mode = "standard" | "verified";
 export type Status = "completed" | "failed";
@@ -135,8 +136,19 @@ export function getState(): AppState {
 }
 
 export function setState(updater: (s: AppState) => AppState) {
-  current = updater(ensure());
+  const before = ensure();
+  current = updater(before);
   write(current);
+  if (current.sessions !== before.sessions) {
+    const known = new Set(before.sessions.map((s) => s.id));
+    for (const s of current.sessions) {
+      if (known.has(s.id)) continue;
+      track(s.status === "completed" ? "session_completed" : "session_abandoned", {
+        mode: s.mode,
+        duration_bucket: durationBucket(s.durationMinutes),
+      });
+    }
+  }
   listeners.forEach((l) => l());
 }
 

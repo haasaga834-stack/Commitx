@@ -116,6 +116,9 @@
         <receiver android:name=".VerifiedCountdownReceiver" android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
             </intent-filter>
         </receiver>
 
@@ -124,7 +127,12 @@
                 android:value="Displays live remaining time for a user-started Standard study commitment while the app is backgrounded, including recovery breaks; stops at expiry or cancellation. No session rewards are recorded by this service." />
         </service>
         <receiver android:name=".StandardCountdownReceiver" android:exported="false">
-            <intent-filter><action android:name="android.intent.action.BOOT_COMPLETED" /></intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
         </receiver>
         <receiver android:name=".StudyGoalWidget" android:exported="false" android:label="@string/study_widget_name">
             <intent-filter>

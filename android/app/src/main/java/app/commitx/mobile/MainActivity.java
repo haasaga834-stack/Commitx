@@ -64,6 +64,7 @@ public class MainActivity extends Activity {
     private String failedUrl;
     private android.net.ConnectivityManager.NetworkCallback offlineNetworkCallback;
     private volatile boolean splashHidden = false;
+    private long lastBackAtHome = 0;
     private Dialog authDialog;
     private WebView authWebView;
     private SharedPreferences preferences;
@@ -794,7 +795,14 @@ public class MainActivity extends Activity {
         // Home is the root destination: back must leave the app instead of
         // walking back into a previously visited section.
         if (atRootScreen) {
-            moveTaskToBack(true);
+            long now = android.os.SystemClock.elapsedRealtime();
+            if (now - lastBackAtHome < 2000) {
+                lastBackAtHome = 0;
+                moveTaskToBack(true);
+            } else {
+                lastBackAtHome = now;
+                android.widget.Toast.makeText(this, "Press back again to exit", android.widget.Toast.LENGTH_SHORT).show();
+            }
             return;
         }
 

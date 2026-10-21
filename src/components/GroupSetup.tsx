@@ -1,3 +1,4 @@
+import { track } from "@/lib/analytics";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, X } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
@@ -118,6 +119,7 @@ export function GroupSetup({ onClose }: { onClose: () => void }) {
     setError(null);
     try {
       const res = await join({ data: { code: code.trim(), acceptedTerms: true } });
+      if (res && "id" in res) track("group_joined");
       if ("error" in res) {
         setError(res.error);
         return;
