@@ -154,9 +154,9 @@ function Auth() {
       // Backing out of the Google account chooser is not a failure.
       if (/cancel/i.test(message)) return;
       const nativeFailure = /^(native_timeout|native_unavailable|token_parse_failed|GetCredential)/.test(message);
-      setError(actionErrorMessage(err, nativeFailure
+      setError(nativeFailure
         ? "Google couldn't finish signing you in. Try again in CommitX, or sign in with email."
-        : message || "Google sign-in failed."));
+        : actionErrorMessage(err, message || "Google sign-in failed."));
     } finally {
       setBusy(false);
     }
