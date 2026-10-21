@@ -1189,9 +1189,9 @@ function LiveSession() {
       {/* Everything stays on one centred axis; the countdown reserves fixed
           space so changing digits never shift the hourglass sideways. */}
       <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center gap-8 md:justify-start md:gap-8 md:pt-16 lg:pt-20">
-        <div className="mx-auto grid h-[226px] w-[226px] shrink-0 place-items-center overflow-visible">
+        <div className="mx-auto grid h-[180px] w-[180px] shrink-0 place-items-center overflow-visible md:h-[226px] md:w-[226px]">
           <Hourglass
-            size={226}
+            size={isTabletView ? 226 : 180}
             state={onBreak ? "idle" : "running"}
             progress={progress}
           />
@@ -1228,15 +1228,6 @@ function LiveSession() {
 
 
       <div className="relative z-10 mx-auto w-full max-w-md pb-2 text-center">
-        {!isVerified && (
-          <button
-            type="button"
-            onClick={() => setConfirmCancel(true)}
-            className="mx-auto mb-5 block rounded-full border border-hairline bg-background/70 px-5 py-2 text-xs font-medium text-muted-foreground backdrop-blur"
-          >
-            Cancel session
-          </button>
-        )}
         <span className="mx-auto block h-px w-16 bg-hairline" />
         <p className="mt-5 px-2 font-display text-base leading-relaxed text-foreground/80">
           “{quote}”

@@ -24,7 +24,7 @@ import {
   startGroup,
 } from "@/lib/group-study.functions";
 import { MAX_GROUP_SIZE, memberStatusLabel, type GroupStateDTO } from "@/lib/group-study";
-import { hasNativeBridge, setNativeSessionLock } from "@/lib/native-session";
+import { hasNativeBridge, setNativeSessionLock, canCheckDnd, isDndEnabled, openDndSettings } from "@/lib/native-session";
 import { GroupParticipantsDrawer } from "@/components/GroupParticipantsDrawer";
 import { showSessionProgress, hideSessionProgress } from "@/lib/native-notifications";
 import { FocusShieldSetup, type FocusShieldResult } from "@/components/FocusShieldSetup";
@@ -54,7 +54,7 @@ export const Route = createFileRoute("/group/$id")({
     <Fallback text="We couldn't load this group. It may have been cancelled." />
   ),
   notFoundComponent: () => <Fallback text="This group no longer exists." />,
-  component: GroupSession,
+  component: GroupSessionWithDnd,
 });
 
 function Fallback({ text }: { text: string }) {
@@ -153,7 +153,48 @@ function GroupParticipantSummary({ members }: { members: GroupStateDTO["members"
   );
 }
 
-function GroupSession() {
+/** Verified groups on Android require Do Not Disturb, like personal Verified. */
+function GroupSessionWithDnd() {
+  const [needDnd, setNeedDnd] = useState(false);
+  const [dndOff, setDndOff] = useState(false);
+  useEffect(() => {
+    if (!needDnd || !canCheckDnd()) {
+      setDndOff(false);
+      return;
+    }
+    const check = () => setDndOff(isDndEnabled() === false);
+    check();
+    const t = window.setInterval(check, 1500);
+    document.addEventListener("visibilitychange", check);
+    return () => {
+      window.clearInterval(t);
+      document.removeEventListener("visibilitychange", check);
+    };
+  }, [needDnd]);
+  return (
+    <>
+      <GroupSession onNeedDnd={setNeedDnd} />
+      {needDnd && dndOff && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-background/95 px-6 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-3xl bg-card p-6 text-center shadow-lift">
+            <p className="font-display text-xl font-semibold">Do Not Disturb required</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Group Verified sessions need DND on. Turn it on, then come back — we'll re-check automatically.
+            </p>
+            <button
+              onClick={openDndSettings}
+              className="mt-6 w-full rounded-full bg-primary px-6 py-4 text-sm font-medium text-primary-foreground"
+            >
+              Open Settings
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+function GroupSession({ onNeedDnd }: { onNeedDnd?: (v: boolean) => void }) {
   const { id } = Route.useParams();
   const navigate = useNavigate();
   const isTablet = useIsTablet();
@@ -422,6 +463,11 @@ function GroupSession() {
     if (!isActive || !stillIn || remainingMs === null) return;
     if (remainingMs <= 0) void settle("completed");
   }, [isActive, stillIn, remainingMs, settle]);
+
+  const needDnd = Boolean(isVerified && stillIn && group && group.status !== "ended" && hasNativeBridge());
+  useEffect(() => {
+    onNeedDnd?.(needDnd);
+  }, [needDnd, onNeedDnd]);
 
   /** Verified enforcement: leaving the app fails this participant. */
   useEffect(() => {
