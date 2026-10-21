@@ -50,7 +50,7 @@ final class AppLimitsOverlay {
                     // Keep protecting the limited app until the worker confirms
                     // CommitX (or another app) resumed. No timed bypass window.
                 } catch (Throwable ignored) {}
-            });
+            }, true);
 
             int type = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                     ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
