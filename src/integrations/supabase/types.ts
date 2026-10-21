@@ -104,6 +104,33 @@ export type Database = {
         }
         Relationships: []
       }
+      buddy_cam_signals: {
+        Row: {
+          created_at: string
+          id: number
+          payload: Json
+          recipient_id: string
+          room: string
+          sender_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          payload: Json
+          recipient_id: string
+          room: string
+          sender_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          payload?: Json
+          recipient_id?: string
+          room?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
       buddy_events: {
         Row: {
           coins: number
@@ -833,6 +860,10 @@ export type Database = {
         }[]
       }
       current_buddy_id: { Args: { _user_id: string }; Returns: string }
+      delete_account_app_data: {
+        Args: { _user_id: string }
+        Returns: undefined
+      }
       fail_web_session: { Args: { _reason: string }; Returns: string }
       find_study_buddies: {
         Args: {
@@ -950,6 +981,10 @@ export type Database = {
         Args: { _group_id: string; _user_id: string }
         Returns: number
       }
+      read_buddy_cam_signals: {
+        Args: { _after?: number; _room: string }
+        Returns: Json
+      }
       recompute_wallet: { Args: { _user_id: string }; Returns: number }
       record_focus_session_from_active: {
         Args: {
@@ -979,6 +1014,10 @@ export type Database = {
       respond_buddy_request: {
         Args: { _accept: boolean; _id: string }
         Returns: boolean
+      }
+      send_buddy_cam_signal: {
+        Args: { _payload: Json; _room: string }
+        Returns: undefined
       }
       send_buddy_request: { Args: { _to: string }; Returns: boolean }
       set_buddy_discoverable: { Args: { _on: boolean }; Returns: boolean }
