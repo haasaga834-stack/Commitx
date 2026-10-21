@@ -245,7 +245,7 @@ function MobileHome() {
         </Link>
 
       </main>
-      <div className="mx-auto max-w-md px-[14px] pb-28 pt-1">
+      <div className="mx-auto max-w-md px-[14px] pb-2 pt-1">
         <BuddyCard />
       </div>
     </MobileShell>
