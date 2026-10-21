@@ -8,6 +8,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { setPendingReferral } from "@/lib/pending-referral";
 import { WELCOME_COINS, REFERRAL_REWARD, coinLabel } from "@/lib/commitx-store";
 import { actionErrorMessage, isOnline, OFFLINE_ACTION_MESSAGE } from "@/lib/connectivity";
+import { isAndroidSignIn, hasNativeGoogleSignIn, nativeGoogleSignIn } from "@/lib/native-auth";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -132,7 +133,6 @@ function Auth() {
     }
     setBusy(true);
     try {
-      const { isAndroidSignIn, hasNativeGoogleSignIn, nativeGoogleSignIn } = await import("@/lib/native-auth");
       if (isAndroidSignIn()) {
         // Discard the legacy detour even for phones that already stored it.
         try { localStorage.removeItem("commitx-google-native-skip"); } catch {}
@@ -154,9 +154,9 @@ function Auth() {
       // Backing out of the Google account chooser is not a failure.
       if (/cancel/i.test(message)) return;
       const nativeFailure = /^(native_timeout|native_unavailable|token_parse_failed|GetCredential)/.test(message);
-      setError(actionErrorMessage(err, nativeFailure
+      setError(nativeFailure
         ? "Google couldn't finish signing you in. Try again in CommitX, or sign in with email."
-        : message || "Google sign-in failed."));
+        : actionErrorMessage(err, message || "Google sign-in failed."));
     } finally {
       setBusy(false);
     }
