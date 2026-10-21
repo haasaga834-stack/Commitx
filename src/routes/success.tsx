@@ -68,7 +68,7 @@ function Success() {
       : `${focusMinutes}m`;
 
   return (
-    <div className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-background px-6 py-14">
+    <div className="relative flex h-dvh flex-col items-center justify-center overflow-hidden bg-background px-5 py-6">
       {/* Warm glow + rising embers celebration */}
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute left-1/2 top-1/3 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/25 blur-3xl" />
@@ -87,19 +87,19 @@ function Success() {
       </div>
 
       <div className="relative flex flex-col items-center">
-        <span className="absolute inset-0 m-auto h-40 w-40 rounded-full border border-accent/50 animate-ring-burst" />
+        <span className="absolute inset-0 m-auto h-28 w-28 rounded-full border border-accent/50 animate-ring-burst" />
         <span
-          className="absolute inset-0 m-auto h-40 w-40 rounded-full border border-primary/40 animate-ring-burst"
+          className="absolute inset-0 m-auto h-28 w-28 rounded-full border border-primary/40 animate-ring-burst"
           style={{ animationDelay: "600ms" }}
         />
-        <Hourglass size={200} state="success" progress={1} />
+        <Hourglass size={120} state="success" progress={1} />
       </div>
 
-      <div className="relative mt-2 inline-flex h-14 w-14 items-center justify-center rounded-full bg-accent text-accent-foreground shadow-lift animate-pop-in">
-        <Check className="h-7 w-7" strokeWidth={2.6} />
+      <div className="relative -mt-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-accent text-accent-foreground shadow-lift animate-pop-in">
+        <Check className="h-5 w-5" strokeWidth={2.6} />
       </div>
 
-      <h1 className="mt-6 text-center font-display text-3xl font-semibold animate-pop-in" style={{ animationDelay: "120ms" }}>
+      <h1 className="mt-3 text-center font-display text-2xl font-semibold animate-pop-in" style={{ animationDelay: "120ms" }}>
         Commitment complete
       </h1>
       <p
@@ -111,7 +111,7 @@ function Success() {
 
       {!guest && coinsEarned > 0 && (
         <div
-          className="relative mt-6 flex items-center gap-3 overflow-hidden rounded-full border border-accent/40 bg-card px-5 py-3 shadow-soft animate-coin-rise"
+          className="relative mt-3 flex items-center gap-2 overflow-hidden rounded-full border border-accent/40 bg-card px-4 py-2 shadow-soft animate-coin-rise"
           style={{ animationDelay: "320ms" }}
         >
           <span className="text-xl">🪙</span>
@@ -126,7 +126,7 @@ function Success() {
       )}
 
       <div
-        className="mt-7 grid w-full max-w-md grid-cols-2 gap-3 animate-fade-up sm:grid-cols-4"
+        className="mt-4 grid w-full max-w-md grid-cols-4 gap-2 animate-fade-up sm:grid-cols-4"
         style={{ animationDelay: "380ms" }}
       >
         <StatTile
@@ -141,7 +141,7 @@ function Success() {
       </div>
 
       <div
-        className="mt-4 w-full max-w-md space-y-2 animate-fade-up"
+        className="mt-3 grid w-full max-w-md grid-cols-2 gap-2 animate-fade-up"
         style={{ animationDelay: "460ms" }}
       >
         <Row label="Duration" value={`${duration} min`} />
@@ -150,18 +150,18 @@ function Success() {
 
       {guest ? (
         <div
-          className="mt-6 w-full max-w-md rounded-3xl border border-hairline bg-card p-5 text-center shadow-soft animate-fade-up"
+          className="mt-3 w-full max-w-md rounded-3xl border border-hairline bg-card p-4 text-center shadow-soft animate-fade-up"
           style={{ animationDelay: "500ms" }}
         >
-          <h2 className="font-display text-lg font-semibold">
+          <h2 className="font-display text-base font-semibold">
             Keep your progress with CommitX
           </h2>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-1 text-xs text-muted-foreground">
             Create an account or sign in to save this session and track your progress.
           </p>
           <Link
             to="/auth"
-            className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-primary px-6 py-3.5 text-sm font-medium text-primary-foreground"
+            className="mt-3 inline-flex w-full items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground"
           >
             Continue with Google or Email
           </Link>
@@ -172,7 +172,7 @@ function Success() {
       <Link
         to="/"
         replace
-        className="mt-8 inline-block w-full max-w-xs rounded-full bg-primary px-8 py-4 text-center text-base font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.98] animate-fade-up"
+        className="mt-5 inline-block w-full max-w-xs rounded-full bg-primary px-8 py-3.5 text-center text-base font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.98] animate-fade-up"
         style={{ animationDelay: "540ms" }}
       >
         Done
@@ -194,23 +194,23 @@ function StatTile({
 }) {
   return (
     <div
-      className={`rounded-2xl bg-card p-3 text-center shadow-soft ${
+      className={`rounded-2xl bg-card px-1 py-2.5 text-center shadow-soft ${
         highlight ? "ring-1 ring-accent/40 animate-streak-pulse" : ""
       }`}
     >
-      <span className="mx-auto flex h-8 w-8 items-center justify-center rounded-full bg-accent/15 text-primary">
+      <span className="mx-auto flex h-7 w-7 items-center justify-center rounded-full bg-accent/15 text-primary">
         {icon}
       </span>
-      <p className="mt-2 text-base font-semibold tabular-nums text-foreground">{value}</p>
-      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="mt-1 text-sm font-semibold tabular-nums text-foreground">{value}</p>
+      <p className="truncate text-[9px] uppercase tracking-wider text-muted-foreground">{label}</p>
     </div>
   );
 }
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between rounded-2xl bg-card px-4 py-3 shadow-soft">
-      <span className="text-sm text-muted-foreground">{label}</span>
+    <div className="flex flex-col items-center rounded-2xl bg-card px-3 py-2 text-center shadow-soft">
+      <span className="text-[11px] text-muted-foreground">{label}</span>
       <span className="text-sm font-medium">{value}</span>
     </div>
   );
