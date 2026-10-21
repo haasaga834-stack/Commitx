@@ -49,7 +49,8 @@ import {
   setNativeSessionLock,
   setNativeVerifiedModeActive,
 } from "@/lib/native-session";
-import { BellOff, Shield } from "lucide-react";
+import { BellOff, Shield, X } from "lucide-react";
+import { useIsTablet } from "@/lib/use-tablet";
 import { toast } from "sonner";
 import {
   clearShieldPlan,
@@ -1173,6 +1174,16 @@ function LiveSession() {
 
   return (
     <div className="relative flex min-h-dvh flex-col bg-background px-6 pb-10 pt-14">
+      {!isVerified && (
+        <button
+          type="button"
+          aria-label="Cancel session"
+          onClick={() => setConfirmCancel(true)}
+          className="absolute right-4 top-4 z-20 grid h-10 w-10 place-items-center rounded-full bg-destructive/15 text-destructive shadow-soft backdrop-blur transition-transform active:scale-90"
+        >
+          <X className="h-5 w-5" strokeWidth={2.6} />
+        </button>
+      )}
       <SessionScene
         theme={sessionTheme}
         progress={progress}
