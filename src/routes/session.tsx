@@ -402,6 +402,7 @@ function LiveSession() {
   const [, setPaused] = useState<boolean>(() => runningSinceRef.current === null);
   // Standard sessions only: cancelling ends the session and forfeits the stake.
   const [confirmCancel, setConfirmCancel] = useState(false);
+  const isTabletView = useIsTablet();
   const [quote] = useState(() => QUOTES[Math.floor(Math.random() * QUOTES.length)]);
   const doneRef = useRef(false);
   const graceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
