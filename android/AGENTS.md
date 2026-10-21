@@ -12,3 +12,4 @@
 - The silent ongoing screen-time notification is refreshed by the ScreenTimeReceiver alarm, boot and app resume, because usage data must stay local and current without a foreground service.
 - Accountability/Roast delivery is the native AccountabilityEngine (AlarmManager, one alarm slot, one notification id) fed by events from src/lib/accountability.ts, because closed-app delivery and legacy clients must follow the same policy.
 - WebView camera/mic grants (Study Buddy cam) are allowed only for CommitX origins after Android runtime permission, because media capture must never extend to arbitrary pages.
+- In the Android app, Verified sessions never fail on app switching/multi-window; enforcement is Focus Shield blocking (wall-clock expiry, restored on boot) plus locked back navigation, while the website keeps its strict leave-fails rules.
