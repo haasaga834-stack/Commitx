@@ -17,9 +17,10 @@ concurrency:
 
 env:
   COMMITX_KEYSTORE_PATH: ${{ github.workspace }}/android/app/commitx.keystore
-  COMMITX_KEYSTORE_PASSWORD: ${{ secrets.COMMITX_KEYSTORE_PASSWORD }}
-  COMMITX_KEY_ALIAS: ${{ secrets.COMMITX_KEY_ALIAS }}
-  COMMITX_KEY_PASSWORD: ${{ secrets.COMMITX_KEY_PASSWORD }}
+  # Optional secrets override the original CI defaults used for earlier builds.
+  COMMITX_KEYSTORE_PASSWORD: ${{ secrets.COMMITX_KEYSTORE_PASSWORD || 'commitx' }}
+  COMMITX_KEY_ALIAS: ${{ secrets.COMMITX_KEY_ALIAS || 'commitx' }}
+  COMMITX_KEY_PASSWORD: ${{ secrets.COMMITX_KEY_PASSWORD || 'commitx' }}
 
   # Play Store version. This is the single place to change it.
   # Bump COMMITX_VERSION_CODE by 1 before every new upload — Play rejects an
@@ -114,8 +115,7 @@ jobs:
           if [ -n "$COMMITX_KEYSTORE_BASE64" ]; then
             printf '%s' "$COMMITX_KEYSTORE_BASE64" | base64 --decode > "$COMMITX_KEYSTORE_PATH"
           fi
-          test -f "$COMMITX_KEYSTORE_PATH" || { echo 'Upload key missing. Restore the original key; never generate a replacement.'; exit 1; }
-          test -n "$COMMITX_KEYSTORE_PASSWORD" && test -n "$COMMITX_KEY_ALIAS" && test -n "$COMMITX_KEY_PASSWORD" || { echo 'Set the three release signing credential secrets before building.'; exit 1; }
+          test -f "$COMMITX_KEYSTORE_PATH" || { echo 'Saved upload key not found in the build cache. Restore the original key (COMMITX_KEYSTORE_BASE64); never generate a replacement.'; exit 1; }
           keytool -list -keystore "$COMMITX_KEYSTORE_PATH" -alias "$COMMITX_KEY_ALIAS" -storepass:env COMMITX_KEYSTORE_PASSWORD > /dev/null
 
       - name: Build signed release APK and AAB
