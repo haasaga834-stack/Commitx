@@ -17,9 +17,9 @@ concurrency:
 
 env:
   COMMITX_KEYSTORE_PATH: ${{ github.workspace }}/android/app/commitx.keystore
-  COMMITX_KEYSTORE_PASSWORD: commitx
-  COMMITX_KEY_ALIAS: commitx
-  COMMITX_KEY_PASSWORD: commitx
+  COMMITX_KEYSTORE_PASSWORD: ${{ secrets.COMMITX_KEYSTORE_PASSWORD }}
+  COMMITX_KEY_ALIAS: ${{ secrets.COMMITX_KEY_ALIAS }}
+  COMMITX_KEY_PASSWORD: ${{ secrets.COMMITX_KEY_PASSWORD }}
 
   # Play Store version. This is the single place to change it.
   # Bump COMMITX_VERSION_CODE by 1 before every new upload — Play rejects an
@@ -105,19 +105,18 @@ jobs:
           path: android/app/commitx.keystore
           key: commitx-apk-signing-v1
 
-      - name: Generate signing keystore (non-interactive)
+      - name: Restore saved upload key and require release credentials
+        env:
+          COMMITX_KEYSTORE_BASE64: ${{ secrets.COMMITX_KEYSTORE_BASE64 }}
         run: |
-          set -eux
+          set -eu
           mkdir -p android/app
-          if [ ! -f "$COMMITX_KEYSTORE_PATH" ]; then
-            keytool -genkeypair -noprompt \
-              -keystore "$COMMITX_KEYSTORE_PATH" \
-              -alias "$COMMITX_KEY_ALIAS" \
-              -storepass "$COMMITX_KEYSTORE_PASSWORD" \
-              -keypass "$COMMITX_KEY_PASSWORD" \
-              -keyalg RSA -keysize 2048 -validity 10000 \
-              -dname "CN=CommitX, OU=Mobile, O=CommitX, L=NA, S=NA, C=IN"
+          if [ -n "$COMMITX_KEYSTORE_BASE64" ]; then
+            printf '%s' "$COMMITX_KEYSTORE_BASE64" | base64 --decode > "$COMMITX_KEYSTORE_PATH"
           fi
+          test -f "$COMMITX_KEYSTORE_PATH" || { echo 'Upload key missing. Restore the original key; never generate a replacement.'; exit 1; }
+          test -n "$COMMITX_KEYSTORE_PASSWORD" && test -n "$COMMITX_KEY_ALIAS" && test -n "$COMMITX_KEY_PASSWORD" || { echo 'Set the three release signing credential secrets before building.'; exit 1; }
+          keytool -list -keystore "$COMMITX_KEYSTORE_PATH" -alias "$COMMITX_KEY_ALIAS" -storepass:env COMMITX_KEYSTORE_PASSWORD > /dev/null
 
       - name: Build signed release APK and AAB
         working-directory: android

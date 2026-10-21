@@ -12,6 +12,18 @@ def keystoreFile = file(keystorePath)
 def defaultGoogleWebClientId = "1071070006682-q095d7588gsb7ap7joh8t1p5ls3epvtj.apps.googleusercontent.com"
 def googleWebClientId = System.getenv("GOOGLE_WEB_CLIENT_ID") ?: defaultGoogleWebClientId
 
+tasks.register("validateReleaseSigning") {
+    doLast {
+        if (!keystoreFile.exists() || !System.getenv("COMMITX_KEYSTORE_PASSWORD") ||
+                !System.getenv("COMMITX_KEY_ALIAS") || !System.getenv("COMMITX_KEY_PASSWORD")) {
+            throw new GradleException("Release requires the original upload keystore and environment signing credentials. Debug signing is not allowed.")
+        }
+    }
+}
+tasks.configureEach { task ->
+    if (task.name == "preReleaseBuild") task.dependsOn("validateReleaseSigning")
+}
+
 android {
     namespace "app.commitx.mobile"
     compileSdk 36
@@ -50,7 +62,7 @@ android {
             minifyEnabled false
             shrinkResources false
             debuggable false
-            signingConfig keystoreFile.exists() ? signingConfigs.release : signingConfigs.debug
+            signingConfig signingConfigs.release
         }
     }
 

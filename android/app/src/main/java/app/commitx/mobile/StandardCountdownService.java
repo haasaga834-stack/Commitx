@@ -226,7 +226,14 @@ public class StandardCountdownService extends Service {
         String text = state.optString("goal", "Focus") + " · " + pct + "% of " + total / 60000 + " min complete";
         if ("recovery_break".equals(phase)) { title = "Break time — take 5 minutes 🌿"; text = time + " left · your focus timer is paused."; }
         if ("awaiting_confirmation".equals(phase)) { title = "Your break is over. Ready to focus back?"; text = "Return to CommitX and tap YES when you're ready."; }
+        if (outcome != null) {
+            running = false;
+            title = "completed".equals(outcome) ? "Standard session completed" : "Standard session ended";
+            text = "Open CommitX to view your session result.";
+            if ("completed".equals(outcome)) pct = 100;
+        }
         Notification.Builder builder = CommitXNotifications.sessionBuilder(ctx, title, text, pct);
+        if (outcome != null) builder.setOngoing(false).setAutoCancel(true).setUsesChronometer(false);
         if (running) builder.setWhen(System.currentTimeMillis() + remaining).setShowWhen(true).setUsesChronometer(true).setChronometerCountDown(true);
         if (Build.VERSION.SDK_INT >= 31) builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE);
         return builder.build();

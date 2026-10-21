@@ -86,41 +86,10 @@ export const deleteAccount = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const userId = context.userId;
 
-    // The friend on the other side of a referral keeps their bonus: record it
-    // as an explicit adjustment before the shared referral row goes away.
-    const { data: refs } = await supabaseAdmin
-      .from("referrals")
-      .select("referrer_id, referred_id, bonus_amount")
-      .or(`referrer_id.eq.${userId},referred_id.eq.${userId}`);
-    const kept = (refs ?? [])
-      .map((r) => ({
-        user_id: r.referrer_id === userId ? r.referred_id : r.referrer_id,
-        amount: r.bonus_amount,
-        reason: "referral_bonus_kept_after_friend_deleted_account",
-      }))
-      .filter((r) => r.user_id && r.user_id !== userId && r.amount > 0);
-    if (kept.length > 0) await supabaseAdmin.from("coin_adjustments").insert(kept);
-
-    await supabaseAdmin.from("focus_sessions").delete().eq("user_id", userId);
-    await supabaseAdmin.from("referrals").delete().eq("referred_id", userId);
-    await supabaseAdmin.from("referrals").delete().eq("referrer_id", userId);
-    await supabaseAdmin.from("coin_adjustments").delete().eq("user_id", userId);
-    await supabaseAdmin.from("profiles").update({ referred_by: null }).eq("referred_by", userId);
-    await supabaseAdmin.from("study_plans").delete().eq("user_id", userId);
-    await supabaseAdmin.from("todos").delete().eq("user_id", userId);
-    await supabaseAdmin.from("academic_subjects").delete().eq("user_id", userId);
-    await supabaseAdmin.from("user_settings").delete().eq("user_id", userId);
-    await supabaseAdmin.from("active_sessions").delete().eq("user_id", userId);
-    await supabaseAdmin.from("session_claims_archive").delete().eq("user_id", userId);
-    await supabaseAdmin.from("focus_sessions_duplicates_archive").delete().eq("user_id", userId);
-    await supabaseAdmin.from("group_members").delete().eq("user_id", userId);
-    await supabaseAdmin.from("study_groups").delete().eq("creator_id", userId);
-    await supabaseAdmin.from("student_reviews").delete().eq("submitted_by", userId);
-    await supabaseAdmin.from("wallets").delete().eq("user_id", userId);
-    // The public leaderboard row carries a display name: it must go too.
-    await supabaseAdmin.from("leaderboard_totals").delete().eq("user_id", userId);
-    await supabaseAdmin.from("profiles").delete().eq("id", userId);
-
+    // Application records and referral preservation are atomic and retry-safe.
+    // Never remove the login if any application-data cleanup failed.
+    const { error: cleanupError } = await supabaseAdmin.rpc("delete_account_app_data", { _user_id: userId });
+    if (cleanupError) throw new Error("Account deletion could not finish. Please retry.");
 
     const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
     if (error) throw new Error(error.message);

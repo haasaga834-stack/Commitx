@@ -1,5 +1,8 @@
 # Roadmap
 
+- [x] Final Play version 2 source audit: retained 2/1.0.1, fixed signing/privacy/social cleanup guards; 50 isolated browser tests, 20 native assertions and signed-in pages/authorization checks pass. Release gate recorded in PLAY_VERSION_2_RELEASE_CHECK.md; no publishing.
+- [ ] Final version 2 upload clearance — blocked on original upload key/credential backup and certificate match, a fresh full Android release build, physical phone/multi-user checks, and owner Play Console declarations/reviewer/safety checks.
+
 - [x] Remove the separately downloaded native sign-in module that can stall before its timeout starts; five lifecycle tests pass and simulated stuck chooser releases controls/retries natively without navigation. Timeout no longer falsely reports offline. Affected Play Store phone's successful login remains unverified.
 
 - [x] Keep Android Google sign-in inside CommitX; removed stored browser fallback and overlapping timeouts. Simulated chooser cancellation/retry/provider failure opens no browser; lifecycle tests cover token exchange, duplicates and timeout. Real Play Store Google login remains unverified.
@@ -11,7 +14,7 @@
 - [x] Reduce App Limits checks from 2 seconds to 300ms, move detection/usage work off the UI thread, share throttled usage aggregation, and remove the 5-second return-button bypass; 13 App Limits and 7 existing countdown assertions passed. Changed native classes compile against Android 36 with unchanged integrations stubbed; this is not a full release build or device check.
 - [ ] Verify App Limits reopen latency, return navigation, daily reset and background behavior on a physical Android device — requires updated APK/AAB and an attached device.
 
-- [ ] Restore completion/sign-in after October 21 failure: hosted database confirmed paused; approved resume failed because workspace Cloud credits are exhausted. Blocked on replenishing credits, then resume and verify sign-in/pending-session recording. No speculative app changes made.
+- [ ] Reverify pending-session recording after earlier Cloud pause — backend now responds normally and signed-in Profile/Settings verified on October 21; pending completion readback still needs a controlled session test.
 
 - [x] Diagnose and repair elapsed-ticket restarts, terminal persistence, late lifecycle writes, identical-session deduplication, stale pulls/account responses, missing retries and split statistics snapshots without UI changes.
 - [x] Verify real account offline completion/reload and same-id replay against the database; historical hourly reward replay unchanged; 29 web regressions and 7 native countdown assertions passed. Database checks found no duplicate claims, wallet mismatches or leaderboard mismatches.

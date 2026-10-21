@@ -46,7 +46,7 @@ const SECTIONS: { title: string; body: string[] }[] = [
   {
     title: "3. User accounts",
     body: [
-      "You need an account to use CommitX. You must provide accurate information, keep your credentials secure, and are responsible for activity under your account.",
+      "An account is required to save progress and use social features; website guest sessions are available without an account. Keep account credentials secure and provide accurate information.",
       "One account per person. Creating multiple accounts to farm referral bonuses, coins or streaks is not allowed.",
     ],
   },
@@ -62,7 +62,7 @@ const SECTIONS: { title: string; body: string[] }[] = [
     body: [
       "When you start a commitment, the Cx Coins are held from your balance for the duration of the session. Complete the session and they are returned in full, plus 25 Cx Coins for each completed study hour.",
       "If you end a session early, or fail the focus rules of Verified Mode, the committed amount is forfeited within the app. Session timing is based on real clock time and is settled on our servers.",
-      "Verified Mode requires Do Not Disturb and fails if you intentionally leave the app, with a short grace window for emergency calls. Only one active session is allowed at a time.",
+      "Native Android Verified Mode requires Do Not Disturb and Focus Shield setup. Selected distractions are blocked until expiry; emergency access and unblocked apps remain available, and switching apps alone does not fail a native session. Website Verified Mode uses page-focus rules rather than app blocking. Only one active session is allowed per account.",
     ],
   },
   {
@@ -73,10 +73,10 @@ const SECTIONS: { title: string; body: string[] }[] = [
     ],
   },
   {
-    title: "7. Focus Shield (Android, optional)",
+    title: "7. Focus Shield (Android)",
     body: [
       "Focus Shield is an optional helper in Standard Mode. When you turn it on and pick apps yourself, CommitX shows its own full-screen reminder over those apps for the length of your session, using Android's usage-access and display-over-other-apps permissions that you grant.",
-      "Focus Shield never disables, hides, uninstalls, modifies or collects data from any other app, and it stops when your session ends. You can dismiss the reminder and leave at any time; if Android stops the shield, your session is unaffected and Verified Mode rules never apply to it.",
+      "In native Verified Mode, Focus Shield setup is required, with social apps, games and browsers locked as defaults (Telegram remains optional). Other apps can be selected. There is no ordinary early cancel or skip; restrictions expire with the commitment. Focus Shield never uninstalls or modifies another app. Android settings, force-stop, uninstall and manufacturer battery controls can limit enforcement; CommitX cannot promise protection Android does not permit.",
       "Focus Shield is not available on the website, where CommitX makes no claim to block anything.",
     ],
   },

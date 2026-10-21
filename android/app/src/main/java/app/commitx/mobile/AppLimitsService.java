@@ -44,6 +44,7 @@ public class AppLimitsService extends Service {
     private long lastEventQuery;
     private long lastUsageRefresh;
     private volatile boolean destroyed;
+    private boolean foregroundReady;
 
     private final Runnable tick = new Runnable() {
         @Override
@@ -83,7 +84,8 @@ public class AppLimitsService extends Service {
     public void onCreate() {
         super.onCreate();
         overlay = new AppLimitsOverlay(this);
-        startForegroundSafely();
+        foregroundReady = startForegroundSafely();
+        if (!foregroundReady) { stopSelf(); return; }
         workerThread = new HandlerThread("commitx-app-limits");
         workerThread.start();
         worker = new Handler(workerThread.getLooper());
@@ -92,6 +94,7 @@ public class AppLimitsService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (!foregroundReady) { stopSelf(); return START_NOT_STICKY; }
         if (worker != null) {
             worker.removeCallbacks(tick);
             worker.post(tick);
@@ -172,7 +175,7 @@ public class AppLimitsService extends Service {
         });
     }
 
-    private void startForegroundSafely() {
+    private boolean startForegroundSafely() {
         try {
             NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && nm != null) {
@@ -203,7 +206,8 @@ public class AppLimitsService extends Service {
             } else {
                 startForeground(NOTIF_ID, notification);
             }
-        } catch (Throwable ignored) {}
+            return true;
+        } catch (RuntimeException denied) { return false; }
     }
 
     private String foregroundPackage() {

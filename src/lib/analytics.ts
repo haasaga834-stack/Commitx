@@ -4,6 +4,7 @@
  * emails, names or any study content — only event names and coarse buckets.
  */
 type Props = Record<string, string | number | boolean | null>;
+import { safeAnalyticsProps, redactAnalyticsEvent } from "./analytics-privacy";
 
 let client: { capture: (e: string, p?: Props) => void; identify: (id: string) => void; reset: () => void; captureException?: (e: unknown, p?: Props) => void } | null = null;
 let starting: Promise<void> | null = null;
@@ -23,22 +24,25 @@ export function durationBucket(minutes: number): string {
 }
 
 export function initAnalytics() {
-  if (typeof window === "undefined" || client || starting || !token()) return;
+  const projectToken = token();
+  if (typeof window === "undefined" || client || starting || !projectToken) return;
   starting = import("posthog-js")
     .then(({ default: posthog }) => {
       const region = (import.meta.env.VITE_LOVABLE_CONNECTOR_POSTHOG_REGION as string) || "eu";
-      posthog.init(token()!, {
+      posthog.init(projectToken, {
         api_host: region === "us" ? "https://us.i.posthog.com" : "https://eu.i.posthog.com",
         person_profiles: "identified_only",
-        capture_pageview: "history_change",
+        capture_pageview: false,
+        capture_pageleave: false,
         autocapture: false,
         disable_session_recording: true,
-        capture_exceptions: true,
+        capture_exceptions: false,
+        before_send: (event) => redactAnalyticsEvent(event),
       });
       posthog.register({ platform: (window as { CommitXNative?: unknown }).CommitXNative ? "android" : "web" });
-      client = posthog as unknown as typeof client;
-      if (pendingUser) client!.identify(pendingUser);
-      queue.splice(0).forEach(([e, p]) => client!.capture(e, p));
+      client = posthog;
+      if (pendingUser) posthog.identify(pendingUser);
+      queue.splice(0).forEach(([e, p]) => posthog.capture(e, safeAnalyticsProps(p)));
     })
     .catch(() => {
       starting = null;
@@ -49,15 +53,15 @@ export function initAnalytics() {
 
 export function track(event: string, props?: Props) {
   if (typeof window === "undefined" || !token()) return;
-  if (client) client.capture(event, props);
-  else if (queue.length < 50) queue.push([event, props]);
+  if (client) client.capture(event, safeAnalyticsProps(props));
+  else if (queue.length < 50) queue.push([event, safeAnalyticsProps(props)]);
 }
 
 export function reportError(error: unknown, props?: Props) {
   if (!client) return;
   try {
-    if (client.captureException) client.captureException(error, props);
-    else client.capture("$exception", { message: String(error), ...props });
+    // Never transmit raw messages, stack traces, rejected values or session URLs.
+    client.capture("app_error", { ...safeAnalyticsProps(props), kind: error instanceof TypeError ? "type_error" : "runtime_error" });
   } catch {
     /* never let reporting break the app */
   }

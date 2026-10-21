@@ -22,21 +22,15 @@ if [ -z "${ANDROID_HOME:-}" ]; then
 fi
 
 export COMMITX_KEYSTORE_PATH="${COMMITX_KEYSTORE_PATH:-$(pwd)/app/commitx.keystore}"
-export COMMITX_KEYSTORE_PASSWORD="${COMMITX_KEYSTORE_PASSWORD:-commitx}"
-export COMMITX_KEY_ALIAS="${COMMITX_KEY_ALIAS:-commitx}"
-export COMMITX_KEY_PASSWORD="${COMMITX_KEY_PASSWORD:-commitx}"
+export COMMITX_KEYSTORE_PASSWORD="${COMMITX_KEYSTORE_PASSWORD:?Set the original upload keystore password}"
+export COMMITX_KEY_ALIAS="${COMMITX_KEY_ALIAS:?Set the original upload key alias}"
+export COMMITX_KEY_PASSWORD="${COMMITX_KEY_PASSWORD:?Set the original upload key password}"
 
 mkdir -p "$(dirname "$COMMITX_KEYSTORE_PATH")"
 
 if [ ! -f "$COMMITX_KEYSTORE_PATH" ]; then
-  echo "Generating signing keystore..."
-  keytool -genkeypair -noprompt \
-    -keystore "$COMMITX_KEYSTORE_PATH" \
-    -alias "$COMMITX_KEY_ALIAS" \
-    -storepass "$COMMITX_KEYSTORE_PASSWORD" \
-    -keypass "$COMMITX_KEY_PASSWORD" \
-    -keyalg RSA -keysize 2048 -validity 10000 \
-    -dname "CN=CommitX, OU=Mobile, O=CommitX, L=NA, S=NA, C=IN"
+  echo "Original upload keystore missing. Restore it; do not generate a replacement for a Play update."
+  exit 1
 fi
 
 echo "Building signed release APK..."

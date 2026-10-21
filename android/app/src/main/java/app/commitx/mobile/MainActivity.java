@@ -178,13 +178,17 @@ public class MainActivity extends Activity {
             public void onPermissionRequest(final android.webkit.PermissionRequest request) {
                 runOnUiThread(() -> {
                     Uri origin = request.getOrigin();
-                    String host = origin == null ? "" : String.valueOf(origin.getHost());
-                    if (!(host.endsWith("commitx.site") || host.endsWith("lovable.app") || host.equals("localhost"))) {
+                    if (!isTrustedMediaOrigin(origin)) {
                         request.deny();
                         return;
                     }
                     java.util.List<String> needed = new java.util.ArrayList<>();
                     for (String r : request.getResources()) {
+                        if (!android.webkit.PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(r)
+                                && !android.webkit.PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(r)) {
+                            request.deny();
+                            return;
+                        }
                         if (android.webkit.PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(r)
                                 && checkSelfPermission(android.Manifest.permission.CAMERA) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
                             needed.add(android.Manifest.permission.CAMERA);
@@ -197,10 +201,16 @@ public class MainActivity extends Activity {
                     if (needed.isEmpty()) {
                         request.grant(request.getResources());
                     } else {
+                        if (pendingMediaRequest != null) pendingMediaRequest.deny();
                         pendingMediaRequest = request;
                         requestPermissions(needed.toArray(new String[0]), REQUEST_MEDIA);
                     }
                 });
+            }
+
+            @Override
+            public void onPermissionRequestCanceled(android.webkit.PermissionRequest request) {
+                runOnUiThread(() -> { if (pendingMediaRequest == request) pendingMediaRequest = null; });
             }
 
             /** Enables <input type="file"> (profile photo) inside the WebView. */
@@ -236,6 +246,13 @@ public class MainActivity extends Activity {
         });
 
         webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageStarted(WebView view, String url, android.graphics.Bitmap favicon) {
+                super.onPageStarted(view, url, favicon);
+                if (isCommitXUrl(Uri.parse(url))) view.addJavascriptInterface(new CommitXAndroidBridge(), "CommitXAndroid");
+                else view.removeJavascriptInterface("CommitXAndroid");
+            }
+
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 return handleNavigation(view, request == null ? null : request.getUrl());
@@ -474,6 +491,7 @@ public class MainActivity extends Activity {
     private boolean handleNavigation(WebView view, Uri uri) {
         if (uri == null) return true;
         if (isInAppUrl(uri)) {
+            if (!isCommitXUrl(uri)) view.removeJavascriptInterface("CommitXAndroid");
             // Returning false makes this WebView own the navigation. This also
             // covers server-side redirects and both WebView callback variants.
             return false;
@@ -583,7 +601,7 @@ public class MainActivity extends Activity {
             if (req == null) return;
             boolean all = results != null && results.length > 0;
             if (results != null) for (int r : results) all &= r == android.content.pm.PackageManager.PERMISSION_GRANTED;
-            if (all) req.grant(req.getResources()); else req.deny();
+            if (all && isTrustedMediaOrigin(req.getOrigin())) req.grant(req.getResources()); else req.deny();
             return;
         }
         if (requestCode != 42) return;
@@ -823,15 +841,24 @@ public class MainActivity extends Activity {
         injectVerifiedFailure(reason);
     }
 
+    private boolean isTrustedMediaOrigin(Uri uri) {
+        if (uri == null || !"https".equalsIgnoreCase(uri.getScheme()) || (uri.getPort() != -1 && uri.getPort() != 443)) return false;
+        String host = uri.getHost();
+        return "commitx.site".equalsIgnoreCase(host) || "www.commitx.site".equalsIgnoreCase(host)
+                || "commitx.lovable.app".equalsIgnoreCase(host)
+                || "id-preview--1384a4d2-7b53-476d-badb-4dfc999cef26.lovable.app".equalsIgnoreCase(host);
+    }
+
     private boolean isCommitXUrl(Uri uri) {
-        if (uri == null) return false;
+        if (uri == null || !"https".equalsIgnoreCase(uri.getScheme())) return false;
         String host = uri.getHost();
         if (host == null) return false;
         host = host.toLowerCase(java.util.Locale.ROOT);
         return "commitx.site".equals(host)
-                || host.endsWith(".commitx.site")
+                || "www.commitx.site".equals(host)
                 || "commitx.lovable.app".equals(host)
-                || "commitx.lovable.dev".equals(host);
+                || "commitx.lovable.dev".equals(host)
+                || "id-preview--1384a4d2-7b53-476d-badb-4dfc999cef26.lovable.app".equals(host);
     }
 
     /** CommitX plus the exact identity-provider hosts used by sign-in stay inside the app. */
