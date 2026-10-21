@@ -122,8 +122,11 @@ jobs:
           if [ -n "$COMMITX_KEYSTORE_BASE64" ]; then
             printf '%s' "$COMMITX_KEYSTORE_BASE64" | base64 --decode > "$COMMITX_KEYSTORE_PATH"
           elif [ -f "$COMMITX_KEYSTORE_PATH" ]; then
-            echo 'Keystore found only in the legacy cache; migrating it into the COMMITX_KEYSTORE_BASE64 secret.'
-            gh secret set COMMITX_KEYSTORE_BASE64 --repo "${{ github.repository }}" < <(base64 -w0 "$COMMITX_KEYSTORE_PATH")
+            echo 'Keystore found only in the legacy cache; build proceeds with it.'
+            echo 'NOTE: The built-in token cannot create repository secrets (HTTP 403 is expected).'
+            echo 'To make this key durable, add it manually as the COMMITX_KEYSTORE_BASE64 secret:'
+            echo '  base64 -w0 android/app/commitx.keystore  ->  paste into a new GitHub secret.'
+            echo 'A cache is not durable storage; do not lose this key.'
           else
             echo 'Original upload keystore not found in secrets or cache. Restore it (COMMITX_KEYSTORE_BASE64); never generate a replacement.'
             exit 1
