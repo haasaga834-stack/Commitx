@@ -1,3 +1,4 @@
+import { track } from "@/lib/analytics";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -203,6 +204,7 @@ function GroupIndex() {
     setError(null);
     try {
       const res = await join({ data: { code: code.trim(), acceptedTerms: true } });
+      if (res && "id" in res) track("group_joined");
       if ("error" in res) {
         setError(res.error);
         const g = await recoverOpenGroup();
