@@ -24,9 +24,9 @@ describe("in-app Google sign-in lifecycle", () => {
   });
   test("cancellation cleans up and the next attempt stays native", async () => {
     const h = harness();
-    const rejected = expect(h.promise).rejects.toThrow("GetCredentialCancellationException");
+    const rejected = h.promise.catch(error => error);
     h.callbacks()?.onGoogleSignInError("GetCredentialCancellationException");
-    await rejected;
+    expect((await rejected).message).toBe("GetCredentialCancellationException");
     const retry = harness();
     retry.callbacks()?.onGoogleIdToken("test-only-token");
     await retry.promise;

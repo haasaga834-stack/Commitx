@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Keep Android Google sign-in inside CommitX; remove stored browser fallback and overlapping timeouts, verify native success/cancel/retry paths.
+- [x] Keep Android Google sign-in inside CommitX; removed stored browser fallback and overlapping timeouts. Simulated chooser cancellation/retry/provider failure opens no browser; lifecycle tests cover token exchange, duplicates and timeout. Real Play Store Google login remains unverified.
 - [ ] Verify Play Store Google account chooser and successful in-app login on a physical phone — requires updated APK/AAB and a connected device.
 
 - [x] Replace Study Buddy WhatsApp popup with native share sheet and website Web Share; older Android builds copy the invitation without leaving CommitX.
