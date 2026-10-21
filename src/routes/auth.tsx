@@ -132,7 +132,16 @@ function Auth() {
     try {
       const { hasNativeGoogleSignIn, nativeGoogleSignIn } = await import("@/lib/native-auth");
       const { canUseNativeOAuth, nativeBrowserGoogleSignIn } = await import("@/lib/native-oauth");
-      if (hasNativeGoogleSignIn()) {
+      // If the in-app chooser already closed without a result on this phone
+      // (Play-signed builds whose key Google doesn't recognise report this
+      // as a "cancel" right after an account is picked), go straight to the
+      // browser flow instead of looping on the broken chooser.
+      const NATIVE_SKIP_KEY = "commitx-google-native-skip";
+      let skipNative = false;
+      try { skipNative = localStorage.getItem(NATIVE_SKIP_KEY) === "1"; } catch {}
+      if (canUseNativeOAuth() && skipNative) {
+        // fall through to browser flow below
+      } else if (hasNativeGoogleSignIn()) {
         // Some phones never answer the in-app account chooser (no Google
         // account / outdated Play services), leaving an endless spinner.
         // Give it a bounded window, then fall back to the browser flow.
@@ -144,10 +153,17 @@ function Auth() {
           new Promise<"fail">((r) => window.setTimeout(() => r("fail"), 25000)),
         ]);
         if (nativeResult === "ok") {
+          try { localStorage.removeItem(NATIVE_SKIP_KEY); } catch {}
           router.navigate({ to: "/" });
           return;
         }
-        if (nativeResult === "cancel") return;
+        if (nativeResult === "cancel") {
+          if (canUseNativeOAuth()) {
+            try { localStorage.setItem(NATIVE_SKIP_KEY, "1"); } catch {}
+            setNotice("Google didn't finish signing you in. Tap Continue with Google again to sign in through your browser.");
+          }
+          return;
+        }
         if (!canUseNativeOAuth()) throw new Error("Google sign-in didn't respond. Please try again or use email.");
       }
       // Android shell: Google blocks embedded WebViews, so use the browser
