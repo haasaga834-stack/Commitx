@@ -6,6 +6,7 @@ import { buddyInviteUrl, useStudyBuddy } from "@/lib/study-buddy";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { shareInvite } from "@/lib/share-invite";
+import { BuddyFinder, BuddyRequests } from "@/components/BuddyFinder";
 
 function remainingLabel(endsAt: number | null, now: number) {
   if (!endsAt) return "";
@@ -19,6 +20,7 @@ export function BuddyCard() {
   const buddy = useStudyBuddy(Boolean(user));
   const [open, setOpen] = useState(false);
   const [code, setCode] = useState("");
+  const [tab, setTab] = useState<"find" | "code">("find");
   const [copied, setCopied] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
@@ -45,7 +47,7 @@ export function BuddyCard() {
   const hasBuddy = Boolean(s.buddyId);
   const first = s.name?.split(" ")[0] ?? "Buddy";
   const statusLine = !hasBuddy
-    ? "Invite a friend. You both see each other's wins and quits."
+    ? "Find a study partner or invite a friend."
     : s.focusing
       ? `Focusing${s.goal ? ` on ${s.goal}` : ""} · ${remainingLabel(s.endsAt, now)}`
       : s.todayMinutes > 0
@@ -158,8 +160,7 @@ export function BuddyCard() {
                     </button>
                   ))}
                 </div>
-                {tab === "find" ? <BuddyFinder /> : <></>}
-                {tab === "code" && <></>}
+                {tab === "find" ? <BuddyFinder /> : (<>
                 {s.pendingCode ? (
                   <div className="mt-5 rounded-2xl border border-hairline bg-background p-4">
                     <p className="text-[11px] uppercase tracking-widest text-muted-foreground">Your invite code</p>
@@ -187,7 +188,8 @@ export function BuddyCard() {
                     </Button>
                   </div>
                 </div>
-              </>
+                </>)}
+              </div>
             )}
             {notice && <p role="status" className="mt-3 text-xs text-primary">{notice}</p>}
             {buddy.error && <p className="mt-3 text-xs text-destructive">{buddy.error}</p>}
