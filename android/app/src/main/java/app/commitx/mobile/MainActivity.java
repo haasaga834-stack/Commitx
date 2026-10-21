@@ -170,6 +170,36 @@ public class MainActivity extends Activity {
                 closeAuthWindow();
             }
 
+            /** Study Buddy cam: grant camera/mic to CommitX pages only, after Android permission. */
+            @Override
+            public void onPermissionRequest(final android.webkit.PermissionRequest request) {
+                runOnUiThread(() -> {
+                    Uri origin = request.getOrigin();
+                    String host = origin == null ? "" : String.valueOf(origin.getHost());
+                    if (!(host.endsWith("commitx.site") || host.endsWith("lovable.app") || host.equals("localhost"))) {
+                        request.deny();
+                        return;
+                    }
+                    java.util.List<String> needed = new java.util.ArrayList<>();
+                    for (String r : request.getResources()) {
+                        if (android.webkit.PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(r)
+                                && checkSelfPermission(android.Manifest.permission.CAMERA) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                            needed.add(android.Manifest.permission.CAMERA);
+                        }
+                        if (android.webkit.PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(r)
+                                && checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                            needed.add(android.Manifest.permission.RECORD_AUDIO);
+                        }
+                    }
+                    if (needed.isEmpty()) {
+                        request.grant(request.getResources());
+                    } else {
+                        pendingMediaRequest = request;
+                        requestPermissions(needed.toArray(new String[0]), REQUEST_MEDIA);
+                    }
+                });
+            }
+
             /** Enables <input type="file"> (profile photo) inside the WebView. */
             @Override
             public boolean onShowFileChooser(WebView view,
@@ -511,6 +541,15 @@ public class MainActivity extends Activity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
         super.onRequestPermissionsResult(requestCode, permissions, results);
+        if (requestCode == REQUEST_MEDIA) {
+            android.webkit.PermissionRequest req = pendingMediaRequest;
+            pendingMediaRequest = null;
+            if (req == null) return;
+            boolean all = results != null && results.length > 0;
+            if (results != null) for (int r : results) all &= r == android.content.pm.PackageManager.PERMISSION_GRANTED;
+            if (all) req.grant(req.getResources()); else req.deny();
+            return;
+        }
         if (requestCode != 42) return;
         boolean granted = results != null && results.length > 0
                 && results[0] == android.content.pm.PackageManager.PERMISSION_GRANTED;
