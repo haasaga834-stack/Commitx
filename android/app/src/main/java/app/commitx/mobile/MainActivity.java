@@ -74,6 +74,8 @@ public class MainActivity extends Activity {
 
 
     private static final int REQUEST_FILE_CHOOSER = 8021;
+    private static final int REQUEST_MEDIA = 8022;
+    private android.webkit.PermissionRequest pendingMediaRequest;
     private ValueCallback<Uri[]> fileChooserCallback;
     private Uri pendingCameraUri;
 
