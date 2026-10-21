@@ -40,7 +40,7 @@ export function useBuddyCam(myId: string | null, buddyId: string | null) {
   const [micOn, setMicOn] = useState(false);
   const [camOn, setCamOn] = useState(true);
   const pc = useRef<RTCPeerConnection | null>(null);
-  const ch = useRef<RTCPeerConnection extends never ? never : RealtimeChannel | null>(null);
+  const ch = useRef<RealtimeChannel | null>(null);
   const stream = useRef<MediaStream | null>(null);
   const pendingIce = useRef<RTCIceCandidateInit[]>([]);
 
