@@ -11,7 +11,7 @@
 
 Subdirectories have their own AGENTS.md (see android/AGENTS.md) — read it before changing files there.
 
-- Android Google authentication uses the native Credential Manager bridge with one serialized chooser/token-exchange lifecycle; cancellation never sets persistent skip flags or opens browser OAuth, because retry detours stranded Play Store users outside the app. Website OAuth remains independent.
+- Android Google auth uses one serialized native chooser/token exchange; no skip flags or browser detours, because they stranded Play users. Eagerly import its adapter on Auth so module downloads cannot stall before the timeout. Website OAuth stays independent.
 
 - Study Buddy invitations use the native Android share sheet or browser Web Share API, with clipboard fallback on older app builds; never launch messaging share websites in a WebView popup, because their custom schemes produce raw browser errors.
 
