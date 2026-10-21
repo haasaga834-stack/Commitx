@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { MobileShell } from "@/components/BottomNav";
+import { BuddyCard } from "@/components/BuddyCard";
 import { useAppState, stats, setState, formatCoins } from "@/lib/commitx-store";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Pencil, Check, Trophy, Clock, Camera, ChevronDown, Settings as SettingsIcon } from "lucide-react";
@@ -120,6 +121,10 @@ function Profile() {
               {editing ? <Check className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
             </button>
           </div>
+        </div>
+
+        <div className="mt-3">
+          <BuddyCard />
         </div>
 
         {/* Identity — one compact card instead of a tall centred stack */}
