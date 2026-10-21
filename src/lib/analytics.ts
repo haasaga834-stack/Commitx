@@ -8,6 +8,7 @@ type Props = Record<string, string | number | boolean | null>;
 let client: { capture: (e: string, p?: Props) => void; identify: (id: string) => void; reset: () => void; captureException?: (e: unknown, p?: Props) => void } | null = null;
 let starting: Promise<void> | null = null;
 const queue: Array<[string, Props | undefined]> = [];
+let pendingUser: string | null | undefined;
 
 function token(): string | undefined {
   return import.meta.env.VITE_LOVABLE_CONNECTOR_POSTHOG_API_KEY as string | undefined;
@@ -36,6 +37,7 @@ export function initAnalytics() {
       });
       posthog.register({ platform: (window as { CommitXNative?: unknown }).CommitXNative ? "android" : "web" });
       client = posthog as unknown as typeof client;
+      if (pendingUser) client!.identify(pendingUser);
       queue.splice(0).forEach(([e, p]) => client!.capture(e, p));
     })
     .catch(() => {
@@ -62,6 +64,7 @@ export function reportError(error: unknown, props?: Props) {
 }
 
 export function identifyUser(userId: string | null) {
+  pendingUser = userId;
   if (!client) return;
   if (userId) client.identify(userId);
   else client.reset();
