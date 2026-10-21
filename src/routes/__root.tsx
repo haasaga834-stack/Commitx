@@ -109,6 +109,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         children:
           "try{var m=localStorage.getItem('commitx-theme-v1');if(m==='dark'){document.documentElement.classList.add('dark');document.documentElement.style.colorScheme='dark';}}catch(e){}",
       },
+      {
+        // Android app Google sign-in opens in a browser tab. If Google's
+        // return lands on the website instead of the app, hand the session
+        // straight back into the CommitX app so the user stays in the app.
+        children:
+          "try{var h=location.hash;if(h&&h.indexOf('access_token=')>-1&&h.indexOf('refresh_token=')>-1&&h.indexOf('provider_token=')>-1&&!window.CommitXAndroid&&/Android/i.test(navigator.userAgent)&&!/; wv\\)/.test(navigator.userAgent)){var q=h.replace(/^#/,'');var u='intent://login-callback/?'+q+'#Intent;scheme=commitx;package=app.commitx.mobile;end';history.replaceState(null,'',location.pathname);window.__cxHandoff=u;location.replace(u);document.addEventListener('DOMContentLoaded',function(){document.body.innerHTML='<div style=\"min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;font-family:sans-serif;background:#eef6f2;color:#123;text-align:center;padding:24px\"><div style=\"font-size:22px;font-weight:600\">Signed in</div><a href=\"'+u+'\" style=\"background:#0f5c4f;color:#fff;padding:14px 28px;border-radius:999px;text-decoration:none;font-weight:600\">Return to CommitX</a></div>';});}}catch(e){}",
+      },
     ],
 
 
