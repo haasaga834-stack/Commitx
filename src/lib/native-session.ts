@@ -8,6 +8,7 @@ declare global {
       setVerifiedModeActive?: (active: boolean) => void;
       setSessionLockActive?: (active: boolean) => void;
       setAtRootScreen?: (atRoot: boolean) => void;
+      shareText?: (title: string, text: string) => void;
       clearPendingFailure?: () => void;
       hasNativeGoogleSignIn?: () => boolean;
       googleSignIn?: () => void;

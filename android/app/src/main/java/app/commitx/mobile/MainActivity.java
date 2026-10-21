@@ -920,6 +920,29 @@ public class MainActivity extends Activity {
     }
 
     public class CommitXAndroidBridge {
+        /** Uses Android's share sheet, never a messaging website in an OAuth popup. */
+        @JavascriptInterface
+        public void shareText(String title, String text) {
+            if (text == null || text.trim().isEmpty()) return;
+            runOnUiThread(() -> {
+                try {
+                    Intent send = new Intent(Intent.ACTION_SEND)
+                            .setType("text/plain")
+                            .putExtra(Intent.EXTRA_SUBJECT, title)
+                            .putExtra(Intent.EXTRA_TEXT, text);
+                    startActivity(Intent.createChooser(send, "Share invite"));
+                } catch (Throwable ignored) {
+                    android.content.ClipboardManager clipboard = (android.content.ClipboardManager)
+                            getSystemService(Context.CLIPBOARD_SERVICE);
+                    if (clipboard != null) {
+                        clipboard.setPrimaryClip(android.content.ClipData.newPlainText(title, text));
+                        android.widget.Toast.makeText(MainActivity.this, "Invite copied. Paste it into any chat.",
+                                android.widget.Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        }
+
         /** The web layer reports that the first screen is painted and usable. */
         @JavascriptInterface
         public void appReady() {

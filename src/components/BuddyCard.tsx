@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/use-auth";
 import { buddyInviteUrl, useStudyBuddy } from "@/lib/study-buddy";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { shareInvite } from "@/lib/share-invite";
 
 function remainingLabel(endsAt: number | null, now: number) {
   if (!endsAt) return "";
@@ -54,16 +55,16 @@ export function BuddyCard() {
   const share = async () => {
     if (!s.pendingCode) return;
     const url = buddyInviteUrl(s.pendingCode);
-    const text = `Be my CommitX study buddy! We'll see each other's sessions. Code ${s.pendingCode}: ${url}`;
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: "CommitX Study Buddy", text, url });
-        return;
-      }
-    } catch {
-      return;
-    }
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener");
+    const text = `Be my CommitX study buddy! We'll see each other's sessions. Code ${s.pendingCode}.`;
+    const native = window.CommitXAndroid;
+    const result = await shareInvite("CommitX Study Buddy", text, url, {
+      nativeShare: native?.shareText ? (title, message) => native.shareText?.(title, message) : undefined,
+      // Older WebViews have no supported share menu: copy instead of a WhatsApp popup.
+      webShare: !native && navigator.share ? data => navigator.share(data) : undefined,
+      copy: navigator.clipboard?.writeText ? message => navigator.clipboard.writeText(message) : undefined,
+    });
+    setNotice(result === "copied" ? "Invite copied. Paste it into WhatsApp or any chat."
+      : result === "unavailable" ? `Share this code with your friend: ${s.pendingCode}` : null);
   };
   const copy = async () => {
     if (!s.pendingCode) return;
@@ -177,6 +178,7 @@ export function BuddyCard() {
                 </div>
               </>
             )}
+            {notice && <p role="status" className="mt-3 text-xs text-primary">{notice}</p>}
             {buddy.error && <p className="mt-3 text-xs text-destructive">{buddy.error}</p>}
           </div>
         </div>

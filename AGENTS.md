@@ -11,6 +11,8 @@
 
 Subdirectories have their own AGENTS.md (see android/AGENTS.md) — read it before changing files there.
 
+- Study Buddy invitations use the native Android share sheet or browser Web Share API, with clipboard fallback on older app builds; never launch messaging share websites in a WebView popup, because their custom schemes produce raw browser errors.
+
 - Focus-session rewards and forfeits must be derived and recorded transactionally from the user's own session claim (live `active_sessions` row, or its unconsumed `session_claims_archive` copy), each claim consumed once, because client-submitted session claims are untrusted and late syncs must not be lost.
 - Wallet balances are always recomputed from the ledger (`focus_sessions`, `referrals`, `coin_adjustments`) by database triggers; never write `coin_balance` incrementally from app code, because parallel writers caused drift and double credits.
 - Screens show recorded server totals plus only not-yet-synced local sessions; sessions the server refuses are removed locally, because max()/local-first merging showed phantom time.
