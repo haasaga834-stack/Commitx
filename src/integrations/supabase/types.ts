@@ -868,6 +868,7 @@ export type Database = {
           total_minutes: number
         }[]
       }
+      my_group_pot: { Args: { _group_id: string }; Returns: number }
       my_study_buddy: {
         Args: never
         Returns: {

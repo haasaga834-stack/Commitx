@@ -162,6 +162,13 @@
       "when": 1792592301388,
       "tag": "0022_study_buddy_and_group_pot",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1792592330208,
+      "tag": "0023_buddy_code_and_pot_access",
+      "breakpoints": true
     }
   ]
 }
