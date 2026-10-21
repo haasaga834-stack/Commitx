@@ -71,6 +71,14 @@ function Fallback({ text }: { text: string }) {
   );
 }
 
+function RoomPot({ pot }: { pot: number }) {
+  return (
+    <p className="inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-card px-4 py-1.5 text-xs font-medium text-foreground shadow-soft">
+      ⚡ Room Pot: {coinLabel(pot)} · split among finishers
+    </p>
+  );
+}
+
 function fmt(sec: number) {
   const s = Math.max(0, Math.floor(sec));
   const h = Math.floor(s / 3600);
@@ -469,6 +477,23 @@ function GroupSession({ onNeedDnd }: { onNeedDnd?: (v: boolean) => void }) {
     onNeedDnd?.(needDnd);
   }, [needDnd, onNeedDnd]);
 
+  /** Room Pot: commitments forfeited by early leavers, split among finishers. */
+  const [pot, setPot] = useState(0);
+  useEffect(() => {
+    if (!isActive) return;
+    let alive = true;
+    const read = async () => {
+      const { data: amount } = await supabase.rpc("my_group_pot", { _group_id: id });
+      if (alive && typeof amount === "number") setPot(amount);
+    };
+    void read();
+    const t = window.setInterval(() => void read(), 15_000);
+    return () => {
+      alive = false;
+      window.clearInterval(t);
+    };
+  }, [isActive, id]);
+
   /** Verified enforcement: leaving the app fails this participant. */
   useEffect(() => {
     // Android app: Focus Shield blocks apps instead; switching never fails.
@@ -848,6 +873,7 @@ function GroupSession({ onNeedDnd }: { onNeedDnd?: (v: boolean) => void }) {
                 Leaving CommitX fails you
               </p>
             )}
+            {pot > 0 && <RoomPot pot={pot} />}
             <GroupParticipantSummary members={data!.members} />
             {offline && (
               <p className="text-[11px] text-muted-foreground">
@@ -930,6 +956,7 @@ function GroupSession({ onNeedDnd }: { onNeedDnd?: (v: boolean) => void }) {
 
       {/* Live participants */}
       <div className="relative z-10 mx-auto w-full max-w-md">
+        {pot > 0 && <div className="mb-3 flex justify-center"><RoomPot pot={pot} /></div>}
         <GroupParticipantSummary members={data!.members} />
       </div>
 

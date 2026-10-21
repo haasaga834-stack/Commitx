@@ -12,6 +12,7 @@ import { CxCoin } from "@/components/CxCoin";
 import { CxCoinPopup } from "@/components/CxCoinPopup";
 import { DailyGoalProgress } from "@/components/DailyGoalProgress";
 import { GroupStudyCard } from "@/components/GroupStudyCard";
+import { BuddyCard } from "@/components/BuddyCard";
 import { SwipeToStart } from "@/components/SwipeToStart";
 import { TabletShell } from "@/components/TabletShell";
 import moonlitBotanical from "@/assets/moonlit-botanical-terrarium.jpg";
@@ -289,6 +290,8 @@ export function TabletHome() {
 
           {/* Group Study */}
           <GroupStudyCard />
+
+          <BuddyCard />
         </div>
       </div>
     </TabletShell>

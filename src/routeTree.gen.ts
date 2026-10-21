@@ -38,6 +38,7 @@ import { Route as SuccessRouteImport } from './routes/success'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as VerifiedFocusRouteImport } from './routes/verified-focus'
 import { Route as WalletRouteImport } from './routes/wallet'
+import { Route as BuddyCodeRouteImport } from './routes/buddy.$code'
 import { Route as GroupIndexRouteImport } from './routes/group.index'
 import { Route as GroupIdRouteImport } from './routes/group.$id'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
@@ -188,6 +189,11 @@ const WalletRoute = WalletRouteImport.update({
   path: '/wallet',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BuddyCodeRoute = BuddyCodeRouteImport.update({
+  id: '/buddy/$code',
+  path: '/buddy/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GroupIndexRoute = GroupIndexRouteImport.update({
   id: '/group/',
   path: '/group/',
@@ -239,6 +245,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/verified-focus': typeof VerifiedFocusRoute
   '/wallet': typeof WalletRoute
+  '/buddy/$code': typeof BuddyCodeRoute
   '/group/$id': typeof GroupIdRoute
   '/group/': typeof GroupIndexRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -274,6 +281,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/verified-focus': typeof VerifiedFocusRoute
   '/wallet': typeof WalletRoute
+  '/buddy/$code': typeof BuddyCodeRoute
   '/group/$id': typeof GroupIdRoute
   '/group': typeof GroupIndexRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -310,6 +318,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/verified-focus': typeof VerifiedFocusRoute
   '/wallet': typeof WalletRoute
+  '/buddy/$code': typeof BuddyCodeRoute
   '/group/$id': typeof GroupIdRoute
   '/group/': typeof GroupIndexRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -347,6 +356,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/verified-focus'
     | '/wallet'
+    | '/buddy/$code'
     | '/group/$id'
     | '/group/'
     | '/lovable/email/auth/preview'
@@ -382,6 +392,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/verified-focus'
     | '/wallet'
+    | '/buddy/$code'
     | '/group/$id'
     | '/group'
     | '/lovable/email/auth/preview'
@@ -417,6 +428,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/verified-focus'
     | '/wallet'
+    | '/buddy/$code'
     | '/group/$id'
     | '/group/'
     | '/lovable/email/auth/preview'
@@ -453,6 +465,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   VerifiedFocusRoute: typeof VerifiedFocusRoute
   WalletRoute: typeof WalletRoute
+  BuddyCodeRoute: typeof BuddyCodeRoute
   GroupIdRoute: typeof GroupIdRoute
   GroupIndexRoute: typeof GroupIndexRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
@@ -664,6 +677,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WalletRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/buddy/$code': {
+      id: '/buddy/$code'
+      path: '/buddy/$code'
+      fullPath: '/buddy/$code'
+      preLoaderRoute: typeof BuddyCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/group/': {
       id: '/group/'
       path: '/group'
@@ -725,6 +745,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   VerifiedFocusRoute: VerifiedFocusRoute,
   WalletRoute: WalletRoute,
+  BuddyCodeRoute: BuddyCodeRoute,
   GroupIdRoute: GroupIdRoute,
   GroupIndexRoute: GroupIndexRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,

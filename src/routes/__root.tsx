@@ -30,6 +30,7 @@ import { Onboarding } from "../components/Onboarding";
 import { useOnboarding } from "../lib/onboarding";
 import { NativeWelcome } from "../components/NativeWelcome";
 import { StudyWidgetCoordinator } from '../components/StudyWidgetCoordinator';
+import { BuddyNotifier } from '../components/BuddyNotifier';
 import { isNativeLaunchReady, shouldShowNativeWelcome } from "../lib/app-launch";
 
 function NotFoundComponent() {
@@ -244,6 +245,10 @@ function AuthGate({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (loading) return;
     if (!user && !isPublic && pathname !== "/auth") {
+      const buddyMatch = /^\/buddy\/([A-Za-z0-9]{6})\/?$/.exec(pathname);
+      if (buddyMatch) {
+        try { localStorage.setItem("commitx-pending-buddy", buddyMatch[1].toUpperCase()); } catch {}
+      }
       router.navigate({ to: "/auth" });
     }
     if (user && pathname === "/auth") {
@@ -286,6 +291,7 @@ function AuthGate({ children }: { children: ReactNode }) {
     <>
       {children}
       <StudyWidgetCoordinator userId={user?.id ?? null} onboarding={needsOnboarding} />
+      <BuddyNotifier userId={user?.id ?? null} hidden={needsOnboarding || pathname === "/session" || pathname.startsWith("/group/")} />
       {user && pathname !== "/auth" && needsOnboarding ? (
         hasNativeBridge() ? (
           shouldShowNativeWelcome(pathname, Boolean(readRestorableActiveSession())) ? (
