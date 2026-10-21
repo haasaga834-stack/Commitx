@@ -297,10 +297,42 @@ public class MainActivity extends Activity {
         column.setOrientation(android.widget.LinearLayout.VERTICAL);
         column.setGravity(android.view.Gravity.CENTER);
 
+        float density = getResources().getDisplayMetrics().density;
         android.widget.ImageView logo = new android.widget.ImageView(this);
         logo.setImageResource(R.drawable.splash_logo);
-        int size = Math.round(getResources().getDisplayMetrics().density * 108);
+        // Match the Android system splash icon size so the handoff has no jump.
+        int size = Math.round(density * 160);
         column.addView(logo, new android.widget.LinearLayout.LayoutParams(size, size));
+
+        android.widget.TextView name = new android.widget.TextView(this);
+        name.setText("CommitX");
+        name.setTextColor(Color.parseColor("#14201A"));
+        name.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 26);
+        name.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+        name.setLetterSpacing(0.04f);
+        name.setGravity(android.view.Gravity.CENTER);
+        android.widget.LinearLayout.LayoutParams nameParams = new android.widget.LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        nameParams.topMargin = Math.round(density * 8);
+        column.addView(name, nameParams);
+
+        android.widget.TextView tagline = new android.widget.TextView(this);
+        tagline.setText("Commit. Focus. Prove it.");
+        tagline.setTextColor(Color.parseColor("#5E6B63"));
+        tagline.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 14);
+        tagline.setGravity(android.view.Gravity.CENTER);
+        android.widget.LinearLayout.LayoutParams tagParams = new android.widget.LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        tagParams.topMargin = Math.round(density * 4);
+        column.addView(tagline, tagParams);
+
+        // Gentle text reveal under a logo that stays perfectly still.
+        name.setAlpha(0f);
+        tagline.setAlpha(0f);
+        name.setTranslationY(density * 6);
+        tagline.setTranslationY(density * 6);
+        name.animate().alpha(1f).translationY(0f).setStartDelay(120).setDuration(320).start();
+        tagline.animate().alpha(1f).translationY(0f).setStartDelay(220).setDuration(320).start();
 
         FrameLayout.LayoutParams columnParams = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
@@ -424,7 +456,8 @@ public class MainActivity extends Activity {
         if (splashHidden || splashOverlay == null) return;
         splashHidden = true;
         final View overlay = splashOverlay;
-        overlay.animate().alpha(0f).setDuration(220).withEndAction(() -> {
+        overlay.animate().alpha(0f).scaleX(1.04f).scaleY(1.04f).setDuration(260)
+                .setInterpolator(new android.view.animation.DecelerateInterpolator()).withEndAction(() -> {
             overlay.setVisibility(View.GONE);
             ViewGroup parent = (ViewGroup) overlay.getParent();
             if (parent != null) parent.removeView(overlay);
