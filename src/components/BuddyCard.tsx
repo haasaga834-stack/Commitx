@@ -26,6 +26,19 @@ export function BuddyCard() {
     return () => window.clearInterval(t);
   }, []);
 
+  // A code saved from an invite link opened while signed out.
+  useEffect(() => {
+    if (!buddy.status || buddy.status.buddyId) return;
+    try {
+      const pending = localStorage.getItem("commitx-pending-buddy");
+      if (pending) {
+        localStorage.removeItem("commitx-pending-buddy");
+        setCode(pending);
+        setOpen(true);
+      }
+    } catch {}
+  }, [buddy.status]);
+
   if (!user || !buddy.status) return null;
   const s = buddy.status;
   const hasBuddy = Boolean(s.buddyId);

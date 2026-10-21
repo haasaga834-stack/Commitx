@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { HOME_QUICK_COMMIT_MINUTES } from "@/lib/home-presets";
 import homeStudyGroup from "@/assets/home-study-group.png";
 import { MobileShell } from "@/components/BottomNav";
+import { BuddyCard } from "@/components/BuddyCard";
 import { CxCoin } from "@/components/CxCoin";
 import { CxCoinPopup } from "@/components/CxCoinPopup";
 import { TabletLandingHome } from "@/components/TabletLandingHome";
@@ -235,6 +236,8 @@ function MobileHome() {
             <Button asChild variant="outline" className="h-10 gap-1 rounded-full px-1 text-xs font-medium"><Link to="/commit">Custom <Plus className="h-3.5 w-3.5" /></Link></Button>
           </div>
         </section>
+
+        <BuddyCard />
 
         <Link to="/group" className="cx-home-group relative flex min-h-[64px] items-center gap-3 overflow-hidden rounded-[20px] border border-hairline bg-card px-3 shadow-soft">
           <img src={homeStudyGroup} alt="" aria-hidden="true" loading="lazy" width={1152} height={576} className="pointer-events-none absolute bottom-0 right-3 h-16 w-28 object-contain opacity-25" />
