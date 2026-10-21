@@ -24,8 +24,8 @@ env:
   # Play Store version. This is the single place to change it.
   # Bump COMMITX_VERSION_CODE by 1 before every new upload — Play rejects an
   # upload whose version code is not higher than the last one it received.
-  COMMITX_VERSION_CODE: "1"
-  COMMITX_VERSION_NAME: "1.0.0"
+  COMMITX_VERSION_CODE: "2"
+  COMMITX_VERSION_NAME: "1.0.1"
 
 jobs:
   build-apk:
