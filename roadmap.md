@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Reduce Android App Limits reopen delay and remove the return-button bypass window; preserve session behavior and verify native policy regressions.
+- [ ] Verify App Limits reopen latency, return navigation, daily reset and background behavior on a physical Android device — requires updated APK/AAB and an attached device.
+
 - [ ] Restore completion/sign-in after October 21 failure: hosted database confirmed paused; approved resume failed because workspace Cloud credits are exhausted. Blocked on replenishing credits, then resume and verify sign-in/pending-session recording. No speculative app changes made.
 
 - [x] Diagnose and repair elapsed-ticket restarts, terminal persistence, late lifecycle writes, identical-session deduplication, stale pulls/account responses, missing retries and split statistics snapshots without UI changes.
