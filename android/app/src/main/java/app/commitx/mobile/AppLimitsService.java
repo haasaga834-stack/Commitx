@@ -6,18 +6,24 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.app.usage.UsageEvents;
+import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ServiceInfo;
 import android.os.Build;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.SystemClock;
 
 import org.json.JSONObject;
 
 import java.util.Iterator;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Watches apps with a daily limit. At 50% of the limit it notifies once; at
@@ -27,21 +33,30 @@ import java.util.Iterator;
 public class AppLimitsService extends Service {
     private static final String CHANNEL = "commitx_app_limits";
     private static final int NOTIF_ID = 4811;
-    private static final long POLL_MS = 2000L;
-
     private final Handler handler = new Handler(Looper.getMainLooper());
+    private HandlerThread workerThread;
+    private Handler worker;
     private AppLimitsOverlay overlay;
+    private final Set<String> exhausted = new HashSet<>();
+    private String limitsJson;
+    private String usageDay;
+    private String lastForeground;
+    private long lastEventQuery;
+    private long lastUsageRefresh;
+    private volatile boolean destroyed;
 
     private final Runnable tick = new Runnable() {
         @Override
         public void run() {
             if (!AppLimitsStore.hasLimits(AppLimitsService.this)) {
-                if (overlay != null) overlay.hide();
-                stopSelf();
+                handler.post(() -> {
+                    if (overlay != null) overlay.hide();
+                    stopSelf();
+                });
                 return;
             }
             checkLimits();
-            handler.postDelayed(this, POLL_MS);
+            if (worker != null && !destroyed) worker.postDelayed(this, AppLimitsPolicy.POLL_MS);
         }
     };
 
@@ -69,18 +84,26 @@ public class AppLimitsService extends Service {
         super.onCreate();
         overlay = new AppLimitsOverlay(this);
         startForegroundSafely();
-        handler.post(tick);
+        workerThread = new HandlerThread("commitx-app-limits");
+        workerThread.start();
+        worker = new Handler(workerThread.getLooper());
+        worker.post(tick);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        handler.removeCallbacks(tick);
-        handler.post(tick);
+        if (worker != null) {
+            worker.removeCallbacks(tick);
+            worker.post(tick);
+        }
         return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
+        destroyed = true;
+        if (worker != null) worker.removeCallbacksAndMessages(null);
+        if (workerThread != null) workerThread.quitSafely();
         handler.removeCallbacksAndMessages(null);
         if (overlay != null) overlay.hide();
         super.onDestroy();
@@ -92,12 +115,27 @@ public class AppLimitsService extends Service {
     }
 
     private void checkLimits() {
-        String blockedNow = null;
         try {
-            JSONObject all = new JSONObject(
-                    getSharedPreferences("commitx_app_limits", Context.MODE_PRIVATE)
-                            .getString("limits", "{}"));
+            String raw = getSharedPreferences("commitx_app_limits", Context.MODE_PRIVATE)
+                    .getString("limits", "{}");
+            String day = AppLimitsStore.dayKey();
+            boolean changed = !day.equals(usageDay) || !raw.equals(limitsJson);
+            if (changed) {
+                exhausted.clear();
+                usageDay = day;
+                limitsJson = raw;
+            }
             String fg = foregroundPackage();
+            // Reopening an already exhausted app must not wait for usage queries,
+            // package-label lookups, or notification work.
+            applyCover(fg);
+            long now = SystemClock.elapsedRealtime();
+            if (!AppLimitsPolicy.needsRefresh(now, lastUsageRefresh, changed)) return;
+            Map<String, UsageStats> stats = AppLimitsStore.usageSnapshot(this);
+            if (stats == null) return; // retain protection through transient query failures
+            lastUsageRefresh = now;
+            JSONObject all = new JSONObject(raw);
+            Set<String> refreshed = new HashSet<>();
             Iterator<String> keys = all.keys();
             while (keys.hasNext()) {
                 String pkg = keys.next();
@@ -105,30 +143,33 @@ public class AppLimitsService extends Service {
                 if (entry == null) continue;
                 int limit = entry.optInt("minutes", 0);
                 if (limit <= 0) continue;
-                int used = AppLimitsStore.usageMinutes(this, pkg);
-                if (used < 0) continue; // no usage access right now
-                String label = AppLimitsStore.labelFor(this, pkg);
-                if (used >= limit) {
+                int threshold = AppLimitsPolicy.threshold(AppLimitsStore.usageMillis(stats, pkg), limit);
+                if (threshold == 100) {
+                    refreshed.add(pkg);
                     if (AppLimitsStore.markNotified(this, pkg, 100)) {
-                        CommitXNotifications.showAppLimitReached(this, label);
+                        CommitXNotifications.showAppLimitReached(this, AppLimitsStore.labelFor(this, pkg));
                     }
-                    if (pkg.equals(fg)) blockedNow = pkg;
-                } else if (used * 2 >= limit) {
+                } else if (threshold == 50) {
                     if (AppLimitsStore.markNotified(this, pkg, 50)) {
-                        CommitXNotifications.showAppLimitHalf(this, label);
+                        CommitXNotifications.showAppLimitHalf(this, AppLimitsStore.labelFor(this, pkg));
                     }
                 }
             }
-            if (overlay != null) {
-                if (blockedNow != null) {
-                    overlay.show(blockedNow, AppLimitsStore.endOfToday());
-                } else if (fg != null && overlay.isShowing()) {
-                    // No resumed event in the last 60s means the foreground app is
-                    // unchanged (fg == null); only hide when another app is on top.
-                    overlay.hide();
-                }
-            }
+            exhausted.clear();
+            exhausted.addAll(refreshed);
+            // Query again after aggregation in case the user switched meanwhile.
+            applyCover(foregroundPackage());
         } catch (Throwable ignored) {}
+    }
+
+    private void applyCover(String fg) {
+        String blockedNow = fg != null && exhausted.contains(fg) ? fg : null;
+        long endsAt = AppLimitsStore.endOfToday();
+        handler.post(() -> {
+            if (destroyed || overlay == null) return;
+            if (blockedNow != null) overlay.show(blockedNow, endsAt);
+            else if (AppLimitsPolicy.shouldHide(fg, blockedNow)) overlay.hide();
+        });
     }
 
     private void startForegroundSafely() {
@@ -170,18 +211,21 @@ public class AppLimitsService extends Service {
             UsageStatsManager usm = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
             if (usm == null) return null;
             long end = System.currentTimeMillis();
-            UsageEvents events = usm.queryEvents(end - 60_000L, end);
+            long start = lastEventQuery == 0L || end < lastEventQuery
+                    ? end - 60_000L : Math.max(end - 60_000L, lastEventQuery - 1000L);
+            UsageEvents events = usm.queryEvents(start, end);
+            if (events == null) return lastForeground;
+            lastEventQuery = end;
             UsageEvents.Event event = new UsageEvents.Event();
-            String last = null;
             while (events != null && events.hasNextEvent()) {
                 events.getNextEvent(event);
                 int type = event.getEventType();
                 boolean resumed = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
                         ? type == UsageEvents.Event.ACTIVITY_RESUMED
                         : type == UsageEvents.Event.MOVE_TO_FOREGROUND;
-                if (resumed) last = event.getPackageName();
+                if (resumed) lastForeground = event.getPackageName();
             }
-            return last;
+            return lastForeground;
         } catch (Throwable t) {
             return null;
         }
