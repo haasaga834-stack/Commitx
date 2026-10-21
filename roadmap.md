@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Restore completion/sign-in after October 21 failure: hosted database confirmed paused by Cloud status; awaiting permission to resume, then verify sign-in and pending-session recording. No speculative app changes made.
+- [ ] Restore completion/sign-in after October 21 failure: hosted database confirmed paused; approved resume failed because workspace Cloud credits are exhausted. Blocked on replenishing credits, then resume and verify sign-in/pending-session recording. No speculative app changes made.
 
 - [x] Diagnose and repair elapsed-ticket restarts, terminal persistence, late lifecycle writes, identical-session deduplication, stale pulls/account responses, missing retries and split statistics snapshots without UI changes.
 - [x] Verify real account offline completion/reload and same-id replay against the database; historical hourly reward replay unchanged; 29 web regressions and 7 native countdown assertions passed. Database checks found no duplicate claims, wallet mismatches or leaderboard mismatches.
