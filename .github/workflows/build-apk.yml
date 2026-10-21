@@ -117,6 +117,11 @@ jobs:
           fi
           test -f "$COMMITX_KEYSTORE_PATH" || { echo 'Saved upload key not found in the build cache. Restore the original key (COMMITX_KEYSTORE_BASE64); never generate a replacement.'; exit 1; }
           keytool -list -keystore "$COMMITX_KEYSTORE_PATH" -alias "$COMMITX_KEY_ALIAS" -storepass:env COMMITX_KEYSTORE_PASSWORD > /dev/null
+          # Public certificate only (no private key): used for Play's upload-key reset form.
+          mkdir -p dist
+          keytool -export -rfc -keystore "$COMMITX_KEYSTORE_PATH" -alias "$COMMITX_KEY_ALIAS" \
+            -storepass:env COMMITX_KEYSTORE_PASSWORD -file dist/upload_certificate.pem
+          keytool -printcert -file dist/upload_certificate.pem | grep -E 'SHA1|SHA256'
 
       - name: Build signed release APK and AAB
         working-directory: android
@@ -151,7 +156,7 @@ jobs:
             --target "${{ github.sha }}" \
             --prerelease \
             --title "CommitX latest build (run ${{ github.run_number }})" \
-            --notes "APK for direct install and AAB for Play Console. Built from ${{ github.sha }}."
+            --notes "APK for direct install and AAB for Play Console. upload_certificate.pem is the public certificate of the key that signed this build (for Play's upload-key reset). Built from ${{ github.sha }}."
 
       - name: Upload APK artifact (optional)
         continue-on-error: true
