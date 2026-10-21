@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Remove the separately downloaded native sign-in module that can stall before its timeout starts; verify timeout/retry behavior without browser detours. Affected Play Store phone still requires direct verification.
+- [x] Remove the separately downloaded native sign-in module that can stall before its timeout starts; five lifecycle tests pass and simulated stuck chooser releases controls/retries natively without navigation. Timeout no longer falsely reports offline. Affected Play Store phone's successful login remains unverified.
 
 - [x] Keep Android Google sign-in inside CommitX; removed stored browser fallback and overlapping timeouts. Simulated chooser cancellation/retry/provider failure opens no browser; lifecycle tests cover token exchange, duplicates and timeout. Real Play Store Google login remains unverified.
 - [ ] Verify Play Store Google account chooser and successful in-app login on a physical phone — requires updated APK/AAB and a connected device.
