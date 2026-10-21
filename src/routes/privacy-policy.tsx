@@ -78,7 +78,7 @@ const SECTIONS: { title: string; body: string[] }[] = [
       "Display over other apps: optional, used only so Focus Shield can show a CommitX reminder screen over an app you selected. Focus Shield never disables, hides, uninstalls or changes any other app.",
       "Installed-app check: the app checks whether a small fixed list of well-known apps is installed, so the Focus Shield picker can show their names and icons. That list is not sent to our servers; only the packages you actively choose are saved with your session.",
       "Do Not Disturb status: Verified Mode reads whether Do Not Disturb is on. Only the on/off state is read, never your notifications.",
-      "CommitX does not request access to your location, contacts, camera, microphone, call logs, SMS, files or health data.",
+      "Camera and microphone are used only when you choose to start the optional Study Buddy cam with your paired buddy. Video and audio travel directly between the two devices, the microphone starts muted, and nothing is recorded or stored on our servers. CommitX does not request access to your location, contacts, call logs, SMS, files or health data.",
     ],
   },
   {
