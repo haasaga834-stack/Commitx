@@ -14,6 +14,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as AcademicsRouteImport } from './routes/academics'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as CommitRouteImport } from './routes/commit'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as FailedRouteImport } from './routes/failed'
@@ -35,6 +36,7 @@ import { Route as StandardFocusRouteImport } from './routes/standard-focus'
 import { Route as StudyAccountabilityRouteImport } from './routes/study-accountability'
 import { Route as StudyTrackerRouteImport } from './routes/study-tracker'
 import { Route as SuccessRouteImport } from './routes/success'
+import { Route as SupportRouteImport } from './routes/support'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as VerifiedFocusRouteImport } from './routes/verified-focus'
 import { Route as WalletRouteImport } from './routes/wallet'
@@ -67,6 +69,11 @@ const AnalyticsRoute = AnalyticsRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChangelogRoute = ChangelogRouteImport.update({
+  id: '/changelog',
+  path: '/changelog',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CommitRoute = CommitRouteImport.update({
@@ -174,6 +181,11 @@ const SuccessRoute = SuccessRouteImport.update({
   path: '/success',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SupportRoute = SupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -221,6 +233,7 @@ export interface FileRoutesByFullPath {
   '/academics': typeof AcademicsRoute
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
+  '/changelog': typeof ChangelogRoute
   '/commit': typeof CommitRoute
   '/contact': typeof ContactRoute
   '/failed': typeof FailedRoute
@@ -242,6 +255,7 @@ export interface FileRoutesByFullPath {
   '/study-accountability': typeof StudyAccountabilityRoute
   '/study-tracker': typeof StudyTrackerRoute
   '/success': typeof SuccessRoute
+  '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/verified-focus': typeof VerifiedFocusRoute
   '/wallet': typeof WalletRoute
@@ -257,6 +271,7 @@ export interface FileRoutesByTo {
   '/academics': typeof AcademicsRoute
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
+  '/changelog': typeof ChangelogRoute
   '/commit': typeof CommitRoute
   '/contact': typeof ContactRoute
   '/failed': typeof FailedRoute
@@ -278,6 +293,7 @@ export interface FileRoutesByTo {
   '/study-accountability': typeof StudyAccountabilityRoute
   '/study-tracker': typeof StudyTrackerRoute
   '/success': typeof SuccessRoute
+  '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/verified-focus': typeof VerifiedFocusRoute
   '/wallet': typeof WalletRoute
@@ -294,6 +310,7 @@ export interface FileRoutesById {
   '/academics': typeof AcademicsRoute
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
+  '/changelog': typeof ChangelogRoute
   '/commit': typeof CommitRoute
   '/contact': typeof ContactRoute
   '/failed': typeof FailedRoute
@@ -315,6 +332,7 @@ export interface FileRoutesById {
   '/study-accountability': typeof StudyAccountabilityRoute
   '/study-tracker': typeof StudyTrackerRoute
   '/success': typeof SuccessRoute
+  '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/verified-focus': typeof VerifiedFocusRoute
   '/wallet': typeof WalletRoute
@@ -332,6 +350,7 @@ export interface FileRouteTypes {
     | '/academics'
     | '/analytics'
     | '/auth'
+    | '/changelog'
     | '/commit'
     | '/contact'
     | '/failed'
@@ -353,6 +372,7 @@ export interface FileRouteTypes {
     | '/study-accountability'
     | '/study-tracker'
     | '/success'
+    | '/support'
     | '/terms'
     | '/verified-focus'
     | '/wallet'
@@ -368,6 +388,7 @@ export interface FileRouteTypes {
     | '/academics'
     | '/analytics'
     | '/auth'
+    | '/changelog'
     | '/commit'
     | '/contact'
     | '/failed'
@@ -389,6 +410,7 @@ export interface FileRouteTypes {
     | '/study-accountability'
     | '/study-tracker'
     | '/success'
+    | '/support'
     | '/terms'
     | '/verified-focus'
     | '/wallet'
@@ -404,6 +426,7 @@ export interface FileRouteTypes {
     | '/academics'
     | '/analytics'
     | '/auth'
+    | '/changelog'
     | '/commit'
     | '/contact'
     | '/failed'
@@ -425,6 +448,7 @@ export interface FileRouteTypes {
     | '/study-accountability'
     | '/study-tracker'
     | '/success'
+    | '/support'
     | '/terms'
     | '/verified-focus'
     | '/wallet'
@@ -441,6 +465,7 @@ export interface RootRouteChildren {
   AcademicsRoute: typeof AcademicsRoute
   AnalyticsRoute: typeof AnalyticsRoute
   AuthRoute: typeof AuthRoute
+  ChangelogRoute: typeof ChangelogRoute
   CommitRoute: typeof CommitRoute
   ContactRoute: typeof ContactRoute
   FailedRoute: typeof FailedRoute
@@ -462,6 +487,7 @@ export interface RootRouteChildren {
   StudyAccountabilityRoute: typeof StudyAccountabilityRoute
   StudyTrackerRoute: typeof StudyTrackerRoute
   SuccessRoute: typeof SuccessRoute
+  SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
   VerifiedFocusRoute: typeof VerifiedFocusRoute
   WalletRoute: typeof WalletRoute
@@ -507,6 +533,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/changelog': {
+      id: '/changelog'
+      path: '/changelog'
+      fullPath: '/changelog'
+      preLoaderRoute: typeof ChangelogRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/commit': {
@@ -656,6 +689,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SuccessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/support': {
+      id: '/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -721,6 +761,7 @@ const rootRouteChildren: RootRouteChildren = {
   AcademicsRoute: AcademicsRoute,
   AnalyticsRoute: AnalyticsRoute,
   AuthRoute: AuthRoute,
+  ChangelogRoute: ChangelogRoute,
   CommitRoute: CommitRoute,
   ContactRoute: ContactRoute,
   FailedRoute: FailedRoute,
@@ -742,6 +783,7 @@ const rootRouteChildren: RootRouteChildren = {
   StudyAccountabilityRoute: StudyAccountabilityRoute,
   StudyTrackerRoute: StudyTrackerRoute,
   SuccessRoute: SuccessRoute,
+  SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
   VerifiedFocusRoute: VerifiedFocusRoute,
   WalletRoute: WalletRoute,
