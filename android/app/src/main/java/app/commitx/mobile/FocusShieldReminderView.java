@@ -15,15 +15,22 @@ import android.widget.TextView;
 final class FocusShieldReminderView extends LinearLayout {
     final TextView remainingView;
     private final TextView appView;
+    private final boolean appLimit;
 
     FocusShieldReminderView(Context context, String appLabel, String remaining,
                             View.OnClickListener onReturn) {
+        this(context, appLabel, remaining, onReturn, false);
+    }
+
+    FocusShieldReminderView(Context context, String appLabel, String remaining,
+                            View.OnClickListener onReturn, boolean appLimit) {
         super(context);
+        this.appLimit = appLimit;
         setOrientation(VERTICAL);
         setBackgroundColor(color(R.color.shield_background));
         setPadding(dp(24), dp(48), dp(24), dp(32));
 
-        TextView brand = text("COMMITX  /  FOCUS SHIELD", 11, R.color.shield_primary, true);
+        TextView brand = text(appLimit ? "COMMITX  /  APP LIMITS" : "COMMITX  /  FOCUS SHIELD", 11, R.color.shield_primary, true);
         addView(brand, fullWidth());
 
         ScrollView scroll = new ScrollView(context);
@@ -43,7 +50,7 @@ final class FocusShieldReminderView extends LinearLayout {
         badgeParams.gravity = Gravity.CENTER;
         content.addView(emblem, badgeParams);
         gap(content, 20);
-        content.addView(text("Caught in 4K.", 30, R.color.shield_foreground, true), fullWidth());
+        content.addView(text(appLimit ? "Your limit. Your loophole?" : "Caught in 4K.", 30, R.color.shield_foreground, true), fullWidth());
         gap(content, 8);
         appView = text("", 14, R.color.shield_muted, false);
         setAppLabel(appLabel);
@@ -70,7 +77,7 @@ final class FocusShieldReminderView extends LinearLayout {
     }
 
     void setAppLabel(String label) {
-        appView.setText("Opening " + label + " already?");
+        appView.setText(appLimit ? label + ": you set it. Own it." : "Opening " + label + " already?");
     }
 
     private TextView text(String value, int size, int colorId, boolean bold) {
