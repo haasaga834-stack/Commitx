@@ -131,14 +131,27 @@ function Auth() {
     setBusy(true);
     try {
       const { hasNativeGoogleSignIn, nativeGoogleSignIn } = await import("@/lib/native-auth");
+      const { canUseNativeOAuth, nativeBrowserGoogleSignIn } = await import("@/lib/native-oauth");
       if (hasNativeGoogleSignIn()) {
-        await nativeGoogleSignIn();
-        router.navigate({ to: "/" });
-        return;
+        // Some phones never answer the in-app account chooser (no Google
+        // account / outdated Play services), leaving an endless spinner.
+        // Give it a bounded window, then fall back to the browser flow.
+        const nativeResult = await Promise.race([
+          nativeGoogleSignIn().then(
+            () => "ok" as const,
+            (e: unknown) => (e instanceof Error && /cancel/i.test(e.message) ? "cancel" : "fail") as "cancel" | "fail",
+          ),
+          new Promise<"fail">((r) => window.setTimeout(() => r("fail"), 25000)),
+        ]);
+        if (nativeResult === "ok") {
+          router.navigate({ to: "/" });
+          return;
+        }
+        if (nativeResult === "cancel") return;
+        if (!canUseNativeOAuth()) throw new Error("Google sign-in didn't respond. Please try again or use email.");
       }
       // Android shell: Google blocks embedded WebViews, so use the browser
       // round-trip that returns through commitx://login-callback/.
-      const { canUseNativeOAuth, nativeBrowserGoogleSignIn } = await import("@/lib/native-oauth");
       if (canUseNativeOAuth()) {
         setNotice("Continue in your browser — you'll come straight back to CommitX.");
         await nativeBrowserGoogleSignIn();
