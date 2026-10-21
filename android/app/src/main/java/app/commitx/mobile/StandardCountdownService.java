@@ -137,6 +137,10 @@ public class StandardCountdownService extends Service {
         }
         clear(ctx);
         NotificationManager manager = CommitXNotifications.manager(ctx);
+        if ("completed".equals(status) && SessionCompletionAlerts.handled(ctx, state.optString("id"))) {
+            if (manager != null) manager.cancel(ID);
+            return;
+        }
         if (manager != null && canPost(ctx)) manager.notify(ID, notification(ctx, state,
                 "completed".equals(status) ? "completed" : "failed"));
     }
