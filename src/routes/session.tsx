@@ -1180,7 +1180,7 @@ function LiveSession() {
           type="button"
           aria-label="Cancel session"
           onClick={() => setConfirmCancel(true)}
-          className="absolute right-4 top-4 z-20 grid h-10 w-10 place-items-center rounded-full bg-destructive/15 text-destructive shadow-soft backdrop-blur transition-transform active:scale-90"
+          className="absolute right-4 top-[max(60px,calc(env(safe-area-inset-top,0px)+52px))] z-20 grid h-10 w-10 place-items-center rounded-full bg-destructive/15 text-destructive shadow-soft backdrop-blur transition-transform active:scale-90"
         >
           <X className="h-5 w-5" strokeWidth={2.6} />
         </button>
