@@ -247,6 +247,13 @@ public class MainActivity extends Activity {
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
+            public void onPageStarted(WebView view, String url, android.graphics.Bitmap favicon) {
+                super.onPageStarted(view, url, favicon);
+                if (isCommitXUrl(Uri.parse(url))) view.addJavascriptInterface(new CommitXAndroidBridge(), "CommitXAndroid");
+                else view.removeJavascriptInterface("CommitXAndroid");
+            }
+
+            @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 return handleNavigation(view, request == null ? null : request.getUrl());
             }
@@ -484,6 +491,7 @@ public class MainActivity extends Activity {
     private boolean handleNavigation(WebView view, Uri uri) {
         if (uri == null) return true;
         if (isInAppUrl(uri)) {
+            if (!isCommitXUrl(uri)) view.removeJavascriptInterface("CommitXAndroid");
             // Returning false makes this WebView own the navigation. This also
             // covers server-side redirects and both WebView callback variants.
             return false;
@@ -842,14 +850,15 @@ public class MainActivity extends Activity {
     }
 
     private boolean isCommitXUrl(Uri uri) {
-        if (uri == null) return false;
+        if (uri == null || !"https".equalsIgnoreCase(uri.getScheme())) return false;
         String host = uri.getHost();
         if (host == null) return false;
         host = host.toLowerCase(java.util.Locale.ROOT);
         return "commitx.site".equals(host)
-                || host.endsWith(".commitx.site")
+                || "www.commitx.site".equals(host)
                 || "commitx.lovable.app".equals(host)
-                || "commitx.lovable.dev".equals(host);
+                || "commitx.lovable.dev".equals(host)
+                || "id-preview--1384a4d2-7b53-476d-badb-4dfc999cef26.lovable.app".equals(host);
     }
 
     /** CommitX plus the exact identity-provider hosts used by sign-in stay inside the app. */
