@@ -244,8 +244,10 @@ function MobileHome() {
            <ArrowRight className="relative h-5 w-5 shrink-0 text-primary" />
         </Link>
 
-        <BuddyCard />
       </main>
+      <div className="mx-auto max-w-md px-[14px] pb-28 pt-1">
+        <BuddyCard />
+      </div>
     </MobileShell>
   );
 }
