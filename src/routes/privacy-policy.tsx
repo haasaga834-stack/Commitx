@@ -86,6 +86,7 @@ const SECTIONS: { title: string; body: string[] }[] = [
     body: [
       "To create and secure your account; to run, verify and settle focus sessions; to keep streaks, stats and Cx Coin balances correct; to run Group Study with people you invite; to send the reminders you enable; to prevent referral and reward abuse; and to fix errors and keep the service reliable.",
       "We do not use your study data for advertising, profiling or automated decisions, and we do not sell personal information.",
+      "Product analytics and crash reports: we use PostHog to count anonymous usage events (for example: a session started, completed or abandoned, its mode and a rough duration range, sign-up steps, joining a group) and to receive error reports when the app crashes. These events never include your goals, notes, email or name; they are linked to an internal account ID only so we can fix reliability problems. Session recordings are turned off.",
     ],
   },
   {
