@@ -1,5 +1,8 @@
 # Roadmap
 
+- [x] Replace Study Buddy WhatsApp popup with native share sheet and website Web Share; older Android builds copy the invitation without leaving CommitX.
+- [ ] Verify Android Study Buddy chooser-to-chat round trip on a physical phone — requires a new APK/AAB and connected device.
+
 - [x] Reduce App Limits checks from 2 seconds to 300ms, move detection/usage work off the UI thread, share throttled usage aggregation, and remove the 5-second return-button bypass; 13 App Limits and 7 existing countdown assertions passed. Changed native classes compile against Android 36 with unchanged integrations stubbed; this is not a full release build or device check.
 - [ ] Verify App Limits reopen latency, return navigation, daily reset and background behavior on a physical Android device — requires updated APK/AAB and an attached device.
 
