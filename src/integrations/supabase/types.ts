@@ -104,6 +104,45 @@ export type Database = {
         }
         Relationships: []
       }
+      buddy_events: {
+        Row: {
+          coins: number
+          created_at: string
+          duration_minutes: number
+          event_type: string
+          goal: string
+          id: string
+          recipient_id: string
+          seen_at: string | null
+          source_id: string | null
+          user_id: string
+        }
+        Insert: {
+          coins?: number
+          created_at?: string
+          duration_minutes?: number
+          event_type: string
+          goal?: string
+          id?: string
+          recipient_id: string
+          seen_at?: string | null
+          source_id?: string | null
+          user_id: string
+        }
+        Update: {
+          coins?: number
+          created_at?: string
+          duration_minutes?: number
+          event_type?: string
+          goal?: string
+          id?: string
+          recipient_id?: string
+          seen_at?: string | null
+          source_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       coin_adjustments: {
         Row: {
           amount: number
@@ -496,6 +535,36 @@ export type Database = {
         }
         Relationships: []
       }
+      study_buddies: {
+        Row: {
+          connected_at: string | null
+          created_at: string
+          id: string
+          invite_code: string
+          invitee_id: string | null
+          inviter_id: string
+          status: string
+        }
+        Insert: {
+          connected_at?: string | null
+          created_at?: string
+          id?: string
+          invite_code: string
+          invitee_id?: string | null
+          inviter_id: string
+          status?: string
+        }
+        Update: {
+          connected_at?: string | null
+          created_at?: string
+          id?: string
+          invite_code?: string
+          invitee_id?: string | null
+          inviter_id?: string
+          status?: string
+        }
+        Relationships: []
+      }
       study_groups: {
         Row: {
           code: string
@@ -702,12 +771,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_buddy_invite: { Args: { _code: string }; Returns: boolean }
+      buddy_invite_preview: {
+        Args: { _code: string }
+        Returns: {
+          inviter_avatar: string
+          inviter_name: string
+          status: string
+        }[]
+      }
       cancel_study_group: {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
       cleanup_focus_class_presence: { Args: never; Returns: undefined }
       community_food_coins: { Args: never; Returns: number }
+      create_buddy_invite: { Args: never; Returns: string }
       create_study_group: {
         Args: {
           _duration: number
@@ -722,6 +801,7 @@ export type Database = {
           id: string
         }[]
       }
+      current_buddy_id: { Args: { _user_id: string }; Returns: string }
       fail_web_session: { Args: { _reason: string }; Returns: string }
       finish_web_session: { Args: never; Returns: boolean }
       focus_class_active_count: { Args: never; Returns: number }
@@ -751,6 +831,7 @@ export type Database = {
           status: string
         }[]
       }
+      group_pot_amount: { Args: { _group_id: string }; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -777,6 +858,7 @@ export type Database = {
         Returns: boolean
       }
       ledger_coin_balance: { Args: { _user_id: string }; Returns: number }
+      mark_buddy_events_seen: { Args: never; Returns: number }
       my_focus_totals: {
         Args: never
         Returns: {
@@ -785,6 +867,24 @@ export type Database = {
           failed: number
           total_minutes: number
         }[]
+      }
+      my_study_buddy: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          buddy_id: string
+          display_name: string
+          ends_at: string
+          focusing: boolean
+          goal: string
+          pending_code: string
+          today_minutes: number
+        }[]
+      }
+      nudge_study_buddy: { Args: never; Returns: boolean }
+      pay_group_pot_share: {
+        Args: { _group_id: string; _user_id: string }
+        Returns: number
       }
       recompute_wallet: { Args: { _user_id: string }; Returns: number }
       record_focus_session_from_active: {
@@ -811,6 +911,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: undefined
       }
+      remove_study_buddy: { Args: never; Returns: boolean }
       settle_all_unreported_claims: { Args: never; Returns: number }
       settle_expired_study_group: {
         Args: { _group_id: string; _user_id: string }
