@@ -183,6 +183,13 @@
       "when": 1792613343427,
       "tag": "0025_release_v2_privacy_guards",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1792646356119,
+      "tag": "0026_buddy_discovery_for_everyone",
+      "breakpoints": true
     }
   ]
 }
