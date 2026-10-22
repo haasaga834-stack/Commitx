@@ -1,6 +1,8 @@
 package app.commitx.mobile;
 
 import android.app.AppOpsManager;
+import android.app.usage.UsageStats;
+import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -152,7 +154,27 @@ final class FocusShieldStore {
                         Process.myUid(),
                         ctx.getPackageName());
             }
-            return mode == AppOpsManager.MODE_ALLOWED;
+            if (mode == AppOpsManager.MODE_ALLOWED) return true;
+            if (mode == AppOpsManager.MODE_IGNORED || mode == AppOpsManager.MODE_ERRORED) return false;
+            // Several OEMs report MODE_DEFAULT even after the user grants Usage
+            // Access, which made the permission dialog reappear forever. Probe
+            // real usage data to confirm the grant in that case.
+            return usageProbeWorks(ctx);
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    /** True when a real usage query returns data, i.e. access is effectively granted. */
+    private static boolean usageProbeWorks(Context ctx) {
+        try {
+            UsageStatsManager usm =
+                    (UsageStatsManager) ctx.getSystemService(Context.USAGE_STATS_SERVICE);
+            if (usm == null) return false;
+            long now = System.currentTimeMillis();
+            java.util.List<UsageStats> stats = usm.queryUsageStats(
+                    UsageStatsManager.INTERVAL_DAILY, now - 24L * 60L * 60L * 1000L, now);
+            return stats != null && !stats.isEmpty();
         } catch (Throwable t) {
             return false;
         }
