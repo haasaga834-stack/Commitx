@@ -26,7 +26,6 @@ function hours(m: number) {
 
 /** Browse opted-in students one at a time, filtered by what they study. */
 export function BuddyFinder() {
-  const [visible, setVisible] = useState<boolean | null>(null);
   const [education, setEducation] = useState("");
   const [sex, setSex] = useState("");
   const [focusingOnly, setFocusingOnly] = useState(false);
@@ -34,10 +33,6 @@ export function BuddyFinder() {
   const [i, setI] = useState(0);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
-
-  useEffect(() => {
-    void supabase.rpc("my_buddy_discoverable").then(({ data }) => setVisible(Boolean(data)));
-  }, []);
 
   const search = useCallback(async () => {
     setMsg(null);
@@ -57,11 +52,6 @@ export function BuddyFinder() {
     void search();
   }, [search]);
 
-  const toggleVisible = async () => {
-    const next = !visible;
-    const { error } = await supabase.rpc("set_buddy_discoverable", { _on: next });
-    if (!error) setVisible(next);
-  };
 
   const request = async (c: Candidate) => {
     setBusy(true);
@@ -76,21 +66,7 @@ export function BuddyFinder() {
   const c = list?.[i];
   return (
     <div className="mt-4 text-left">
-      <button
-        type="button"
-        onClick={toggleVisible}
-        className="flex w-full items-center justify-between rounded-2xl border border-hairline bg-background px-4 py-3"
-      >
-        <span>
-          <span className="block text-sm font-medium text-foreground">Let others find me</span>
-          <span className="block text-[11px] text-muted-foreground">Shows your name, photo and education only</span>
-        </span>
-        <span className={`relative h-6 w-11 rounded-full transition-colors ${visible ? "bg-primary" : "bg-secondary"}`}>
-          <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-card shadow-soft transition-all ${visible ? "left-[22px]" : "left-0.5"}`} />
-        </span>
-      </button>
-
-      <div className="relative mt-3">
+      <div className="relative">
         <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           value={education}
