@@ -61,16 +61,36 @@ const initial: AppState = {
   coins: WELCOME_COINS,
   sessions: [],
   profile: {
-    name: "Arjun Mehta",
-    age: "24",
-    sex: "Male",
-    education: "B.Tech, Computer Science",
+    name: "",
+    age: "",
+    sex: "",
+    education: "",
   },
   referralCredited: false,
   notificationsEnabled: true,
 };
 
+/** Older builds seeded a demo profile; never show it as a real user's details. */
+function stripDemoProfile(state: AppState): AppState {
+  const p = state.profile ?? initial.profile;
+  if (p.name !== "Arjun Mehta") return state;
+  return {
+    ...state,
+    profile: {
+      ...p,
+      name: "",
+      age: p.age === "24" ? "" : p.age,
+      sex: p.sex === "Male" ? "" : p.sex,
+      education: p.education === "B.Tech, Computer Science" ? "" : p.education,
+    },
+  };
+}
+
 function migrate(raw: any): AppState {
+  return stripDemoProfile(migrateShape(raw));
+}
+
+function migrateShape(raw: any): AppState {
   if (!raw) return initial;
   if (typeof raw.coins === "number") return { ...initial, ...raw };
   // Older shapes stored a demo/real split or a single `balance`.

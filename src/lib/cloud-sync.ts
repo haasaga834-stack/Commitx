@@ -238,7 +238,7 @@ async function push(userId: string) {
   const { error: profileError } = await supabase
     .from("profiles")
     .update({
-      display_name: state.profile.name,
+      ...(state.profile.name.trim() ? { display_name: state.profile.name } : {}),
       age: state.profile.age,
       sex: state.profile.sex,
       education: state.profile.education,
