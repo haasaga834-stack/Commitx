@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Check, Plus, Timer, Trash2, Clapperboard } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatMinutes } from "@/lib/native-notifications";
@@ -40,13 +41,42 @@ export function AppLimitsManager({ onClose, onSaved }: { onClose: () => void; on
     return () => window.clearInterval(id);
   }, []);
 
+  // Strict permission gate: re-check whenever the app regains focus or
+  // visibility (returning from Android settings), and poll while the gate is
+  // showing, so a fresh grant is picked up without a manual tap. The list,
+  // picker and configure views are unreachable until both permissions hold.
+  useEffect(() => {
+    const check = () => setReady(appLimitsReady());
+    check();
+    window.addEventListener("focus", check);
+    document.addEventListener("visibilitychange", check);
+    const id = ready ? null : window.setInterval(check, 1_500);
+    return () => {
+      window.removeEventListener("focus", check);
+      document.removeEventListener("visibilitychange", check);
+      if (id !== null) window.clearInterval(id);
+    };
+  }, [ready]);
+
   const limitedPkgs = useMemo(() => new Set(limits.map((l) => l.pkg)), [limits]);
   const available = useMemo(() => apps.filter((a) => !limitedPkgs.has(a.pkg)), [apps, limitedPkgs]);
 
   const save = () => {
     if (!picked) return;
+    // Never write a limit without both permissions confirmed right now.
+    if (!appLimitsReady()) {
+      setReady(false);
+      setPicked(null);
+      setView("list");
+      return;
+    }
     const minutes = type === "reels" ? reelsToMinutes(value) : value;
     setAppLimit(picked.pkg, type, minutes);
+    // Confirm the limit actually persisted before showing it as saved.
+    if (!readAppLimits().some((l) => l.pkg === picked.pkg)) {
+      toast.error("Couldn't save the limit — please try again.");
+      return;
+    }
     refresh();
     onSaved?.();
     setPicked(null);
