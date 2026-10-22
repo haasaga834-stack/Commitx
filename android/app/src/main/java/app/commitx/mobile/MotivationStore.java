@@ -15,15 +15,18 @@ import java.util.Random;
  * device's local timezone, delivered by exact alarms so they arrive even when
  * CommitX is closed.
  *
- * The message pair for a calendar day is picked once and persisted, so
- * restarts, rebuilds, logins and background/foreground transitions never
- * change or duplicate a day's notifications.
+ * Morning and evening use separate message pools, so an evening notification
+ * can never carry a "Good Morning" title. The message for a calendar day and
+ * slot is picked once and persisted, so restarts, rebuilds, logins and
+ * background/foreground transitions never change or duplicate a notification.
  */
 final class MotivationStore {
     private static final String PREFS = "commitx_motivation";
     private static final String KEY_ENABLED = "enabled";
-    private static final String KEY_DAY_PREFIX = "day_";        // day_YYYY_MM_DD -> "m,e"
-    private static final String KEY_LAST_PAIR = "last_pair";    // dedupe across days
+    private static final String KEY_DAY_MORNING_PREFIX = "day2_m_";  // day2_m_YYYY_MM_DD -> index
+    private static final String KEY_DAY_EVENING_PREFIX = "day2_e_";  // day2_e_YYYY_MM_DD -> index
+    private static final String KEY_LAST_MORNING = "last_m";         // avoid immediate repetition
+    private static final String KEY_LAST_EVENING = "last_e";
 
     static final int MORNING_HOUR = 8;
     static final int EVENING_HOUR = 19;
@@ -31,8 +34,8 @@ final class MotivationStore {
     private static final int REQ_MORNING = 4101;
     private static final int REQ_EVENING = 4102;
 
-    /** title \u0000 body */
-    private static final String[] MESSAGES = {
+    /** title \u0000 body — morning-only pool. */
+    private static final String[] MORNING_MESSAGES = {
             "\uD83C\uDF05 Good Morning\u0000A new day, a fresh chance to move forward. One step at a time. \uD83C\uDF31\u2728",
             "\u2600\uFE0F Keep Going\u0000Small efforts every day create remarkable results. Keep showing up. \uD83D\uDCAA\uD83D\uDCDA",
             "\uD83C\uDF31 Keep Growing\u0000Progress doesn't need to be perfect. It just needs to continue. \uD83C\uDF3F",
@@ -42,12 +45,23 @@ final class MotivationStore {
             "\uD83D\uDD25 Stay With It\u0000Some days are difficult. Showing up anyway is what makes the difference. \uD83D\uDCAA",
             "\uD83C\uDF24\uFE0F New Day, New Chance\u0000Start where you are and make this moment count. \uD83C\uDF31",
             "\uD83D\uDCD6 Keep Building\u0000Every page studied, every goal completed, brings you a little closer. \u2728",
+            "\uD83C\uDF31 Trust the Process\u0000Growth takes time. Stay committed and let your effort compound. \u2728",
+            "\uD83C\uDF33 Fresh Start\u0000Today's effort is tomorrow's confidence. Begin with one calm hour. \uD83C\uDF31\u2728",
+            "\u2600\uFE0F Morning Momentum\u0000An hour now is lighter than a rushed night later. Choose the hour. \uD83D\uDCAA\uD83D\uDCDA",
+    };
+
+    /** title \u0000 body — evening-only pool. */
+    private static final String[] EVENING_MESSAGES = {
             "\uD83C\uDF19 Good Evening\u0000You made it through another day. Keep building, one commitment at a time. \u2728",
             "\uD83C\uDF1F Be Proud\u0000Progress can be quiet, but every effort matters. Keep moving forward. \uD83C\uDF3F",
             "\uD83E\uDDD8 Take It One Step at a Time\u0000Stay present, stay patient, and keep moving toward your goal. \uD83C\uDF31",
             "\uD83D\uDE80 Your Future Is Built Today\u0000The small choices you make today shape where you go tomorrow. \u2728",
             "\uD83C\uDF19 Keep the Momentum\u0000Even a little progress today is better than standing still. Keep going. \uD83D\uDCAB",
-            "\uD83C\uDF31 Trust the Process\u0000Growth takes time. Stay committed and let your effort compound. \u2728",
+            "\uD83C\uDF1B Evening Focus\u0000One focused hour tonight can change how tomorrow feels. \uD83D\uDCDA\u2728",
+            "\uD83C\uDF05 Well Done Today\u0000Whatever you completed, showing up counts. Finish the day gently. \uD83C\uDF3F",
+            "\uD83C\uDF0C End on a Good Note\u0000Close the day with one more honest effort. Your future self says thanks. \u2728",
+            "\uD83C\uDF1A Wind Down\u0000A calm session now means a peaceful night and a stronger start tomorrow. \uD83C\uDF31",
+            "\uD83C\uDF19 Tonight's Promise\u0000One commitment kept before bed is a quiet win worth keeping. \uD83D\uDCAB\u2728",
     };
 
     private MotivationStore() {}
@@ -74,43 +88,46 @@ final class MotivationStore {
                 c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH));
     }
 
-    /** The persisted, stable {morning, evening} message indexes for a day. */
-    private static int[] pairFor(Context ctx, Calendar day) {
-        String key = KEY_DAY_PREFIX + dayKey(day);
+    private static String[] pool(boolean morning) {
+        return morning ? MORNING_MESSAGES : EVENING_MESSAGES;
+    }
+
+    private static String dayKeyPrefix(boolean morning) {
+        return morning ? KEY_DAY_MORNING_PREFIX : KEY_DAY_EVENING_PREFIX;
+    }
+
+    private static String lastIndexKey(boolean morning) {
+        return morning ? KEY_LAST_MORNING : KEY_LAST_EVENING;
+    }
+
+    /** The persisted, stable message index for one slot on a day. */
+    private static int indexFor(Context ctx, boolean morning, Calendar day) {
+        String key = dayKeyPrefix(morning) + dayKey(day);
+        String[] pool = pool(morning);
         SharedPreferences p = prefs(ctx);
         String stored = p.getString(key, null);
         if (stored != null) {
-            String[] parts = stored.split(",");
             try {
-                int m = Integer.parseInt(parts[0]);
-                int e = Integer.parseInt(parts[1]);
-                if (m >= 0 && m < MESSAGES.length && e >= 0 && e < MESSAGES.length && m != e) {
-                    return new int[] { m, e };
-                }
+                int i = Integer.parseInt(stored);
+                if (i >= 0 && i < pool.length) return i;
             } catch (Throwable ignored) {}
         }
 
-        String last = p.getString(KEY_LAST_PAIR, "");
+        String last = p.getString(lastIndexKey(morning), "");
         Random rnd = new Random(System.currentTimeMillis() ^ key.hashCode());
-        int m = 0, e = 0;
-        for (int attempt = 0; attempt < 40; attempt++) {
-            m = rnd.nextInt(MESSAGES.length);
-            e = rnd.nextInt(MESSAGES.length);
-            if (m == e) continue;
-            if ((m + "," + e).equals(last)) continue; // avoid immediate repetition
-            break;
-        }
-        if (m == e) e = (m + 1) % MESSAGES.length;
+        int i = rnd.nextInt(pool.length);
+        // avoid the same message two days in a row
+        if (String.valueOf(i).equals(last)) i = (i + 1) % pool.length;
 
         p.edit()
-                .putString(key, m + "," + e)
-                .putString(KEY_LAST_PAIR, m + "," + e)
+                .putString(key, String.valueOf(i))
+                .putString(lastIndexKey(morning), String.valueOf(i))
                 .apply();
         pruneOldDays(ctx, day);
-        return new int[] { m, e };
+        return i;
     }
 
-    /** Drops persisted pairs older than a week so the prefs never grow. */
+    /** Drops persisted indexes older than a week so the prefs never grow. */
     private static void pruneOldDays(Context ctx, Calendar today) {
         try {
             SharedPreferences p = prefs(ctx);
@@ -118,24 +135,26 @@ final class MotivationStore {
             for (int i = -1; i <= 2; i++) {
                 Calendar c = (Calendar) today.clone();
                 c.add(Calendar.DAY_OF_YEAR, i);
-                keep.add(KEY_DAY_PREFIX + dayKey(c));
+                keep.add(KEY_DAY_MORNING_PREFIX + dayKey(c));
+                keep.add(KEY_DAY_EVENING_PREFIX + dayKey(c));
             }
             SharedPreferences.Editor ed = p.edit();
             for (String k : p.getAll().keySet()) {
-                if (k.startsWith(KEY_DAY_PREFIX) && !keep.contains(k)) ed.remove(k);
+                if ((k.startsWith(KEY_DAY_MORNING_PREFIX) || k.startsWith(KEY_DAY_EVENING_PREFIX))
+                        && !keep.contains(k)) ed.remove(k);
             }
             ed.apply();
         } catch (Throwable ignored) {}
     }
 
     static String titleFor(Context ctx, boolean morning, Calendar day) {
-        int[] pair = pairFor(ctx, day);
-        return MESSAGES[morning ? pair[0] : pair[1]].split("\u0000")[0];
+        String[] pool = pool(morning);
+        return pool[indexFor(ctx, morning, day)].split("\u0000")[0];
     }
 
     static String bodyFor(Context ctx, boolean morning, Calendar day) {
-        int[] pair = pairFor(ctx, day);
-        String[] parts = MESSAGES[morning ? pair[0] : pair[1]].split("\u0000");
+        String[] pool = pool(morning);
+        String[] parts = pool[indexFor(ctx, morning, day)].split("\u0000");
         return parts.length > 1 ? parts[1] : "";
     }
 
@@ -165,7 +184,7 @@ final class MotivationStore {
     /**
      * Re-arms both alarms (idempotent — FLAG_UPDATE_CURRENT replaces any
      * existing alarm, so opening the app can never create duplicates), and
-     * pre-generates the message pair for the day each alarm will land on.
+     * pre-generates each slot's message for the day that alarm will land on.
      */
     static void reconcile(Context ctx) {
         if (!enabled(ctx)) {
@@ -184,7 +203,7 @@ final class MotivationStore {
             long fireAt = nextFireAt(morning);
             Calendar day = Calendar.getInstance();
             day.setTimeInMillis(fireAt);
-            pairFor(ctx, day); // persist the pair up front
+            indexFor(ctx, morning, day); // persist the message up front
 
             PendingIntent pi = pending(ctx, morning, PendingIntent.FLAG_UPDATE_CURRENT);
             if (pi == null) return;
