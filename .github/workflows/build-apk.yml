@@ -138,6 +138,25 @@ jobs:
             -storepass:env COMMITX_KEYSTORE_PASSWORD -file dist/upload_certificate.pem
           keytool -printcert -file dist/upload_certificate.pem | grep -E 'SHA1|SHA256'
 
+      # One-time helper: while the durable secret is missing, show the keystore
+      # as Base64 in the run summary so it can be copied into
+      # COMMITX_KEYSTORE_BASE64. Stops appearing once the secret exists.
+      - name: Show keystore code for backup (until secret is saved)
+        env:
+          COMMITX_KEYSTORE_BASE64: ${{ secrets.COMMITX_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$COMMITX_KEYSTORE_BASE64" ]; then
+            {
+              echo '## Keystore code (copy into secret COMMITX_KEYSTORE_BASE64)'
+              echo 'Copy everything inside the box. Delete this run afterwards (Actions → this run → ⋯ → Delete workflow run).'
+              echo ''
+              echo '```text'
+              base64 -w0 "$COMMITX_KEYSTORE_PATH"
+              echo ''
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Build signed release APK and AAB
         working-directory: android
         env:
