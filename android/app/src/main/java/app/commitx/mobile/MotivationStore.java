@@ -61,7 +61,7 @@ final class MotivationStore {
     }
 
     private static String[] pool(boolean morning) {
-        return morning ? MORNING_MESSAGES : EVENING_MESSAGES;
+        return MotivationMessages.pool(morning);
     }
 
     private static String dayKeyPrefix(boolean morning) {
