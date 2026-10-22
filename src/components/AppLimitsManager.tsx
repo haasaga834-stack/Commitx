@@ -186,7 +186,10 @@ export function AppLimitsManager({ onClose, onSaved }: { onClose: () => void; on
               <Button variant="outline" onClick={onClose} className="h-11 flex-1 rounded-full">
                 Done
               </Button>
-              <Button onClick={() => setView("pick")} className="h-11 flex-1 rounded-full">
+              <Button
+                onClick={() => (appLimitsReady() ? setView("pick") : setReady(false))}
+                className="h-11 flex-1 rounded-full"
+              >
                 <Plus aria-hidden="true" /> Add limit
               </Button>
             </div>
