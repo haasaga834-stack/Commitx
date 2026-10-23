@@ -757,12 +757,36 @@ export function setPlannerUser(userId: string | null) {
     });
   }
   if (!isOnline()) return;
+  watchTodoChanges(userId);
+  if (!isOnline()) return;
   void pullPlannerFromCloud(userId).catch(() => {});
+}
+
+// Live to-do changes from other devices/website refresh the list (and widget) at once.
+let todoChannel: ReturnType<typeof supabase.channel> | null = null;
+let todoChannelUser: string | null = null;
+let todoPullTimer: ReturnType<typeof setTimeout> | null = null;
+function watchTodoChanges(userId: string | null) {
+  if (typeof window === "undefined" || todoChannelUser === userId) return;
+  if (todoChannel) void supabase.removeChannel(todoChannel);
+  todoChannel = null;
+  todoChannelUser = userId;
+  if (!userId) return;
+  todoChannel = supabase
+    .channel(`todos-${userId}-${Math.random().toString(36).slice(2)}`)
+    .on("postgres_changes", { event: "*", schema: "public", table: "todos", filter: `user_id=eq.${userId}` }, () => {
+      if (todoPullTimer) clearTimeout(todoPullTimer);
+      todoPullTimer = setTimeout(() => {
+        if (cloudUserId === userId && !pendingCloudPush) void pullPlannerFromCloud(userId).catch(() => {});
+      }, 400);
+    })
+    .subscribe();
 }
 
 /** Clear local mirrors (sign-out / account deletion). */
 export function clearPlannerLocal() {
   cloudUserId = null;
+  watchTodoChanges(null);
   pendingCloudPush = false;
   if (stopReconnect) stopReconnect();
   stopReconnect = null;
