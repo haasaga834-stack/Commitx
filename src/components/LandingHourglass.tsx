@@ -111,10 +111,10 @@ export function LandingHourglass({
               <stop offset="100%" stopColor="#ffffff" stopOpacity="0.4" />
             </linearGradient>
             <clipPath id="lhTop">
-              <path d="M22 18 L98 18 Q98 48 62 76 L58 76 Q22 48 22 18 Z" />
+              <path d="M25 19.8 L95 19.8 Q94.5 47.5 61 74.5 L59 74.5 Q25.5 47.5 25 19.8 Z" />
             </clipPath>
             <clipPath id="lhBot">
-              <path d="M22 150 L98 150 Q98 120 62 92 L58 92 Q22 120 22 150 Z" />
+              <path d="M25 148.2 L95 148.2 Q94.5 120.5 61 93.5 L59 93.5 Q25.5 120.5 25 148.2 Z" />
             </clipPath>
           </defs>
 

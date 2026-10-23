@@ -35,12 +35,13 @@ export function GrowingPlant({ progress }: { progress: number }) {
                     <path d={`M0 0 Q${side * 12} -5 ${side * 23} -6`} stroke="var(--plant-vein)" strokeWidth="0.7" fill="none" />
                   </g>
                   {index > 1 && index < 6 && side === (index % 2 ? -1 : 1) && (
-                    <g transform={`translate(${side * length * 0.58} ${branchY + 8})`}>
+                    <g transform={`translate(${side * length * 0.648} ${-4.8 + 0.36 * branchY})`}>
                       <g opacity={growth.flowers} transform={`scale(${0.3 + growth.flowers * 0.7})`}>
                         {[0, 72, 144, 216, 288].map((angle) => <path key={angle} d="M0 0 L-3 -6 0 -12 3 -6Z" transform={`rotate(${angle})`} fill="var(--plant-flower)" />)}
                         <circle r="2.5" fill="var(--plant-flower-center)" />
                       </g>
-                      <g opacity={growth.fruit} transform={`scale(${0.3 + growth.fruit * 0.7})`}>
+                      <path d={`M0 0 Q${side * 4} 6 0 ${4 + growth.fruit * 8}`} stroke="var(--plant-stem)" strokeWidth="1.4" fill="none" strokeLinecap="round" opacity={growth.fruit} />
+                      <g opacity={growth.fruit} transform={`translate(0 ${4 + growth.fruit * 14}) scale(${0.3 + growth.fruit * 0.7})`}>
                         <path d="M0 -6 Q-14 -12 -13 2 Q-12 15 0 14 Q13 14 13 1 Q13 -11 0 -6Z" fill="var(--plant-fruit)" />
                         <ellipse cx="-5" cy="0" rx="2" ry="4" fill="var(--plant-fruit-shine)" />
                         <path d="M0 -6 L-6 -10 -3 -5 -7 -4 0 -3 6 -5 3 -6 4 -11Z" fill="var(--plant-leaf)" />
