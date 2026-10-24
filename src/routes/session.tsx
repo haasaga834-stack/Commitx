@@ -625,17 +625,21 @@ function LiveSession() {
     return () => clearInterval(id);
   }, [dndBlocked, resumeTimer]);
 
-  // Single animation loop — guards against duplicate timers via doneRef.
+  // Single clock loop — the countdown displays whole seconds, so ticking once
+  // per second (aligned to the wall-clock second boundary) renders identically
+  // to a 60fps loop while doing ~60x less work. Guards against duplicate
+  // timers via doneRef.
   useEffect(() => {
-    let raf = 0;
+    let timer = 0;
     const tick = () => {
-      setNow(Date.now());
+      const t = Date.now();
+      setNow(t);
       evaluateRef.current();
       if (doneRef.current) return;
-      raf = requestAnimationFrame(tick);
+      timer = window.setTimeout(tick, 1000 - (t % 1000) + 10);
     };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    timer = window.setTimeout(tick, 1000 - (Date.now() % 1000) + 10);
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -1181,7 +1185,7 @@ function LiveSession() {
           type="button"
           aria-label="Cancel session"
           onClick={() => setConfirmCancel(true)}
-          className="absolute right-4 top-[max(60px,calc(env(safe-area-inset-top,0px)+52px))] z-20 grid h-10 w-10 place-items-center rounded-full bg-destructive/15 text-destructive shadow-soft backdrop-blur transition-transform active:scale-90"
+          className="absolute right-4 top-[max(40px,calc(env(safe-area-inset-top,0px)+16px))] z-20 grid h-10 w-10 place-items-center rounded-full bg-destructive/15 text-destructive shadow-soft backdrop-blur transition-transform active:scale-90"
         >
           <X className="h-5 w-5" strokeWidth={2.6} />
         </button>
