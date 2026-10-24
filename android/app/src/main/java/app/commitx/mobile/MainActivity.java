@@ -846,8 +846,9 @@ public class MainActivity extends Activity {
 
         // Any other page: go to Home instead of closing the app.
         if (webView != null) {
-            evalOnWeb("window.CommitXNav&&window.CommitXNav.goHome?window.CommitXNav.goHome():window.location.assign('/')");
-            atRootScreen = true;
+            // An open dialog closes first; otherwise go Home. The web layer
+            // reports the new root state itself once navigation settles.
+            evalOnWeb("(function(){var n=window.CommitXNav;if(n&&n.closeTopModal&&n.closeTopModal())return;if(n&&n.goHome)n.goHome();else window.location.assign('/');})()");
             return;
         }
         super.onBackPressed();

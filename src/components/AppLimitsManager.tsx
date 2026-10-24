@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Check, Plus, Timer, Trash2, Clapperboard } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeft, Check, X, Plus, Timer, Trash2, Clapperboard } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,7 @@ import {
   TIME_LIMIT_OPTIONS,
   type AppLimit,
 } from "@/lib/app-limits";
+import { registerNativeModal } from "@/lib/native-session";
 
 type View = "list" | "pick" | "configure";
 
@@ -33,6 +34,37 @@ export function AppLimitsManager({ onClose, onSaved }: { onClose: () => void; on
   const [ready, setReady] = useState(appLimitsReady());
 
   const refresh = () => setLimits(readAppLimits());
+
+  // Android Back steps back inside the dialog, then closes it (never exits the app).
+  const viewRef = useRef(view);
+  viewRef.current = view;
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+  useEffect(
+    () =>
+      registerNativeModal(() => {
+        const v = viewRef.current;
+        if (v === "configure") setView("pick");
+        else if (v === "pick") setView("list");
+        else closeRef.current();
+      }),
+    [],
+  );
+
+  const confirmAllowed = () => {
+    const nowReady = appLimitsReady();
+    setReady(nowReady);
+    if (nowReady) return;
+    const missing = [
+      !shieldHasUsageAccess() && "Usage Access",
+      !shieldHasOverlayAccess() && "Display over other apps",
+    ].filter(Boolean);
+    toast.error(
+      missing.length
+        ? `Still missing: ${missing.join(" and ")}. Turn it on for CommitX, then come back.`
+        : "Permissions not confirmed yet — try again in a moment.",
+    );
+  };
 
   useEffect(() => {
     refresh();
@@ -121,6 +153,14 @@ export function AppLimitsManager({ onClose, onSaved }: { onClose: () => void; on
           <h2 id="app-limits-title" className="font-display text-lg font-semibold">
             {view === "list" ? "App Limits" : view === "pick" ? "Choose an app" : picked?.label}
           </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="ml-auto inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary text-muted-foreground"
+            aria-label="Close"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
 
         {!ready ? (
@@ -140,8 +180,11 @@ export function AppLimitsManager({ onClose, onSaved }: { onClose: () => void; on
                   Allow display over apps
                 </Button>
               )}
-              <Button onClick={() => setReady(appLimitsReady())} variant="ghost" className="h-11 rounded-full">
+              <Button onClick={confirmAllowed} variant="ghost" className="h-11 rounded-full">
                 I've allowed both
+              </Button>
+              <Button onClick={onClose} variant="ghost" className="h-11 rounded-full text-muted-foreground">
+                Not now
               </Button>
             </div>
           </div>

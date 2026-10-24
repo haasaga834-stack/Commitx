@@ -134,3 +134,31 @@ export function openDndSettings() {
     window.CommitXAndroid?.openDndSettings?.();
   } catch {}
 }
+
+/* Dialogs that the Android Back gesture should close before leaving the page. */
+const nativeModalStack: Array<() => void> = [];
+
+export function hasOpenNativeModal() {
+  return nativeModalStack.length > 0;
+}
+
+/** Registers an open dialog; returns an unregister function. */
+export function registerNativeModal(close: () => void) {
+  nativeModalStack.push(close);
+  setNativeAtRootScreen(false);
+  return () => {
+    const i = nativeModalStack.lastIndexOf(close);
+    if (i >= 0) nativeModalStack.splice(i, 1);
+    if (typeof window !== "undefined") {
+      setNativeAtRootScreen(window.location.pathname === "/" && nativeModalStack.length === 0);
+    }
+  };
+}
+
+/** Closes the top dialog; true when one was closed. */
+export function closeTopNativeModal() {
+  const close = nativeModalStack[nativeModalStack.length - 1];
+  if (!close) return false;
+  close();
+  return true;
+}
