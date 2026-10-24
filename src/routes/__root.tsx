@@ -23,7 +23,7 @@ import { useAuth } from "../lib/use-auth";
 import { identifyUser, initAnalytics } from "../lib/analytics";
 import { useStudyReminders } from "../lib/planner";
 import { reconcileMotivationNotifications } from "../lib/native-notifications";
-import { hasNativeBridge } from "../lib/native-session";
+import { hasNativeBridge, setNativeAtRootScreen, hasOpenNativeModal, closeTopNativeModal } from "../lib/native-session";
 import { registerAppServiceWorker } from "../lib/pwa";
 import { AmbientNature } from "../components/AmbientNature";
 import { OfflineNotice } from "../components/OfflineNotice";
