@@ -159,6 +159,8 @@ final class FocusShieldStore {
             // Several OEMs report MODE_DEFAULT even after the user grants Usage
             // Access, which made the permission dialog reappear forever. Probe
             // real usage data to confirm the grant in that case.
+            if (ctx.checkCallingOrSelfPermission(android.Manifest.permission.PACKAGE_USAGE_STATS)
+                    == android.content.pm.PackageManager.PERMISSION_GRANTED) return true;
             return usageProbeWorks(ctx);
         } catch (Throwable t) {
             return false;
@@ -173,8 +175,10 @@ final class FocusShieldStore {
             if (usm == null) return false;
             long now = System.currentTimeMillis();
             java.util.List<UsageStats> stats = usm.queryUsageStats(
-                    UsageStatsManager.INTERVAL_DAILY, now - 24L * 60L * 60L * 1000L, now);
-            return stats != null && !stats.isEmpty();
+                    UsageStatsManager.INTERVAL_BEST, now - 7L * 24L * 60L * 60L * 1000L, now);
+            if (stats != null && !stats.isEmpty()) return true;
+            android.app.usage.UsageEvents ev = usm.queryEvents(now - 7L * 24L * 60L * 60L * 1000L, now);
+            return ev != null && ev.hasNextEvent();
         } catch (Throwable t) {
             return false;
         }

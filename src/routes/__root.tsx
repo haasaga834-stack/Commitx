@@ -382,10 +382,21 @@ function RootComponent() {
 
   // Android back gesture from any non-Home page returns to Home.
   useEffect(() => {
-    (window as unknown as { CommitXNav?: { goHome: () => void } }).CommitXNav = {
+    const w = window as unknown as { CommitXNav?: Record<string, unknown> };
+    w.CommitXNav = {
+      ...(w.CommitXNav ?? {}),
       goHome: () => void navRouter.navigate({ to: "/" }),
+      closeTopModal: () => closeTopNativeModal(),
     };
   }, [navRouter]);
+
+  // Keep native Back aware of the current page on every route, not only
+  // routes that render the bottom navigation.
+  const rootPath = useRouterState({ select: (s) => s.location.pathname });
+  useEffect(() => {
+    if (!hasNativeBridge()) return;
+    setNativeAtRootScreen(rootPath === "/" && !hasOpenNativeModal());
+  }, [rootPath]);
 
 
   // The sculptural botanical theme belongs to the installed CommitX app only.
