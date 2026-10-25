@@ -779,6 +779,8 @@ export function Landing() {
 
       <LandingReviews />
 
+      <EventSpotlight />
+
       {/* FAQ */}
       <section className="px-6 py-16 sm:py-20">
         <div className="mx-auto max-w-5xl">
