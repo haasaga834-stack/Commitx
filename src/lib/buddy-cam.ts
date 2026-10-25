@@ -15,7 +15,17 @@ export function isCaller(myId: string, buddyId: string) {
 }
 
 const ICE: RTCConfiguration = {
-  iceServers: [{ urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] }],
+  iceServers: [
+    {
+      urls: [
+        "stun:stun.l.google.com:19302",
+        "stun:stun1.l.google.com:19302",
+        "stun:stun2.l.google.com:19302",
+        "stun:stun3.l.google.com:19302",
+        "stun:stun4.l.google.com:19302",
+      ],
+    },
+  ],
 };
 
 type Signal =
@@ -45,13 +55,35 @@ export function useBuddyCam(myId: string | null, buddyId: string | null) {
   const starting = useRef(false);
   const stream = useRef<MediaStream | null>(null);
   const pendingIce = useRef<RTCIceCandidateInit[]>([]);
+  const disconnectGrace = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const signalFailures = useRef(0);
 
-  const send = (payload: Signal) => {
+  const fail = useCallback((message: string) => {
+    setError(message);
+    setState("error");
+  }, []);
+
+  const send = async (payload: Signal) => {
     const room = roomRef.current;
-    if (room) void supabase.rpc("send_buddy_cam_signal", { _room: room, _payload: JSON.parse(JSON.stringify(payload)) });
+    if (!room) return true;
+    const { error: err } = await supabase.rpc("send_buddy_cam_signal", {
+      _room: room,
+      _payload: JSON.parse(JSON.stringify(payload)),
+    });
+    if (err) {
+      // Never leave the user staring at "Waiting…" when the handshake itself fails.
+      if (++signalFailures.current >= 2) {
+        fail("Could not reach your buddy. Check your internet, then tap to try again.");
+      }
+      return false;
+    }
+    signalFailures.current = 0;
+    return true;
   };
 
   const closePeer = () => {
+    if (disconnectGrace.current) clearTimeout(disconnectGrace.current);
+    disconnectGrace.current = null;
     pc.current?.close();
     pc.current = null;
     pendingIce.current = [];
@@ -65,14 +97,36 @@ export function useBuddyCam(myId: string | null, buddyId: string | null) {
     const peer = new RTCPeerConnection(ICE);
     media.getTracks().forEach((t) => peer.addTrack(t, media));
     peer.onicecandidate = (e) => {
-      if (e.candidate) send({ kind: "ice", from: myId, to: buddyId, candidate: e.candidate.toJSON() });
+      if (e.candidate) void send({ kind: "ice", from: myId, to: buddyId, candidate: e.candidate.toJSON() });
     };
     peer.ontrack = (e) => {
+      if (disconnectGrace.current) clearTimeout(disconnectGrace.current);
+      disconnectGrace.current = null;
       setRemote(e.streams[0] ?? new MediaStream([e.track]));
       setState("connected");
     };
+    peer.oniceconnectionstatechange = () => {
+      if (peer.iceConnectionState === "failed" && pc.current === peer) {
+        // Mobile networks drop UDP often; renegotiate instead of giving up.
+        peer.restartIce();
+      }
+    };
     peer.onconnectionstatechange = () => {
-      if (["failed", "disconnected", "closed"].includes(peer.connectionState) && pc.current === peer) {
+      if (pc.current !== peer) return;
+      if (peer.connectionState === "connected") {
+        if (disconnectGrace.current) clearTimeout(disconnectGrace.current);
+        disconnectGrace.current = null;
+        setState("connected");
+      } else if (peer.connectionState === "disconnected") {
+        // "disconnected" is often a brief network blip on mobile — wait before dropping.
+        if (disconnectGrace.current) clearTimeout(disconnectGrace.current);
+        disconnectGrace.current = setTimeout(() => {
+          if (pc.current === peer && peer.connectionState !== "connected") {
+            setRemote(null);
+            setState("waiting");
+          }
+        }, 5000);
+      } else if (peer.connectionState === "failed" || peer.connectionState === "closed") {
         setRemote(null);
         setState("waiting");
       }
@@ -82,7 +136,7 @@ export function useBuddyCam(myId: string | null, buddyId: string | null) {
   }, [myId, buddyId]);
 
   const stop = useCallback(() => {
-    if (myId) send({ kind: "bye", from: myId });
+    if (myId) void send({ kind: "bye", from: myId });
     generation.current++;
     starting.current = false;
     if (poll.current) clearInterval(poll.current);
@@ -101,6 +155,7 @@ export function useBuddyCam(myId: string | null, buddyId: string | null) {
     if (!myId || !buddyId || roomRef.current || starting.current) return;
     starting.current = true;
     const attempt = ++generation.current;
+    signalFailures.current = 0;
     setError(null);
     setState("starting");
     try {
@@ -120,10 +175,10 @@ export function useBuddyCam(myId: string | null, buddyId: string | null) {
       return;
     }
 
-    const { data: room } = await supabase.rpc("buddy_cam_room");
+    const { data: room, error: roomError } = await supabase.rpc("buddy_cam_room");
     if (attempt !== generation.current) return;
     starting.current = false;
-    if (!room) {
+    if (!room || roomError) {
       stream.current?.getTracks().forEach((t) => t.stop());
       stream.current = null;
       setLocal(null);
@@ -143,9 +198,9 @@ export function useBuddyCam(myId: string | null, buddyId: string | null) {
             const peer = newPeer();
             if (!peer) return;
             await peer.setLocalDescription(await peer.createOffer());
-            if (peer.localDescription) send({ kind: "sdp", from: myId, to: buddyId, sdp: peer.localDescription.toJSON() });
+            if (peer.localDescription) void send({ kind: "sdp", from: myId, to: buddyId, sdp: peer.localDescription.toJSON() });
           } else if (!pc.current) {
-            send({ kind: "hello", from: myId });
+            void send({ kind: "hello", from: myId });
           }
         } else if (s.kind === "sdp") {
           if (s.sdp.type === "offer") {
@@ -153,7 +208,7 @@ export function useBuddyCam(myId: string | null, buddyId: string | null) {
             if (!peer) return;
             await peer.setRemoteDescription(s.sdp);
             await peer.setLocalDescription(await peer.createAnswer());
-            if (peer.localDescription) send({ kind: "sdp", from: myId, to: buddyId, sdp: peer.localDescription.toJSON() });
+            if (peer.localDescription) void send({ kind: "sdp", from: myId, to: buddyId, sdp: peer.localDescription.toJSON() });
           } else if (pc.current) {
             await pc.current.setRemoteDescription(s.sdp);
           }
@@ -179,7 +234,7 @@ export function useBuddyCam(myId: string | null, buddyId: string | null) {
         const result = await supabase.rpc("read_buddy_cam_signals", { _room: room, _after: after });
         if (attempt !== generation.current) return;
         if (result.error) {
-          if (++failures >= 3) { stop(); setError("Study cam disconnected. Please reconnect with your buddy."); setState("error"); }
+          if (++failures >= 3) { stop(); fail("Study cam disconnected. Please reconnect with your buddy."); }
           return;
         }
         failures = 0;
@@ -190,20 +245,20 @@ export function useBuddyCam(myId: string | null, buddyId: string | null) {
         }
       } catch {
         if (attempt === generation.current && ++failures >= 3) {
-          stop(); setError("Study cam disconnected. Please reconnect with your buddy."); setState("error");
+          stop(); fail("Study cam disconnected. Please reconnect with your buddy.");
         }
       } finally { reading = false; }
     };
     setState("waiting");
-    send({ kind: "hello", from: myId });
+    void send({ kind: "hello", from: myId });
     void read();
     poll.current = setInterval(() => { void read(); }, 1500);
-  }, [myId, buddyId, newPeer, stop]);
+  }, [myId, buddyId, newPeer, stop, fail]);
 
   // Re-announce while waiting so a buddy who joins later still connects.
   useEffect(() => {
     if (state !== "waiting" || !myId) return;
-    const t = window.setInterval(() => send({ kind: "hello", from: myId }), 4000);
+    const t = window.setInterval(() => void send({ kind: "hello", from: myId }), 4000);
     return () => window.clearInterval(t);
   }, [state, myId]);
 
