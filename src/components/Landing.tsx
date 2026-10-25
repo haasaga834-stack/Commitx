@@ -1,3 +1,4 @@
+import { EventSpotlight } from "@/components/EventSpotlight";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowRight, Menu, Moon, Sun, X } from "lucide-react";
