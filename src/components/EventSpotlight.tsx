@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import poster from "/events/skillsphere-elocution.jpg?url";
+const poster = "/events/skillsphere-elocution.jpg";
 
 const EVENT_URL = "https://skillsphereedu.vercel.app/events";
 const EXPIRES_AT = new Date("2026-11-30T23:59:59+05:30").getTime();
