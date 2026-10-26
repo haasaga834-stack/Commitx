@@ -629,6 +629,14 @@ export function toggleTodo(id: string) {
   }
 }
 
+/** Marks a to-do done; never un-completes it. Returns true if it changed. */
+export function completeTodo(id: string): boolean {
+  const item = getTodos().find((t) => t.id === id);
+  if (!item || item.done) return false;
+  toggleTodo(id);
+  return true;
+}
+
 export function removeTodo(id: string) {
   writeTodos(getTodos().filter((t) => t.id !== id));
   if (cloudUserId && isOnline()) {
