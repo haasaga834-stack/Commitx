@@ -1253,7 +1253,8 @@ function LiveSession() {
           Stay with it · turning discipline into impact
         </p>
       </div>
-      <BuddyCam />
+      {/* Buddy cam paused until next app release */}
+      {false && <BuddyCam />}
 
 
 

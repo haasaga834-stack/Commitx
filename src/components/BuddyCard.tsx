@@ -37,7 +37,6 @@ export function BuddyCard() {
       if (pending) {
         localStorage.removeItem("commitx-pending-buddy");
         setCode(pending);
-        setOpen(true);
       }
     } catch {}
   }, [buddy.status]);
@@ -81,7 +80,11 @@ export function BuddyCard() {
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          // Temporarily paused until the next app release.
+          setNotice("Stay tuned! Study Buddy is coming soon.");
+          window.setTimeout(() => setNotice(null), 3000);
+        }}
         className="flex min-h-[64px] w-full items-center gap-3 rounded-[20px] border border-hairline bg-card px-3 text-left shadow-soft"
       >
         <span className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary text-primary">
@@ -98,7 +101,7 @@ export function BuddyCard() {
           </span>
           <span className="block truncate text-[11px] text-muted-foreground">{statusLine}</span>
         </span>
-        {hasBuddy && (
+        {false && hasBuddy && (
           <span
             role="button"
             tabIndex={0}
