@@ -81,22 +81,26 @@ final class AppLimitsStore {
         return limits(ctx).length() > 0;
     }
 
-    /** One daily aggregation shared by all packages, off the enforcement UI thread. */
-    static Map<String, UsageStats> usageSnapshot(Context ctx) {
+    /**
+     * Per-app foreground time since local midnight, from the same event
+     * timeline as the Screen Time page. Aggregated daily buckets are not
+     * aligned to local midnight and carried yesterday's usage into today.
+     */
+    static Map<String, Long> usageSnapshot(Context ctx) {
         try {
             UsageStatsManager usm =
                     (UsageStatsManager) ctx.getSystemService(Context.USAGE_STATS_SERVICE);
             if (usm == null) return null;
-            return usm.queryAndAggregateUsageStats(startOfToday(), System.currentTimeMillis());
+            return ScreenTimeDetails.usage(ctx, startOfToday(), System.currentTimeMillis(), null, 0L);
         } catch (Throwable t) {
             return null;
         }
     }
 
-    static long usageMillis(Map<String, UsageStats> stats, String pkg) {
+    static long usageMillis(Map<String, Long> stats, String pkg) {
         if (stats == null) return -1L;
-        UsageStats s = stats.get(pkg);
-        return s == null ? 0L : Math.max(0L, s.getTotalTimeInForeground());
+        Long ms = stats.get(pkg);
+        return ms == null ? 0L : Math.max(0L, ms);
     }
 
     static String labelFor(Context ctx, String pkg) {
@@ -112,7 +116,7 @@ final class AppLimitsStore {
     /** Limits with live usage, for the web layer: [{pkg,label,type,minutes,usedMinutes}]. */
     static String toJson(Context ctx) {
         JSONObject all = limits(ctx);
-        Map<String, UsageStats> stats = usageSnapshot(ctx);
+        Map<String, Long> stats = usageSnapshot(ctx);
         StringBuilder sb = new StringBuilder("[");
         boolean first = true;
         Iterator<String> keys = all.keys();

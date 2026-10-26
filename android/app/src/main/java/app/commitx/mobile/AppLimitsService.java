@@ -134,7 +134,7 @@ public class AppLimitsService extends Service {
             applyCover(fg);
             long now = SystemClock.elapsedRealtime();
             if (!AppLimitsPolicy.needsRefresh(now, lastUsageRefresh, changed)) return;
-            Map<String, UsageStats> stats = AppLimitsStore.usageSnapshot(this);
+            Map<String, Long> stats = AppLimitsStore.usageSnapshot(this);
             if (stats == null) return; // retain protection through transient query failures
             lastUsageRefresh = now;
             JSONObject all = new JSONObject(raw);

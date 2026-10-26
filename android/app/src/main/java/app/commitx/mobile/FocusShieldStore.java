@@ -155,10 +155,9 @@ final class FocusShieldStore {
                         ctx.getPackageName());
             }
             if (mode == AppOpsManager.MODE_ALLOWED) return true;
-            if (mode == AppOpsManager.MODE_IGNORED || mode == AppOpsManager.MODE_ERRORED) return false;
-            // Several OEMs report MODE_DEFAULT even after the user grants Usage
-            // Access, which made the permission dialog reappear forever. Probe
-            // real usage data to confirm the grant in that case.
+            // Several OEM skins report MODE_DEFAULT or MODE_IGNORED even after the
+            // user grants Usage Access, which made the permission dialog reappear.
+            // Real usage data is the authoritative signal in every other case.
             if (ctx.checkCallingOrSelfPermission(android.Manifest.permission.PACKAGE_USAGE_STATS)
                     == android.content.pm.PackageManager.PERMISSION_GRANTED) return true;
             return usageProbeWorks(ctx);
