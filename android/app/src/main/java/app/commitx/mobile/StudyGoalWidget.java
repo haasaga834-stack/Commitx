@@ -46,8 +46,9 @@ public class StudyGoalWidget extends AppWidgetProvider {
             PendingIntent tap = PendingIntent.getActivity(ctx, 1600, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
             views.setOnClickPendingIntent(R.id.widget_root, tap);
             views.setOnClickPendingIntent(R.id.widget_more, tap);
-            views.setOnClickPendingIntent(R.id.widget_ring, tap);
-            views.setImageViewBitmap(R.id.widget_ring, ring(ctx, today ? state.optDouble("minutes") : 0, state.optDouble("goalMinutes", 120)));
+            java.util.Date date = new java.util.Date();
+            views.setTextViewText(R.id.widget_weekday, new java.text.SimpleDateFormat("EEEE", java.util.Locale.getDefault()).format(date));
+            views.setTextViewText(R.id.widget_date, new java.text.SimpleDateFormat("d MMM", java.util.Locale.getDefault()).format(date));
             JSONArray todos = today ? state.optJSONArray("todos") : new JSONArray();
             int count = todos == null ? 0 : todos.length();
             int[] rows = {R.id.widget_row_0, R.id.widget_row_1, R.id.widget_row_2};
@@ -62,7 +63,8 @@ public class StudyGoalWidget extends AppWidgetProvider {
                 views.setTextViewText(texts[i], todo.optString("text"));
                 views.setTextColor(texts[i], ctx.getColor(done ? R.color.widget_muted : R.color.widget_text));
                 Intent toggle = new Intent(ctx, StudyGoalWidget.class).setAction(TOGGLE).setData(android.net.Uri.parse("commitx-widget://todo/" + android.net.Uri.encode(todo.optString("id")))).putExtra("todo_id", todo.optString("id"));
-                views.setOnClickPendingIntent(rows[i], PendingIntent.getBroadcast(ctx, 0, toggle, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+                views.setOnClickPendingIntent(checks[i], PendingIntent.getBroadcast(ctx, 0, toggle, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+                views.setOnClickPendingIntent(rows[i], tap);
             }
             views.setTextViewText(R.id.widget_more, count > 3 ? "+" + (count - 3) + " more" : count == 0 ? "Add a task →" : "See all →");
             manager.updateAppWidget(id, views);

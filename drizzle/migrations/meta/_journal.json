@@ -204,6 +204,13 @@
       "when": 1792823502848,
       "tag": "0028_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1793071492773,
+      "tag": "0029_first_completion_starter_bonus",
+      "breakpoints": true
     }
   ]
 }

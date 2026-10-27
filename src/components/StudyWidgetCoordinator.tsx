@@ -6,9 +6,20 @@ import { syncStudyWidget, loadWidgetInvitation, markWidgetInvited } from '@/lib/
 import { shouldInviteWidget, widgetActionsForUser } from '@/lib/study-widget-rules';
 import { hasNativeBridge } from '@/lib/native-session';
 import { StudyWidgetInvite } from './StudyWidgetInvite';
+import { reconcileFocusTodos } from '@/lib/focus-todo-sync';
 export function StudyWidgetCoordinator({ userId, onboarding }: { userId: string | null; onboarding: boolean }) {
   const [invite, setInvite] = useState(false);
   const { hydrated } = useTodos();
+  useEffect(() => {
+    if (!userId) return;
+    const reconcile = () => void reconcileFocusTodos(userId);
+    reconcile();
+    const stop = subscribe(reconcile);
+    const timer = setInterval(reconcile, 15000);
+    window.addEventListener('online', reconcile);
+    window.addEventListener('focus', reconcile);
+    return () => { stop(); clearInterval(timer); window.removeEventListener('online', reconcile); window.removeEventListener('focus', reconcile); };
+  }, [userId]);
   useEffect(() => {
     if (!hasNativeBridge() || !hydrated) return;
     let reconciling = false;

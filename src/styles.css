@@ -1044,6 +1044,16 @@ body.cx-app-theme .cx-tablet-home h2 { font-family: var(--font-sans); }
 
 /* Phone Home presentation only; tablet and public Home keep their own themes. */
 body.cx-app-theme .cx-phone-home-shell {
+  --background: oklch(0.94 0.02 160);
+  --foreground: oklch(0.23 0.035 178);
+  --muted-foreground: oklch(0.40 0.025 178);
+  --card: oklch(0.99 0.008 160 / 0.76);
+  --card-foreground: var(--foreground);
+  --primary: oklch(0.37 0.065 178);
+  --primary-foreground: oklch(0.99 0.006 160);
+  --secondary: oklch(0.91 0.026 160 / 0.75);
+  --muted: oklch(0.83 0.028 165 / 0.65);
+  --hairline: oklch(0.99 0.008 160 / 0.60);
   --home-hero-ink: oklch(0.99 0.006 160);
   --home-hero-shade: oklch(0.16 0.018 182);
   --home-action: oklch(0.43 0.083 184);
@@ -1052,32 +1062,43 @@ body.cx-app-theme .cx-phone-home-shell {
   --home-gold-light: oklch(0.94 0.076 91);
   --home-gold-ink: oklch(0.43 0.08 77);
   --home-shadow: 0 8px 16px -9px color-mix(in oklch, var(--foreground) 28%, transparent), inset 0 1px 2px color-mix(in oklch, var(--card) 80%, transparent);
-  background-image: var(--gradient-warm);
+  position: relative;
+  isolation: isolate;
+  background: var(--background);
 }
+body.cx-app-theme .cx-phone-home-shell > div:not(.cx-home-atmosphere) { position: relative; }
+.cx-home-atmosphere { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.cx-home-panorama { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.cx-home-scenic-wash { position: absolute; inset: 0; background: linear-gradient(to bottom, color-mix(in oklch, var(--background) 12%, transparent), transparent 50%, color-mix(in oklch, var(--home-hero-shade) 12%, transparent)); }
+.cx-home-bird { position: absolute; left: -12%; width: 30px; color: var(--foreground); opacity: 0.65; animation: cx-bird-flight 32s linear infinite; }
+.cx-home-bird-0 { top: 18%; animation-delay: -9s; }
+.cx-home-bird-1 { top: 27%; width: 22px; animation-duration: 39s; animation-delay: -25s; }
+.cx-home-bird-2 { top: 40%; width: 27px; animation-duration: 46s; animation-delay: -15s; }
+.cx-home-bird-3 { top: 58%; width: 18px; animation-duration: 36s; animation-delay: -31s; }
+.cx-home-bird-shape { width: 100%; animation: cx-wing-glide 2.2s ease-in-out infinite; }
+.cx-home-perched { position: absolute; width: 29px; height: 24px; right: 23px; top: -23px; color: var(--foreground); transform-origin: bottom center; animation: cx-bird-perch 8s ease-in-out infinite; pointer-events: none; }
+.cx-home-paused .cx-home-bird, .cx-home-paused .cx-home-bird-shape { animation-play-state: paused; }
+@keyframes cx-bird-flight { 0% { transform: translate3d(-30px, 8px, 0); } 50% { transform: translate3d(55vw, -16px, 0); } 100% { transform: translate3d(120vw, 8px, 0); } }
+@keyframes cx-wing-glide { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.5); } }
+@keyframes cx-bird-perch { 0%, 85%, 100% { transform: rotate(0); } 90% { transform: rotate(5deg); } 95% { transform: rotate(-3deg); } }
 body.cx-app-theme .cx-phone-home-shell .cx-home {
-  height: calc(100dvh - 88px - env(safe-area-inset-bottom, 0px));
-  min-height: 560px;
+  min-height: calc(100dvh - 174px - env(safe-area-inset-bottom, 0px));
   gap: 14px;
-  padding: max(24px, env(safe-area-inset-top, 0px)) 14px 12px;
+  padding: max(28px, env(safe-area-inset-top, 0px)) 18px 12px;
 }
 body.cx-app-theme .cx-phone-home-shell .cx-home * { letter-spacing: 0; }
-body.cx-app-theme .cx-phone-home-shell .cx-home-landscape {
-  min-height: 180px;
-  box-shadow: var(--shadow-lift);
-}
-body.cx-app-theme .cx-phone-home-shell .cx-home-image-wash {
-  background: linear-gradient(to top, var(--home-hero-shade), color-mix(in oklch, var(--home-hero-shade) 68%, transparent) 25%, transparent 72%);
-}
-body.cx-app-theme .cx-phone-home-shell .cx-home-hero-title { color: var(--home-hero-ink); }
+body.cx-app-theme .cx-phone-home-shell .cx-home-focus { min-height: 150px; }
+body.cx-app-theme .cx-phone-home-shell .cx-home-hero-title { color: var(--foreground); max-width: 270px; }
+body.cx-app-theme .cx-phone-home-shell .cx-home-starter { background: var(--card); backdrop-filter: blur(18px); border: 1px solid var(--hairline); border-radius: 8px; padding: 18px; box-shadow: var(--home-shadow); }
 body.cx-app-theme .cx-phone-home-shell .cx-home-plan {
   background: color-mix(in oklch, var(--home-hero-ink) 88%, transparent);
   color: var(--home-hero-shade);
 }
 body.cx-app-theme .cx-phone-home-shell .cx-home-start {
   color: var(--home-hero-ink);
-  background: linear-gradient(110deg, var(--home-action), var(--home-action-light));
+  background: var(--home-action);
   border: 1px solid color-mix(in oklch, var(--home-hero-ink) 50%, transparent);
-  box-shadow: 0 0 0 4px color-mix(in oklch, var(--home-action-light) 28%, transparent), 0 0 18px color-mix(in oklch, var(--home-action-light) 45%, transparent);
+  box-shadow: var(--home-shadow);
 }
 body.cx-app-theme .cx-phone-home-shell .cx-home-coins {
   color: var(--home-gold-ink);
@@ -1086,8 +1107,9 @@ body.cx-app-theme .cx-phone-home-shell .cx-home-coins {
   box-shadow: 0 5px 12px -4px color-mix(in oklch, var(--home-gold-ink) 35%, transparent), inset 0 1px 3px var(--home-gold-light);
 }
 body.cx-app-theme .cx-phone-home-shell .cx-home-glance,
-body.cx-app-theme .cx-phone-home-shell .cx-home-group { box-shadow: var(--home-shadow); }
-body.cx-app-theme .cx-phone-home-shell .cx-home-quick a { background: transparent; border-color: var(--hairline); }
+body.cx-app-theme .cx-phone-home-shell .cx-home-group,
+body.cx-app-theme .cx-phone-home-shell .cx-home-buddy > * { background: var(--card); backdrop-filter: blur(18px); border-color: var(--hairline); box-shadow: var(--home-shadow); }
+body.cx-app-theme .cx-phone-home-shell .cx-home-quick a { background: var(--card); backdrop-filter: blur(14px); border-color: var(--hairline); }
 body.cx-app-theme .cx-phone-home-shell .cx-home-quick .cx-home-quick-featured {
   color: var(--home-hero-ink);
   background: linear-gradient(115deg, var(--home-action-light), var(--home-action));
@@ -1098,7 +1120,8 @@ body.cx-app-theme .cx-phone-home-shell nav.fixed {
   inset-inline: max(10px, calc((100% - 428px) / 2));
   bottom: max(8px, env(safe-area-inset-bottom, 0px));
   border-radius: 22px;
-  background: color-mix(in oklch, var(--card) 75%, var(--background));
+  background: var(--card);
+  backdrop-filter: blur(20px);
   box-shadow: none;
 }
 body.cx-app-theme .cx-phone-home-shell nav.fixed > div { padding-block: 5px; }
@@ -1106,11 +1129,11 @@ body.cx-app-theme .cx-phone-home-shell nav.fixed a { gap: 5px; font-size: 11px; 
 body.cx-app-theme .cx-phone-home-shell nav.fixed svg { width: 21px; height: 21px; }
 @media (min-height: 740px) {
   body.cx-app-theme .cx-phone-home-shell .cx-home { gap: 16px; }
-  body.cx-app-theme .cx-phone-home-shell .cx-home-landscape { padding-block: 22px; }
+  body.cx-app-theme .cx-phone-home-shell .cx-home-focus { min-height: 200px; }
 }
 @media (max-height: 660px) {
   body.cx-app-theme .cx-phone-home-shell .cx-home { gap: 9px; padding-top: max(18px, env(safe-area-inset-top, 0px)); }
-  body.cx-app-theme .cx-phone-home-shell .cx-home-landscape { padding-block: 15px; }
+  body.cx-app-theme .cx-phone-home-shell .cx-home-focus { min-height: 130px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
