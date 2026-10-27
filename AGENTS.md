@@ -36,3 +36,5 @@ Subdirectories have their own AGENTS.md (see android/AGENTS.md) — read it befo
 - Buddy discovery is opt-in via RPCs; cam is muted P2P with no chat; pair-authorized signaling RPCs revoke removed-buddy access.
 - Account deletion cleans application data and preserves referrals transactionally before auth deletion, preventing social leftovers and duplicate retry credits.
 - Analytics/crash reporting go only through src/lib/analytics.ts (PostHog, inert without token, no personal content), to keep events privacy-safe.
+- Task focus associations are account- and session-id-scoped, retained until a recorded successful outcome and owner-scoped task write are acknowledged; checklist updates never change session settlement.
+- First-completion incentives are once-only coin_adjustments from a focus_sessions trigger, never local wallet increments, so retries and parallel settlement cannot duplicate rewards.
