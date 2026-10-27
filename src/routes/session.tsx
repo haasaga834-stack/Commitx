@@ -70,6 +70,7 @@ import { accountabilityEnded } from "@/lib/accountability";
 import { flushPendingSessions } from "@/lib/cloud-sync";
 import { recoverSessionProgress } from "@/lib/session-recovery";
 import { BuddyCam } from "@/components/BuddyCam";
+import { getFocusTodos } from "@/lib/focus-todo";
 
 declare global {
   interface Window {
@@ -278,6 +279,7 @@ function LiveSession() {
   // Guests can run a full session; nothing is staked, stored or synced.
   const { user, loading: authLoading } = useAuth();
   const guestRef = useRef(false);
+  const focusedTask = user ? getFocusTodos(user.id).find(link => link.sessionId === readActiveVerifiedSession()?.id) : undefined;
   guestRef.current = !authLoading && !user;
   const navigate = useNavigate();
   const totalMs = duration * 60 * 1000;
@@ -1217,7 +1219,7 @@ function LiveSession() {
           <p className="h-[4.5rem] w-full text-center font-display text-6xl font-semibold tabular-nums tracking-tight">
             {fmt(remaining)}
           </p>
-          <p className="mt-3 block w-full text-center text-sm text-muted-foreground">{goal}</p>
+          <p className="mt-3 block w-full break-words text-center text-sm text-muted-foreground">{focusedTask ? `Working on: ${focusedTask.text}` : goal}</p>
           {value > 0 && (
             <p className="mt-1 block w-full text-center text-xs text-muted-foreground">
               {coinLabel(value)} committed

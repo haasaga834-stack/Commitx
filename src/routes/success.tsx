@@ -6,6 +6,8 @@ import { z } from "zod";
 import { useEffect, useState } from "react";
 import { useAppState, stats, coinLabel, coinsForMinutes } from "@/lib/commitx-store";
 import { useAuth } from "@/lib/use-auth";
+import { useTodos } from "@/lib/planner";
+import { reconcileFocusTodos } from "@/lib/focus-todo-sync";
 
 const search = z.object({
   goal: z.string().default("Focus"),
@@ -21,6 +23,8 @@ export const Route = createFileRoute("/success")({
       { name: "description", content: "You kept your promise." },
       { property: "og:title", content: "CommitX — Commitment complete" },
       { property: "og:description", content: "You kept your promise." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Success,
@@ -55,6 +59,14 @@ function Success() {
   const s = stats(state.sessions);
   const { user, loading: authLoading } = useAuth();
   const guest = !authLoading && !user;
+  const { todos } = useTodos();
+  const completedTask = todos.find(todo => todo.done && todo.text === goal);
+  useEffect(() => {
+    if (!user) return;
+    void reconcileFocusTodos(user.id);
+    const timer = setInterval(() => void reconcileFocusTodos(user.id), 1500);
+    return () => clearInterval(timer);
+  }, [user?.id]);
 
   const coinsEarned = coinsForMinutes(duration);
   const coins = Math.round(useCountUp(s.coinsEarned, 1100, 500));
@@ -108,6 +120,7 @@ function Success() {
       >
         {goal}
       </p>
+      {completedTask && <p className="mt-2 inline-flex items-center gap-1.5 text-xs text-primary"><Check className="h-3.5 w-3.5" />Task completed</p>}
 
       {!guest && coinsEarned > 0 && (
         <div
