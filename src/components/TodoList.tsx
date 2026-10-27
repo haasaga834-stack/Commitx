@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
 import { useTodos, addTodo, toggleTodo, removeTodo } from "@/lib/planner";
-import { Check, ListChecks, Plus, Trash2 } from "lucide-react";
+import { Check, ListChecks, Plus, Trash2, Play } from "lucide-react";
 
 interface Props {
   /** Compact variant used inside the active session screen. */
@@ -75,6 +77,9 @@ export function TodoList({ compact = false, readOnly = false }: Props) {
               >
                 {t.text}
               </span>
+              {!compact && !readOnly && !t.done && <Button asChild variant="ghost" size="icon" className="h-7 w-7 shrink-0" title={`Focus on ${t.text}`}>
+                <Link to="/commit" search={{ todo: t.id }} aria-label={`Focus on ${t.text}`}><Play className="h-3.5 w-3.5" /></Link>
+              </Button>}
               {!readOnly && (
                 <button
                   onClick={() => removeTodo(t.id)}

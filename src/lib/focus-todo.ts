@@ -1,42 +1,16 @@
-/**
- * Links one to-do to the next focus session. The link is local only and is
- * consumed once, by the success screen, when that session's goal matches.
- */
-const KEY = "commitx:focus-todo";
-const MAX_AGE_MS = 8 * 60 * 60 * 1000;
-
-export interface FocusTodoLink {
-  id: string;
-  text: string;
-  at: number;
+/** Account/session-keyed task links survive offline completion and app restarts. */
+export interface FocusTodoLink { id: string; text: string; day: string; sessionId: string; }
+const key = (userId: string) => `commitx:focus-todos:${userId}`;
+export function getFocusTodos(userId: string): FocusTodoLink[] {
+  try { return JSON.parse(localStorage.getItem(key(userId)) ?? "[]"); } catch { return []; }
 }
-
-export function setFocusTodo(id: string, text: string) {
-  try {
-    localStorage.setItem(KEY, JSON.stringify({ id, text, at: Date.now() }));
-  } catch {
-    /* storage unavailable */
-  }
+export function bindFocusTodo(userId: string, link: FocusTodoLink) {
+  const links = getFocusTodos(userId).filter(item => item.sessionId !== link.sessionId);
+  localStorage.setItem(key(userId), JSON.stringify([...links, link]));
 }
-
-export function clearFocusTodo() {
-  try {
-    localStorage.removeItem(KEY);
-  } catch {
-    /* storage unavailable */
-  }
+export function clearFocusTodo(userId: string, sessionId: string) {
+  localStorage.setItem(key(userId), JSON.stringify(getFocusTodos(userId).filter(item => item.sessionId !== sessionId)));
 }
-
-/** Returns and clears the link if it belongs to a session with this goal. */
-export function takeFocusTodo(goal: string, now = Date.now()): FocusTodoLink | null {
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return null;
-    const link = JSON.parse(raw) as FocusTodoLink;
-    if (!link?.id || link.text.trim() !== goal.trim() || now - link.at > MAX_AGE_MS) return null;
-    localStorage.removeItem(KEY);
-    return link;
-  } catch {
-    return null;
-  }
+export function taskForCompletedSession(links: FocusTodoLink[], sessions: { id: string; status: string }[]) {
+  return links.filter(link => sessions.some(session => session.id === link.sessionId && session.status === "completed"));
 }

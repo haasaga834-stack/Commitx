@@ -7,6 +7,7 @@ const VISIBLE = 5;
 interface Props {
   value: number;
   onChange: (minutes: number) => void;
+  includeStarter?: boolean;
 }
 
 function tick() {
@@ -21,12 +22,13 @@ function tick() {
  * 3D roller-drum duration picker. Native scroll gives momentum and snapping;
  * each row is curved, scaled and faded by its distance from the centre line.
  */
-export function DurationWheel({ value, onChange }: Props) {
+export function DurationWheel({ value, onChange, includeStarter = false }: Props) {
+  const options = includeStarter ? [15, ...DURATION_OPTIONS] : DURATION_OPTIONS;
   const ref = useRef<HTMLDivElement | null>(null);
   const items = useRef<(HTMLButtonElement | null)[]>([]);
   const raf = useRef<number>(0);
   const syncing = useRef(false);
-  const lastIndex = useRef(Math.max(0, DURATION_OPTIONS.indexOf(value)));
+  const lastIndex = useRef(Math.max(0, options.indexOf(value)));
   const [centre, setCentre] = useState(lastIndex.current);
 
   function paint() {
@@ -40,7 +42,7 @@ export function DurationWheel({ value, onChange }: Props) {
       node.style.transform = `perspective(520px) rotateX(${-d * 24}deg) scale(${1 - a * 0.11})`;
       node.style.opacity = String(Math.max(0.18, 1 - a * 0.36));
     });
-    const i = Math.min(DURATION_OPTIONS.length - 1, Math.max(0, Math.round(pos)));
+    const i = Math.min(options.length - 1, Math.max(0, Math.round(pos)));
     if (i !== lastIndex.current) {
       lastIndex.current = i;
       setCentre(i);
@@ -52,7 +54,7 @@ export function DurationWheel({ value, onChange }: Props) {
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const i = Math.max(0, DURATION_OPTIONS.indexOf(value));
+    const i = Math.max(0, options.indexOf(value));
     const top = i * ITEM_H;
     if (Math.abs(el.scrollTop - top) > 2) {
       syncing.current = true;
@@ -65,7 +67,7 @@ export function DurationWheel({ value, onChange }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
-  useEffect(() => () => cancelAnimationFrame(raf.current), []);
+  useEffect(() => () => { cancelAnimationFrame(raf.current); window.clearTimeout(settle.current); }, []);
 
   const settle = useRef<number>(0);
   function onScroll() {
@@ -75,7 +77,7 @@ export function DurationWheel({ value, onChange }: Props) {
       if (i === undefined || syncing.current) return;
       window.clearTimeout(settle.current);
       settle.current = window.setTimeout(() => {
-        const next = DURATION_OPTIONS[i];
+        const next = options[i];
         if (next !== value) onChange(next);
       }, 90);
     });
@@ -102,7 +104,7 @@ export function DurationWheel({ value, onChange }: Props) {
         style={{ height: ITEM_H * VISIBLE, scrollbarWidth: "none" }}
       >
         <div style={{ height: pad }} aria-hidden />
-        {DURATION_OPTIONS.map((m, i) => {
+        {options.map((m, i) => {
           const active = i === centre;
           return (
             <button

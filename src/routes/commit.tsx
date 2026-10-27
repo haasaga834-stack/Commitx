@@ -16,7 +16,10 @@ import { DurationWheel } from "@/components/DurationWheel";
 import { CommitTablet } from "@/components/CommitTablet";
 import { useIsTablet } from "@/lib/use-tablet";
 import { z } from "zod";
-import { usePlans, upcomingPlan } from "@/lib/planner";
+import { usePlans, upcomingPlan, useTodos } from "@/lib/planner";
+import { bindFocusTodo } from "@/lib/focus-todo";
+import { STARTER_MINUTES } from "@/lib/starter-session";
+import { readActiveVerifiedSession } from "@/lib/verified-mode";
 import { claimActiveDbSession, releaseActiveDbSession } from "@/lib/active-session";
 import { flushPendingSessions } from "@/lib/cloud-sync";
 import { clearEndedSession, writeActiveVerifiedSession, readRestorableActiveSession } from "@/lib/verified-mode";
@@ -34,7 +37,8 @@ const commitSearch = z.object({
   plan: z.coerce.number().optional(),
   /** Mode preselected from the public landing page. */
   mode: z.enum(["standard", "verified"]).optional(),
-  duration: z.coerce.number().min(25).max(360).optional(),
+  duration: z.coerce.number().min(15).max(360).optional(),
+  todo: z.string().optional(),
 });
 
 export const Route = createFileRoute("/commit")({
@@ -64,7 +68,7 @@ function fmtDuration(min: number) {
 function Commit() {
   const navigate = useNavigate();
   const isTablet = useIsTablet();
-  const { plan: fromPlan, mode: fromMode, duration: fromDuration } = Route.useSearch();
+  const { plan: fromPlan, mode: fromMode, duration: fromDuration, todo: todoId } = Route.useSearch();
   const usePlanDuration = fromPlan === 1;
   const { state, hydrated } = useAppState();
   const { user, loading: authLoading } = useAuth();
@@ -73,6 +77,12 @@ function Commit() {
   const { plans, hydrated: plansHydrated } = usePlans();
   const [goal, setGoal] = useState("Study");
   const [customGoal, setCustomGoal] = useState("");
+  const { todos } = useTodos();
+  const focusedTodo = todos.find(item => item.id === todoId && !item.done);
+  useEffect(() => {
+    if (!focusedTodo) return;
+    setGoal("Custom"); setCustomGoal(focusedTodo.text);
+  }, [focusedTodo?.id]);
   const [rawValue, setValue] = useState(MIN_COMMIT);
   const [mode, setMode] = useState<"standard" | "verified">(fromMode ?? "standard");
   const [confirmVerified, setConfirmVerified] = useState(false);
@@ -283,6 +293,10 @@ function Commit() {
       });
 
       startedCommitRef.current = true;
+      const ticket = readActiveVerifiedSession();
+      if (user && ticket?.id && focusedTodo && finalGoal === focusedTodo.text) {
+        bindFocusTodo(user.id, { id: focusedTodo.id, text: focusedTodo.text, day: focusedTodo.day, sessionId: ticket.id });
+      }
       accountabilityStarted(duration, Date.now());
       navigate({
         to: "/session",
@@ -536,7 +550,7 @@ function Commit() {
           </div>
 
           {!usePlanDuration ? (
-            <DurationWheel value={pickedDuration} onChange={setPickedDuration} />
+            <DurationWheel value={pickedDuration} onChange={setPickedDuration} includeStarter={fromDuration === STARTER_MINUTES} />
           ) : plansHydrated && !duration ? (
             <Link
               to="/planner"
