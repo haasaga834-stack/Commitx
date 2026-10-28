@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Complete both Android date/checklist widget layouts and remove obsolete ring code; validate Android compilation.
+- [ ] Remove phone Home Study Buddy card, bottom-align action cluster with 12–16px navigation gap, and add scoped dark mode; verify signed-in light/dark phone layouts.
+
 - [ ] Finish Option A task Focus action, session attribution and success-only task completion; test roller and task rules.
 - [ ] Replace Android widget ring with editorial date and checklist, preserving Planner taps and checkbox sync.
 - [ ] Redesign native phone Home with original full-screen mountains, glass cards and subtle birds; preserve website/tablet and session logic.

@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { HOME_QUICK_COMMIT_MINUTES } from "@/lib/home-presets";
 import homeStudyGroup from "@/assets/home-study-group.png";
 import { MobileShell } from "@/components/BottomNav";
-import { BuddyCard } from "@/components/BuddyCard";
 import { CxCoin } from "@/components/CxCoin";
 import { CxCoinPopup } from "@/components/CxCoinPopup";
 import { TabletLandingHome } from "@/components/TabletLandingHome";
@@ -194,7 +193,8 @@ function MobileHome() {
           <p className="col-span-2 truncate text-xs leading-5 text-muted-foreground">{hydrated ? message : "\u00A0"}</p>
         </header>
 
-        <section className="cx-home-focus relative flex flex-1 flex-col justify-center px-1 py-5">
+        <div className="cx-home-actions">
+        <section className="cx-home-focus relative px-1">
           <div className="relative z-10">
             {plansHydrated && next && <span className="cx-home-plan mb-2 inline-flex max-w-full items-center gap-1.5 rounded-full px-2.5 py-1 text-xs"><Leaf className="h-4 w-4 shrink-0" /><span className="truncate">{next.plan.subject} · {formatTime(next.plan.time)}</span></span>}
             <h2 className="cx-home-hero-title font-display text-[30px] font-semibold leading-tight">{starter ? "Your first small step." : "Ready to focus?"}</h2>
@@ -250,11 +250,8 @@ function MobileHome() {
            <span className="relative min-w-0 flex-1"><span className="block truncate font-display text-lg font-semibold text-foreground">Group Study</span><span className="block truncate text-[11px] text-muted-foreground">Learn together. Stay accountable.</span></span>
            <ArrowRight className="relative h-5 w-5 shrink-0 text-primary" />
         </Link>
-
+        </div>
       </main>
-      <div className="cx-home-buddy relative mx-auto max-w-md px-[18px] pb-2 pt-1">
-        <BuddyCard />
-      </div>
     </MobileShell>
   );
 }
