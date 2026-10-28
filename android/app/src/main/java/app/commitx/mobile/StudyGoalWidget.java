@@ -6,11 +6,6 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.RectF;
-import android.graphics.SweepGradient;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.RemoteViews;
@@ -69,26 +64,5 @@ public class StudyGoalWidget extends AppWidgetProvider {
             views.setTextViewText(R.id.widget_more, count > 3 ? "+" + (count - 3) + " more" : count == 0 ? "Add a task →" : "See all →");
             manager.updateAppWidget(id, views);
         } catch (Exception ignored) {}
-    }
-    private static String time(double minutes) {
-        int n = Math.max(0, (int) minutes);
-        return n < 60 ? n + "m" : n / 60 + "h" + (n % 60 == 0 ? "" : " " + n % 60 + "m");
-    }
-    private static Bitmap ring(Context ctx, double minutes, double goal) {
-        Bitmap bitmap = Bitmap.createBitmap(360, 360, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        RectF rect = new RectF(22, 22, 338, 338);
-        paint.setStyle(Paint.Style.STROKE); paint.setStrokeWidth(17); paint.setStrokeCap(Paint.Cap.ROUND);
-        paint.setColor(ctx.getColor(R.color.widget_track)); canvas.drawOval(rect, paint);
-        paint.setShader(new SweepGradient(180, 180, new int[]{ctx.getColor(R.color.widget_orange), ctx.getColor(R.color.widget_yellow), ctx.getColor(R.color.widget_orange)}, null));
-        canvas.drawArc(rect, -90, (float) (360 * Math.min(1, Math.max(0, minutes / Math.max(1, goal)))), false, paint);
-        paint.setShader(null); paint.setStyle(Paint.Style.FILL); paint.setTextAlign(Paint.Align.CENTER);
-        paint.setColor(ctx.getColor(R.color.widget_text)); paint.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
-        String current = time(minutes); paint.setTextSize(48);
-        while (paint.measureText(current) > 255) paint.setTextSize(paint.getTextSize() - 1);
-        canvas.drawText(current, 180, 179, paint);
-        paint.setTextSize(32); paint.setColor(ctx.getColor(R.color.widget_muted)); canvas.drawText("/ " + time(goal), 180, 224, paint);
-        return bitmap;
     }
 }
