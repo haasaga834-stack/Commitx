@@ -1,11 +1,12 @@
 # Roadmap
 
-- [ ] Complete both Android date/checklist widget layouts and remove obsolete ring code; validate Android compilation.
-- [ ] Remove phone Home Study Buddy card, bottom-align action cluster with 12–16px navigation gap, and add scoped dark mode; verify signed-in light/dark phone layouts.
+- [x] Complete both Android date/checklist widget layouts and remove obsolete ring code; XML and all 13 Java view references validated.
+- [ ] Verify full APK/AAB compilation and installed launcher date/checklist appearance — requires Android SDK/JDK/Gradle (unavailable here), GitHub workflow and an updated phone install.
+- [x] Remove phone Home Study Buddy card, bottom-align action cluster with 14px navigation gap, and add scoped dark mode; signed-in Settings toggle/reload/light restoration checked, three phone sizes and public website checked, nine rule tests pass.
 
 - [ ] Finish Option A task Focus action, session attribution and success-only task completion; test roller and task rules.
-- [ ] Replace Android widget ring with editorial date and checklist, preserving Planner taps and checkbox sync.
-- [ ] Redesign native phone Home with original full-screen mountains, glass cards and subtle birds; preserve website/tablet and session logic.
+- [x] Replace Android widget ring with editorial date and checklist, preserving Planner taps and checkbox sync; installed-device verification remains above.
+- [x] Redesign native phone Home with original full-screen mountains, glass cards and subtle birds; preserve website/tablet and session logic.
 - [ ] Add new-user 15-minute starter and secure once-only first-completion bonus; verify rules and user flow.
 
 - [x] Add personal Standard/Verified deadline alerts with durable deduplication, foreground suppression and no late result/accountability alert on return; 9 new native policy assertions, 7 clock assertions, 9 web regressions and Android 16 service compilation passed. Existing reward/recovery paths unchanged.

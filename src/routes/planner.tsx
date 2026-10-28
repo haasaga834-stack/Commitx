@@ -31,6 +31,8 @@ export const Route = createFileRoute("/planner")({
   head: () => ({
     meta: [
       { title: "CommitX — Study Planner" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       {
         name: "description",
         content: "Plan daily, weekly and monthly study sessions with 10-minute reminders.",

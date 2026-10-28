@@ -7,6 +7,8 @@ export const Route = createFileRoute("/history")({
   head: () => ({
     meta: [
       { title: "CommitX — History" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "description", content: "Every commitment you've made." },
       { property: "og:title", content: "CommitX — History" },
       { property: "og:description", content: "Every commitment you've made." },

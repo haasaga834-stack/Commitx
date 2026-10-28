@@ -9,6 +9,8 @@ export const Route = createFileRoute("/analytics")({
   head: () => ({
     meta: [
       { title: "CommitX — Analytics" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "description", content: "Weekly, monthly and daily study hour insights." },
       { property: "og:title", content: "CommitX — Analytics" },
       {
