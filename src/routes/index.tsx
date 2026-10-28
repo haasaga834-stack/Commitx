@@ -12,6 +12,7 @@ import { useIsTablet } from "@/lib/use-tablet";
 import { cn } from "@/lib/utils";
 import { HomeAtmosphere, PerchedBird } from "@/components/HomeAtmosphere";
 import { STARTER_MINUTES, shouldShowStarter } from "@/lib/starter-session";
+import { applyTheme, readTheme } from "@/lib/theme";
 
 import { useAppState, stats } from "@/lib/commitx-store";
 import { Landing } from "@/components/Landing";
@@ -135,6 +136,13 @@ function Home() {
 }
 
 function MobileHome() {
+  useEffect(() => {
+    const update = () => applyTheme(readTheme(true));
+    update();
+    const system = window.matchMedia("(prefers-color-scheme: dark)");
+    system.addEventListener("change", update);
+    return () => system.removeEventListener("change", update);
+  }, []);
   const { state, hydrated } = useAppState();
   const s = useMemo(() => stats(state.sessions), [state.sessions]);
   const { plans, hydrated: plansHydrated } = usePlans();

@@ -2,11 +2,12 @@ export type ThemeMode = "light" | "dark";
 
 export const THEME_KEY = "commitx-theme-v1";
 
-export function readTheme(): ThemeMode {
+export function readTheme(respectSystem = false): ThemeMode {
   if (typeof window === "undefined") return "light";
   try {
     const raw = window.localStorage.getItem(THEME_KEY);
-    return raw === "dark" ? "dark" : "light";
+    if (raw === "dark" || raw === "light") return raw;
+    return respectSystem && window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   } catch {
     return "light";
   }
