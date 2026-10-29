@@ -547,7 +547,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
             title="Your first small step"
             text={`Try a ${STARTER_MINUTES}-minute session and earn +${FIRST_COMPLETION_BONUS} Cx Coins.`}
             cta="Start my first session"
-            onCta={() => finish(`/commit?duration=${STARTER_MINUTES}&mode=standard`)}
+            onCta={() => { onDone(); router.navigate({ to: "/commit", search: { duration: STARTER_MINUTES, mode: "standard" } as never }); }}
             footer={
               <button
                 type="button"
