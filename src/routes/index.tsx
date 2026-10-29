@@ -11,7 +11,6 @@ import { TabletLandingHome } from "@/components/TabletLandingHome";
 import { useIsTablet } from "@/lib/use-tablet";
 import { cn } from "@/lib/utils";
 import { HomeAtmosphere, PerchedBird } from "@/components/HomeAtmosphere";
-import { STARTER_MINUTES, shouldShowStarter } from "@/lib/starter-session";
 import { applyTheme, readTheme } from "@/lib/theme";
 
 import { useAppState, stats } from "@/lib/commitx-store";
@@ -150,7 +149,6 @@ function MobileHome() {
   const { goalHours } = useDailyGoal();
   const firstName = state.profile.name.split(" ")[0];
   const message = useMemo(() => dailyMessage(), []);
-  const starter = shouldShowStarter(hydrated, s.completed);
 
   // Re-evaluate every 30s so scheduled sessions become "next" at the right time.
   const [now, setNow] = useState(() => Date.now());
@@ -205,19 +203,14 @@ function MobileHome() {
         <section className="cx-home-focus relative px-1">
           <div className="relative z-10">
             {plansHydrated && next && <span className="cx-home-plan mb-2 inline-flex max-w-full items-center gap-1.5 rounded-full px-2.5 py-1 text-xs"><Leaf className="h-4 w-4 shrink-0" /><span className="truncate">{next.plan.subject} · {formatTime(next.plan.time)}</span></span>}
-            <h2 className="cx-home-hero-title font-display text-[30px] font-semibold leading-tight">{starter ? "Your first small step." : "Ready to focus?"}</h2>
-            {!starter && <Button asChild className="cx-home-start mt-4 h-11 gap-2 rounded-full px-5 text-sm font-semibold">
+            <h2 className="cx-home-hero-title font-display text-[30px] font-semibold leading-tight">Ready to focus?</h2>
+            <Button asChild className="cx-home-start mt-4 h-11 gap-2 rounded-full px-5 text-sm font-semibold">
               <Link to="/commit" search={next ? { plan: 1 } : {}}><Leaf className="h-5 w-5" /> Start Focus Session</Link>
-            </Button>}
+            </Button>
           </div>
         </section>
 
-        {starter ? <section className="cx-home-starter relative" aria-label="First focus session">
-          <PerchedBird />
-          <div className="flex items-center justify-between gap-3"><span className="text-xs font-medium text-muted-foreground">FIRST COMMITMENT</span><span className="text-xs font-medium text-primary">+50 Cx Coins</span></div>
-          <div className="my-3 flex items-baseline gap-2"><span className="font-display text-5xl font-semibold tabular-nums">15</span><span className="text-sm text-muted-foreground">minutes</span></div>
-          <Button asChild className="cx-home-start h-11 w-full gap-2 rounded-full"><Link to="/commit" search={{ duration: STARTER_MINUTES, mode: "standard" }}>Start my first session <ArrowRight className="h-4 w-4" /></Link></Button>
-        </section> : <section aria-label="Today at a glance">
+        <section aria-label="Today at a glance">
           <h2 className="mb-1.5 font-display text-xl font-semibold text-foreground">Today at a Glance</h2>
           <Link to="/planner" className="cx-home-glance relative flex h-[80px] items-center gap-3 rounded-[20px] border border-hairline bg-card px-3 shadow-soft">
             <PerchedBird />
@@ -235,7 +228,7 @@ function MobileHome() {
             </div>
             <ArrowRight className="h-4 w-4 shrink-0 text-primary" />
           </Link>
-        </section>}
+        </section>
 
         <section aria-label="Quick Commit">
           <div className="mb-1 flex items-baseline justify-between">
