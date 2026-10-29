@@ -281,8 +281,10 @@ public class MainActivity extends Activity {
                                         android.webkit.WebResourceError error) {
                 if (request == null || !request.isForMainFrame()) return;
                 failedUrl = request.getUrl() == null ? START_URL : request.getUrl().toString();
-                // Never show the browser's raw error page.
-                try { view.stopLoading(); view.loadUrl("about:blank"); } catch (Throwable ignored) {}
+                // The native overlay covers the raw error page. Never navigate to
+                // about:blank: that strips the app bridge and the reconnect reload
+                // then renders the public website instead of the app.
+                try { view.stopLoading(); } catch (Throwable ignored) {}
                 showOfflineOverlay();
             }
         });
@@ -466,6 +468,9 @@ public class MainActivity extends Activity {
         offlineOverlay.setVisibility(View.GONE);
         stopWatchingReconnect();
         String url = failedUrl == null ? START_URL : failedUrl;
+        if (!isCommitXUrl(Uri.parse(url))) url = START_URL;
+        // Re-attach before navigating so the app shell is detected on first render.
+        webView.addJavascriptInterface(new CommitXAndroidBridge(), "CommitXAndroid");
         webView.clearHistory();
         webView.loadUrl(url);
     }
