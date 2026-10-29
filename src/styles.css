@@ -788,28 +788,28 @@ body {
    ----------------------------------------------------------------- */
 body.cx-app-theme {
   --radius: 1.25rem;
-  --background: oklch(0.2301 0.047 311.15);
-  --foreground: oklch(0.9553 0.007 88.64);
-  --card: oklch(0.285 0.052 303 / 0.76);
-  --card-foreground: oklch(0.9553 0.007 88.64);
-  --popover: oklch(0.275 0.052 303 / 0.96);
-  --popover-foreground: oklch(0.9553 0.007 88.64);
-  --primary: oklch(0.6595 0.1132 298.38);
-  --primary-foreground: oklch(0.18 0.035 310);
-  --secondary: oklch(0.31 0.055 304 / 0.78);
-  --secondary-foreground: oklch(0.9553 0.007 88.64);
-  --muted: oklch(0.31 0.047 304 / 0.7);
-  --muted-foreground: oklch(0.76 0.028 302);
+  --background: oklch(0.17 0.025 250);
+  --foreground: oklch(0.98 0.006 240);
+  --card: rgba(15, 23, 42, 0.70);
+  --card-foreground: oklch(0.98 0.006 240);
+  --popover: oklch(0.21 0.028 250 / 0.97);
+  --popover-foreground: oklch(0.98 0.006 240);
+  --primary: oklch(0.79 0.15 168);
+  --primary-foreground: oklch(0.17 0.03 200);
+  --secondary: oklch(0.26 0.03 245 / 0.78);
+  --secondary-foreground: oklch(0.98 0.006 240);
+  --muted: oklch(0.26 0.025 245 / 0.7);
+  --muted-foreground: oklch(0.83 0.018 240);
   --accent: oklch(0.68 0.112 190);
   --accent-foreground: oklch(0.17 0.035 200);
-  --border: oklch(0.74 0.055 298 / 0.18);
-  --input: oklch(0.74 0.055 298 / 0.22);
-  --ring: oklch(0.6595 0.1132 298.38);
-  --hairline: oklch(0.82 0.035 298 / 0.14);
+  --border: oklch(0.35 0.03 240 / 0.4);
+  --input: oklch(0.4 0.03 240 / 0.45);
+  --ring: oklch(0.79 0.15 168);
+  --hairline: oklch(0.6 0.02 240 / 0.16);
   --sand: oklch(0.83 0.11 92);
   --info: oklch(0.7 0.095 210);
   --info-foreground: oklch(0.18 0.035 210);
-  --frame: oklch(0.18 0.044 312);
+  --frame: oklch(0.15 0.022 250);
   --clay: oklch(0.4800 0.0758 191.29);
   /* Tailwind's inline theme aliases can otherwise retain values resolved on
      the document root. Rebind them inside the native app scope. */
@@ -836,11 +836,11 @@ body.cx-app-theme {
   --color-info-foreground: var(--info-foreground);
   --color-frame: var(--frame);
   --color-clay: var(--clay);
-  --gradient-warm: linear-gradient(160deg, oklch(0.285 0.06 306), oklch(0.2301 0.047 311.15) 42%, oklch(0.20 0.045 285));
-  --gradient-primary: linear-gradient(135deg, oklch(0.6595 0.1132 298.38), oklch(0.58 0.105 283));
-  --gradient-sun: radial-gradient(circle, oklch(0.72 0.11 298 / 0.48), transparent 70%);
-  --shadow-soft: 0 1px 0 oklch(0.95 0.02 300 / 0.06) inset, 0 14px 34px -18px oklch(0.08 0.03 310 / 0.8);
-  --shadow-lift: 0 1px 0 oklch(0.95 0.02 300 / 0.08) inset, 0 26px 58px -22px oklch(0.07 0.04 310 / 0.9);
+  --gradient-warm: linear-gradient(160deg, oklch(0.22 0.03 245), oklch(0.17 0.025 250) 42%, oklch(0.15 0.025 230));
+  --gradient-primary: linear-gradient(135deg, oklch(0.79 0.15 168), oklch(0.74 0.13 195));
+  --gradient-sun: radial-gradient(circle, oklch(0.79 0.15 168 / 0.32), transparent 70%);
+  --shadow-soft: 0 1px 0 oklch(0.95 0.01 240 / 0.06) inset, 0 14px 34px -18px oklch(0.08 0.02 250 / 0.8);
+  --shadow-lift: 0 1px 0 oklch(0.95 0.01 240 / 0.08) inset, 0 26px 58px -22px oklch(0.07 0.02 250 / 0.9);
   background-image: var(--gradient-warm);
   color-scheme: dark;
   font-family: "Manrope", ui-sans-serif, system-ui, sans-serif;
@@ -869,7 +869,7 @@ body.cx-app-theme nav.fixed {
   bottom: 0.75rem;
   border: 1px solid var(--hairline);
   border-radius: 1.25rem;
-  background: oklch(0.255 0.052 306 / 0.86);
+  background: oklch(0.19 0.025 250 / 0.88);
   box-shadow: var(--shadow-lift);
 }
 
