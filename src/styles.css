@@ -869,7 +869,7 @@ body.cx-app-theme nav.fixed {
   bottom: 0.75rem;
   border: 1px solid var(--hairline);
   border-radius: 1.25rem;
-  background: oklch(0.255 0.052 306 / 0.86);
+  background: oklch(0.19 0.025 250 / 0.88);
   box-shadow: var(--shadow-lift);
 }
 
