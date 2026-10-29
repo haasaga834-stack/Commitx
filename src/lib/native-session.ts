@@ -88,7 +88,7 @@ const NATIVE_FLAG = "cx_is_native";
 /**
  * True inside the Android app. Remembered per WebView storage so a reconnect
  * reload that races bridge injection never renders the public website.
- * The flag is only honoured inside an Android WebView user agent.
+ * WebView storage is separate from browsers, so the website is unaffected.
  */
 export function hasNativeBridge() {
   if (typeof window === "undefined") return false;
@@ -97,13 +97,7 @@ export function hasNativeBridge() {
       window.localStorage.setItem(NATIVE_FLAG, "1");
       return true;
     }
-    return (
-      window.localStorage.getItem(NATIVE_FLAG) === "1" &&
-      /Android/i.test(navigator.userAgent) &&
-      !window.matchMedia?.("(display-mode: standalone)").matches &&
-      /CommitX|wv|Chrome/i.test(navigator.userAgent) &&
-      !("chrome" in window && (window as unknown as { chrome?: { runtime?: unknown } }).chrome?.runtime)
-    );
+    return window.localStorage.getItem(NATIVE_FLAG) === "1" && /Android/i.test(navigator.userAgent);
   } catch {
     return !!window.CommitXAndroid;
   }
