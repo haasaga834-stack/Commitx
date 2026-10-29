@@ -35,6 +35,7 @@ import {
   priorityLabel,
   type Priority,
 } from "@/lib/planner";
+import { STARTER_MINUTES, FIRST_COMPLETION_BONUS } from "@/lib/starter-session";
 
 /** A time a few minutes from now, so the plan lands on today's schedule. */
 function soonTime() {
@@ -51,7 +52,7 @@ interface OnboardingProps {
 function Dots({ step }: { step: number }) {
   return (
     <div className="flex items-center justify-center gap-1.5">
-      {[0, 1, 2, 3, 4].map((i) => (
+      {[0, 1, 2, 3, 4, 5].map((i) => (
         <span
           key={i}
           className={
@@ -234,7 +235,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
           ? Math.min(MAX_COMMIT, Math.max(MIN_COMMIT, amount))
           : undefined,
       });
-      finish();
+      setStep(5);
     } catch (err) {
       setSaveError(
         err instanceof Error && err.message
@@ -532,6 +533,33 @@ export function Onboarding({ onDone }: OnboardingProps) {
             </div>
           </Screen>
         )}
+
+        {step === 5 && (
+          <Screen
+            visual={
+              <Halo>
+                <span className="inline-flex h-24 w-24 flex-col items-center justify-center rounded-full bg-card shadow-soft">
+                  <span className="font-display text-3xl font-semibold tabular-nums text-primary">{STARTER_MINUTES}</span>
+                  <span className="text-[10px] text-muted-foreground">minutes</span>
+                </span>
+              </Halo>
+            }
+            title="Your first small step"
+            text={`Try a ${STARTER_MINUTES}-minute session and earn +${FIRST_COMPLETION_BONUS} Cx Coins.`}
+            cta="Start my first session"
+            onCta={() => finish(`/commit?duration=${STARTER_MINUTES}&mode=standard`)}
+            footer={
+              <button
+                type="button"
+                onClick={() => finish("/")}
+                className="mt-3 w-full rounded-2xl bg-card py-4 text-sm font-medium text-muted-foreground shadow-soft"
+              >
+                Skip for now
+              </button>
+            }
+          />
+        )}
+
 
       </div>
     </div>
