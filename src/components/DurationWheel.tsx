@@ -1,8 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { DURATION_OPTIONS, formatDuration } from "@/lib/planner";
 
-const ITEM_H = 46;
-const VISIBLE = 5;
+const ITEM_H = 34;
+const VISIBLE = 3;
 
 interface Props {
   value: number;
@@ -86,15 +86,15 @@ export function DurationWheel({ value, onChange, includeStarter = false }: Props
   const pad = ((VISIBLE - 1) / 2) * ITEM_H;
 
   return (
-    <div className="relative mt-2 overflow-hidden rounded-3xl border border-hairline bg-background">
+    <div className="relative mx-auto mt-2 max-w-[220px] overflow-hidden rounded-full border border-hairline bg-background">
       {/* centre selection band */}
       <div
-        className="pointer-events-none absolute inset-x-3 top-1/2 z-10 -translate-y-1/2 rounded-2xl border border-hairline bg-accent/10"
+        className="pointer-events-none absolute inset-x-2 top-1/2 z-10 -translate-y-1/2 rounded-full border border-primary/40 bg-primary/10"
         style={{ height: ITEM_H }}
       />
       {/* top / bottom fade for the drum curvature */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-16 bg-gradient-to-b from-background to-transparent" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-16 bg-gradient-to-t from-background to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-6 bg-gradient-to-b from-background to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-6 bg-gradient-to-t from-background to-transparent" />
       <div
         ref={ref}
         onScroll={onScroll}
@@ -123,13 +123,13 @@ export function DurationWheel({ value, onChange, includeStarter = false }: Props
               <span
                 className={
                   active
-                    ? "font-display text-2xl font-semibold text-foreground"
-                    : "text-base text-muted-foreground"
+                    ? "font-display text-lg font-semibold text-primary"
+                    : "text-sm text-muted-foreground"
                 }
               >
                 {m}
               </span>
-              {active && <span className="ml-1.5 text-xs font-medium text-muted-foreground">min</span>}
+              {active && <span className="ml-1 text-[11px] font-medium text-muted-foreground">min</span>}
             </button>
           );
         })}
