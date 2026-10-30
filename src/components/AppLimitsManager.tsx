@@ -51,19 +51,21 @@ export function AppLimitsManager({ onClose, onSaved }: { onClose: () => void; on
     [],
   );
 
+  const [gateMsg, setGateMsg] = useState<string | null>(null);
   const confirmAllowed = () => {
     const nowReady = appLimitsReady();
     setReady(nowReady);
-    if (nowReady) return;
+    if (nowReady) { setGateMsg(null); return; }
     const missing = [
       !shieldHasUsageAccess() && "Usage Access",
       !shieldHasOverlayAccess() && "Display over other apps",
     ].filter(Boolean);
-    toast.error(
-      missing.length
-        ? `Still missing: ${missing.join(" and ")}. Turn it on for CommitX, then come back.`
-        : "Permissions not confirmed yet — try again in a moment.",
-    );
+    const msg = missing.length
+      ? `Still missing: ${missing.join(" and ")}. Turn it on for CommitX, then come back.`
+      : "Permissions not confirmed yet — try again in a moment.";
+    // Shown inline so the tap always gives visible feedback.
+    setGateMsg(msg);
+    toast.error(msg);
   };
 
   useEffect(() => {
@@ -183,6 +185,11 @@ export function AppLimitsManager({ onClose, onSaved }: { onClose: () => void; on
               <Button onClick={confirmAllowed} variant="ghost" className="h-11 rounded-full">
                 I've allowed both
               </Button>
+              {gateMsg && (
+                <p role="status" className="rounded-2xl bg-destructive/10 px-4 py-3 text-center text-xs text-destructive">
+                  {gateMsg}
+                </p>
+              )}
               <Button onClick={onClose} variant="ghost" className="h-11 rounded-full text-muted-foreground">
                 Not now
               </Button>
