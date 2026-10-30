@@ -86,11 +86,14 @@ export function useNotificationPermission() {
     };
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("focus", refresh);
+    // Some phones report the grant late after returning from Settings; re-check briefly.
+    const poll = setInterval(refresh, 1500);
     window.CommitXNotifications = {
       ...(window.CommitXNotifications ?? {}),
       onPermissionResult: (granted: boolean) => setEnabled(granted),
     };
     return () => {
+      clearInterval(poll);
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("focus", refresh);
     };
