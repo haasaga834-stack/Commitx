@@ -23,6 +23,6 @@
             <TextView android:id="@+id/widget_check_2" android:layout_width="28dp" android:layout_height="match_parent" android:gravity="center" android:text="○" android:textSize="21sp" android:textColor="@color/widget_orange" />
             <TextView android:id="@+id/widget_task_2" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:textSize="12sp" android:maxLines="1" android:ellipsize="end" android:textColor="@color/widget_text" />
         </LinearLayout>
-        <TextView android:id="@+id/widget_more" android:layout_width="match_parent" android:layout_height="24dp" android:gravity="center_vertical" android:text="See all" android:textSize="11sp" android:textColor="@color/widget_orange" />
+        <TextView android:id="@+id/widget_more" android:layout_width="match_parent" android:layout_height="24dp" android:gravity="end|center_vertical" android:textAlignment="viewEnd" android:text="See all" android:textSize="11sp" android:textColor="@color/widget_orange" />
     </LinearLayout>
 </LinearLayout>
