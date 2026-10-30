@@ -43,19 +43,24 @@ export function NotificationsCard() {
       </div>
 
       {on && supported && enabled === false && (
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <button
-            onClick={request}
-            className="rounded-xl bg-primary px-3 py-2 text-xs font-medium text-primary-foreground"
-          >
-            Allow notifications
-          </button>
-          <button
-            onClick={openSettings}
-            className="rounded-xl bg-secondary px-3 py-2 text-xs font-medium text-secondary-foreground"
-          >
-            Open Android settings
-          </button>
+        <div className="mt-3">
+          <p className="mb-2 text-xs leading-snug text-muted-foreground">
+            Your phone is still blocking CommitX alerts. Allow them once and this disappears.
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={request}
+              className="rounded-xl bg-primary px-3 py-2 text-xs font-medium text-primary-foreground"
+            >
+              Allow notifications
+            </button>
+            <button
+              onClick={openSettings}
+              className="rounded-xl bg-secondary px-3 py-2 text-xs font-medium text-secondary-foreground"
+            >
+              Open Android settings
+            </button>
+          </div>
         </div>
       )}
 
