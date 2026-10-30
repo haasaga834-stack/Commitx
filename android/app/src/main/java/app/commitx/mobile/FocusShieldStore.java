@@ -186,7 +186,17 @@ final class FocusShieldStore {
     static boolean hasOverlayAccess(Context ctx) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true;
         try {
-            return Settings.canDrawOverlays(ctx);
+            if (Settings.canDrawOverlays(ctx)) return true;
+        } catch (Throwable ignored) {}
+        // canDrawOverlays lags or misreports on several OEM skins right after the
+        // user grants it; the app-op is the authoritative fallback.
+        try {
+            AppOpsManager ops = (AppOpsManager) ctx.getSystemService(Context.APP_OPS_SERVICE);
+            if (ops == null) return false;
+            int mode = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+                    ? ops.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_SYSTEM_ALERT_WINDOW, Process.myUid(), ctx.getPackageName())
+                    : ops.checkOpNoThrow(AppOpsManager.OPSTR_SYSTEM_ALERT_WINDOW, Process.myUid(), ctx.getPackageName());
+            return mode == AppOpsManager.MODE_ALLOWED;
         } catch (Throwable t) {
             return false;
         }

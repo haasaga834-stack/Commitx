@@ -35,8 +35,12 @@ public class StudyGoalWidget extends AppWidgetProvider {
         try {
             JSONObject state = StudyWidgetStore.read(ctx);
             boolean today = StudyWidgetStore.day().equals(state.optString("day"));
-            int width = manager.getAppWidgetOptions(id).getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 300);
-            RemoteViews views = new RemoteViews(ctx.getPackageName(), width < 260 ? R.layout.study_widget_stacked : R.layout.study_widget);
+            // Many launchers report a small MIN_WIDTH in portrait even for a 4-cell widget,
+            // which wrongly picked the tall stacked layout. Use the larger reported width.
+            Bundle opts = manager.getAppWidgetOptions(id);
+            int width = Math.max(opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 300),
+                    opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, 0));
+            RemoteViews views = new RemoteViews(ctx.getPackageName(), width < 200 ? R.layout.study_widget_stacked : R.layout.study_widget);
             Intent open = new Intent(ctx, MainActivity.class).putExtra(MainActivity.EXTRA_ROUTE, "planner").addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             PendingIntent tap = PendingIntent.getActivity(ctx, 1600, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
             views.setOnClickPendingIntent(R.id.widget_root, tap);
