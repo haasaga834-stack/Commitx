@@ -486,7 +486,7 @@ function Commit() {
   }
 
   return (
-    <div className={cn("flex min-h-screen flex-col items-center justify-center pb-12", native ? "pt-[max(3rem,env(safe-area-inset-top))]" : "pt-6")}>
+    <div className={cn("flex min-h-screen flex-col items-center justify-start pb-6", native ? "pt-[max(1.5rem,env(safe-area-inset-top))]" : "pt-6")}>
       <div className="w-full max-w-md px-6">
 
         <div className="flex items-center justify-between">
@@ -502,21 +502,21 @@ function Commit() {
           <div className="w-10" />
         </div>
 
-        <h1 className="mt-3 text-center text-2xl font-semibold">Make a promise.</h1>
-        <p className="mt-2 text-center text-sm text-muted-foreground">
+        <h1 className="mt-2 text-center text-xl font-semibold">Make a promise.</h1>
+        <p className="mt-1 text-center text-xs text-muted-foreground">
           Choose your terms — you'll keep them.
         </p>
 
         {/* Goal */}
-        <section className="mt-4">
+        <section className="mt-3">
           <Label className="text-center">Goal</Label>
-          <div className="mt-3 flex flex-wrap justify-center gap-2">
+          <div className="mt-2 flex flex-wrap justify-center gap-1.5">
             {GOALS.map((g) => (
               <button
                 key={g}
                 onClick={() => setGoal(g)}
                 className={cn(
-                  "rounded-full border px-4 py-2 text-sm transition-all",
+                  "rounded-full border px-3 py-1.5 text-xs transition-all",
                   goal === g
                     ? "border-primary bg-primary text-primary-foreground"
                     : "border-hairline bg-card text-foreground hover:border-muted-foreground/40",
@@ -531,16 +531,16 @@ function Commit() {
               value={customGoal}
               onChange={(e) => setCustomGoal(e.target.value)}
               placeholder="Name your focus"
-              className="mt-3 w-full rounded-2xl border border-hairline bg-card px-4 py-3 text-sm outline-none focus:border-primary"
+              className="mt-2 w-full rounded-2xl border border-hairline bg-card px-4 py-2 text-sm outline-none focus:border-primary"
             />
           )}
         </section>
 
         {/* Duration — preloaded from the plan when swiped, otherwise chosen here */}
-        <section className="mt-4">
+        <section className="mt-3">
           <div className="flex items-baseline justify-between">
             <Label>Duration</Label>
-            <span className="font-display text-2xl font-semibold text-primary">
+            <span className="font-display text-lg font-semibold text-primary">
               {usePlanDuration && !plansHydrated
                 ? "\u2026"
                 : duration
@@ -587,7 +587,7 @@ function Commit() {
 
         {/* Value — signed-in only; guests focus without staking coins */}
         {guest ? (
-          <section className="mt-4">
+          <section className="mt-3">
             <div className="rounded-2xl bg-card px-4 py-3.5 shadow-soft">
               <p className="text-sm font-medium text-foreground">No coins needed</p>
               <p className="mt-1 text-xs text-muted-foreground">
@@ -605,14 +605,14 @@ function Commit() {
             )}
           </section>
         ) : (
-        <section className="mt-4">
+        <section className="mt-3">
           <div className="flex items-baseline justify-between">
             <Label>Commitment</Label>
             <span className="text-[11px] text-muted-foreground">
               {formatCoins(MIN_COMMIT)} – {coinLabel(MAX_COMMIT)}
             </span>
           </div>
-          <div className="mt-3 flex items-center rounded-2xl border border-hairline bg-card px-4 py-3">
+          <div className="mt-2 flex items-center rounded-2xl border border-hairline bg-card px-4 py-2">
             <span className="text-xs font-semibold text-muted-foreground">Cx</span>
             <input
               type="number"
@@ -620,7 +620,7 @@ function Commit() {
               max={MAX_COMMIT}
               value={value}
               onChange={(e) => clampValue(Number(e.target.value) || 0)}
-              className="ml-2 w-full bg-transparent text-lg font-medium outline-none"
+              className="ml-2 w-full bg-transparent text-base font-medium outline-none"
             />
           </div>
           <input
@@ -630,10 +630,10 @@ function Commit() {
             step={10}
             value={value}
             onChange={(e) => clampValue(Number(e.target.value))}
-            className="mt-3 w-full accent-[color:var(--color-primary)]"
+            className="mt-2 w-full accent-[color:var(--color-primary)]"
           />
 
-          <p className="mt-2 text-right text-[11px] text-muted-foreground">
+          <p className="mt-1 text-right text-[11px] text-muted-foreground">
             Your Cx Coins: {hydrated ? coinLabel(state.coins) : "—"}
           </p>
           {error && (
@@ -645,7 +645,7 @@ function Commit() {
         )}
 
         {/* Mode */}
-        <section className="mt-4">
+        <section className="mt-3">
           <Label>Mode</Label>
           <div className="mt-2.5 grid grid-cols-2 gap-2.5">
             <ModeCard
@@ -720,7 +720,7 @@ function Commit() {
         <button
           onClick={begin}
           disabled={starting}
-          className="mt-5 block w-full disabled:opacity-60 rounded-full bg-primary px-8 py-4 text-center text-base font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.98]"
+          className="mt-4 block w-full disabled:opacity-60 rounded-full bg-primary px-8 py-3.5 text-center text-base font-medium text-primary-foreground shadow-soft transition-transform active:scale-[0.98]"
         >
           {starting
             ? "Starting…"
