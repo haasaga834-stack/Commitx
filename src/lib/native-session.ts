@@ -16,6 +16,7 @@ declare global {
       isDndEnabled?: () => boolean;
       openDndSettings?: () => void;
       canCheckDnd?: () => boolean;
+      releaseSessionDnd?: () => void;
       /* Notification permission */
       notificationsEnabled?: () => boolean;
       requestNotificationPermission?: () => void;
@@ -143,6 +144,13 @@ export function isDndEnabled(): boolean | null {
   } catch {
     return null;
   }
+}
+
+/** Verified session ended: native switches off DND only if the session turned it on. */
+export function releaseSessionDnd() {
+  try {
+    window.CommitXAndroid?.releaseSessionDnd?.();
+  } catch {}
 }
 
 export function openDndSettings() {

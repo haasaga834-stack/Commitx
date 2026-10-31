@@ -46,6 +46,7 @@ import {
   canCheckDnd,
   isDndEnabled,
   openDndSettings,
+  releaseSessionDnd,
   setNativeSessionLock,
   setNativeVerifiedModeActive,
 } from "@/lib/native-session";
@@ -174,6 +175,7 @@ function Session() {
       setNativeSessionLock(false);
       setNativeVerifiedModeActive(false);
       hideSessionProgress();
+      releaseSessionDnd();
       const failure = finalizePendingVerifiedFailure();
       if (failure) {
         accountabilityEnded("failed", failure.duration, 0);
@@ -235,6 +237,7 @@ function Session() {
     setNativeVerifiedModeActive(false);
     hideSessionProgress();
     stopShield();
+    releaseSessionDnd();
     clearShieldPlan();
 
     void releaseActiveDbSession();
@@ -1114,7 +1117,10 @@ function LiveSession() {
     setNativeSessionLock(false);
     setNativeVerifiedModeActive(false);
     clearActiveVerifiedSession();
-    if (mode === "verified") finishVerifiedCountdown(status);
+    if (mode === "verified") {
+      finishVerifiedCountdown(status);
+      releaseSessionDnd();
+    }
     else finishStandardCountdown(status);
     // Focus Shield always releases the moment a session ends, however it ended.
     stopShield();

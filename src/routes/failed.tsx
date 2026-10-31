@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { setNativeSessionLock, setNativeVerifiedModeActive } from "@/lib/native-session";
+import { releaseSessionDnd, setNativeSessionLock, setNativeVerifiedModeActive } from "@/lib/native-session";
 import { Hourglass } from "@/components/Hourglass";
 import { z } from "zod";
 import { coinLabel } from "@/lib/commitx-store";
@@ -68,6 +68,7 @@ function Failed() {
   useEffect(() => {
     setNativeSessionLock(false);
     setNativeVerifiedModeActive(false);
+    releaseSessionDnd();
 
     const pushGuard = () => {
       try {
