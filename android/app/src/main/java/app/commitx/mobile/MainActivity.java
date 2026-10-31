@@ -64,6 +64,9 @@ public class MainActivity extends Activity {
     private String failedUrl;
     private android.net.ConnectivityManager.NetworkCallback offlineNetworkCallback;
     private volatile boolean splashHidden = false;
+    private volatile boolean splashAppReady = false;
+    private volatile boolean splashVideoDone = false;
+    private android.media.MediaPlayer splashPlayer;
     private long lastBackAtHome = 0;
     private Dialog authDialog;
     private WebView authWebView;
@@ -140,11 +143,11 @@ public class MainActivity extends Activity {
 
 
 
-        getWindow().setStatusBarColor(Color.parseColor("#F8F9F6"));
-        getWindow().setNavigationBarColor(Color.parseColor("#F8F9F6"));
-        getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-        );
+        // Dark bars while the launch animation plays; restored when it fades out.
+        getWindow().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#050608")));
+        getWindow().setStatusBarColor(Color.parseColor("#050608"));
+        getWindow().setNavigationBarColor(Color.parseColor("#050608"));
+        getWindow().getDecorView().setSystemUiVisibility(0);
 
         webView = new WebView(this);
         WebSettings settings = webView.getSettings();
@@ -300,7 +303,7 @@ public class MainActivity extends Activity {
 
         webView.loadUrl(startUrlFor(getIntent()));
         // Safety net: never trap the user behind the splash if the signal is missed.
-        webView.postDelayed(this::hideSplash, 12000);
+        webView.postDelayed(this::forceHideSplash, 12000);
         // A cold start from the OAuth deep link: replay it once the page is ready.
         pendingOAuthCallback = oauthCallbackFrom(getIntent());
     }
@@ -310,61 +313,93 @@ public class MainActivity extends Activity {
      * the CommitX logo instead of an empty page while the app boots.
      */
     private View buildSplashOverlay() {
-        FrameLayout overlay = new FrameLayout(this);
-        overlay.setBackgroundColor(Color.parseColor("#F8F9F6"));
+        final FrameLayout overlay = new FrameLayout(this);
+        overlay.setBackgroundColor(Color.parseColor("#050608"));
         overlay.setClickable(true);
 
-        android.widget.LinearLayout column = new android.widget.LinearLayout(this);
-        column.setOrientation(android.widget.LinearLayout.VERTICAL);
-        column.setGravity(android.view.Gravity.CENTER);
+        // Final logo frame sits underneath and is revealed when the video ends,
+        // so there is never a blank frame while the app finishes loading.
+        final android.widget.ImageView finalFrame = new android.widget.ImageView(this);
+        finalFrame.setImageResource(R.drawable.commitx_splash_final);
+        finalFrame.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
+        finalFrame.setAlpha(0f);
 
-        float density = getResources().getDisplayMetrics().density;
-        android.widget.ImageView logo = new android.widget.ImageView(this);
-        logo.setImageResource(R.drawable.splash_logo);
-        // Match the Android system splash icon size so the handoff has no jump.
-        int size = Math.round(density * 160);
-        column.addView(logo, new android.widget.LinearLayout.LayoutParams(size, size));
+        final android.view.TextureView video = new android.view.TextureView(this);
+        video.setAlpha(0f);
+        video.setOpaque(false);
 
-        android.widget.TextView name = new android.widget.TextView(this);
-        name.setText("CommitX");
-        name.setTextColor(Color.parseColor("#14201A"));
-        name.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 26);
-        name.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
-        name.setLetterSpacing(0.04f);
-        name.setGravity(android.view.Gravity.CENTER);
-        android.widget.LinearLayout.LayoutParams nameParams = new android.widget.LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        nameParams.topMargin = Math.round(density * 8);
-        column.addView(name, nameParams);
+        FrameLayout.LayoutParams lp1 = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT, android.view.Gravity.CENTER);
+        FrameLayout.LayoutParams lp2 = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT, android.view.Gravity.CENTER);
+        overlay.addView(finalFrame, lp1);
+        overlay.addView(video, lp2);
 
-        android.widget.TextView tagline = new android.widget.TextView(this);
-        tagline.setText("Commit. Focus. Prove it.");
-        tagline.setTextColor(Color.parseColor("#5E6B63"));
-        tagline.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 14);
-        tagline.setGravity(android.view.Gravity.CENTER);
-        android.widget.LinearLayout.LayoutParams tagParams = new android.widget.LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        tagParams.topMargin = Math.round(density * 4);
-        column.addView(tagline, tagParams);
+        // Keep the 4:3 animation fitted and centered on any screen or rotation.
+        overlay.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, orr, ob) -> {
+            int w = r - l, h = b - t;
+            if (w <= 0 || h <= 0) return;
+            int vw = w, vh = Math.round(w * 1080f / 1440f);
+            if (vh > h) { vh = h; vw = Math.round(h * 1440f / 1080f); }
+            for (View child : new View[]{finalFrame, video}) {
+                ViewGroup.LayoutParams p = child.getLayoutParams();
+                if (p.width != vw || p.height != vh) {
+                    p.width = vw; p.height = vh;
+                    child.post(child::requestLayout);
+                }
+            }
+        });
 
-        // Gentle text reveal under a logo that stays perfectly still.
-        name.setAlpha(0f);
-        tagline.setAlpha(0f);
-        name.setTranslationY(density * 6);
-        tagline.setTranslationY(density * 6);
-        name.animate().alpha(1f).translationY(0f).setStartDelay(120).setDuration(320).start();
-        tagline.animate().alpha(1f).translationY(0f).setStartDelay(220).setDuration(320).start();
+        final Runnable showFinal = () -> {
+            if (splashVideoDone) return;
+            finalFrame.setAlpha(1f);
+            video.animate().alpha(0f).setDuration(120).start();
+            splashVideoDone = true;
+            maybeFinishSplash();
+        };
 
-        FrameLayout.LayoutParams columnParams = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-        columnParams.gravity = android.view.Gravity.CENTER;
-        overlay.addView(column, columnParams);
+        video.setSurfaceTextureListener(new android.view.TextureView.SurfaceTextureListener() {
+            @Override
+            public void onSurfaceTextureAvailable(android.graphics.SurfaceTexture st, int w, int h) {
+                if (splashPlayer != null || splashVideoDone) return;
+                try {
+                    android.media.MediaPlayer mp = new android.media.MediaPlayer();
+                    splashPlayer = mp;
+                    mp.setDataSource(MainActivity.this,
+                            Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.commitx_splash));
+                    mp.setSurface(new android.view.Surface(st));
+                    mp.setLooping(false);
+                    mp.setVolume(0f, 0f);
+                    mp.setOnInfoListener((p, what, extra) -> {
+                        if (what == android.media.MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START) {
+                            video.setAlpha(1f);
+                        }
+                        return false;
+                    });
+                    mp.setOnCompletionListener(p -> showFinal.run());
+                    mp.setOnErrorListener((p, what, extra) -> { showFinal.run(); return true; });
+                    mp.setOnPreparedListener(android.media.MediaPlayer::start);
+                    mp.prepareAsync();
+                } catch (Throwable e) {
+                    showFinal.run();
+                }
+            }
+            @Override public void onSurfaceTextureSizeChanged(android.graphics.SurfaceTexture st, int w, int h) {}
+            @Override public boolean onSurfaceTextureDestroyed(android.graphics.SurfaceTexture st) {
+                showFinal.run();
+                releaseSplashPlayer();
+                return true;
+            }
+            @Override public void onSurfaceTextureUpdated(android.graphics.SurfaceTexture st) {}
+        });
+        // Backstop if the player never reports completion.
+        overlay.postDelayed(showFinal, 4500);
         return overlay;
     }
 
     /** Branded native offline screen shown instead of the WebView error page. */
     private void showOfflineOverlay() {
-        hideSplash();
+        forceHideSplash();
         if (rootLayout == null) return;
         if (offlineOverlay == null) {
             float d = getResources().getDisplayMetrics().density;
@@ -477,15 +512,42 @@ public class MainActivity extends Activity {
 
     /** Fades the startup screen out once the web app reports it is interactive. */
     private void hideSplash() {
+        splashAppReady = true;
+        maybeFinishSplash();
+    }
+
+    /** Skips the remaining animation (offline screen, safety timeout). */
+    private void forceHideSplash() {
+        splashAppReady = true;
+        splashVideoDone = true;
+        maybeFinishSplash();
+    }
+
+    /** Fades out only once the animation has played and the first screen is ready. */
+    private void maybeFinishSplash() {
         if (splashHidden || splashOverlay == null) return;
+        if (!splashAppReady || !splashVideoDone) return;
         splashHidden = true;
         final View overlay = splashOverlay;
-        overlay.animate().alpha(0f).scaleX(1.04f).scaleY(1.04f).setDuration(260)
+        overlay.animate().alpha(0f).setDuration(350)
                 .setInterpolator(new android.view.animation.DecelerateInterpolator()).withEndAction(() -> {
             overlay.setVisibility(View.GONE);
             ViewGroup parent = (ViewGroup) overlay.getParent();
             if (parent != null) parent.removeView(overlay);
+            releaseSplashPlayer();
         }).start();
+        // Return the system bars to the app's normal light style alongside the fade.
+        getWindow().setStatusBarColor(Color.parseColor("#F8F9F6"));
+        getWindow().setNavigationBarColor(Color.parseColor("#F8F9F6"));
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+    }
+
+    private void releaseSplashPlayer() {
+        if (splashPlayer != null) {
+            try { splashPlayer.release(); } catch (Throwable ignored) {}
+            splashPlayer = null;
+        }
     }
 
 
