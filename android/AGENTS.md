@@ -17,3 +17,4 @@
 - Accountability/Roast delivery is the native AccountabilityEngine (AlarmManager, one alarm slot, one notification id) fed by events from src/lib/accountability.ts, because closed-app delivery and legacy clients must follow the same policy.
 - WebView camera/mic grants (Study Buddy cam) are allowed only for CommitX origins after Android runtime permission, because media capture must never extend to arbitrary pages.
 - In the Android app, Verified sessions never fail on app switching/multi-window; enforcement is Focus Shield blocking (wall-clock expiry, restored on boot) plus locked back navigation, while the website keeps its strict leave-fails rules.
+- Verified-session DND goes through SessionDnd: it is armed only when DND was off at setup and released at every terminal Verified outcome, because a user's own DND must never be switched off.
