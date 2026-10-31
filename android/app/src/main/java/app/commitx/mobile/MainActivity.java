@@ -809,6 +809,7 @@ public class MainActivity extends Activity {
         PlanStore.scheduleAll(this);
         WellnessSoundStore.reconcile(this);
         AppLimitsService.startIfNeeded(this);
+        SessionDnd.onResume(this);
     }
 
     @Override
@@ -1131,9 +1132,17 @@ public class MainActivity extends Activity {
             }
         }
 
+        /**
+         * Turns DND on for a Verified session. With Do Not Disturb access CommitX
+         * switches it on directly and remembers to switch it off afterwards;
+         * without access it opens the access page once, then enables on return.
+         */
         @JavascriptInterface
         public void openDndSettings() {
             runOnUiThread(() -> {
+                SessionDnd.arm(MainActivity.this);
+                if (SessionDnd.enableNow(MainActivity.this)) return;
+                if (SessionDnd.openAccessSettings(MainActivity.this)) return;
                 try {
                     startActivity(new Intent(Settings.ACTION_ZEN_MODE_PRIORITY_SETTINGS));
                 } catch (Throwable t) {
@@ -1142,6 +1151,12 @@ public class MainActivity extends Activity {
                     } catch (Throwable ignored) {}
                 }
             });
+        }
+
+        /** Verified session ended: switch off the DND that the session turned on. */
+        @JavascriptInterface
+        public void releaseSessionDnd() {
+            runOnUiThread(() -> SessionDnd.release(MainActivity.this));
         }
 
 

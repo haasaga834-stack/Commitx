@@ -187,8 +187,8 @@ export function CommitTablet(p: CommitTabletProps) {
                         Do Not Disturb is required
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        Your Verified session can't start until DND is on. Turn it on, then
-                        come back — we re-check automatically.
+                        Allow CommitX Do Not Disturb access once — it turns DND on now and
+                        off by itself when your session ends.
                       </p>
                     </div>
                     <button

@@ -380,7 +380,7 @@ function Commit() {
                 DND is required for Verified Mode. Please enable it in Settings.
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Turn it on, then come back — we'll re-check it automatically.
+                Allow CommitX Do Not Disturb access once — it turns DND off by itself after the session.
               </p>
               <button
                 onClick={openDndSettings}
@@ -694,8 +694,8 @@ function Commit() {
                     Do Not Disturb is required
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Your Verified session can't start until DND is on. Turn it on, then
-                    come back — we re-check automatically.
+                    Allow CommitX Do Not Disturb access once — it turns DND on now and
+                    off by itself when your session ends.
                   </p>
                   <button
                     onClick={openDndSettings}

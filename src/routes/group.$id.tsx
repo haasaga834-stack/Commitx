@@ -24,7 +24,7 @@ import {
   startGroup,
 } from "@/lib/group-study.functions";
 import { MAX_GROUP_SIZE, memberStatusLabel, type GroupStateDTO } from "@/lib/group-study";
-import { hasNativeBridge, setNativeSessionLock, canCheckDnd, isDndEnabled, openDndSettings } from "@/lib/native-session";
+import { hasNativeBridge, setNativeSessionLock, canCheckDnd, isDndEnabled, openDndSettings, releaseSessionDnd } from "@/lib/native-session";
 import { GroupParticipantsDrawer } from "@/components/GroupParticipantsDrawer";
 import { showSessionProgress, hideSessionProgress } from "@/lib/native-notifications";
 import { FocusShieldSetup, type FocusShieldResult } from "@/components/FocusShieldSetup";
@@ -476,6 +476,15 @@ function GroupSession({ onNeedDnd }: { onNeedDnd?: (v: boolean) => void }) {
   useEffect(() => {
     onNeedDnd?.(needDnd);
   }, [needDnd, onNeedDnd]);
+  // Group Verified ended or the user left: switch off the DND it turned on.
+  const hadDndRef = useRef(false);
+  useEffect(() => {
+    if (needDnd) hadDndRef.current = true;
+    else if (hadDndRef.current) {
+      hadDndRef.current = false;
+      releaseSessionDnd();
+    }
+  }, [needDnd]);
 
   /** Room Pot: commitments forfeited by early leavers, split among finishers. */
   const [pot, setPot] = useState(0);
