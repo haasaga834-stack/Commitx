@@ -137,11 +137,39 @@ final class FocusShieldStore {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
     }
 
+    /*
+     * Permission checks are called from WebView bridge threads (often polled
+     * every second while a permission screen is open). Each result is cached
+     * briefly so repeated polling never runs heavy usage queries back-to-back,
+     * which froze the WebView and made permission buttons unclickable.
+     */
+    private static final long PERMISSION_TTL_MS = 1500L;
+    private static final String KEY_OVERLAY_CONFIRMED = "overlay_confirmed";
+    private static volatile long usageCheckedAt;
+    private static volatile boolean usageCached;
+    private static volatile long overlayCheckedAt;
+    private static volatile boolean overlayCached;
+
+    /** Forces the next permission check to re-read Android (e.g. on resume). */
+    static void invalidatePermissionCache() {
+        usageCheckedAt = 0L;
+        overlayCheckedAt = 0L;
+    }
+
     static boolean hasUsageAccess(Context ctx) {
+        long now = android.os.SystemClock.elapsedRealtime();
+        if (usageCheckedAt != 0L && now - usageCheckedAt < PERMISSION_TTL_MS) return usageCached;
+        boolean granted = computeUsageAccess(ctx);
+        usageCached = granted;
+        usageCheckedAt = now;
+        return granted;
+    }
+
+    private static boolean computeUsageAccess(Context ctx) {
         if (!supported()) return false;
         try {
             AppOpsManager ops = (AppOpsManager) ctx.getSystemService(Context.APP_OPS_SERVICE);
-            if (ops == null) return false;
+            if (ops == null) return usageProbeWorks(ctx);
             int mode;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 mode = ops.unsafeCheckOpNoThrow(
@@ -162,44 +190,80 @@ final class FocusShieldStore {
                     == android.content.pm.PackageManager.PERMISSION_GRANTED) return true;
             return usageProbeWorks(ctx);
         } catch (Throwable t) {
-            return false;
+            return usageProbeWorks(ctx);
         }
     }
 
-    /** True when a real usage query returns data, i.e. access is effectively granted. */
+    /**
+     * True when a real usage query returns data, i.e. access is effectively granted.
+     * Uses small windows first (CommitX itself is in the foreground, so recent
+     * events always exist when access is granted) to keep the probe cheap.
+     */
     private static boolean usageProbeWorks(Context ctx) {
         try {
             UsageStatsManager usm =
                     (UsageStatsManager) ctx.getSystemService(Context.USAGE_STATS_SERVICE);
             if (usm == null) return false;
             long now = System.currentTimeMillis();
+            android.app.usage.UsageEvents ev = usm.queryEvents(now - 6L * 60L * 60L * 1000L, now);
+            if (ev != null && ev.hasNextEvent()) return true;
             java.util.List<UsageStats> stats = usm.queryUsageStats(
-                    UsageStatsManager.INTERVAL_BEST, now - 7L * 24L * 60L * 60L * 1000L, now);
-            if (stats != null && !stats.isEmpty()) return true;
-            android.app.usage.UsageEvents ev = usm.queryEvents(now - 7L * 24L * 60L * 60L * 1000L, now);
-            return ev != null && ev.hasNextEvent();
+                    UsageStatsManager.INTERVAL_DAILY, now - 2L * 24L * 60L * 60L * 1000L, now);
+            return stats != null && !stats.isEmpty();
         } catch (Throwable t) {
             return false;
         }
     }
 
     static boolean hasOverlayAccess(Context ctx) {
+        long now = android.os.SystemClock.elapsedRealtime();
+        if (overlayCheckedAt != 0L && now - overlayCheckedAt < PERMISSION_TTL_MS) return overlayCached;
+        boolean granted = computeOverlayAccess(ctx);
+        overlayCached = granted;
+        overlayCheckedAt = now;
+        return granted;
+    }
+
+    private static boolean computeOverlayAccess(Context ctx) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true;
         try {
-            if (Settings.canDrawOverlays(ctx)) return true;
+            if (Settings.canDrawOverlays(ctx)) {
+                rememberOverlayConfirmed(ctx, true);
+                return true;
+            }
         } catch (Throwable ignored) {}
         // canDrawOverlays lags or misreports on several OEM skins right after the
         // user grants it; the app-op is the authoritative fallback.
         try {
             AppOpsManager ops = (AppOpsManager) ctx.getSystemService(Context.APP_OPS_SERVICE);
-            if (ops == null) return false;
+            if (ops == null) return overlayConfirmed(ctx);
             int mode = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
                     ? ops.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_SYSTEM_ALERT_WINDOW, Process.myUid(), ctx.getPackageName())
                     : ops.checkOpNoThrow(AppOpsManager.OPSTR_SYSTEM_ALERT_WINDOW, Process.myUid(), ctx.getPackageName());
-            return mode == AppOpsManager.MODE_ALLOWED;
-        } catch (Throwable t) {
+            if (mode == AppOpsManager.MODE_ALLOWED) {
+                rememberOverlayConfirmed(ctx, true);
+                return true;
+            }
+            // MODE_DEFAULT is "undecided" on some skins even after a grant; trust a
+            // previous confirmed grant. An explicit deny clears it.
+            if (mode == AppOpsManager.MODE_DEFAULT) return overlayConfirmed(ctx);
+            rememberOverlayConfirmed(ctx, false);
             return false;
+        } catch (Throwable t) {
+            return overlayConfirmed(ctx);
         }
+    }
+
+    private static boolean overlayConfirmed(Context ctx) {
+        try { return prefs(ctx).getBoolean(KEY_OVERLAY_CONFIRMED, false); } catch (Throwable t) { return false; }
+    }
+
+    private static void rememberOverlayConfirmed(Context ctx, boolean value) {
+        try {
+            if (prefs(ctx).getBoolean(KEY_OVERLAY_CONFIRMED, false) != value) {
+                prefs(ctx).edit().putBoolean(KEY_OVERLAY_CONFIRMED, value).apply();
+            }
+        } catch (Throwable ignored) {}
     }
 
     /** User-launchable apps; system components and CommitX itself cannot be blocked. */

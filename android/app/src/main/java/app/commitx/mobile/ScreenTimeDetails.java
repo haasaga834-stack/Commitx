@@ -31,6 +31,57 @@ final class ScreenTimeDetails {
 
     private static final Map<String, String> ICON_CACHE = new HashMap<>();
 
+    /*
+     * The full breakdown walks a week of usage events and encodes icons, which
+     * took seconds on some phones. Running it inside a WebView bridge call froze
+     * the page, so it is computed on a dedicated worker and served from cache.
+     */
+    private static final java.util.concurrent.ExecutorService worker =
+            java.util.concurrent.Executors.newSingleThreadExecutor();
+    private static final long CACHE_TTL_MS = 20_000L;
+    private static volatile String cachedJson;
+    private static volatile long cachedAt;
+    private static boolean refreshing;
+
+    /** Runs slow screen-time work (e.g. the daily notification) off the UI/bridge threads. */
+    static void runInBackground(Runnable task) {
+        try { worker.execute(task); } catch (Throwable ignored) {}
+    }
+
+    /** Never blocks: returns the cached breakdown and refreshes it in the background. */
+    static String cachedJson(Context ctx) {
+        boolean supported = ScreenTimeTracker.supported();
+        boolean granted = supported && ScreenTimeTracker.hasPermission(ctx);
+        if (!granted) {
+            return "{\"supported\":" + supported + ",\"granted\":false}";
+        }
+        long now = android.os.SystemClock.elapsedRealtime();
+        String json = cachedJson;
+        if (json == null || now - cachedAt > CACHE_TTL_MS) refreshAsync(ctx);
+        if (json != null) return json;
+        return "{\"supported\":true,\"granted\":true,\"loading\":true}";
+    }
+
+    static synchronized void refreshAsync(Context ctx) {
+        if (refreshing) return;
+        refreshing = true;
+        Context app = ctx.getApplicationContext();
+        runInBackground(() -> {
+            try {
+                String json = toJson(app);
+                if (json.contains("\"granted\":true")) {
+                    cachedJson = json;
+                    cachedAt = android.os.SystemClock.elapsedRealtime();
+                }
+                CommitXNotifications.showScreenTimeDaily(app);
+            } catch (Throwable ignored) {
+            } finally {
+                synchronized (ScreenTimeDetails.class) { refreshing = false; }
+            }
+            MainActivity.notifyScreenTimeReady();
+        });
+    }
+
     /** Walks foreground events and attributes wall-clock slices to one package at a time. */
     static Map<String, Long> usage(Context ctx, long start, long end, long[] hourly, long hourBase) {
         Map<String, Long> out = new HashMap<>();

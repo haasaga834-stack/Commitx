@@ -731,6 +731,11 @@ public class MainActivity extends Activity {
         if (activity != null && activity.webView != null) activity.evalOnWeb("window.dispatchEvent(new Event('commitx:shield-apps-ready'))");
     }
 
+    static void notifyScreenTimeReady() {
+        MainActivity activity = current;
+        if (activity != null && activity.webView != null) activity.evalOnWeb("window.dispatchEvent(new Event('commitx:screen-time-ready'))");
+    }
+
     static void notifyWidgetChanged() {
         MainActivity activity = current;
         if (activity != null && activity.webView != null) activity.evalOnWeb("window.dispatchEvent(new Event('focus'))");
@@ -873,13 +878,17 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         resumed = true;
+        // Returning from Android settings: re-read permissions immediately.
+        FocusShieldStore.invalidatePermissionCache();
         FocusShieldStore.preloadApps(this, true);
         injectPendingFailureIfNeeded();
-        CommitXNotifications.showScreenTimeDaily(this);
+        final Context appCtx = getApplicationContext();
+        ScreenTimeDetails.runInBackground(() -> CommitXNotifications.showScreenTimeDaily(appCtx));
         PlanStore.scheduleAll(this);
         WellnessSoundStore.reconcile(this);
         AppLimitsService.startIfNeeded(this);
         SessionDnd.onResume(this);
+        if (webView != null) evalOnWeb("window.dispatchEvent(new Event('commitx:permissions-changed'))");
     }
 
     @Override
@@ -1516,9 +1525,8 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public String screenTimeDetails() {
-            String json = ScreenTimeDetails.toJson(MainActivity.this);
-            CommitXNotifications.showScreenTimeDaily(MainActivity.this);
-            return json;
+            // Cached + background refresh; never blocks the WebView.
+            return ScreenTimeDetails.cachedJson(MainActivity.this);
         }
 
         @JavascriptInterface
