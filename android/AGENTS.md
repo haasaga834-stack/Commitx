@@ -18,3 +18,4 @@
 - WebView camera/mic grants (Study Buddy cam) are allowed only for CommitX origins after Android runtime permission, because media capture must never extend to arbitrary pages.
 - In the Android app, Verified sessions never fail on app switching/multi-window; enforcement is Focus Shield blocking (wall-clock expiry, restored on boot) plus locked back navigation, while the website keeps its strict leave-fails rules.
 - Verified-session DND goes through SessionDnd: it is armed only when DND was off at setup and released at every terminal Verified outcome, because a user's own DND must never be switched off.
+- The cold-start splash is a MainActivity overlay (TextureView + MediaPlayer over a static final frame, dark launch theme with blank system icon) gated on both video completion and the web appReady signal, with backstops timed from actual playback, because a separate activity would delay WebView loading and early timers cut the animation.
