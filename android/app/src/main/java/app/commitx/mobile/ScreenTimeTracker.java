@@ -37,13 +37,14 @@ final class ScreenTimeTracker {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1;
     }
 
+    /**
+     * Same cached permission check as Focus Shield/App Limits. Previously this
+     * inferred access from "any usage today", which reported missing access
+     * after midnight or before any app use and re-showed the permission prompt.
+     */
     static boolean hasPermission(Context ctx) {
         if (!supported()) return false;
-        try {
-            return totals(ctx, true) != null;
-        } catch (Throwable t) {
-            return false;
-        }
+        return FocusShieldStore.hasUsageAccess(ctx);
     }
 
     static long startOfToday() {
