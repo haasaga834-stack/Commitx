@@ -378,7 +378,15 @@ public class MainActivity extends Activity {
                     });
                     mp.setOnCompletionListener(p -> showFinal.run());
                     mp.setOnErrorListener((p, what, extra) -> { showFinal.run(); return true; });
-                    mp.setOnPreparedListener(android.media.MediaPlayer::start);
+                    mp.setOnPreparedListener(p -> {
+                        // Restart the backstop from real playback so a slow
+                        // decoder never cuts the animation short.
+                        overlay.removeCallbacks(showFinal);
+                        int dur = 3000;
+                        try { if (p.getDuration() > 0) dur = p.getDuration(); } catch (Throwable ignored) {}
+                        overlay.postDelayed(showFinal, dur + 1200);
+                        p.start();
+                    });
                     mp.prepareAsync();
                 } catch (Throwable e) {
                     showFinal.run();
@@ -392,7 +400,7 @@ public class MainActivity extends Activity {
             }
             @Override public void onSurfaceTextureUpdated(android.graphics.SurfaceTexture st) {}
         });
-        // Backstop if the player never reports completion.
+        // Backstop if the player never prepares or reports completion.
         overlay.postDelayed(showFinal, 4500);
         return overlay;
     }

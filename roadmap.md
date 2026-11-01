@@ -88,3 +88,6 @@
 - [x] minSdk 23 -> 24 (Play Console minimum requirement)
 
 - [x] App Usage Limits: native store/service/overlay, 50%+100% alerts, midnight reset, Screen Time entry, optional onboarding step
+
+- [x] Version 4 (1.0.3) prep: dark splash animation (colour-matched video/final frame, playback-timed backstop), automatic DND off after Verified, version code 4 in Gradle and CI.
+- [ ] Build Version 4 via GitHub Actions and check splash + DND on a phone — requires the GitHub workflow run and a physical device.
