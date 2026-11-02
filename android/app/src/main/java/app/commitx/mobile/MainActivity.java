@@ -151,6 +151,9 @@ public class MainActivity extends Activity {
 
         webView = new WebView(this);
         WebSettings settings = webView.getSettings();
+        // Respect larger system text a little, but cap it so layouts stay balanced.
+        float fontScale = getResources().getConfiguration().fontScale;
+        settings.setTextZoom(Math.max(85, Math.min(110, Math.round(fontScale * 100))));
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
