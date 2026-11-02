@@ -170,7 +170,7 @@ function MobileHome() {
       <main className="cx-home mx-auto flex max-w-md flex-col">
         <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-2 gap-y-1">
           <div className="min-w-0">
-            <h1 className="font-display text-base font-medium leading-snug text-foreground">
+            <h1 className="truncate font-display text-base font-medium leading-snug text-foreground">
               <span className="sr-only">CommitX study dashboard — </span>
               {greeting()}
             </h1>
@@ -203,7 +203,7 @@ function MobileHome() {
         <section className="cx-home-focus relative px-1">
           <div className="relative z-10">
             {plansHydrated && next && <span className="cx-home-plan mb-2 inline-flex max-w-full items-center gap-1.5 rounded-full px-2.5 py-1 text-xs"><Leaf className="h-4 w-4 shrink-0" /><span className="truncate">{next.plan.subject} · {formatTime(next.plan.time)}</span></span>}
-            <h2 className="cx-home-hero-title font-display text-[30px] font-semibold leading-tight">Ready to focus?</h2>
+            <h2 className="cx-home-hero-title font-display text-[clamp(24px,7.5vw,30px)] font-semibold leading-tight">Ready to focus?</h2>
             <Button asChild className="cx-home-start mt-4 h-11 gap-2 rounded-full px-5 text-sm font-semibold">
               <Link to="/commit" search={next ? { plan: 1 } : {}}><Leaf className="h-5 w-5" /> Start Focus Session</Link>
             </Button>
@@ -212,19 +212,19 @@ function MobileHome() {
 
         <section aria-label="Today at a glance">
           <h2 className="mb-1.5 font-display text-xl font-semibold text-foreground">Today at a Glance</h2>
-          <Link to="/planner" className="cx-home-glance relative flex h-[80px] items-center gap-3 rounded-[20px] border border-hairline bg-card px-3 shadow-soft">
+          <Link to="/planner" className="cx-home-glance relative flex min-h-[80px] items-center gap-3 rounded-[20px] border border-hairline bg-card px-3 py-2.5 shadow-soft">
             <PerchedBird />
-            <div className="relative flex h-[64px] w-[64px] shrink-0 items-center justify-center">
+            <div className="relative flex h-[60px] w-[60px] shrink-0 items-center justify-center">
               <svg viewBox="0 0 64 64" className="absolute inset-0 h-full w-full -rotate-90" aria-hidden="true">
                 <circle cx="32" cy="32" r="27" fill="none" stroke="var(--muted)" strokeWidth="7" />
                 <circle cx="32" cy="32" r="27" fill="none" stroke="var(--primary)" strokeWidth="7" strokeLinecap="round" strokeDasharray={`${hydrated ? goalPct * 1.696 : 0} 170`} />
               </svg>
               <span className="text-xs font-semibold tabular-nums text-foreground">{hydrated ? `${goalPct}%` : "—"}</span>
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium tabular-nums text-muted-foreground">{hydrated ? goalValue.trim() : "—"} / {formatGoalHours(goalHours)}</p>
-               <p className="flex items-center gap-1.5 font-display text-base font-semibold text-foreground"><span className="truncate">{taskCount} {taskCount === 1 ? "task" : "tasks"} planned</span><ClipboardCheck className="h-4 w-4 shrink-0 text-muted-foreground" /></p>
-               <p className="text-[10px] leading-4 text-muted-foreground">Stay consistent and keep it simple.</p>
+            <div className="flex min-w-0 flex-1 flex-col justify-center">
+              <p className="truncate text-xs font-medium leading-4 tabular-nums text-muted-foreground">{hydrated ? goalValue.trim() : "—"} / {formatGoalHours(goalHours)}</p>
+               <p className="flex min-w-0 items-center gap-1.5 font-display text-[15px] font-semibold leading-5 text-foreground"><span className="min-w-0 truncate">{taskCount} {taskCount === 1 ? "task" : "tasks"} planned</span><ClipboardCheck className="h-4 w-4 shrink-0 text-muted-foreground" /></p>
+               <p className="truncate text-[11px] leading-4 text-muted-foreground">Stay consistent, keep it simple.</p>
             </div>
             <ArrowRight className="h-4 w-4 shrink-0 text-primary" />
           </Link>
@@ -248,7 +248,7 @@ function MobileHome() {
         <Link to="/group" className="cx-home-group relative flex min-h-[64px] items-center gap-3 overflow-hidden rounded-[20px] border border-hairline bg-card px-3 shadow-soft">
           <img src={homeStudyGroup} alt="" aria-hidden="true" loading="lazy" width={1152} height={576} className="pointer-events-none absolute bottom-0 right-3 h-16 w-28 object-contain opacity-25" />
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-secondary text-primary"><Users className="h-5 w-5" /></span>
-           <span className="relative min-w-0 flex-1"><span className="block truncate font-display text-lg font-semibold text-foreground">Group Study</span><span className="block truncate text-[11px] text-muted-foreground">Learn together. Stay accountable.</span></span>
+           <span className="relative min-w-0 flex-1"><span className="block truncate font-display text-lg font-semibold leading-6 text-foreground">Group Study</span><span className="block text-[11px] leading-4 text-muted-foreground">Study together, stay on track.</span></span>
            <ArrowRight className="relative h-5 w-5 shrink-0 text-primary" />
         </Link>
         </div>
