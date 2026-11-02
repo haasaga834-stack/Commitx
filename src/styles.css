@@ -1163,6 +1163,21 @@ body.cx-app-theme .cx-phone-home-shell nav.fixed svg { width: 21px; height: 21px
 @media (min-height: 740px) {
   body.cx-app-theme .cx-phone-home-shell .cx-home-actions { gap: 16px; }
 }
+/* Compact phones / enlarged display size: keep Home balanced */
+@media (max-width: 380px) {
+  body.cx-app-theme .cx-phone-home-shell .cx-home-greeting { font-size: 14px; }
+  body.cx-app-theme .cx-phone-home-shell .cx-home-name { font-size: 19px; }
+  body.cx-app-theme .cx-phone-home-shell .cx-home-hero-title { font-size: 24px; }
+  body.cx-app-theme .cx-phone-home-shell .cx-home-start { height: 40px; font-size: 13px; padding-inline: 16px; }
+  body.cx-app-theme .cx-phone-home-shell .cx-home-section-title { font-size: 17px; }
+  body.cx-app-theme .cx-phone-home-shell .cx-home-ring { width: 48px; height: 48px; }
+  body.cx-app-theme .cx-phone-home-shell .cx-home-glance { gap: 10px; }
+  body.cx-app-theme .cx-phone-home-shell .cx-home-glance-title { font-size: 14px; }
+  body.cx-app-theme .cx-phone-home-shell .cx-home-quick { gap: 4px; }
+  body.cx-app-theme .cx-phone-home-shell .cx-home-quick a { font-size: 11px; height: 36px; gap: 2px; padding-inline: 2px; }
+  body.cx-app-theme .cx-phone-home-shell .cx-home-quick svg { width: 13px; height: 13px; }
+  body.cx-app-theme .cx-phone-home-shell .cx-home-group-title { font-size: 16px; }
+}
 @media (max-height: 660px) {
   body.cx-app-theme .cx-phone-home-shell .cx-home { gap: 24px; padding-top: max(18px, env(safe-area-inset-top, 0px)); }
   body.cx-app-theme .cx-phone-home-shell .cx-home-actions { gap: 9px; }
