@@ -79,12 +79,19 @@ export function AppLimitsManager({ onClose, onSaved }: { onClose: () => void; on
   // visibility (returning from Android settings), and poll while the gate is
   // showing, so a fresh grant is picked up without a manual tap. The list,
   // picker and configure views are unreachable until both permissions hold.
+  const [perm, setPerm] = useState({ usage: true, overlay: true });
   useEffect(() => {
-    const check = () => setReady(appLimitsReady());
+    const check = () => {
+      if (document.visibilityState !== "visible") return;
+      const r = appLimitsReady();
+      setReady(r);
+      if (!r) setPerm({ usage: shieldHasUsageAccess(), overlay: shieldHasOverlayAccess() });
+    };
     check();
     window.addEventListener("focus", check);
     document.addEventListener("visibilitychange", check);
-    const id = ready ? null : window.setInterval(check, 1_500);
+    // Poll only while a permission is missing; stop as soon as both hold.
+    const id = ready ? null : window.setInterval(check, 2_000);
     return () => {
       window.removeEventListener("focus", check);
       document.removeEventListener("visibilitychange", check);
@@ -172,12 +179,12 @@ export function AppLimitsManager({ onClose, onSaved }: { onClose: () => void; on
               and cover an app once its limit is used up. Data stays on this device.
             </p>
             <div className="mt-4 grid gap-2">
-              {!shieldHasUsageAccess() && (
+              {!perm.usage && (
                 <Button onClick={() => { openUsageAccess(); }} className="h-11 rounded-full">
                   Allow usage access
                 </Button>
               )}
-              {!shieldHasOverlayAccess() && (
+              {!perm.overlay && (
                 <Button onClick={() => { requestShieldOverlayAccess(); }} variant="outline" className="h-11 rounded-full">
                   Allow display over apps
                 </Button>
