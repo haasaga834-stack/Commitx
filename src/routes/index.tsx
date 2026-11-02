@@ -170,11 +170,11 @@ function MobileHome() {
       <main className="cx-home mx-auto flex max-w-md flex-col">
         <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-2 gap-y-1">
           <div className="min-w-0">
-            <h1 className="truncate font-display text-base font-medium leading-snug text-foreground">
+            <h1 className="cx-home-greeting truncate whitespace-nowrap font-display text-base font-medium leading-snug text-foreground">
               <span className="sr-only">CommitX study dashboard — </span>
               {greeting()}
             </h1>
-            <p className="truncate font-display text-[22px] font-semibold leading-tight text-foreground">
+            <p className="cx-home-name truncate font-display text-[22px] font-semibold leading-tight text-foreground">
               {hydrated ? firstName : "\u00A0"}
             </p>
           </div>
@@ -211,10 +211,10 @@ function MobileHome() {
         </section>
 
         <section aria-label="Today at a glance">
-          <h2 className="mb-1.5 font-display text-xl font-semibold text-foreground">Today at a Glance</h2>
+          <h2 className="cx-home-section-title mb-1.5 font-display text-xl font-semibold text-foreground">Today at a Glance</h2>
           <Link to="/planner" className="cx-home-glance relative flex min-h-[80px] items-center gap-3 rounded-[20px] border border-hairline bg-card px-3 py-2.5 shadow-soft">
             <PerchedBird />
-            <div className="relative flex h-[60px] w-[60px] shrink-0 items-center justify-center">
+            <div className="cx-home-ring relative flex h-[60px] w-[60px] shrink-0 items-center justify-center">
               <svg viewBox="0 0 64 64" className="absolute inset-0 h-full w-full -rotate-90" aria-hidden="true">
                 <circle cx="32" cy="32" r="27" fill="none" stroke="var(--muted)" strokeWidth="7" />
                 <circle cx="32" cy="32" r="27" fill="none" stroke="var(--primary)" strokeWidth="7" strokeLinecap="round" strokeDasharray={`${hydrated ? goalPct * 1.696 : 0} 170`} />
@@ -223,7 +223,7 @@ function MobileHome() {
             </div>
             <div className="flex min-w-0 flex-1 flex-col justify-center">
               <p className="truncate text-xs font-medium leading-4 tabular-nums text-muted-foreground">{hydrated ? goalValue.trim() : "—"} / {formatGoalHours(goalHours)}</p>
-               <p className="flex min-w-0 items-center gap-1.5 font-display text-[15px] font-semibold leading-5 text-foreground"><span className="min-w-0 truncate">{taskCount} {taskCount === 1 ? "task" : "tasks"} planned</span><ClipboardCheck className="h-4 w-4 shrink-0 text-muted-foreground" /></p>
+               <p className="flex min-w-0 items-center gap-1.5 cx-home-glance-title font-display text-[15px] font-semibold leading-5 text-foreground"><span className="min-w-0 truncate">{taskCount} {taskCount === 1 ? "task" : "tasks"} planned</span><ClipboardCheck className="h-4 w-4 shrink-0 text-muted-foreground" /></p>
                <p className="truncate text-[11px] leading-4 text-muted-foreground">Stay consistent, keep it simple.</p>
             </div>
             <ArrowRight className="h-4 w-4 shrink-0 text-primary" />
@@ -232,23 +232,23 @@ function MobileHome() {
 
         <section aria-label="Quick Commit">
           <div className="mb-1 flex items-baseline justify-between">
-            <h2 className="font-display text-xl font-semibold text-foreground">Quick Commit</h2>
+            <h2 className="cx-home-section-title font-display text-xl font-semibold text-foreground">Quick Commit</h2>
             <Link to="/history" className="text-xs text-primary">History</Link>
           </div>
           <div className="cx-home-quick grid grid-cols-[1fr_1fr_1fr_1.05fr] gap-1.5">
             {HOME_QUICK_COMMIT_MINUTES.map((minutes) => (
-              <Button asChild key={minutes} variant="outline" className={cn("h-10 gap-1 rounded-full px-1 text-xs font-medium", minutes === 60 && "cx-home-quick-featured")}>
+              <Button asChild key={minutes} variant="outline" className={cn("h-10 gap-1 rounded-full px-1 text-xs font-medium whitespace-nowrap", minutes === 60 && "cx-home-quick-featured")}>
                 <Link to="/commit" search={{ duration: minutes }}>{minutes === 60 ? <Sprout className="h-4 w-4" /> : <Leaf className="h-4 w-4" />} {minutes} min</Link>
               </Button>
             ))}
-            <Button asChild variant="outline" className="h-10 gap-1 rounded-full px-1 text-xs font-medium"><Link to="/commit">Custom <Plus className="h-3.5 w-3.5" /></Link></Button>
+            <Button asChild variant="outline" className="h-10 gap-1 rounded-full px-1 text-xs font-medium whitespace-nowrap"><Link to="/commit">Custom <Plus className="h-3.5 w-3.5" /></Link></Button>
           </div>
         </section>
 
         <Link to="/group" className="cx-home-group relative flex min-h-[64px] items-center gap-3 overflow-hidden rounded-[20px] border border-hairline bg-card px-3 shadow-soft">
           <img src={homeStudyGroup} alt="" aria-hidden="true" loading="lazy" width={1152} height={576} className="pointer-events-none absolute bottom-0 right-3 h-16 w-28 object-contain opacity-25" />
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-secondary text-primary"><Users className="h-5 w-5" /></span>
-           <span className="relative min-w-0 flex-1"><span className="block truncate font-display text-lg font-semibold leading-6 text-foreground">Group Study</span><span className="block text-[11px] leading-4 text-muted-foreground">Study together, stay on track.</span></span>
+           <span className="relative min-w-0 flex-1"><span className="cx-home-group-title block truncate font-display text-lg font-semibold leading-6 text-foreground">Group Study</span><span className="block text-[11px] leading-4 text-muted-foreground">Study together, stay on track.</span></span>
            <ArrowRight className="relative h-5 w-5 shrink-0 text-primary" />
         </Link>
         </div>
