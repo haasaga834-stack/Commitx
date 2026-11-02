@@ -42,9 +42,12 @@ function ScreenTimePage() {
     const id = window.setInterval(refresh, 60_000);
     const onVisible = () => document.visibilityState === "visible" && refresh();
     document.addEventListener("visibilitychange", onVisible);
+    // Native background worker signals when the breakdown is ready.
+    window.addEventListener("commitx:screen-time-ready", refresh);
     return () => {
       window.clearInterval(id);
       document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("commitx:screen-time-ready", refresh);
     };
   }, [refresh]);
 
@@ -82,6 +85,8 @@ function ScreenTimePage() {
               Allow usage access
             </button>
           </div>
+        ) : data?.loading ? (
+          <Notice text="Loading your screen time…" />
         ) : data ? (
           <Stats data={data} tab={tab} setTab={setTab} />
         ) : null}
