@@ -348,6 +348,8 @@ export interface ScreenTimeDetails {
   hourly: number[];
   apps: ScreenTimeApp[];
   week: { dayStart: number; minutes: number }[];
+  /** True while the native worker is still computing the first breakdown. */
+  loading?: boolean;
 }
 
 /** Real per-app usage from Android UsageStatsManager; null outside the Android app. */
@@ -359,6 +361,7 @@ export function readScreenTimeDetails(): ScreenTimeDetails | null {
     return {
       supported: Boolean(d.supported),
       granted: Boolean(d.granted),
+      loading: Boolean(d.loading),
       totalMinutes: d.totalMinutes ?? 0,
       commitxMinutes: d.commitxMinutes ?? 0,
       otherMinutes: d.otherMinutes ?? 0,

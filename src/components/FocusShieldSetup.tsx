@@ -80,17 +80,23 @@ export function FocusShieldSetup({
   // Re-verify permissions whenever the user comes back from Android settings.
   useEffect(() => {
     if (!open || !supported) return;
+    let id: number | null = null;
     const check = () => {
-      setUsage(shieldHasUsageAccess());
-      setOverlay(shieldHasOverlayAccess());
+      if (document.visibilityState !== "visible") return;
+      const u = shieldHasUsageAccess();
+      const o = shieldHasOverlayAccess();
+      setUsage(u);
+      setOverlay(o);
+      // Stop polling once both hold; focus/visibility still re-check.
+      if (u && o && id !== null) { window.clearInterval(id); id = null; }
     };
+    id = window.setInterval(check, 1500);
     check();
-    const id = window.setInterval(check, 1000);
     const onVis = () => check();
     document.addEventListener("visibilitychange", onVis);
     window.addEventListener("focus", onVis);
     return () => {
-      window.clearInterval(id);
+      if (id !== null) window.clearInterval(id);
       document.removeEventListener("visibilitychange", onVis);
       window.removeEventListener("focus", onVis);
     };
