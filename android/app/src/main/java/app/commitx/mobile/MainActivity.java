@@ -767,7 +767,7 @@ public class MainActivity extends Activity {
                     new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
                         // Settings opened → we were paused. Still resumed → it was ignored.
                         if (resumed && !isFinishing()) launchCandidate(candidates, next);
-                    }, 1200L);
+                    }, 2000L);
                 }
                 return;
             } catch (Throwable ignored) {
