@@ -388,6 +388,9 @@ public class MainActivity extends Activity {
             if (splashVideoDone) return;
             finalFrame.setAlpha(1f);
             cover.setVisibility(View.GONE);
+            // SurfaceView ignores parent alpha, so it would linger as a black box
+            // during the fade-out; the identical still frame now covers it.
+            video.setVisibility(View.GONE);
             splashVideoDone = true;
             maybeFinishSplash();
         };
