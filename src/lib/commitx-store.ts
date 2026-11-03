@@ -45,8 +45,10 @@ const accountKey = (id: string) => `${KEY}:${id}`;
 /** Cx Coin rules. Cx Coins are in-app points: not cash, not withdrawable. */
 export const MIN_COMMIT = 50;
 export const MAX_COMMIT = 500;
-/** Cx Coins granted to both sides of a successful referral. */
+/** Extra Cx Coins for a new user who joins with a referral code. */
 export const REFERRAL_REWARD = 100;
+/** Cx Coins the referrer earns per successful new-user registration. */
+export const REFERRER_REWARD = 50;
 /** Cx Coins granted on sign-up (a referral code adds REFERRAL_REWARD on top). */
 export const WELCOME_COINS = 300;
 /** Cx Coins earned per fully completed study hour. */
