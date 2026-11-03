@@ -1,7 +1,8 @@
 # Roadmap
 
 - [x] Small-phone / large-text Home fix checked signed-in at 340px (larger text) and 412px; website publish requested Nov 3.
-- [ ] Offline-first launch (cached Home, solo sessions offline) — waiting on the workspace move.
+- [x] Offline-first launch: Android opens the saved app copy without internet, offline screen only if nothing saved, fresh loading restored on reconnect without reloading a running timer.
+- [ ] Verify Airplane-mode launch and solo session sync on a phone — needs the Version 4 build.
 
 - [x] Complete both Android date/checklist widget layouts and remove obsolete ring code; XML and all 13 Java view references validated.
 - [ ] Verify full APK/AAB compilation and installed launcher date/checklist appearance — requires Android SDK/JDK/Gradle (unavailable here), GitHub workflow and an updated phone install.
