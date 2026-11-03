@@ -97,3 +97,5 @@
 - [x] Version 4 (1.0.3) also includes: permission buttons open settings directly (no resolveActivity gating) with fallback to next page if ignored; tap feedback in App Limits.
 - [ ] Phone test of Version 4 permission buttons in onboarding and App Limits (needs user device).
 - [ ] Build Version 4 via GitHub Actions and check splash + DND on a phone — requires the GitHub workflow run and a physical device.
+- [x] First-visit website pop-up pointing to the Google Play download page (once per browser, never inside the app, Indus as secondary link); desktop/phone light+dark checked, build clean.
+- [ ] Publish the website so the first-visit Play pop-up goes live on commitx.site.

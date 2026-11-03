@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowRight, Menu, Moon, Store, Sun, X } from "lucide-react";
 import heroImage from "@/assets/landing-hero.jpg";
-import googlePlayBadge from "@/assets/get-it-on-google-play-badge.svg.asset.json";
 import { LandingHourglass } from "@/components/LandingHourglass";
 import { FocusGarden } from "@/components/FocusGarden";
 import { GuestSetup } from "@/components/GuestSetup";
@@ -12,9 +11,12 @@ import { LandingReviews } from "@/components/LandingReviews";
 import { useFocusClassCount } from "@/lib/focus-class";
 import { useAuth } from "@/lib/use-auth";
 import { useAppState, formatCoins } from "@/lib/commitx-store";
-
-const INDUS_APPSTORE_URL = "https://indusapp.store/nnbmdn4h";
-const GOOGLE_PLAY_URL = "https://play.google.com/store/apps/details?id=app.commitx.mobile";
+import { AppPromoPopup } from "@/components/AppPromoPopup";
+import {
+  GOOGLE_PLAY_URL,
+  INDUS_APPSTORE_URL,
+  googlePlayBadgeAsset,
+} from "@/lib/app-stores";
 
 type Mode = "standard" | "verified";
 
@@ -846,7 +848,7 @@ export function Landing() {
                 aria-label="Get CommitX on Google Play"
               >
                 <img
-                  src={googlePlayBadge.url}
+                  src={googlePlayBadgeAsset.url}
                   alt="Get it on Google Play"
                   width={239}
                   height={71}
@@ -945,6 +947,7 @@ export function Landing() {
       {setup ? <GuestSetup mode={setup} onClose={() => setSetup(null)} /> : null}
       <FocusClassSetup open={focusClassOpen} onClose={() => setFocusClassOpen(false)} />
       {groupOpen ? <GroupSetup onClose={() => setGroupOpen(false)} /> : null}
+      <AppPromoPopup />
     </div>
   );
 }
