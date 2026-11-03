@@ -25,9 +25,16 @@ export function warmAppRoutes(router: AnyRouter): void {
     const to = APP_ROUTES[i++];
     // Code only — loaders stay lazy so no extra data is fetched.
     Promise.resolve()
-      .then(() => (router as unknown as { loadRouteChunk?: unknown; preloadRoute: (o: { to: string }) => Promise<unknown> })
+      .then(() => (router as unknown as { preloadRoute: (o: { to: string }) => Promise<unknown> })
         .preloadRoute({ to }))
       .catch(() => {})
+      .then(() => {
+        // Website: let the offline worker store this page too.
+        if (navigator.serviceWorker?.controller) {
+          return fetch(to, { credentials: "same-origin", headers: { accept: "text/html" }, mode: "same-origin" })
+            .catch(() => {});
+        }
+      })
       .finally(() => idle(next));
   };
   window.setTimeout(() => idle(next), 2500);

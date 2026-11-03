@@ -27,6 +27,7 @@ import { useStudyReminders } from "../lib/planner";
 import { reconcileMotivationNotifications } from "../lib/native-notifications";
 import { hasNativeBridge, setNativeAtRootScreen, hasOpenNativeModal, closeTopNativeModal } from "../lib/native-session";
 import { registerAppServiceWorker } from "../lib/pwa";
+import { warmAppRoutes } from "../lib/warm-routes";
 import { AmbientNature } from "../components/AmbientNature";
 import { OfflineNotice } from "../components/OfflineNotice";
 import { Onboarding } from "../components/Onboarding";
@@ -275,6 +276,10 @@ function AuthGate({ children }: { children: ReactNode }) {
       router.navigate({ to: "/" });
     }
   }, [user, loading, pathname, router, isPublic]);
+
+  useEffect(() => {
+    if (!loading && user) warmAppRoutes(router);
+  }, [loading, user, router]);
 
   // Dismiss the native Android startup screen only once the first real screen
   // can be shown, so a cold start never flashes an empty page.
