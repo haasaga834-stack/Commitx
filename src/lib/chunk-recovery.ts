@@ -76,7 +76,7 @@ export function installBridgeRecovery(): void {
   const w = window as unknown as { CommitXAndroid?: unknown };
   let wasApp = false;
   try {
-    wasApp = localStorage.getItem("cx_is_native") === "1" && /Android/i.test(navigator.userAgent) && /; wv\)/.test(navigator.userAgent);
+    wasApp = localStorage.getItem("cx_is_native") === "1" && /Android/i.test(navigator.userAgent);
   } catch {
     return;
   }
