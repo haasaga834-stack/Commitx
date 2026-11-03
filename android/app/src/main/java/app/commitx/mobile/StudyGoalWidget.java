@@ -15,6 +15,11 @@ import org.json.JSONObject;
 /** Small, movable launcher widget. The launcher owns placement, size and blur support. */
 public class StudyGoalWidget extends AppWidgetProvider {
     private static final String TOGGLE = "app.commitx.mobile.WIDGET_TOGGLE";
+    /** Whole hours stay plain ("2h"); partial hours keep one decimal ("2.5h"). */
+    private static String hoursText(int minutes) {
+        float hours = minutes / 60f;
+        return (hours == Math.floor(hours) ? String.valueOf((int) hours) : String.format(java.util.Locale.US, "%.1f", hours)) + "h";
+    }
     static void updateAll(Context ctx) {
         AppWidgetManager manager = AppWidgetManager.getInstance(ctx);
         for (int id : manager.getAppWidgetIds(new ComponentName(ctx, StudyGoalWidget.class))) update(ctx, manager, id);
