@@ -45,7 +45,9 @@ export default defineConfig({
               // Pages: always try the network first so auth/redirects stay live,
               // fall back to the last successful copy when offline.
               urlPattern: ({ request, url, sameOrigin }) =>
-                request.mode === "navigate" &&
+                (request.mode === "navigate" ||
+                  (request.method === "GET" &&
+                    (request.headers.get("accept") ?? "").startsWith("text/html"))) &&
                 sameOrigin &&
                 !url.pathname.startsWith("/~oauth") &&
                 !url.pathname.startsWith("/auth") &&
