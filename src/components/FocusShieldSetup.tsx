@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { canConfirmShield, defaultShieldPackages } from "@/lib/focus-shield-defaults";
 import {
   FOCUS_SHIELD_GROUPS,
-  openUsageAccess,
-  requestShieldOverlayAccess,
+  openPermissionPage,
   shieldApps,
   preloadShieldApps,
   shieldHasOverlayAccess,
@@ -332,14 +331,16 @@ export function FocusShieldSetup({
               title="Usage access"
               why="Lets CommitX see which app just came to the foreground, so it knows when a blocked app is opened. CommitX never reads your content and never uploads this data."
               action="Open Usage Access settings"
-              onAction={openUsageAccess}
+              manualPage="Usage access"
+              onAction={(blocked) => openPermissionPage("usage", blocked)}
             />
             <PermissionRow
               granted={overlay}
               title="Display over other apps"
               why="Lets CommitX show the Focus Shield reminder on top of a blocked app instead of letting it open."
               action="Open display permission"
-              onAction={requestShieldOverlayAccess}
+              manualPage="Display over other apps"
+              onAction={(blocked) => openPermissionPage("overlay", blocked)}
             />
 
             <div className={onCancel ? "mt-6 grid grid-cols-2 gap-3" : "mt-6"}>
@@ -428,14 +429,17 @@ function PermissionRow({
   title,
   why,
   action,
+  manualPage,
   onAction,
 }: {
   granted: boolean;
   title: string;
   why: string;
   action: string;
-  onAction: () => void;
+  manualPage: string;
+  onAction: (onBlocked: () => void) => void;
 }) {
+  const [blocked, setBlocked] = useState(false);
   return (
     <div className="mt-4 rounded-2xl border border-hairline bg-background p-4">
       <p className="flex items-center gap-2 text-sm font-medium">
@@ -446,11 +450,17 @@ function PermissionRow({
       <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{why}</p>
       {!granted && (
         <button
-          onClick={onAction}
+          onClick={() => { setBlocked(false); onAction(() => setBlocked(true)); }}
           className="mt-3 w-full rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground"
         >
           {action}
         </button>
+      )}
+      {!granted && blocked && (
+        <p role="status" className="mt-3 rounded-xl bg-secondary px-3 py-2 text-xs leading-relaxed">
+          Your phone didn't open the page. Turn it on manually:{" "}
+          <b>Settings → Apps → Special app access → {manualPage} → CommitX → On</b>, then come back.
+        </p>
       )}
     </div>
   );
