@@ -504,7 +504,13 @@ public class MainActivity extends Activity {
                 @Override
                 public void onAvailable(android.net.Network network) {
                     // Give routing a moment to come up before reloading.
-                    if (webView != null) webView.postDelayed(MainActivity.this::retryAfterOffline, 800);
+                    if (webView != null) webView.postDelayed(() -> {
+                        // Back online: fresh loads again, without reloading a running app.
+                        if (webView != null) webView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
+                        triedCachedLoad = false;
+                        boolean offlineShown = offlineOverlay != null && offlineOverlay.getVisibility() == View.VISIBLE;
+                        if (offlineShown) retryAfterOffline(); else stopWatchingReconnect();
+                    }, 800);
                 }
             };
             cm.registerDefaultNetworkCallback(offlineNetworkCallback);
@@ -526,6 +532,8 @@ public class MainActivity extends Activity {
         if (webView == null) return;
         offlineOverlay.setVisibility(View.GONE);
         stopWatchingReconnect();
+        webView.getSettings().setCacheMode(hasInternet() ? WebSettings.LOAD_DEFAULT : WebSettings.LOAD_CACHE_ELSE_NETWORK);
+        triedCachedLoad = false;
         String url = failedUrl == null ? START_URL : failedUrl;
         if (!isCommitXUrl(Uri.parse(url))) url = START_URL;
         // Re-attach before navigating so the app shell is detected on first render.
