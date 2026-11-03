@@ -130,6 +130,12 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
+        // targetSdk 36 enables predictive back, which no longer calls
+        // onBackPressed() and lets the system close the app. Route it ourselves.
+        if (Build.VERSION.SDK_INT >= 33) {
+            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+                    android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT, this::onBackPressed);
+        }
         applyOrientationPolicy();
         current = this;
         preferences = getSharedPreferences(PREFS, Context.MODE_PRIVATE);
@@ -1065,7 +1071,7 @@ public class MainActivity extends Activity {
         if (webView != null) {
             // An open dialog closes first; otherwise go Home. The web layer
             // reports the new root state itself once navigation settles.
-            evalOnWeb("(function(){var n=window.CommitXNav;if(n&&n.closeTopModal&&n.closeTopModal())return;if(n&&n.goHome)n.goHome();else window.location.assign('/');})()");
+            evalOnWeb("(function(){var n=window.CommitXNav;if(n&&n.closeTopModal&&n.closeTopModal())return;if(n&&n.goBack)n.goBack();else if(n&&n.goHome)n.goHome();else window.location.assign('/');})()");
             return;
         }
         super.onBackPressed();

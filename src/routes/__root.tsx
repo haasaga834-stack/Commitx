@@ -1,3 +1,4 @@
+import { nativeBackParent } from "@/lib/native-back";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { accountabilityAppOpened } from "@/lib/accountability";
 import { usePresenceTracker } from "@/lib/presence";
@@ -394,6 +395,11 @@ function RootComponent() {
     w.CommitXNav = {
       ...(w.CommitXNav ?? {}),
       goHome: () => void navRouter.navigate({ to: "/" }),
+      // Back steps up one level (e.g. Settings → Profile → Home), never closes.
+      goBack: () => {
+        const parent = nativeBackParent(navRouter.state.location.pathname);
+        void navRouter.navigate({ to: parent });
+      },
       closeTopModal: () => closeTopNativeModal(),
     };
   }, [navRouter]);

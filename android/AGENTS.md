@@ -22,3 +22,4 @@
 - Without internet the WebView loads its cached app copy (cache-only retry before the offline screen) and returns to normal loading on reconnect without reloading, because a reload would destroy a running offline timer.
 - Permission settings pages are launched directly with an ordered fallback chain (advance only if CommitX is still resumed after a short delay), never gated on resolveActivity, because Android 11+ package visibility returns null and left the buttons doing nothing.
 - MainActivity reloads once when a CommitX page finishes without the JS bridge, because a bridge re-added in onPageStarted after a sign-up/OAuth detour only appears on the next load and left native buttons dead until restart.
+- targetSdk 36 skips onBackPressed (predictive back), so MainActivity registers an OnBackInvokedCallback on API 33+ that delegates to it; web CommitXNav.goBack steps to a parent page (src/lib/native-back.ts) before Home.
