@@ -187,7 +187,7 @@ function Auth() {
             type="button"
             onClick={googleSignIn}
             disabled={busy}
-            className="mt-4 inline-flex w-full items-center justify-center gap-3 rounded-2xl auth-glass px-4 py-3.5 text-sm font-medium text-foreground disabled:opacity-60"
+            className="inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-foreground px-4 py-4 text-sm font-semibold text-background shadow-soft disabled:opacity-60"
           >
             <svg className="h-4 w-4" viewBox="0 0 18 18" aria-hidden="true">
               <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.17-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.91c1.7-1.57 2.69-3.88 2.69-6.62Z" />
