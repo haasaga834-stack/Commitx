@@ -743,6 +743,24 @@ public class MainActivity extends Activity {
         }
     }
 
+    /**
+     * Starts the first intent that some activity can handle. Some OEM skins
+     * silently ignore unsupported settings pages instead of throwing, which made
+     * permission buttons look frozen, so each candidate is resolved first.
+     */
+    private void launchFirstResolvable(Intent... candidates) {
+        // A fresh grant must be re-read on return, not served from cache.
+        FocusShieldStore.invalidatePermissionCache();
+        for (Intent intent : candidates) {
+            try {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                if (intent.resolveActivity(getPackageManager()) == null) continue;
+                startActivity(intent);
+                return;
+            } catch (Throwable ignored) {}
+        }
+    }
+
     /** Opens this app's notification settings page (or app details as fallback). */
     private void openAppNotificationSettings() {
         try {
@@ -1542,16 +1560,11 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void openUsageAccessSettings() {
-            runOnUiThread(() -> {
-                try {
-                    startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
-                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-                } catch (Throwable t) {
-                    try {
-                        startActivity(new Intent(Settings.ACTION_SETTINGS));
-                    } catch (Throwable ignored) {}
-                }
-            });
+            runOnUiThread(() -> launchFirstResolvable(
+                    new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS, Uri.parse("package:" + getPackageName())),
+                    new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS),
+                    new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())),
+                    new Intent(Settings.ACTION_SETTINGS)));
         }
 
         @JavascriptInterface
@@ -1644,19 +1657,11 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void requestFocusShieldOverlayAccess() {
-            runOnUiThread(() -> {
-                try {
-                    startActivity(new Intent(
-                            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                            Uri.parse("package:" + getPackageName()))
-                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-                } catch (Throwable t) {
-                    try {
-                        startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
-                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-                    } catch (Throwable ignored) {}
-                }
-            });
+            runOnUiThread(() -> launchFirstResolvable(
+                    new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName())),
+                    new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION),
+                    new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())),
+                    new Intent(Settings.ACTION_SETTINGS)));
         }
 
         @JavascriptInterface
