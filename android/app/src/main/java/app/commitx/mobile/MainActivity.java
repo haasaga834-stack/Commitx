@@ -744,6 +744,7 @@ public class MainActivity extends Activity {
         Uri data = intent.getData();
         if (data == null) return null;
         if (!"commitx".equalsIgnoreCase(String.valueOf(data.getScheme()))) return null;
+        if ("r".equalsIgnoreCase(data.getHost())) return null; // referral link, not OAuth
         return data.toString();
     }
 
