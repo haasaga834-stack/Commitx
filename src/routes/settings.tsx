@@ -4,11 +4,10 @@ import { NotificationsCard } from "@/components/NotificationsCard";
 import { ReviewModeration } from "@/components/ReviewModeration";
 import { CxCoin } from "@/components/CxCoin";
 import { useTheme } from "@/lib/theme";
-import { coinLabel, REFERRAL_REWARD } from "@/lib/commitx-store";
 import { ACTIVE_VERIFIED_SESSION_KEY } from "@/lib/verified-mode";
 import { supabase } from "@/integrations/supabase/client";
-import { claimReferral, deleteAccount as deleteAccountFn } from "@/lib/account.functions";
-import { getDeviceHash } from "@/lib/device";
+import { deleteAccount as deleteAccountFn } from "@/lib/account.functions";
+import { ReferralCard } from "@/components/ReferralCard";
 import { signOutEverywhere } from "@/lib/use-auth";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Moon, Sun, Copy, Check, Trash2, ShieldAlert, LogOut, BookOpen, ChevronRight, Star, Info, Mail, Smartphone } from "lucide-react";
@@ -57,11 +56,6 @@ function Settings() {
   const [copied, setCopied] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [referralCode, setReferralCode] = useState("");
-  const [alreadyReferred, setAlreadyReferred] = useState(false);
-  const [codeInput, setCodeInput] = useState("");
-  const [claimMsg, setClaimMsg] = useState<string | null>(null);
-  const [claiming, setClaiming] = useState(false);
 
   useEffect(() => {
     setNative(isNativeApp());
@@ -74,54 +68,6 @@ function Settings() {
     const id = window.setTimeout(() => revealSection(target), 220);
     return () => window.clearTimeout(id);
   }, [hash]);
-
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      // Local session read — no network round trip on every Settings mount.
-      const { data: auth } = await supabase.auth.getSession();
-      const user = auth.session?.user;
-      if (!user) return;
-      const { data } = await supabase
-        .from("profiles")
-        .select("referral_code, referred_by")
-        .eq("id", user.id)
-        .maybeSingle();
-      if (!active || !data) return;
-      setReferralCode(data.referral_code);
-      setAlreadyReferred(Boolean(data.referred_by));
-    })();
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  function copyReferral() {
-    try {
-      navigator.clipboard?.writeText(referralCode);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1600);
-    } catch {}
-  }
-
-  async function submitCode() {
-    setClaiming(true);
-    setClaimMsg(null);
-    try {
-      const res = await claimReferral({
-        data: { code: codeInput, deviceHash: getDeviceHash() },
-      });
-      setClaimMsg(res.message);
-      if (res.ok) {
-        setAlreadyReferred(true);
-        setCodeInput("");
-      }
-    } catch {
-      setClaimMsg("Could not apply that code. Please try again.");
-    } finally {
-      setClaiming(false);
-    }
-  }
 
   async function deleteAccount() {
     setDeleting(true);
@@ -251,51 +197,7 @@ function Settings() {
 
         {/* Referral */}
         <p className={SECTION + " mt-6"}>Referrals</p>
-        <div className="mt-2 rounded-3xl bg-card p-4 shadow-soft">
-          <p className="text-sm font-medium">Invite friends</p>
-          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            When a friend signs up with your code, you receive{" "}
-            {coinLabel(REFERRAL_REWARD)} — once per referred friend.
-            Cx Coins are in-app points and can only be used for commitments.
-          </p>
-          <button
-            onClick={copyReferral}
-            className="mt-3 flex w-full items-center justify-between rounded-2xl border border-dashed border-hairline px-3.5 py-2.5"
-          >
-            <span className="font-mono text-sm text-foreground">{referralCode || "…"}</span>
-            {copied ? (
-              <Check className="h-4 w-4 text-primary" />
-            ) : (
-              <Copy className="h-4 w-4 text-muted-foreground" />
-            )}
-          </button>
-
-          {!alreadyReferred ? (
-            <div className="mt-4 border-t border-hairline pt-4">
-              <p className="text-sm font-medium">Have a referral code?</p>
-              <div className="mt-2 flex gap-2">
-                <input
-                  value={codeInput}
-                  onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
-                  placeholder="CX123ABC"
-                  className="min-w-0 flex-1 rounded-xl border border-hairline bg-background px-3 py-2 font-mono text-sm outline-none focus:border-primary"
-                />
-                <button
-                  onClick={submitCode}
-                  disabled={claiming || !codeInput}
-                  className="shrink-0 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
-                >
-                  Apply
-                </button>
-              </div>
-              {claimMsg && <p className="mt-2 text-xs text-muted-foreground">{claimMsg}</p>}
-            </div>
-          ) : (
-            <p className="mt-4 border-t border-hairline pt-4 text-xs text-muted-foreground">
-              A referral code has already been applied to this account.
-            </p>
-          )}
-        </div>
+        <ReferralCard />
 
         {/* Danger zone */}
         <p className={SECTION + " mt-6"}>Account</p>
