@@ -119,14 +119,14 @@ export function AppPromoPopup() {
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => setOpen(false)}
-            className="text-xs text-ink-soft underline decoration-ink-line underline-offset-4 transition-colors hover:text-ink"
+            className="text-xs text-ink/75 underline decoration-ink-line underline-offset-4 transition-colors hover:text-ink"
           >
             Also on the Indus App Store
           </a>
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="text-xs text-ink-soft transition-colors hover:text-ink"
+            className="text-xs text-ink/75 transition-colors hover:text-ink"
           >
             No thanks
           </button>
