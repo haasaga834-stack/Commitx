@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ArrowRight, Menu, Moon, Sun, X } from "lucide-react";
+import { ArrowRight, Menu, Moon, Store, Sun, X } from "lucide-react";
 import heroImage from "@/assets/landing-hero.jpg";
+import googlePlayBadge from "@/assets/get-it-on-google-play-badge.svg.asset.json";
 import { LandingHourglass } from "@/components/LandingHourglass";
 import { FocusGarden } from "@/components/FocusGarden";
 import { GuestSetup } from "@/components/GuestSetup";
@@ -13,6 +14,7 @@ import { useAuth } from "@/lib/use-auth";
 import { useAppState, formatCoins } from "@/lib/commitx-store";
 
 const INDUS_APPSTORE_URL = "https://indusapp.store/nnbmdn4h";
+const GOOGLE_PLAY_URL = "https://play.google.com/store/apps/details?id=app.commitx.mobile";
 
 type Mode = "standard" | "verified";
 

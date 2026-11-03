@@ -781,6 +781,71 @@ body {
   font-family: var(--font-sans);
 }
 
+/* Store badges — Google Play and Indus App Store as one matched pair. */
+.landing-root {
+  --store-badge-surface: oklch(0 0 0);
+  --store-badge-ink: oklch(0.99 0 0);
+  --store-badge-line: oklch(0.855 0.004 80);
+}
+.landing-root.landing-dark {
+  --store-badge-line: oklch(0.40 0.008 70);
+}
+
+.cx-store-badge,
+.cx-store-badge-plain {
+  border-radius: 12px;
+  border: 1px solid var(--store-badge-line);
+  background: var(--store-badge-surface);
+  transition:
+    transform 0.28s cubic-bezier(0.16, 0.84, 0.24, 1),
+    box-shadow 0.28s ease,
+    border-color 0.28s ease;
+}
+.cx-store-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  height: 54px;
+  padding: 0 18px;
+  color: var(--store-badge-ink);
+}
+.cx-store-badge-plain {
+  display: block;
+  height: 54px;
+  width: auto;
+}
+.cx-store-badge:hover,
+.cx-store-badge-plain:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklch, var(--store-badge-ink) 34%, transparent);
+  box-shadow: 0 20px 34px -24px rgb(0 0 0 / 0.6);
+}
+.cx-store-badge-label {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+.cx-store-badge-name {
+  display: block;
+  margin-top: 3px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cx-store-badge,
+  .cx-store-badge-plain {
+    transition: none;
+  }
+  .cx-store-badge:hover,
+  .cx-store-badge-plain:hover {
+    transform: none;
+  }
+}
+
 /* -----------------------------------------------------------------
    Native CommitX app — Moonlit Flora.
    The class is attached only when the Android bridge is present, so the
