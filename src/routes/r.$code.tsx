@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { setPendingReferral } from "@/lib/pending-referral";
 import { androidIntentUrl, normalizeReferralCode, playStoreReferralUrl } from "@/lib/referral-link";
-import { hasNativeBridge } from "@/lib/native-notifications";
+import { hasNativeBridge } from "@/lib/native-session";
 
 export const Route = createFileRoute("/r/$code")({
   head: () => ({

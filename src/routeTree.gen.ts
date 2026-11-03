@@ -43,6 +43,7 @@ import { Route as WalletRouteImport } from './routes/wallet'
 import { Route as BuddyCodeRouteImport } from './routes/buddy.$code'
 import { Route as GroupIndexRouteImport } from './routes/group.index'
 import { Route as GroupIdRouteImport } from './routes/group.$id'
+import { Route as RCodeRouteImport } from './routes/r.$code'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 
@@ -216,6 +217,11 @@ const GroupIdRoute = GroupIdRouteImport.update({
   path: '/group/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RCodeRoute = RCodeRouteImport.update({
+  id: '/r/$code',
+  path: '/r/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
   id: '/lovable/email/auth/preview',
   path: '/lovable/email/auth/preview',
@@ -261,6 +267,7 @@ export interface FileRoutesByFullPath {
   '/wallet': typeof WalletRoute
   '/buddy/$code': typeof BuddyCodeRoute
   '/group/$id': typeof GroupIdRoute
+  '/r/$code': typeof RCodeRoute
   '/group/': typeof GroupIndexRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -299,6 +306,7 @@ export interface FileRoutesByTo {
   '/wallet': typeof WalletRoute
   '/buddy/$code': typeof BuddyCodeRoute
   '/group/$id': typeof GroupIdRoute
+  '/r/$code': typeof RCodeRoute
   '/group': typeof GroupIndexRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -338,6 +346,7 @@ export interface FileRoutesById {
   '/wallet': typeof WalletRoute
   '/buddy/$code': typeof BuddyCodeRoute
   '/group/$id': typeof GroupIdRoute
+  '/r/$code': typeof RCodeRoute
   '/group/': typeof GroupIndexRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -378,6 +387,7 @@ export interface FileRouteTypes {
     | '/wallet'
     | '/buddy/$code'
     | '/group/$id'
+    | '/r/$code'
     | '/group/'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -416,6 +426,7 @@ export interface FileRouteTypes {
     | '/wallet'
     | '/buddy/$code'
     | '/group/$id'
+    | '/r/$code'
     | '/group'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -454,6 +465,7 @@ export interface FileRouteTypes {
     | '/wallet'
     | '/buddy/$code'
     | '/group/$id'
+    | '/r/$code'
     | '/group/'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -493,6 +505,7 @@ export interface RootRouteChildren {
   WalletRoute: typeof WalletRoute
   BuddyCodeRoute: typeof BuddyCodeRoute
   GroupIdRoute: typeof GroupIdRoute
+  RCodeRoute: typeof RCodeRoute
   GroupIndexRoute: typeof GroupIndexRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
@@ -738,6 +751,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GroupIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/r/$code': {
+      id: '/r/$code'
+      path: '/r/$code'
+      fullPath: '/r/$code'
+      preLoaderRoute: typeof RCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/auth/preview': {
       id: '/lovable/email/auth/preview'
       path: '/lovable/email/auth/preview'
@@ -789,6 +809,7 @@ const rootRouteChildren: RootRouteChildren = {
   WalletRoute: WalletRoute,
   BuddyCodeRoute: BuddyCodeRoute,
   GroupIdRoute: GroupIdRoute,
+  RCodeRoute: RCodeRoute,
   GroupIndexRoute: GroupIndexRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
