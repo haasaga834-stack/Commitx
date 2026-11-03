@@ -878,7 +878,13 @@ public class MainActivity extends Activity {
         authWebView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                return false; // keep every hop of the OAuth flow inside the app
+                return openExternalFromAuth(request == null ? null : request.getUrl());
+            }
+
+            @Override
+            @SuppressWarnings("deprecation")
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                return openExternalFromAuth(url == null ? null : Uri.parse(url));
             }
         });
         authWebView.setWebChromeClient(new WebChromeClient() {
