@@ -1312,3 +1312,24 @@ body.cx-app-theme .cx-phone-home-shell nav.fixed svg { width: 21px; height: 21px
   border: 1px solid color-mix(in oklab, var(--color-foreground) 8%, transparent);
 }
 .cx-receipt-cut { border-top: 1.5px dashed color-mix(in oklab, var(--color-foreground) 22%, transparent); }
+
+/* Native app performance: phone WebViews render backdrop blur slowly and make
+   pop-ups look soft while they fade in. Use crisp solid dims and quick entries. */
+body.cx-app-theme [class*="backdrop-blur"] {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+body.cx-app-theme .fixed.inset-0[class*="bg-background/"],
+body.cx-app-theme .fixed.inset-0[class*="bg-foreground/"],
+body.cx-app-theme .fixed.inset-0[class*="bg-black/"] {
+  background-color: color-mix(in oklab, var(--color-foreground) 45%, transparent) !important;
+}
+body.cx-app-theme .animate-in {
+  animation-duration: 160ms !important;
+  --tw-enter-blur: 0 !important;
+  --tw-enter-scale: 1 !important;
+}
+body.cx-app-theme [class*="slide-in-from-bottom"] { --tw-enter-translate-y: 12px !important; }
+body.cx-app-theme .animate-gentle-float,
+body.cx-app-theme .animate-soft-glow { animation: none !important; }
+body.cx-app-theme [role="dialog"], body.cx-app-theme .shadow-soft { will-change: auto; transform: translateZ(0); }
