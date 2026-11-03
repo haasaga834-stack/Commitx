@@ -61,6 +61,7 @@ public class MainActivity extends Activity {
     private View splashOverlay;
     private FrameLayout rootLayout;
     private View offlineOverlay;
+    private boolean triedCachedLoad = false;
     private String failedUrl;
     private android.net.ConnectivityManager.NetworkCallback offlineNetworkCallback;
     private volatile boolean splashHidden = false;
@@ -158,6 +159,9 @@ public class MainActivity extends Activity {
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
         settings.setMediaPlaybackRequiresUserGesture(false);
+        // Offline-first: with no connection, open the last saved copy of the app
+        // instead of the "You're offline" screen. Online always loads fresh.
+        settings.setCacheMode(hasInternet() ? WebSettings.LOAD_DEFAULT : WebSettings.LOAD_CACHE_ELSE_NETWORK);
         // Required so Google Sign-In opens inside the app instead of an external browser.
         settings.setSupportMultipleWindows(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
@@ -287,6 +291,15 @@ public class MainActivity extends Activity {
                                         android.webkit.WebResourceError error) {
                 if (request == null || !request.isForMainFrame()) return;
                 failedUrl = request.getUrl() == null ? START_URL : request.getUrl().toString();
+                // First try the saved copy of the app before showing the offline screen.
+                if (!triedCachedLoad && isCommitXUrl(Uri.parse(failedUrl))) {
+                    triedCachedLoad = true;
+                    view.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ONLY);
+                    final String retryUrl = failedUrl;
+                    view.post(() -> view.loadUrl(retryUrl));
+                    watchForReconnect();
+                    return;
+                }
                 // The native overlay covers the raw error page. Never navigate to
                 // about:blank: that strips the app bridge and the reconnect reload
                 // then renders the public website instead of the app.
@@ -595,6 +608,18 @@ public class MainActivity extends Activity {
      * that would replace a perfectly good running timer with the WebView error
      * page, so in that case we simply bring the already-loaded page forward.
      */
+    private boolean hasInternet() {
+        try {
+            android.net.ConnectivityManager cm = (android.net.ConnectivityManager)
+                    getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
+            if (cm == null) return true;
+            android.net.Network n = cm.getActiveNetwork();
+            if (n == null) return false;
+            android.net.NetworkCapabilities caps = cm.getNetworkCapabilities(n);
+            return caps != null && caps.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET);
+        } catch (Throwable ignored) { return true; }
+    }
+
     private boolean canReloadForRoute() {
         String current = webView == null ? null : webView.getUrl();
         boolean hasPage = current != null && current.startsWith(START_URL);
