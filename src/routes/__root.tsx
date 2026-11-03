@@ -28,6 +28,7 @@ import { useStudyReminders } from "../lib/planner";
 import { reconcileMotivationNotifications } from "../lib/native-notifications";
 import { hasNativeBridge, setNativeAtRootScreen, hasOpenNativeModal, closeTopNativeModal } from "../lib/native-session";
 import { registerAppServiceWorker } from "../lib/pwa";
+import { installChunkRecovery, isChunkLoadError, recoverFromChunkError } from "../lib/chunk-recovery";
 import { warmAppRoutes } from "../lib/warm-routes";
 import { AmbientNature } from "../components/AmbientNature";
 import { OfflineNotice } from "../components/OfflineNotice";
@@ -61,6 +62,8 @@ function ErrorComponent({ error, reset }: { error: unknown; reset: () => void })
   const router = useRouter();
   useEffect(() => {
     console.error(error);
+    // A page whose code failed to download: reload fresh instead of stalling.
+    if (isChunkLoadError(error)) recoverFromChunkError();
   }, [error]);
 
   return (
@@ -424,6 +427,7 @@ function RootComponent() {
 
   // Offline support: registers the generated worker in published production only.
   useEffect(() => {
+    installChunkRecovery();
     registerAppServiceWorker();
   }, []);
 
