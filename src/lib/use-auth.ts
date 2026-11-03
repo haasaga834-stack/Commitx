@@ -5,7 +5,7 @@ import { pullFromCloud, startCloudSync, stopCloudSync } from "./cloud-sync";
 import { resetState, setStoreUser } from "./commitx-store";
 import { clearPlannerLocal, setPlannerUser } from "./planner";
 import { clearAcademicsLocal, setAcademicsUser } from "./academics";
-import { claimPendingReferral } from "./pending-referral";
+import { announceNewReferrals, captureReferralFromLaunch, claimPendingReferral } from "./pending-referral";
 import { clearCachedUser, readCachedUser, writeCachedUser } from "./auth-cache";
 import { isOnline, onReconnect, startConnectivityWatch } from "./connectivity";
 
@@ -39,6 +39,7 @@ export function useAuth() {
         if (session?.user && isOnline()) {
           const uid = session.user.id;
           void claimPendingReferral()
+            .then(() => announceNewReferrals())
             .then(() => pullFromCloud(uid))
             .catch(() => {});
         }
@@ -51,6 +52,7 @@ export function useAuth() {
       }
     };
 
+    captureReferralFromLaunch();
     startConnectivityWatch();
 
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {

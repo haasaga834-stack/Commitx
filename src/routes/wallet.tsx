@@ -7,10 +7,15 @@ import {
   COINS_PER_HOUR,
   WELCOME_COINS,
   REFERRAL_REWARD,
+  REFERRER_REWARD,
   coinsForMinutes,
 } from "@/lib/commitx-store";
 import { CxCoin } from "@/components/CxCoin";
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Gift } from "lucide-react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
+type ReferralTx = { id: string; direction: string; friend_name: string; coins: number; created_at: string };
 
 export const Route = createFileRoute("/wallet")({
   head: () => ({
@@ -35,6 +40,12 @@ export const Route = createFileRoute("/wallet")({
 function CxCoinsScreen() {
   const { state, hydrated } = useAppState();
   const coins = state.coins;
+  const [referrals, setReferrals] = useState<ReferralTx[]>([]);
+  useEffect(() => {
+    void supabase.rpc("my_referral_history").then(({ data }) => {
+      if (Array.isArray(data)) setReferrals(data as ReferralTx[]);
+    });
+  }, []);
 
   return (
     <MobileShell>
@@ -64,7 +75,8 @@ function CxCoinsScreen() {
           <ul className="mt-4 space-y-2 rounded-2xl border border-hairline bg-background px-4 py-3 text-xs text-muted-foreground">
             <li>New account: {coinLabel(WELCOME_COINS)} to get started.</li>
             <li>Every completed study hour: +{coinLabel(COINS_PER_HOUR)}.</li>
-            <li>Referral: +{coinLabel(REFERRAL_REWARD)} for you and your friend.</li>
+            <li>Joined with a referral code: +{coinLabel(REFERRAL_REWARD)}.</li>
+            <li>Each friend who joins with your code: +{coinLabel(REFERRER_REWARD)}.</li>
             <li>Minimum to start a commitment: {coinLabel(50)}.</li>
             <li>Cx Coupons are coming soon — save your coins for them.</li>
           </ul>
@@ -74,7 +86,27 @@ function CxCoinsScreen() {
         <p className="mt-8 text-xs uppercase tracking-widest text-muted-foreground">
           Coin activity
         </p>
-        {hydrated && state.sessions.length === 0 ? (
+        {referrals.length > 0 && (
+          <div className="mt-4 space-y-2">
+            {referrals.map((r) => (
+              <div key={r.id + r.direction} className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3 shadow-soft">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/15 text-primary">
+                  <Gift className="h-4 w-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">
+                    {r.direction === "referred_friend" ? `Referral reward · ${r.friend_name} joined` : "Referral joining bonus"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(r.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })} · Earned
+                  </p>
+                </div>
+                <p className="text-sm font-medium text-primary tabular-nums">+{formatCoins(r.coins)}</p>
+              </div>
+            ))}
+          </div>
+        )}
+        {hydrated && state.sessions.length === 0 && referrals.length === 0 ? (
           <p className="mt-4 rounded-3xl bg-card p-6 text-sm text-muted-foreground shadow-soft">
             No activity yet. Complete a commitment to earn your first Cx Coins.
           </p>

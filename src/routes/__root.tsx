@@ -247,6 +247,7 @@ const PUBLIC_PATHS = [
 function isPublicPath(path: string) {
   const normalized =
     path.length > 1 && path.endsWith("/") ? path.replace(/\/+$/, "") : path;
+  if (normalized.toLowerCase().startsWith("/r/")) return true;
   return PUBLIC_PATHS.includes(normalized.toLowerCase());
 }
 

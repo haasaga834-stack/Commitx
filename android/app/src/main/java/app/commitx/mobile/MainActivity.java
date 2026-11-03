@@ -139,6 +139,7 @@ public class MainActivity extends Activity {
         applyOrientationPolicy();
         current = this;
         preferences = getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        fetchInstallReferrerOnce();
         CommitXNotifications.ensureChannels(this);
         ScreenTimeTracker.scheduleChecks(this);
         CommitXNotifications.showScreenTimeDaily(this);
@@ -629,7 +630,47 @@ public class MainActivity extends Activity {
         return true;
     }
 
+    /** Reads the Play Store install referrer once per install (deferred referral links). */
+    private void fetchInstallReferrerOnce() {
+        if (preferences.getBoolean("install_referrer_checked", false)) return;
+        try {
+            final com.android.installreferrer.api.InstallReferrerClient client =
+                    com.android.installreferrer.api.InstallReferrerClient.newBuilder(this).build();
+            client.startConnection(new com.android.installreferrer.api.InstallReferrerStateListener() {
+                @Override public void onInstallReferrerSetupFinished(int code) {
+                    try {
+                        if (code == com.android.installreferrer.api.InstallReferrerClient.InstallReferrerResponse.OK) {
+                            String ref = client.getInstallReferrer().getInstallReferrer();
+                            SharedPreferences.Editor e = preferences.edit().putBoolean("install_referrer_checked", true);
+                            if (ref != null && ref.contains("ref=")) e.putString("install_referrer", ref);
+                            e.apply();
+                        } else if (code != com.android.installreferrer.api.InstallReferrerClient.InstallReferrerResponse.SERVICE_DISCONNECTED) {
+                            preferences.edit().putBoolean("install_referrer_checked", true).apply();
+                        }
+                    } catch (Throwable ignored) {
+                    } finally {
+                        try { client.endConnection(); } catch (Throwable ignored) {}
+                    }
+                }
+                @Override public void onInstallReferrerServiceDisconnected() {}
+            });
+        } catch (Throwable ignored) {}
+    }
+
+    /** Code carried by commitx://r/CODE, or null. */
+    private String referralCodeFrom(Intent intent) {
+        if (intent == null || intent.getData() == null) return null;
+        Uri d = intent.getData();
+        if (!"commitx".equalsIgnoreCase(String.valueOf(d.getScheme())) || !"r".equalsIgnoreCase(d.getHost())) return null;
+        String code = d.getLastPathSegment();
+        if (code == null) return null;
+        code = code.replaceAll("[^A-Za-z0-9]", "").toUpperCase(java.util.Locale.ROOT);
+        return code.length() >= 4 && code.length() <= 32 ? code : null;
+    }
+
     private String startUrlFor(Intent intent) {
+        String ref = referralCodeFrom(intent);
+        if (ref != null) return START_URL + "auth?ref=" + ref;
         String route = intent == null ? null : intent.getStringExtra(EXTRA_ROUTE);
         if (route == null || route.trim().isEmpty()) return START_URL;
         return START_URL + route.replaceFirst("^/", "");
@@ -674,6 +715,11 @@ public class MainActivity extends Activity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
+        String referral = referralCodeFrom(intent);
+        if (referral != null && webView != null) {
+            webView.loadUrl(startUrlFor(intent));
+            return;
+        }
         String route = intent == null ? null : intent.getStringExtra(EXTRA_ROUTE);
         // A live session notification should only bring the existing timer to
         // the foreground. Reloading the WebView here destroys the mounted
@@ -698,6 +744,7 @@ public class MainActivity extends Activity {
         Uri data = intent.getData();
         if (data == null) return null;
         if (!"commitx".equalsIgnoreCase(String.valueOf(data.getScheme()))) return null;
+        if ("r".equalsIgnoreCase(data.getHost())) return null; // referral link, not OAuth
         return data.toString();
     }
 
@@ -1273,6 +1320,14 @@ public class MainActivity extends Activity {
     }
 
     public class CommitXAndroidBridge {
+        /** Play Install Referrer string captured on first launch; returned once. */
+        @JavascriptInterface
+        public String takeInstallReferrer() {
+            String value = preferences.getString("install_referrer", null);
+            if (value != null) preferences.edit().remove("install_referrer").putBoolean("install_referrer_taken", true).apply();
+            return value == null ? "" : value;
+        }
+
         /** Uses Android's share sheet, never a messaging website in an OAuth popup. */
         @JavascriptInterface
         public void shareText(String title, String text) {

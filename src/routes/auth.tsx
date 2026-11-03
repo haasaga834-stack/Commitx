@@ -1,12 +1,12 @@
 import { track } from "@/lib/analytics";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Hourglass } from "@/components/Hourglass";
 import { Loader2 } from "lucide-react";
 
 import { lovable } from "@/integrations/lovable/index";
-import { setPendingReferral } from "@/lib/pending-referral";
+import { getPendingReferral, setPendingReferral } from "@/lib/pending-referral";
 import { WELCOME_COINS, REFERRAL_REWARD, coinLabel } from "@/lib/commitx-store";
 import { actionErrorMessage, isOnline, OFFLINE_ACTION_MESSAGE } from "@/lib/connectivity";
 import { isAndroidSignIn, hasNativeGoogleSignIn, nativeGoogleSignIn } from "@/lib/native-auth";
@@ -35,6 +35,15 @@ function Auth() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+
+  // A code from a referral link or Play Store install is prefilled for sign-up.
+  useEffect(() => {
+    const pending = getPendingReferral();
+    if (pending) {
+      setReferral(pending);
+      setMode("signup");
+    }
+  }, []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -215,14 +224,18 @@ function Auth() {
             <div className="mb-3">
               <input
                 value={referral}
-                onChange={(e) => setReferral(e.target.value.toUpperCase())}
+                onChange={(e) => {
+                  const v = e.target.value.toUpperCase();
+                  setReferral(v);
+                  setPendingReferral(v);
+                }}
                 placeholder="Referral code (optional)"
                 autoCapitalize="characters"
                 className="w-full rounded-2xl auth-glass px-4 py-3 font-mono text-sm tracking-widest outline-none focus:border-primary"
               />
               <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
-                Start with {coinLabel(WELCOME_COINS)} — add a friend's code and you
-                both get {coinLabel(REFERRAL_REWARD)} more.
+                Start with {coinLabel(WELCOME_COINS)} — add a friend's code to get{" "}
+                {coinLabel(REFERRAL_REWARD)} more.
               </p>
             </div>
           )}
