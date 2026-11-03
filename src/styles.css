@@ -1192,3 +1192,27 @@ body.cx-app-theme .cx-phone-home-shell nav.fixed svg { width: 21px; height: 21px
     animation-iteration-count: 1 !important;
   }
 }
+
+/* Sign-in "Forest Glass" canvas — scoped to the auth screen only. */
+.auth-forest {
+  --background: oklch(0.17 0.012 200);
+  --foreground: oklch(0.96 0.012 160);
+  --muted-foreground: oklch(0.72 0.02 170);
+  --card: oklch(1 0 0 / 0.06);
+  --primary: oklch(0.72 0.11 165);
+  --primary-foreground: oklch(0.16 0.02 190);
+  --hairline: oklch(1 0 0 / 0.12);
+  --destructive: oklch(0.72 0.15 28);
+  --auth-glow: oklch(0.55 0.10 165 / 0.35);
+  color: var(--foreground);
+  background:
+    radial-gradient(120% 60% at 50% 0%, var(--auth-glow), transparent 60%),
+    radial-gradient(90% 50% at 50% 110%, oklch(0.35 0.06 175 / 0.45), transparent 70%),
+    var(--background);
+}
+.auth-forest .auth-glass {
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  backdrop-filter: blur(18px) saturate(140%);
+}
+.auth-forest .auth-glass:focus { border-color: var(--primary); }

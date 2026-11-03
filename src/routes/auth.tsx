@@ -169,21 +169,45 @@ function Auth() {
 
 
   return (
-    <div className="min-h-screen">
-      <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-14">
+    <div className="auth-forest min-h-screen">
+      <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-12">
         <div className="flex flex-col items-center">
-          <Hourglass size={120} state="idle" />
+          <Hourglass size={96} state="idle" />
           <h1 className="mt-6 font-display text-3xl font-semibold">CommitX</h1>
           <p className="mt-2 text-sm text-muted-foreground">Commit. Complete. Get it back.</p>
+          <div className="mt-5 flex flex-wrap justify-center gap-2 text-[11px] text-muted-foreground">
+            {["Focus Shield", "Verified sessions", "Study Buddy"].map((t) => (
+              <span key={t} className="auth-glass rounded-full px-3 py-1">{t}</span>
+            ))}
+          </div>
         </div>
 
-        <form onSubmit={submit} className="mt-10 rounded-3xl bg-card p-6 shadow-soft">
+        <form onSubmit={submit} className="mt-9">
+          <button
+            type="button"
+            onClick={googleSignIn}
+            disabled={busy}
+            className="inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-foreground px-4 py-4 text-sm font-semibold text-background shadow-soft disabled:opacity-60"
+          >
+            <svg className="h-4 w-4" viewBox="0 0 18 18" aria-hidden="true">
+              <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.17-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.91c1.7-1.57 2.69-3.88 2.69-6.62Z" />
+              <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.91-2.26c-.81.54-1.84.86-3.05.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.34A9 9 0 0 0 9 18Z" />
+              <path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.94H.96a9 9 0 0 0 0 8.12l3.01-2.34Z" />
+              <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.59C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.94l3.01 2.34C4.68 5.16 6.66 3.58 9 3.58Z" />
+            </svg>
+            Continue with Google
+          </button>
+          <div className="my-5 flex items-center gap-3">
+            <span className="h-px flex-1 bg-hairline" />
+            <span className="text-[11px] uppercase tracking-widest text-muted-foreground">or use email</span>
+            <span className="h-px flex-1 bg-hairline" />
+          </div>
           {mode === "signup" && (
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Your name"
-              className="mb-3 w-full rounded-2xl border border-hairline bg-background px-4 py-3 text-sm outline-none focus:border-primary"
+              className="mb-3 w-full rounded-2xl auth-glass px-4 py-3 text-sm outline-none focus:border-primary"
             />
           )}
 
@@ -194,7 +218,7 @@ function Auth() {
                 onChange={(e) => setReferral(e.target.value.toUpperCase())}
                 placeholder="Referral code (optional)"
                 autoCapitalize="characters"
-                className="w-full rounded-2xl border border-hairline bg-background px-4 py-3 font-mono text-sm tracking-widest outline-none focus:border-primary"
+                className="w-full rounded-2xl auth-glass px-4 py-3 font-mono text-sm tracking-widest outline-none focus:border-primary"
               />
               <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
                 Start with {coinLabel(WELCOME_COINS)} — add a friend's code and you
@@ -211,7 +235,7 @@ function Auth() {
               setError(null);
             }}
             placeholder="Email"
-            className="w-full rounded-2xl border border-hairline bg-background px-4 py-3 text-sm outline-none focus:border-primary"
+            className="w-full rounded-2xl auth-glass px-4 py-3 text-sm outline-none focus:border-primary"
           />
           <input
             type="password"
@@ -223,7 +247,7 @@ function Auth() {
               setError(null);
             }}
             placeholder="Password"
-            className="mt-3 w-full rounded-2xl border border-hairline bg-background px-4 py-3 text-sm outline-none focus:border-primary"
+            className="mt-3 w-full rounded-2xl auth-glass px-4 py-3 text-sm outline-none focus:border-primary"
           />
 
           {mode === "signin" && (
@@ -243,32 +267,13 @@ function Auth() {
           <button
             type="submit"
             disabled={busy}
-            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3.5 text-sm font-medium text-primary-foreground disabled:opacity-60"
+            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3.5 text-sm font-semibold text-primary-foreground disabled:opacity-60"
           >
             {busy && <Loader2 className="h-4 w-4 animate-spin" />}
             {mode === "signin" ? "Sign in" : "Create account"}
           </button>
 
-          <div className="mt-5 flex items-center gap-3">
-            <span className="h-px flex-1 bg-hairline" />
-            <span className="text-[11px] uppercase tracking-widest text-muted-foreground">or</span>
-            <span className="h-px flex-1 bg-hairline" />
-          </div>
 
-          <button
-            type="button"
-            onClick={googleSignIn}
-            disabled={busy}
-            className="mt-4 inline-flex w-full items-center justify-center gap-3 rounded-2xl border border-hairline bg-background px-4 py-3.5 text-sm font-medium text-foreground disabled:opacity-60"
-          >
-            <svg className="h-4 w-4" viewBox="0 0 18 18" aria-hidden="true">
-              <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.17-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.91c1.7-1.57 2.69-3.88 2.69-6.62Z" />
-              <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.91-2.26c-.81.54-1.84.86-3.05.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.34A9 9 0 0 0 9 18Z" />
-              <path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.94H.96a9 9 0 0 0 0 8.12l3.01-2.34Z" />
-              <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.59C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.94l3.01 2.34C4.68 5.16 6.66 3.58 9 3.58Z" />
-            </svg>
-            Continue with Google
-          </button>
         </form>
 
 
