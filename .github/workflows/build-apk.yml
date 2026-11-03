@@ -27,7 +27,7 @@ env:
   # upload whose version code is not higher than the last one it received.
   # Version 4 release build (auto DND off, dark splash, compact Home, offline mode, permission button fix).
   # Re-pushed after GitHub reconnect so the build runs with sync active.
-  COMMITX_VERSION_CODE: "4"
+  COMMITX_VERSION_CODE: "5"
   COMMITX_VERSION_NAME: "1.0.4"
 
 jobs:
