@@ -834,18 +834,41 @@ export function Landing() {
                 Prefer the CommitX app?
               </h2>
               <p className="mt-2 text-sm text-ink-soft">
-                Continue your journey on the CommitX app.
+                Get CommitX on Google Play or the Indus App Store.
               </p>
             </div>
-            <a
-              href={INDUS_APPSTORE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex items-center justify-center gap-2 rounded-full border border-ink-line px-6 py-3.5 text-sm font-medium transition-colors hover:border-ink/30"
-            >
-              Continue on app
-              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-            </a>
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:justify-end">
+              <a
+                href={GOOGLE_PLAY_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Get CommitX on Google Play"
+                aria-label="Get CommitX on Google Play"
+              >
+                <img
+                  src={googlePlayBadge.url}
+                  alt="Get it on Google Play"
+                  width={239}
+                  height={71}
+                  loading="lazy"
+                  className="cx-store-badge-plain"
+                />
+              </a>
+              <a
+                href={INDUS_APPSTORE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Get CommitX on the Indus App Store"
+                aria-label="Get CommitX on the Indus App Store"
+                className="cx-store-badge"
+              >
+                <Store className="h-6 w-6 shrink-0" aria-hidden="true" />
+                <span className="text-left leading-none">
+                  <span className="cx-store-badge-label">Get it on</span>
+                  <span className="cx-store-badge-name">Indus App Store</span>
+                </span>
+              </a>
+            </div>
           </div>
         </Reveal>
       </section>
