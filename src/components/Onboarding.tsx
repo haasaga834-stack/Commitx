@@ -407,7 +407,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
               icon={<Sparkles className="h-4 w-4 text-primary" />}
               title="Getting started"
               items={[
-                `${coinLabel(WELCOME_COINS)} to start · ${coinLabel(REFERRAL_REWARD)} per referral.`,
+                `${coinLabel(WELCOME_COINS)} to start · +${coinLabel(REFERRAL_REWARD)} with a friend's code · ${coinLabel(50)} per friend you invite.`,
                 "In-app points only — no cash value.",
               ]}
               footer={`Your Cx Coins: ${coinLabel(state.coins)}`}
