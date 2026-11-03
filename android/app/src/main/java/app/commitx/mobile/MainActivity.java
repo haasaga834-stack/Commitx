@@ -76,6 +76,7 @@ public class MainActivity extends Activity {
     private volatile boolean sessionLockActive = false;
     private volatile boolean atRootScreen = true;
     private volatile boolean resumed = false;
+    private boolean bridgeReloaded = false;
     private volatile String pendingOAuthCallback = null;
 
 
@@ -283,6 +284,18 @@ public class MainActivity extends Activity {
                     flushPendingTodoToggles();
                     String callback = pendingOAuthCallback;
                     if (callback != null) deliverOAuthCallback(callback);
+                    // A bridge re-added during onPageStarted (after a detour such as
+                    // sign-up/OAuth/email links) only appears on the NEXT load, so the
+                    // first screen had no native buttons until restart. Reload once.
+                    view.evaluateJavascript("typeof window.CommitXAndroid", (type) -> {
+                        if (type != null && type.contains("undefined") && !bridgeReloaded) {
+                            bridgeReloaded = true;
+                            view.addJavascriptInterface(new CommitXAndroidBridge(), "CommitXAndroid");
+                            view.reload();
+                        } else if (type != null && !type.contains("undefined")) {
+                            bridgeReloaded = false;
+                        }
+                    });
                 }
             }
 
