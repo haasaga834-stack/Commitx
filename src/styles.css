@@ -1332,4 +1332,3 @@ body.cx-app-theme .animate-in {
 body.cx-app-theme [class*="slide-in-from-bottom"] { --tw-enter-translate-y: 12px !important; }
 body.cx-app-theme .animate-gentle-float,
 body.cx-app-theme .animate-soft-glow { animation: none !important; }
-body.cx-app-theme [role="dialog"], body.cx-app-theme .shadow-soft { will-change: auto; transform: translateZ(0); }
