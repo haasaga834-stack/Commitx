@@ -914,6 +914,45 @@ public class MainActivity extends Activity {
         resultMsg.sendToTarget();
     }
 
+    /**
+     * The OAuth popup must keep the sign-in flow inside the app, but app-store
+     * links inside it (rating, store badges) must reach the Play Store app: the
+     * Play page hands off with an intent:// hop a popup WebView cannot load,
+     * which showed the raw "Web page not available" error instead.
+     */
+    private boolean openExternalFromAuth(Uri uri) {
+        if (uri == null) return false;
+        String scheme = uri.getScheme();
+        if (scheme == null) return false;
+        boolean isStoreLink = "play.google.com".equalsIgnoreCase(uri.getHost())
+                && uri.getPath() != null && uri.getPath().startsWith("/store/apps/details");
+        if ("intent".equalsIgnoreCase(scheme) || "market".equalsIgnoreCase(scheme) || isStoreLink) {
+            final Intent target;
+            if ("intent".equalsIgnoreCase(scheme)) {
+                try {
+                    target = Intent.parseUri(uri.toString(), Intent.URI_INTENT_SCHEME);
+                } catch (Throwable t) {
+                    runOnUiThread(this::closeAuthWindow);
+                    return true;
+                }
+            } else {
+                target = new Intent(Intent.ACTION_VIEW, uri);
+            }
+            try {
+                startActivity(target.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            } catch (Throwable t) {
+                try {
+                    startActivity(new Intent(Intent.ACTION_VIEW,
+                            Uri.parse("https://play.google.com/store/apps/details?id=" + getPackageName()))
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                } catch (Throwable ignored) {}
+            }
+            runOnUiThread(this::closeAuthWindow);
+            return true;
+        }
+        return false; // keep every hop of the OAuth flow inside the app
+    }
+
     private void closeAuthWindow() {
         if (authDialog != null && authDialog.isShowing()) {
             authDialog.dismiss();

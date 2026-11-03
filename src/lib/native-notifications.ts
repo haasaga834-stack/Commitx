@@ -269,6 +269,10 @@ export function rateApp() {
   try {
     const native = bridge();
     if (native?.rateApp) { native.rateApp(); return; }
+    // Older in-app builds without the rate bridge: open the Play page in the
+    // main window so the app itself hands it to the Play Store app — a popup
+    // window would just show the raw "page not available" error.
+    if (native) { window.location.assign(playUrl); return; }
   } catch {}
   window.open(playUrl, "_blank", "noopener");
 }
