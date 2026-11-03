@@ -482,7 +482,9 @@ export type Database = {
           id: string
           referred_device_hash: string | null
           referred_id: string
+          referrer_bonus: number
           referrer_id: string
+          seen_by_referrer_at: string | null
         }
         Insert: {
           bonus_amount?: number
@@ -490,7 +492,9 @@ export type Database = {
           id?: string
           referred_device_hash?: string | null
           referred_id: string
+          referrer_bonus?: number
           referrer_id: string
+          seen_by_referrer_at?: string | null
         }
         Update: {
           bonus_amount?: number
@@ -498,7 +502,9 @@ export type Database = {
           id?: string
           referred_device_hash?: string | null
           referred_id?: string
+          referrer_bonus?: number
           referrer_id?: string
+          seen_by_referrer_at?: string | null
         }
         Relationships: []
       }
@@ -842,6 +848,13 @@ export type Database = {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
+      claim_referral: {
+        Args: { _code: string; _device_hash: string }
+        Returns: {
+          message: string
+          ok: boolean
+        }[]
+      }
       cleanup_focus_class_presence: { Args: never; Returns: undefined }
       community_food_coins: { Args: never; Returns: number }
       create_buddy_invite: { Args: never; Returns: string }
@@ -963,6 +976,16 @@ export type Database = {
         }[]
       }
       my_group_pot: { Args: { _group_id: string }; Returns: number }
+      my_referral_history: {
+        Args: never
+        Returns: {
+          coins: number
+          created_at: string
+          direction: string
+          friend_name: string
+          id: string
+        }[]
+      }
       my_study_buddy: {
         Args: never
         Returns: {
@@ -1039,6 +1062,7 @@ export type Database = {
           started_at: string
         }[]
       }
+      take_unseen_referrals: { Args: never; Returns: number }
       touch_paused_web_session: { Args: never; Returns: string }
       web_session_heartbeat: { Args: never; Returns: string }
     }
