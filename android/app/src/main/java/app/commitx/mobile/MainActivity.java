@@ -347,16 +347,24 @@ public class MainActivity extends Activity {
 
         webView.setBackgroundColor(Color.parseColor("#050608"));
         webView.loadUrl(startUrlFor(getIntent()));
-        // Weak mobile data can stall the fresh download for 30s+. If the page has
-        // not loaded after 5s, open the saved copy of the app instead.
+        // Weak mobile data can stall the fresh download for 30s+. If the page itself
+        // has not arrived after 5s, open the saved copy of the app instead. A page
+        // that has arrived and is booting (only slow images/analytics pending) is
+        // never interrupted — aborting it mid-start left screens half-loaded.
         webView.postDelayed(() -> {
-            if (mainPageFinished || webView == null || triedCachedLoad) return;
-            slowLoadFallback = true;
-            final String url = webView.getUrl() != null && isCommitXUrl(Uri.parse(webView.getUrl()))
-                    ? webView.getUrl() : startUrlFor(getIntent());
-            try { webView.stopLoading(); } catch (Throwable ignored) {}
-            webView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
-            webView.loadUrl(url);
+            if (mainPageFinished || splashAppReady || webView == null || triedCachedLoad) return;
+            webView.evaluateJavascript(
+                    "(function(){try{return (document.body&&document.body.childElementCount>0)?'ok':'empty'}catch(e){return 'empty'}})()",
+                    (state) -> {
+                        if (mainPageFinished || splashAppReady || webView == null || triedCachedLoad) return;
+                        if (state != null && state.contains("ok")) return;
+                        slowLoadFallback = true;
+                        final String url = webView.getUrl() != null && isCommitXUrl(Uri.parse(webView.getUrl()))
+                                ? webView.getUrl() : startUrlFor(getIntent());
+                        try { webView.stopLoading(); } catch (Throwable ignored) {}
+                        webView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+                        webView.loadUrl(url);
+                    });
         }, 5000);
         // Safety net: never trap the user behind the splash, but never reveal a
         // blank half-loaded page either — wait for the page up to 30s.
@@ -1375,6 +1383,19 @@ public class MainActivity extends Activity {
                                 android.widget.Toast.LENGTH_SHORT).show();
                     }
                 }
+            });
+        }
+
+        /** A screen failed to load its code (stale saved copy); reload fresh from the network. */
+        @JavascriptInterface
+        public void reloadFresh() {
+            runOnUiThread(() -> {
+                if (webView == null) return;
+                slowLoadFallback = false;
+                triedCachedLoad = false;
+                webView.getSettings().setCacheMode(hasInternet() ? WebSettings.LOAD_NO_CACHE : WebSettings.LOAD_CACHE_ELSE_NETWORK);
+                webView.addJavascriptInterface(new CommitXAndroidBridge(), "CommitXAndroid");
+                webView.reload();
             });
         }
 
