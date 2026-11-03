@@ -78,7 +78,26 @@ public class MainActivity extends Activity {
     private volatile boolean sessionLockActive = false;
     private volatile boolean atRootScreen = true;
     private volatile boolean resumed = false;
-    private boolean bridgeReloaded = false;
+    private int bridgeReloads = 0;
+    // One bridge instance, attached once. Re-adding it on every page start
+    // removed and re-added the object while the page was being created, which
+    // sometimes left that page with no bridge (dead native buttons, empty
+    // Screen Time) until the app was killed and reopened.
+    private CommitXAndroidBridge appBridge;
+    private boolean bridgeAttached = false;
+
+    private void attachBridge(WebView view) {
+        if (view == null || bridgeAttached) return;
+        if (appBridge == null) appBridge = new CommitXAndroidBridge();
+        view.addJavascriptInterface(appBridge, "CommitXAndroid");
+        bridgeAttached = true;
+    }
+
+    private void detachBridge(WebView view) {
+        if (view == null || !bridgeAttached) return;
+        view.removeJavascriptInterface("CommitXAndroid");
+        bridgeAttached = false;
+    }
     private volatile String pendingOAuthCallback = null;
 
 
@@ -181,7 +200,7 @@ public class MainActivity extends Activity {
         CookieManager.getInstance().setAcceptCookie(true);
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
 
-        webView.addJavascriptInterface(new CommitXAndroidBridge(), "CommitXAndroid");
+        attachBridge(webView);
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg) {
@@ -270,8 +289,8 @@ public class MainActivity extends Activity {
             @Override
             public void onPageStarted(WebView view, String url, android.graphics.Bitmap favicon) {
                 super.onPageStarted(view, url, favicon);
-                if (isCommitXUrl(Uri.parse(url))) view.addJavascriptInterface(new CommitXAndroidBridge(), "CommitXAndroid");
-                else view.removeJavascriptInterface("CommitXAndroid");
+                if (isCommitXUrl(Uri.parse(url))) attachBridge(view);
+                else detachBridge(view);
             }
 
             @Override
@@ -303,12 +322,12 @@ public class MainActivity extends Activity {
                     // sign-up/OAuth/email links) only appears on the NEXT load, so the
                     // first screen had no native buttons until restart. Reload once.
                     view.evaluateJavascript("typeof window.CommitXAndroid", (type) -> {
-                        if (type != null && type.contains("undefined") && !bridgeReloaded) {
-                            bridgeReloaded = true;
-                            view.addJavascriptInterface(new CommitXAndroidBridge(), "CommitXAndroid");
+                        if (type != null && type.contains("undefined") && bridgeReloads < 2) {
+                            bridgeReloads++;
+                            attachBridge(view);
                             view.reload();
                         } else if (type != null && !type.contains("undefined")) {
-                            bridgeReloaded = false;
+                            bridgeReloads = 0;
                         }
                     });
                 }
@@ -591,7 +610,7 @@ public class MainActivity extends Activity {
         String url = failedUrl == null ? START_URL : failedUrl;
         if (!isCommitXUrl(Uri.parse(url))) url = START_URL;
         // Re-attach before navigating so the app shell is detected on first render.
-        webView.addJavascriptInterface(new CommitXAndroidBridge(), "CommitXAndroid");
+        attachBridge(webView);
         webView.clearHistory();
         webView.loadUrl(url);
     }
@@ -651,7 +670,7 @@ public class MainActivity extends Activity {
     private boolean handleNavigation(WebView view, Uri uri) {
         if (uri == null) return true;
         if (isInAppUrl(uri)) {
-            if (!isCommitXUrl(uri)) view.removeJavascriptInterface("CommitXAndroid");
+            if (!isCommitXUrl(uri)) detachBridge(view);
             // Returning false makes this WebView own the navigation. This also
             // covers server-side redirects and both WebView callback variants.
             return false;
@@ -1394,7 +1413,7 @@ public class MainActivity extends Activity {
                 slowLoadFallback = false;
                 triedCachedLoad = false;
                 webView.getSettings().setCacheMode(hasInternet() ? WebSettings.LOAD_NO_CACHE : WebSettings.LOAD_CACHE_ELSE_NETWORK);
-                webView.addJavascriptInterface(new CommitXAndroidBridge(), "CommitXAndroid");
+                attachBridge(webView);
                 webView.reload();
             });
         }

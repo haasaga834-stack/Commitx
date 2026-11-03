@@ -28,7 +28,7 @@ import { useStudyReminders } from "../lib/planner";
 import { reconcileMotivationNotifications } from "../lib/native-notifications";
 import { hasNativeBridge, setNativeAtRootScreen, hasOpenNativeModal, closeTopNativeModal } from "../lib/native-session";
 import { registerAppServiceWorker } from "../lib/pwa";
-import { installChunkRecovery, isChunkLoadError, recoverFromChunkError } from "../lib/chunk-recovery";
+import { installBridgeRecovery, installChunkRecovery, isChunkLoadError, recoverFromChunkError } from "../lib/chunk-recovery";
 import { warmAppRoutes } from "../lib/warm-routes";
 import { AmbientNature } from "../components/AmbientNature";
 import { OfflineNotice } from "../components/OfflineNotice";
@@ -428,6 +428,7 @@ function RootComponent() {
   // Offline support: registers the generated worker in published production only.
   useEffect(() => {
     installChunkRecovery();
+    installBridgeRecovery();
     registerAppServiceWorker();
   }, []);
 
