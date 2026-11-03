@@ -1,5 +1,8 @@
 # Roadmap
 
+- [x] Small-phone / large-text Home fix checked signed-in at 340px (larger text) and 412px; website publish requested Nov 3.
+- [ ] Offline-first launch (cached Home, solo sessions offline) — waiting on the workspace move.
+
 - [x] Complete both Android date/checklist widget layouts and remove obsolete ring code; XML and all 13 Java view references validated.
 - [ ] Verify full APK/AAB compilation and installed launcher date/checklist appearance — requires Android SDK/JDK/Gradle (unavailable here), GitHub workflow and an updated phone install.
 - [x] Remove phone Home Study Buddy card, bottom-align action cluster with 14px navigation gap, and add scoped dark mode; signed-in Settings toggle/reload/light restoration checked, three phone sizes and public website checked, nine rule tests pass.
