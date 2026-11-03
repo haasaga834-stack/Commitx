@@ -3,6 +3,7 @@ import { MobileShell } from "@/components/BottomNav";
 import { useAppState } from "@/lib/commitx-store";
 import { analyze, formatHours } from "@/lib/analytics-data";
 import { useMemo } from "react";
+import { DailyReceipt } from "@/components/DailyReceipt";
 import { Flame, TrendingUp, CalendarDays, Clock, History } from "lucide-react";
 
 export const Route = createFileRoute("/analytics")({
@@ -99,6 +100,9 @@ function Analytics() {
             Counted from completed commitments only.
           </p>
         </div>
+
+        {hydrated && <DailyReceipt sessions={state.sessions} />}
+        <div className="h-8" />
       </div>
     </MobileShell>
   );

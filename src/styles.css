@@ -1216,3 +1216,11 @@ body.cx-app-theme .cx-phone-home-shell nav.fixed svg { width: 21px; height: 21px
   backdrop-filter: blur(18px) saturate(140%);
 }
 .auth-forest .auth-glass:focus { border-color: var(--primary); }
+
+/* Daily Commitment Receipt */
+.cx-receipt {
+  background: var(--color-card);
+  box-shadow: var(--shadow-soft, 0 10px 30px -12px color-mix(in oklab, var(--color-foreground) 25%, transparent));
+  border: 1px solid color-mix(in oklab, var(--color-foreground) 8%, transparent);
+}
+.cx-receipt-cut { border-top: 1.5px dashed color-mix(in oklab, var(--color-foreground) 22%, transparent); }
