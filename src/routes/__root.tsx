@@ -1,3 +1,4 @@
+import { nativeBackParent } from "@/lib/native-back";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { accountabilityAppOpened } from "@/lib/accountability";
 import { usePresenceTracker } from "@/lib/presence";
