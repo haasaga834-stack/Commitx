@@ -18,7 +18,7 @@ const SEEN_KEY = "commitx-app-promo-seen";
  */
 export function AppPromoPopup() {
   const [open, setOpen] = useState(false);
-  const playLinkRef = useRef<HTMLAnchorElement | null>(null);
+  const cardRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (hasNativeBridge()) return;
@@ -45,7 +45,7 @@ export function AppPromoPopup() {
 
   useEffect(() => {
     if (!open) return;
-    playLinkRef.current?.focus();
+    cardRef.current?.focus();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
     };
@@ -69,7 +69,9 @@ export function AppPromoPopup() {
       onClick={() => setOpen(false)}
     >
       <div
-        className="animate-landing-modal w-full max-w-md rounded-t-[28px] bg-paper p-7 pb-8 shadow-lift sm:rounded-[28px] sm:p-9"
+        ref={cardRef}
+        tabIndex={-1}
+        className="animate-landing-modal w-full max-w-md rounded-t-[28px] bg-paper p-7 pb-8 shadow-lift outline-none sm:rounded-[28px] sm:p-9"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4">
@@ -95,7 +97,6 @@ export function AppPromoPopup() {
         </p>
 
         <a
-          ref={playLinkRef}
           href={GOOGLE_PLAY_URL}
           target="_blank"
           rel="noopener noreferrer"
