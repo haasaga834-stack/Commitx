@@ -353,16 +353,21 @@ public class MainActivity extends Activity {
         finalFrame.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
         finalFrame.setAlpha(0f);
 
-        final android.view.TextureView video = new android.view.TextureView(this);
-        video.setAlpha(0f);
-        video.setOpaque(false);
+        // SurfaceView frames are composited by the system, so WebView start-up
+        // work on the UI thread can no longer make the logo animation stutter.
+        final android.view.SurfaceView video = new android.view.SurfaceView(this);
+        final View cover = new View(this);
+        cover.setBackgroundColor(Color.parseColor("#050608"));
 
         FrameLayout.LayoutParams lp1 = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT, android.view.Gravity.CENTER);
         FrameLayout.LayoutParams lp2 = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT, android.view.Gravity.CENTER);
-        overlay.addView(finalFrame, lp1);
+        FrameLayout.LayoutParams lp3 = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT, android.view.Gravity.CENTER);
         overlay.addView(video, lp2);
+        overlay.addView(finalFrame, lp1);
+        overlay.addView(cover, lp3);
 
         // Keep the 4:3 animation fitted and centered on any screen or rotation.
         overlay.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, orr, ob) -> {
@@ -370,7 +375,7 @@ public class MainActivity extends Activity {
             if (w <= 0 || h <= 0) return;
             int vw = w, vh = Math.round(w * 1080f / 1440f);
             if (vh > h) { vh = h; vw = Math.round(h * 1440f / 1080f); }
-            for (View child : new View[]{finalFrame, video}) {
+            for (View child : new View[]{finalFrame, video, cover}) {
                 ViewGroup.LayoutParams p = child.getLayoutParams();
                 if (p.width != vw || p.height != vh) {
                     p.width = vw; p.height = vh;
@@ -382,34 +387,33 @@ public class MainActivity extends Activity {
         final Runnable showFinal = () -> {
             if (splashVideoDone) return;
             finalFrame.setAlpha(1f);
-            video.animate().alpha(0f).setDuration(120).start();
+            cover.setVisibility(View.GONE);
             splashVideoDone = true;
             maybeFinishSplash();
         };
 
-        video.setSurfaceTextureListener(new android.view.TextureView.SurfaceTextureListener() {
+        video.getHolder().addCallback(new android.view.SurfaceHolder.Callback() {
             @Override
-            public void onSurfaceTextureAvailable(android.graphics.SurfaceTexture st, int w, int h) {
+            public void surfaceCreated(android.view.SurfaceHolder holder) {
                 if (splashPlayer != null || splashVideoDone) return;
                 try {
                     android.media.MediaPlayer mp = new android.media.MediaPlayer();
                     splashPlayer = mp;
                     mp.setDataSource(MainActivity.this,
                             Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.commitx_splash));
-                    mp.setSurface(new android.view.Surface(st));
+                    mp.setDisplay(holder);
+                    mp.setScreenOnWhilePlaying(false);
                     mp.setLooping(false);
                     mp.setVolume(0f, 0f);
                     mp.setOnInfoListener((p, what, extra) -> {
                         if (what == android.media.MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START) {
-                            video.setAlpha(1f);
+                            cover.setVisibility(View.GONE);
                         }
                         return false;
                     });
                     mp.setOnCompletionListener(p -> showFinal.run());
                     mp.setOnErrorListener((p, what, extra) -> { showFinal.run(); return true; });
                     mp.setOnPreparedListener(p -> {
-                        // Restart the backstop from real playback so a slow
-                        // decoder never cuts the animation short.
                         overlay.removeCallbacks(showFinal);
                         int dur = 3000;
                         try { if (p.getDuration() > 0) dur = p.getDuration(); } catch (Throwable ignored) {}
@@ -421,13 +425,11 @@ public class MainActivity extends Activity {
                     showFinal.run();
                 }
             }
-            @Override public void onSurfaceTextureSizeChanged(android.graphics.SurfaceTexture st, int w, int h) {}
-            @Override public boolean onSurfaceTextureDestroyed(android.graphics.SurfaceTexture st) {
+            @Override public void surfaceChanged(android.view.SurfaceHolder h, int f, int w, int ht) {}
+            @Override public void surfaceDestroyed(android.view.SurfaceHolder h) {
                 showFinal.run();
                 releaseSplashPlayer();
-                return true;
             }
-            @Override public void onSurfaceTextureUpdated(android.graphics.SurfaceTexture st) {}
         });
         // Backstop if the player never prepares or reports completion.
         overlay.postDelayed(showFinal, 4500);
@@ -1227,7 +1229,7 @@ public class MainActivity extends Activity {
                             .setType("text/plain")
                             .putExtra(Intent.EXTRA_SUBJECT, title)
                             .putExtra(Intent.EXTRA_TEXT, text);
-                    startActivity(Intent.createChooser(send, "Share invite"));
+                    startActivity(Intent.createChooser(send, title == null || title.isEmpty() ? "Share" : title));
                 } catch (Throwable ignored) {
                     android.content.ClipboardManager clipboard = (android.content.ClipboardManager)
                             getSystemService(Context.CLIPBOARD_SERVICE);
@@ -1611,25 +1613,10 @@ public class MainActivity extends Activity {
             return ScreenTimeTracker.limitMinutes(MainActivity.this);
         }
 
+        /** Opens the CommitX Play Store page so people can rate and review. */
         @JavascriptInterface
         public void rateApp() {
-            runOnUiThread(() -> {
-                try {
-                    com.google.android.play.core.review.ReviewManager manager =
-                            com.google.android.play.core.review.ReviewManagerFactory.create(MainActivity.this);
-                    manager.requestReviewFlow().addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            try {
-                                manager.launchReviewFlow(MainActivity.this, task.getResult());
-                                return;
-                            } catch (Throwable ignored) {}
-                        }
-                        openPlayStoreListing();
-                    });
-                } catch (Throwable t) {
-                    openPlayStoreListing();
-                }
-            });
+            runOnUiThread(MainActivity.this::openPlayStoreListing);
         }
 
         @JavascriptInterface

@@ -263,11 +263,14 @@ export function isNativeApp() {
   return Boolean(bridge());
 }
 
-/** Opens the Play in-app review flow (falls back to the Play Store listing). */
+/** Sends people to the CommitX Play Store page to rate and review. */
 export function rateApp() {
+  const playUrl = "https://play.google.com/store/apps/details?id=app.commitx.mobile";
   try {
-    bridge()?.rateApp?.();
+    const native = bridge();
+    if (native?.rateApp) { native.rateApp(); return; }
   } catch {}
+  window.open(playUrl, "_blank", "noopener");
 }
 
 const LIMIT_CHANGE_KEY = "commitx-screen-limit-changed-on";
