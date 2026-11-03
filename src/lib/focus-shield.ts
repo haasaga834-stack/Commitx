@@ -230,3 +230,21 @@ export async function recordShieldState(input: {
       .eq("user_id", userId);
   } catch {}
 }
+
+/**
+ * Opens the Android permission page and reports back when the phone ignored it
+ * (CommitX still on screen after a few seconds), so the UI can show manual steps.
+ */
+export function openPermissionPage(kind: "usage" | "overlay", onBlocked: () => void) {
+  if (kind === "usage") openUsageAccess();
+  else requestShieldOverlayAccess();
+  let left = false;
+  const onHide = () => { if (document.visibilityState === "hidden") left = true; };
+  document.addEventListener("visibilitychange", onHide);
+  window.addEventListener("blur", onHide);
+  window.setTimeout(() => {
+    document.removeEventListener("visibilitychange", onHide);
+    window.removeEventListener("blur", onHide);
+    if (!left && document.visibilityState === "visible") onBlocked();
+  }, 4500);
+}

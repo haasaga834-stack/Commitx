@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatMinutes } from "@/lib/native-notifications";
-import { shieldApps, requestShieldOverlayAccess, openUsageAccess, shieldHasUsageAccess, shieldHasOverlayAccess, type ShieldAppOption } from "@/lib/focus-shield";
+import { shieldApps, openPermissionPage, shieldHasUsageAccess, shieldHasOverlayAccess, type ShieldAppOption } from "@/lib/focus-shield";
 import {
   appLimitsReady,
   readAppLimits,
@@ -32,6 +32,7 @@ export function AppLimitsManager({ onClose, onSaved }: { onClose: () => void; on
   const [type, setType] = useState<"time" | "reels">("time");
   const [value, setValue] = useState<number>(60);
   const [ready, setReady] = useState(appLimitsReady());
+  const [manual, setManual] = useState<"usage" | "overlay" | null>(null);
 
   const refresh = () => setLimits(readAppLimits());
 
@@ -179,15 +180,16 @@ export function AppLimitsManager({ onClose, onSaved }: { onClose: () => void; on
             </p>
             <div className="mt-4 grid gap-2">
               {!perm.usage && (
-                <Button onClick={() => { toast("Opening Android settings — turn on CommitX, then come back."); window.setTimeout(openUsageAccess, 50); }} className="h-11 rounded-full">
+                <Button onClick={() => { setManual(null); openPermissionPage("usage", () => setManual("usage")); }} className="h-11 rounded-full">
                   Allow usage access
                 </Button>
               )}
               {!perm.overlay && (
-                <Button onClick={() => { toast("Opening Android settings — turn on CommitX, then come back."); window.setTimeout(requestShieldOverlayAccess, 50); }} variant="outline" className="h-11 rounded-full">
+                <Button onClick={() => { setManual(null); openPermissionPage("overlay", () => setManual("overlay")); }} variant="outline" className="h-11 rounded-full">
                   Allow display over apps
                 </Button>
               )}
+              {manual && <ManualSteps kind={manual} />}
               <Button onClick={confirmAllowed} variant="ghost" className="h-11 rounded-full">
                 I've allowed both
               </Button>
@@ -322,6 +324,19 @@ export function AppLimitsManager({ onClose, onSaved }: { onClose: () => void; on
           </>
         )}
       </section>
+    </div>
+  );
+}
+
+function ManualSteps({ kind }: { kind: "usage" | "overlay" }) {
+  const page = kind === "usage" ? "Usage access" : "Display over other apps";
+  return (
+    <div role="status" className="rounded-2xl bg-secondary px-4 py-3 text-xs leading-relaxed text-foreground">
+      Your phone didn't open the page. Turn it on manually:
+      <br />
+      <b>Settings → Apps → Special app access → {page} → CommitX → On</b>
+      <br />
+      <span className="text-muted-foreground">Tip: search "{page}" in Android Settings. Then come back and tap "I've allowed both".</span>
     </div>
   );
 }
