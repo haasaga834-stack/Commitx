@@ -87,10 +87,10 @@ export function FocusShieldSetup({
       const o = shieldHasOverlayAccess();
       setUsage(u);
       setOverlay(o);
-      // Stop polling once both hold; focus/visibility still re-check.
-      if (u && o && id !== null) { window.clearInterval(id); id = null; }
     };
-    id = window.setInterval(check, 1500);
+    // No timed polling: native permission checks are synchronous and slow on
+    // some phones, and repeated checks blocked taps on the permission buttons.
+    // Returning from Android settings fires visibility/focus, which re-checks.
     check();
     const onVis = () => check();
     document.addEventListener("visibilitychange", onVis);

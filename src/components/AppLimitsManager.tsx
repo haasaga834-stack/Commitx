@@ -90,12 +90,11 @@ export function AppLimitsManager({ onClose, onSaved }: { onClose: () => void; on
     check();
     window.addEventListener("focus", check);
     document.addEventListener("visibilitychange", check);
-    // Poll only while a permission is missing; stop as soon as both hold.
-    const id = ready ? null : window.setInterval(check, 2_000);
+    // No timed polling: slow synchronous native checks blocked button taps.
+    // Returning from Android settings fires visibility/focus, which re-checks.
     return () => {
       window.removeEventListener("focus", check);
       document.removeEventListener("visibilitychange", check);
-      if (id !== null) window.clearInterval(id);
     };
   }, [ready]);
 
