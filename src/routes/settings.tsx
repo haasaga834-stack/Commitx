@@ -10,7 +10,7 @@ import { deleteAccount as deleteAccountFn } from "@/lib/account.functions";
 import { ReferralCard } from "@/components/ReferralCard";
 import { signOutEverywhere } from "@/lib/use-auth";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Moon, Sun, Copy, Check, Trash2, ShieldAlert, LogOut, BookOpen, ChevronRight, Star, Info, Mail, Smartphone } from "lucide-react";
+import { ArrowLeft, Moon, Sun, Trash2, ShieldAlert, LogOut, BookOpen, ChevronRight, Star, Info, Mail, Smartphone } from "lucide-react";
 import { isNativeApp, rateApp } from "@/lib/native-notifications";
 
 export const Route = createFileRoute("/settings")({
@@ -53,7 +53,6 @@ function Settings() {
   const hash = useLocation({ select: (l) => l.hash });
   const { isDark, setMode } = useTheme();
   const [native, setNative] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -196,7 +195,7 @@ function Settings() {
         </div>
 
         {/* Referral */}
-        <p className={SECTION + " mt-6"}>Referrals</p>
+        <p id="invite" className={SECTION + " mt-6"}>Invite a Friend</p>
         <ReferralCard />
 
         {/* Danger zone */}
