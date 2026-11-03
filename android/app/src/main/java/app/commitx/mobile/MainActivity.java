@@ -744,20 +744,35 @@ public class MainActivity extends Activity {
     }
 
     /**
-     * Starts the first intent that some activity can handle. Some OEM skins
-     * silently ignore unsupported settings pages instead of throwing, which made
-     * permission buttons look frozen, so each candidate is resolved first.
+     * Opens the first settings page that actually appears. Two failure modes made
+     * permission buttons look frozen: resolveActivity() returns null on Android 11+
+     * package visibility (so nothing was ever launched), and some OEM skins accept
+     * an intent but silently show nothing. So each candidate is started directly,
+     * and if CommitX is still in the foreground shortly after, the next one is tried.
      */
     private void launchFirstResolvable(Intent... candidates) {
         // A fresh grant must be re-read on return, not served from cache.
         FocusShieldStore.invalidatePermissionCache();
-        for (Intent intent : candidates) {
+        launchCandidate(candidates, 0);
+    }
+
+    private void launchCandidate(final Intent[] candidates, final int index) {
+        for (int i = index; i < candidates.length; i++) {
+            Intent intent = candidates[i];
             try {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                if (intent.resolveActivity(getPackageManager()) == null) continue;
                 startActivity(intent);
+                final int next = i + 1;
+                if (next < candidates.length) {
+                    new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                        // Settings opened → we were paused. Still resumed → it was ignored.
+                        if (resumed && !isFinishing()) launchCandidate(candidates, next);
+                    }, 1200L);
+                }
                 return;
-            } catch (Throwable ignored) {}
+            } catch (Throwable ignored) {
+                // ActivityNotFound / SecurityException: try the next page.
+            }
         }
     }
 
