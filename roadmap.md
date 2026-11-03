@@ -94,4 +94,6 @@
 - [x] App Usage Limits: native store/service/overlay, 50%+100% alerts, midnight reset, Screen Time entry, optional onboarding step
 
 - [x] Version 4 (1.0.3) prep: dark splash animation (colour-matched video/final frame, playback-timed backstop), automatic DND off after Verified, version code 4 in Gradle and CI.
+- [x] Version 5 (1.0.4): permission buttons open settings directly (no resolveActivity gating) with fallback to next page if ignored; tap feedback in App Limits.
+- [ ] Phone test of Version 5 permission buttons (needs user device).
 - [ ] Build Version 4 via GitHub Actions and check splash + DND on a phone — requires the GitHub workflow run and a physical device.

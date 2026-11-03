@@ -179,12 +179,12 @@ export function AppLimitsManager({ onClose, onSaved }: { onClose: () => void; on
             </p>
             <div className="mt-4 grid gap-2">
               {!perm.usage && (
-                <Button onClick={() => { openUsageAccess(); }} className="h-11 rounded-full">
+                <Button onClick={() => { toast("Opening Android settings — turn on CommitX, then come back."); openUsageAccess(); }} className="h-11 rounded-full">
                   Allow usage access
                 </Button>
               )}
               {!perm.overlay && (
-                <Button onClick={() => { requestShieldOverlayAccess(); }} variant="outline" className="h-11 rounded-full">
+                <Button onClick={() => { toast("Opening Android settings — turn on CommitX, then come back."); requestShieldOverlayAccess(); }} variant="outline" className="h-11 rounded-full">
                   Allow display over apps
                 </Button>
               )}
