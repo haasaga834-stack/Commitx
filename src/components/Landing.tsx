@@ -1,4 +1,3 @@
-import { EventSpotlight } from "@/components/EventSpotlight";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowRight, Menu, Moon, Sun, X } from "lucide-react";
@@ -780,7 +779,6 @@ export function Landing() {
 
       <LandingReviews />
 
-      <EventSpotlight />
 
       {/* FAQ */}
       <section className="px-6 py-16 sm:py-20">
