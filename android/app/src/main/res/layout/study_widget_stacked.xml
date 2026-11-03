@@ -2,13 +2,17 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root" android:layout_width="match_parent" android:layout_height="match_parent"
     android:orientation="vertical" android:gravity="center_vertical" android:background="@drawable/study_widget_background">
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:orientation="vertical" android:gravity="center_vertical" android:layout_marginBottom="10dp">
-        <TextView android:id="@+id/widget_weekday" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-medium" android:textSize="12sp" android:maxLines="1" android:ellipsize="end" android:textColor="@color/widget_muted" />
-        <TextView android:id="@+id/widget_date" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="2dp" android:fontFamily="serif" android:textSize="26sp" android:maxLines="1" android:ellipsize="end" android:textColor="@color/widget_text" />
-    </LinearLayout>
+    <FrameLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="10dp">
+        <ProgressBar android:id="@+id/widget_ring" style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="76dp" android:layout_height="76dp" android:layout_gravity="center_horizontal"
+            android:progressDrawable="@drawable/widget_ring" android:max="1000" android:progress="0" android:indeterminate="false" />
+        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:orientation="vertical" android:gravity="center">
+            <TextView android:id="@+id/widget_hours" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:fontFamily="serif" android:textSize="17sp" android:maxLines="1" android:textColor="@color/widget_text" />
+            <TextView android:id="@+id/widget_hours_goal" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium" android:textSize="9sp" android:maxLines="1" android:textColor="@color/widget_muted" />
+        </LinearLayout>
+    </FrameLayout>
     <LinearLayout android:layout_width="match_parent"  android:layout_height="wrap_content" android:orientation="vertical">
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="TODAY’S TO-DO" android:textSize="10sp" android:textColor="@color/widget_muted" />
         <LinearLayout android:id="@+id/widget_row_0" android:layout_width="match_parent" android:layout_height="30dp" android:orientation="horizontal" android:gravity="center_vertical">

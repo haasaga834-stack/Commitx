@@ -15,6 +15,11 @@ import org.json.JSONObject;
 /** Small, movable launcher widget. The launcher owns placement, size and blur support. */
 public class StudyGoalWidget extends AppWidgetProvider {
     private static final String TOGGLE = "app.commitx.mobile.WIDGET_TOGGLE";
+    /** Whole hours stay plain ("2h"); partial hours keep one decimal ("2.5h"). */
+    private static String hoursText(int minutes) {
+        float hours = minutes / 60f;
+        return (hours == Math.floor(hours) ? String.valueOf((int) hours) : String.format(java.util.Locale.US, "%.1f", hours)) + "h";
+    }
     static void updateAll(Context ctx) {
         AppWidgetManager manager = AppWidgetManager.getInstance(ctx);
         for (int id : manager.getAppWidgetIds(new ComponentName(ctx, StudyGoalWidget.class))) update(ctx, manager, id);
@@ -45,9 +50,12 @@ public class StudyGoalWidget extends AppWidgetProvider {
             PendingIntent tap = PendingIntent.getActivity(ctx, 1600, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
             views.setOnClickPendingIntent(R.id.widget_root, tap);
             views.setOnClickPendingIntent(R.id.widget_more, tap);
-            java.util.Date date = new java.util.Date();
-            views.setTextViewText(R.id.widget_weekday, new java.text.SimpleDateFormat("EEEE", java.util.Locale.getDefault()).format(date));
-            views.setTextViewText(R.id.widget_date, new java.text.SimpleDateFormat("d MMM", java.util.Locale.getDefault()).format(date));
+            int minutes = today ? state.optInt("minutes", 0) : 0;
+            int goalMinutes = today ? state.optInt("goalMinutes", 0) : 0;
+            int progress = goalMinutes > 0 ? Math.min(1000, Math.round(1000f * minutes / goalMinutes)) : 0;
+            views.setProgressBar(R.id.widget_ring, 1000, progress, false);
+            views.setTextViewText(R.id.widget_hours, hoursText(minutes));
+            views.setTextViewText(R.id.widget_hours_goal, "of " + hoursText(goalMinutes));
             JSONArray todos = today ? state.optJSONArray("todos") : new JSONArray();
             int count = todos == null ? 0 : todos.length();
             int[] rows = {R.id.widget_row_0, R.id.widget_row_1, R.id.widget_row_2};
