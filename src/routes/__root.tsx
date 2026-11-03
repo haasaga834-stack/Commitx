@@ -394,6 +394,11 @@ function RootComponent() {
     w.CommitXNav = {
       ...(w.CommitXNav ?? {}),
       goHome: () => void navRouter.navigate({ to: "/" }),
+      // Back steps up one level (e.g. Settings → Profile → Home), never closes.
+      goBack: () => {
+        const parent = nativeBackParent(navRouter.state.location.pathname);
+        void navRouter.navigate({ to: parent });
+      },
       closeTopModal: () => closeTopNativeModal(),
     };
   }, [navRouter]);
