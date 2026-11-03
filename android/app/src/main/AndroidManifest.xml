@@ -95,6 +95,14 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="commitx" android:host="login-callback" />
             </intent-filter>
+
+            <!-- Referral links (commitx://r/CODE) opened from commitx.site/r/CODE. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="commitx" android:host="r" />
+            </intent-filter>
         </activity>
 
         <!-- Focus Shield reminder screen (shown over a blocked app). -->
