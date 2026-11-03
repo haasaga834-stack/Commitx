@@ -62,6 +62,8 @@ public class MainActivity extends Activity {
     private FrameLayout rootLayout;
     private View offlineOverlay;
     private boolean triedCachedLoad = false;
+    private volatile boolean mainPageFinished = false;
+    private boolean slowLoadFallback = false;
     private String failedUrl;
     private android.net.ConnectivityManager.NetworkCallback offlineNetworkCallback;
     private volatile boolean splashHidden = false;
@@ -287,6 +289,12 @@ public class MainActivity extends Activity {
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 if (isCommitXUrl(Uri.parse(url))) {
+                    mainPageFinished = true;
+                    // A slow-network fallback load used the saved copy; later loads go fresh.
+                    if (slowLoadFallback && hasInternet()) {
+                        view.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
+                        slowLoadFallback = false;
+                    }
                     injectPendingFailureIfNeeded();
                     flushPendingTodoToggles();
                     String callback = pendingOAuthCallback;
@@ -337,9 +345,22 @@ public class MainActivity extends Activity {
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         setContentView(root);
 
+        webView.setBackgroundColor(Color.parseColor("#050608"));
         webView.loadUrl(startUrlFor(getIntent()));
-        // Safety net: never trap the user behind the splash if the signal is missed.
-        webView.postDelayed(this::forceHideSplash, 12000);
+        // Weak mobile data can stall the fresh download for 30s+. If the page has
+        // not loaded after 5s, open the saved copy of the app instead.
+        webView.postDelayed(() -> {
+            if (mainPageFinished || webView == null || triedCachedLoad) return;
+            slowLoadFallback = true;
+            final String url = webView.getUrl() != null && isCommitXUrl(Uri.parse(webView.getUrl()))
+                    ? webView.getUrl() : startUrlFor(getIntent());
+            try { webView.stopLoading(); } catch (Throwable ignored) {}
+            webView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+            webView.loadUrl(url);
+        }, 5000);
+        // Safety net: never trap the user behind the splash, but never reveal a
+        // blank half-loaded page either — wait for the page up to 30s.
+        webView.postDelayed(this::hideSplashWhenPageReady, 12000);
         // A cold start from the OAuth deep link: replay it once the page is ready.
         pendingOAuthCallback = oauthCallbackFrom(getIntent());
     }
@@ -571,6 +592,12 @@ public class MainActivity extends Activity {
     private void hideSplash() {
         splashAppReady = true;
         maybeFinishSplash();
+    }
+
+    private int splashWaitChecks = 0;
+    private void hideSplashWhenPageReady() {
+        if (mainPageFinished || ++splashWaitChecks > 18) { forceHideSplash(); return; }
+        if (webView != null) webView.postDelayed(this::hideSplashWhenPageReady, 1000);
     }
 
     /** Skips the remaining animation (offline screen, safety timeout). */
