@@ -50,8 +50,7 @@ const ROWS: { label: string; commitx: string; forest: string }[] = [
 
 function ForestAlternativePage() {
   return (
-    <>
-      <InfoPage
+    <InfoPage
         eyebrow="Forest alternative"
         title="A free Forest alternative that makes quitting cost something"
         intro="Forest is a lovely timer, but many students say it is paid on iPhone and too easy to bypass. CommitX is free and puts your own coins on the line, so leaving a session early actually hurts."
@@ -83,9 +82,9 @@ function ForestAlternativePage() {
           { label: "Verified focus", to: "/verified-focus" },
           { label: "Group study", to: "/group-study" },
         ]}
-      />
-      <section className="mx-auto max-w-3xl px-5 pb-16">
-        <h2 className="mb-4 text-2xl font-semibold text-foreground">CommitX vs Forest at a glance</h2>
+        extra={
+      <section className="mt-8">
+        <h2 className="mb-4 font-display text-lg font-semibold text-foreground">CommitX vs Forest at a glance</h2>
         <div className="overflow-x-auto rounded-xl border border-border">
           <table className="w-full text-left text-sm">
             <thead className="bg-muted text-foreground">
@@ -113,6 +112,7 @@ function ForestAlternativePage() {
           </a>
         </div>
       </section>
-    </>
+        }
+      />
   );
 }
