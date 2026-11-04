@@ -34,11 +34,32 @@ function ScreenTimePage() {
   const [tab, setTab] = useState<"day" | "week">("day");
   const [limitsOpen, setLimitsOpen] = useState(false);
 
-  const refresh = useCallback(() => setData(readScreenTimeDetails()), []);
+  // Show the last good breakdown instantly (also offline / while the native
+  // side is still computing), then swap in fresh data when it is ready.
+  const refresh = useCallback(() => {
+    const fresh = readScreenTimeDetails();
+    if (fresh && !fresh.loading) {
+      try {
+        localStorage.setItem("commitx-screen-time-cache", JSON.stringify(fresh));
+      } catch {}
+      setData(fresh);
+      return;
+    }
+    setData((prev) => {
+      if (prev && !prev.loading) return prev;
+      try {
+        const cached = localStorage.getItem("commitx-screen-time-cache");
+        if (cached) return JSON.parse(cached) as ScreenTimeDetails;
+      } catch {}
+      return fresh ?? prev;
+    });
+  }, []);
 
   useEffect(() => {
     setNative(isNativeApp());
     refresh();
+    // Quick retries for the first seconds (bridge/worker warming up), then every minute.
+    const quick = [400, 1200, 2500, 5000].map((ms) => window.setTimeout(refresh, ms));
     const id = window.setInterval(refresh, 60_000);
     const onVisible = () => document.visibilityState === "visible" && refresh();
     document.addEventListener("visibilitychange", onVisible);
@@ -46,6 +67,7 @@ function ScreenTimePage() {
     window.addEventListener("commitx:screen-time-ready", refresh);
     return () => {
       window.clearInterval(id);
+      quick.forEach((t) => window.clearTimeout(t));
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("commitx:screen-time-ready", refresh);
     };
