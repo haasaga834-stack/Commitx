@@ -37,6 +37,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as StandardFocusRouteImport } from './routes/standard-focus'
 import { Route as StopUsingPhoneWhileStudyingRouteImport } from './routes/stop-using-phone-while-studying'
 import { Route as StudyAccountabilityRouteImport } from './routes/study-accountability'
+import { Route as StudyTimerNeetJeeRouteImport } from './routes/study-timer-neet-jee'
 import { Route as StudyTrackerRouteImport } from './routes/study-tracker'
 import { Route as SuccessRouteImport } from './routes/success'
 import { Route as SupportRouteImport } from './routes/support'
@@ -192,6 +193,11 @@ const StudyAccountabilityRoute = StudyAccountabilityRouteImport.update({
   path: '/study-accountability',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StudyTimerNeetJeeRoute = StudyTimerNeetJeeRouteImport.update({
+  id: '/study-timer-neet-jee',
+  path: '/study-timer-neet-jee',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StudyTrackerRoute = StudyTrackerRouteImport.update({
   id: '/study-tracker',
   path: '/study-tracker',
@@ -287,6 +293,7 @@ export interface FileRoutesByFullPath {
   '/standard-focus': typeof StandardFocusRoute
   '/stop-using-phone-while-studying': typeof StopUsingPhoneWhileStudyingRoute
   '/study-accountability': typeof StudyAccountabilityRoute
+  '/study-timer-neet-jee': typeof StudyTimerNeetJeeRoute
   '/study-tracker': typeof StudyTrackerRoute
   '/success': typeof SuccessRoute
   '/support': typeof SupportRoute
@@ -330,6 +337,7 @@ export interface FileRoutesByTo {
   '/standard-focus': typeof StandardFocusRoute
   '/stop-using-phone-while-studying': typeof StopUsingPhoneWhileStudyingRoute
   '/study-accountability': typeof StudyAccountabilityRoute
+  '/study-timer-neet-jee': typeof StudyTimerNeetJeeRoute
   '/study-tracker': typeof StudyTrackerRoute
   '/success': typeof SuccessRoute
   '/support': typeof SupportRoute
@@ -374,6 +382,7 @@ export interface FileRoutesById {
   '/standard-focus': typeof StandardFocusRoute
   '/stop-using-phone-while-studying': typeof StopUsingPhoneWhileStudyingRoute
   '/study-accountability': typeof StudyAccountabilityRoute
+  '/study-timer-neet-jee': typeof StudyTimerNeetJeeRoute
   '/study-tracker': typeof StudyTrackerRoute
   '/success': typeof SuccessRoute
   '/support': typeof SupportRoute
@@ -419,6 +428,7 @@ export interface FileRouteTypes {
     | '/standard-focus'
     | '/stop-using-phone-while-studying'
     | '/study-accountability'
+    | '/study-timer-neet-jee'
     | '/study-tracker'
     | '/success'
     | '/support'
@@ -462,6 +472,7 @@ export interface FileRouteTypes {
     | '/standard-focus'
     | '/stop-using-phone-while-studying'
     | '/study-accountability'
+    | '/study-timer-neet-jee'
     | '/study-tracker'
     | '/success'
     | '/support'
@@ -505,6 +516,7 @@ export interface FileRouteTypes {
     | '/standard-focus'
     | '/stop-using-phone-while-studying'
     | '/study-accountability'
+    | '/study-timer-neet-jee'
     | '/study-tracker'
     | '/success'
     | '/support'
@@ -549,6 +561,7 @@ export interface RootRouteChildren {
   StandardFocusRoute: typeof StandardFocusRoute
   StopUsingPhoneWhileStudyingRoute: typeof StopUsingPhoneWhileStudyingRoute
   StudyAccountabilityRoute: typeof StudyAccountabilityRoute
+  StudyTimerNeetJeeRoute: typeof StudyTimerNeetJeeRoute
   StudyTrackerRoute: typeof StudyTrackerRoute
   SuccessRoute: typeof SuccessRoute
   SupportRoute: typeof SupportRoute
@@ -762,6 +775,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudyAccountabilityRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/study-timer-neet-jee': {
+      id: '/study-timer-neet-jee'
+      path: '/study-timer-neet-jee'
+      fullPath: '/study-timer-neet-jee'
+      preLoaderRoute: typeof StudyTimerNeetJeeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/study-tracker': {
       id: '/study-tracker'
       path: '/study-tracker'
@@ -885,6 +905,7 @@ const rootRouteChildren: RootRouteChildren = {
   StandardFocusRoute: StandardFocusRoute,
   StopUsingPhoneWhileStudyingRoute: StopUsingPhoneWhileStudyingRoute,
   StudyAccountabilityRoute: StudyAccountabilityRoute,
+  StudyTimerNeetJeeRoute: StudyTimerNeetJeeRoute,
   StudyTrackerRoute: StudyTrackerRoute,
   SuccessRoute: SuccessRoute,
   SupportRoute: SupportRoute,

@@ -44,6 +44,13 @@ export function PublicFooter() {
         </Link>
         <span aria-hidden="true" className="h-3 w-px bg-hairline" />
         <Link
+          to="/study-timer-neet-jee"
+          className="transition-colors hover:text-foreground"
+        >
+          NEET &amp; JEE Timer
+        </Link>
+        <span aria-hidden="true" className="h-3 w-px bg-hairline" />
+        <Link
           to="/privacy-policy"
           className="transition-colors hover:text-foreground"
         >
