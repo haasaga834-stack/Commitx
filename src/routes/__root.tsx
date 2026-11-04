@@ -234,6 +234,7 @@ const PUBLIC_PATHS = [
   "/forest-alternative",
   "/ypt-alternative",
   "/regain-alternative",
+  "/stop-using-phone-while-studying",
   "/auth",
   "/privacy",
   "/privacy-policy",
