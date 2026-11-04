@@ -28,6 +28,7 @@ import { Route as PlannerRouteImport } from './routes/planner'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as RegainAlternativeRouteImport } from './routes/regain-alternative'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ScreenTimeRouteImport } from './routes/screen-time'
 import { Route as SessionRouteImport } from './routes/session'
@@ -142,6 +143,11 @@ const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegainAlternativeRoute = RegainAlternativeRouteImport.update({
+  id: '/regain-alternative',
+  path: '/regain-alternative',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -265,6 +271,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/profile': typeof ProfileRoute
+  '/regain-alternative': typeof RegainAlternativeRoute
   '/reset-password': typeof ResetPasswordRoute
   '/screen-time': typeof ScreenTimeRoute
   '/session': typeof SessionRoute
@@ -306,6 +313,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/profile': typeof ProfileRoute
+  '/regain-alternative': typeof RegainAlternativeRoute
   '/reset-password': typeof ResetPasswordRoute
   '/screen-time': typeof ScreenTimeRoute
   '/session': typeof SessionRoute
@@ -348,6 +356,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/profile': typeof ProfileRoute
+  '/regain-alternative': typeof RegainAlternativeRoute
   '/reset-password': typeof ResetPasswordRoute
   '/screen-time': typeof ScreenTimeRoute
   '/session': typeof SessionRoute
@@ -391,6 +400,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/privacy-policy'
     | '/profile'
+    | '/regain-alternative'
     | '/reset-password'
     | '/screen-time'
     | '/session'
@@ -432,6 +442,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/privacy-policy'
     | '/profile'
+    | '/regain-alternative'
     | '/reset-password'
     | '/screen-time'
     | '/session'
@@ -473,6 +484,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/privacy-policy'
     | '/profile'
+    | '/regain-alternative'
     | '/reset-password'
     | '/screen-time'
     | '/session'
@@ -515,6 +527,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   ProfileRoute: typeof ProfileRoute
+  RegainAlternativeRoute: typeof RegainAlternativeRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ScreenTimeRoute: typeof ScreenTimeRoute
   SessionRoute: typeof SessionRoute
@@ -670,6 +683,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/regain-alternative': {
+      id: '/regain-alternative'
+      path: '/regain-alternative'
+      fullPath: '/regain-alternative'
+      preLoaderRoute: typeof RegainAlternativeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -835,6 +855,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   ProfileRoute: ProfileRoute,
+  RegainAlternativeRoute: RegainAlternativeRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ScreenTimeRoute: ScreenTimeRoute,
   SessionRoute: SessionRoute,
