@@ -232,6 +232,7 @@ const PUBLIC_PATHS = [
   "/failed",
   "/focus-class",
   "/forest-alternative",
+  "/ypt-alternative",
   "/auth",
   "/privacy",
   "/privacy-policy",
