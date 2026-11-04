@@ -112,6 +112,7 @@ function GroupStudyPage() {
         { label: "Focus timer", to: "/focus-timer" },
         { label: "Study accountability", to: "/study-accountability" },
         { label: "Focus Class", to: "/focus-class" },
+        { label: "Study with friends online", to: "/study-with-friends-online" },
       ]}
     />
   );

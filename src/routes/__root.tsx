@@ -236,6 +236,7 @@ const PUBLIC_PATHS = [
   "/regain-alternative",
   "/stop-using-phone-while-studying",
   "/study-timer-neet-jee",
+  "/study-with-friends-online",
   "/auth",
   "/privacy",
   "/privacy-policy",

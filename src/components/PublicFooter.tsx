@@ -51,6 +51,13 @@ export function PublicFooter() {
         </Link>
         <span aria-hidden="true" className="h-3 w-px bg-hairline" />
         <Link
+          to="/study-with-friends-online"
+          className="transition-colors hover:text-foreground"
+        >
+          Study with Friends
+        </Link>
+        <span aria-hidden="true" className="h-3 w-px bg-hairline" />
+        <Link
           to="/privacy-policy"
           className="transition-colors hover:text-foreground"
         >

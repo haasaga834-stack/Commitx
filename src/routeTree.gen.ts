@@ -39,6 +39,7 @@ import { Route as StopUsingPhoneWhileStudyingRouteImport } from './routes/stop-u
 import { Route as StudyAccountabilityRouteImport } from './routes/study-accountability'
 import { Route as StudyTimerNeetJeeRouteImport } from './routes/study-timer-neet-jee'
 import { Route as StudyTrackerRouteImport } from './routes/study-tracker'
+import { Route as StudyWithFriendsOnlineRouteImport } from './routes/study-with-friends-online'
 import { Route as SuccessRouteImport } from './routes/success'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as TermsRouteImport } from './routes/terms'
@@ -203,6 +204,11 @@ const StudyTrackerRoute = StudyTrackerRouteImport.update({
   path: '/study-tracker',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StudyWithFriendsOnlineRoute = StudyWithFriendsOnlineRouteImport.update({
+  id: '/study-with-friends-online',
+  path: '/study-with-friends-online',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SuccessRoute = SuccessRouteImport.update({
   id: '/success',
   path: '/success',
@@ -295,6 +301,7 @@ export interface FileRoutesByFullPath {
   '/study-accountability': typeof StudyAccountabilityRoute
   '/study-timer-neet-jee': typeof StudyTimerNeetJeeRoute
   '/study-tracker': typeof StudyTrackerRoute
+  '/study-with-friends-online': typeof StudyWithFriendsOnlineRoute
   '/success': typeof SuccessRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
@@ -339,6 +346,7 @@ export interface FileRoutesByTo {
   '/study-accountability': typeof StudyAccountabilityRoute
   '/study-timer-neet-jee': typeof StudyTimerNeetJeeRoute
   '/study-tracker': typeof StudyTrackerRoute
+  '/study-with-friends-online': typeof StudyWithFriendsOnlineRoute
   '/success': typeof SuccessRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
@@ -384,6 +392,7 @@ export interface FileRoutesById {
   '/study-accountability': typeof StudyAccountabilityRoute
   '/study-timer-neet-jee': typeof StudyTimerNeetJeeRoute
   '/study-tracker': typeof StudyTrackerRoute
+  '/study-with-friends-online': typeof StudyWithFriendsOnlineRoute
   '/success': typeof SuccessRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
@@ -430,6 +439,7 @@ export interface FileRouteTypes {
     | '/study-accountability'
     | '/study-timer-neet-jee'
     | '/study-tracker'
+    | '/study-with-friends-online'
     | '/success'
     | '/support'
     | '/terms'
@@ -474,6 +484,7 @@ export interface FileRouteTypes {
     | '/study-accountability'
     | '/study-timer-neet-jee'
     | '/study-tracker'
+    | '/study-with-friends-online'
     | '/success'
     | '/support'
     | '/terms'
@@ -518,6 +529,7 @@ export interface FileRouteTypes {
     | '/study-accountability'
     | '/study-timer-neet-jee'
     | '/study-tracker'
+    | '/study-with-friends-online'
     | '/success'
     | '/support'
     | '/terms'
@@ -563,6 +575,7 @@ export interface RootRouteChildren {
   StudyAccountabilityRoute: typeof StudyAccountabilityRoute
   StudyTimerNeetJeeRoute: typeof StudyTimerNeetJeeRoute
   StudyTrackerRoute: typeof StudyTrackerRoute
+  StudyWithFriendsOnlineRoute: typeof StudyWithFriendsOnlineRoute
   SuccessRoute: typeof SuccessRoute
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
@@ -789,6 +802,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudyTrackerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/study-with-friends-online': {
+      id: '/study-with-friends-online'
+      path: '/study-with-friends-online'
+      fullPath: '/study-with-friends-online'
+      preLoaderRoute: typeof StudyWithFriendsOnlineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/success': {
       id: '/success'
       path: '/success'
@@ -907,6 +927,7 @@ const rootRouteChildren: RootRouteChildren = {
   StudyAccountabilityRoute: StudyAccountabilityRoute,
   StudyTimerNeetJeeRoute: StudyTimerNeetJeeRoute,
   StudyTrackerRoute: StudyTrackerRoute,
+  StudyWithFriendsOnlineRoute: StudyWithFriendsOnlineRoute,
   SuccessRoute: SuccessRoute,
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
