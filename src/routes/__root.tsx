@@ -235,6 +235,7 @@ const PUBLIC_PATHS = [
   "/ypt-alternative",
   "/regain-alternative",
   "/stop-using-phone-while-studying",
+  "/study-timer-neet-jee",
   "/auth",
   "/privacy",
   "/privacy-policy",

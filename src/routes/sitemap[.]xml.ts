@@ -24,6 +24,7 @@ export const Route = createFileRoute("/sitemap.xml")({
           { path: "/ypt-alternative", changefreq: "monthly", priority: "0.8" },
           { path: "/regain-alternative", changefreq: "monthly", priority: "0.8" },
           { path: "/stop-using-phone-while-studying", changefreq: "monthly", priority: "0.8" },
+          { path: "/study-timer-neet-jee", changefreq: "monthly", priority: "0.8" },
           { path: "/verified-focus", changefreq: "monthly", priority: "0.7" },
           { path: "/standard-focus", changefreq: "monthly", priority: "0.7" },
           { path: "/focus-class", changefreq: "weekly", priority: "0.7" },
