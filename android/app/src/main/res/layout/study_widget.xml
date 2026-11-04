@@ -2,15 +2,15 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root" android:layout_width="match_parent" android:layout_height="match_parent"
     android:orientation="horizontal" android:gravity="center_vertical" android:background="@drawable/study_widget_background">
-    <FrameLayout android:layout_width="122dp" android:layout_height="match_parent" android:layout_marginEnd="8dp">
+    <FrameLayout android:layout_width="136dp" android:layout_height="match_parent" android:layout_marginEnd="6dp">
         <ProgressBar android:id="@+id/widget_ring" style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="110dp" android:layout_height="110dp" android:layout_gravity="center"
+            android:layout_width="126dp" android:layout_height="126dp" android:layout_gravity="center"
             android:progressDrawable="@drawable/widget_ring" android:max="1000" android:progress="0" android:indeterminate="false" />
         <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:orientation="vertical" android:gravity="center">
             <TextView android:id="@+id/widget_hours" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:fontFamily="serif" android:textSize="19sp" android:maxLines="1" android:textColor="@color/widget_text" />
+                android:fontFamily="serif" android:textSize="21sp" android:maxLines="1" android:textColor="@color/widget_text" />
             <TextView android:id="@+id/widget_hours_goal" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-medium" android:textSize="10sp" android:maxLines="1" android:textColor="@color/widget_muted" />
+                android:fontFamily="sans-serif-medium" android:textSize="11sp" android:maxLines="1" android:textColor="@color/widget_muted" />
         </LinearLayout>
     </FrameLayout>
     <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical">
