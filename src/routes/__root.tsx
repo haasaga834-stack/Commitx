@@ -233,6 +233,7 @@ const PUBLIC_PATHS = [
   "/focus-class",
   "/forest-alternative",
   "/ypt-alternative",
+  "/regain-alternative",
   "/auth",
   "/privacy",
   "/privacy-policy",
