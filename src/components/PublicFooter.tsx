@@ -37,6 +37,13 @@ export function PublicFooter() {
         </Link>
         <span aria-hidden="true" className="h-3 w-px bg-hairline" />
         <Link
+          to="/stop-using-phone-while-studying"
+          className="transition-colors hover:text-foreground"
+        >
+          Phone-Free Studying
+        </Link>
+        <span aria-hidden="true" className="h-3 w-px bg-hairline" />
+        <Link
           to="/privacy-policy"
           className="transition-colors hover:text-foreground"
         >
