@@ -35,6 +35,7 @@ import { Route as SessionRouteImport } from './routes/session'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as StandardFocusRouteImport } from './routes/standard-focus'
+import { Route as StopUsingPhoneWhileStudyingRouteImport } from './routes/stop-using-phone-while-studying'
 import { Route as StudyAccountabilityRouteImport } from './routes/study-accountability'
 import { Route as StudyTrackerRouteImport } from './routes/study-tracker'
 import { Route as SuccessRouteImport } from './routes/success'
@@ -180,6 +181,12 @@ const StandardFocusRoute = StandardFocusRouteImport.update({
   path: '/standard-focus',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StopUsingPhoneWhileStudyingRoute =
+  StopUsingPhoneWhileStudyingRouteImport.update({
+    id: '/stop-using-phone-while-studying',
+    path: '/stop-using-phone-while-studying',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const StudyAccountabilityRoute = StudyAccountabilityRouteImport.update({
   id: '/study-accountability',
   path: '/study-accountability',
@@ -278,6 +285,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/standard-focus': typeof StandardFocusRoute
+  '/stop-using-phone-while-studying': typeof StopUsingPhoneWhileStudyingRoute
   '/study-accountability': typeof StudyAccountabilityRoute
   '/study-tracker': typeof StudyTrackerRoute
   '/success': typeof SuccessRoute
@@ -320,6 +328,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/standard-focus': typeof StandardFocusRoute
+  '/stop-using-phone-while-studying': typeof StopUsingPhoneWhileStudyingRoute
   '/study-accountability': typeof StudyAccountabilityRoute
   '/study-tracker': typeof StudyTrackerRoute
   '/success': typeof SuccessRoute
@@ -363,6 +372,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/standard-focus': typeof StandardFocusRoute
+  '/stop-using-phone-while-studying': typeof StopUsingPhoneWhileStudyingRoute
   '/study-accountability': typeof StudyAccountabilityRoute
   '/study-tracker': typeof StudyTrackerRoute
   '/success': typeof SuccessRoute
@@ -407,6 +417,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/sitemap.xml'
     | '/standard-focus'
+    | '/stop-using-phone-while-studying'
     | '/study-accountability'
     | '/study-tracker'
     | '/success'
@@ -449,6 +460,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/sitemap.xml'
     | '/standard-focus'
+    | '/stop-using-phone-while-studying'
     | '/study-accountability'
     | '/study-tracker'
     | '/success'
@@ -491,6 +503,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/sitemap.xml'
     | '/standard-focus'
+    | '/stop-using-phone-while-studying'
     | '/study-accountability'
     | '/study-tracker'
     | '/success'
@@ -534,6 +547,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StandardFocusRoute: typeof StandardFocusRoute
+  StopUsingPhoneWhileStudyingRoute: typeof StopUsingPhoneWhileStudyingRoute
   StudyAccountabilityRoute: typeof StudyAccountabilityRoute
   StudyTrackerRoute: typeof StudyTrackerRoute
   SuccessRoute: typeof SuccessRoute
@@ -734,6 +748,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StandardFocusRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/stop-using-phone-while-studying': {
+      id: '/stop-using-phone-while-studying'
+      path: '/stop-using-phone-while-studying'
+      fullPath: '/stop-using-phone-while-studying'
+      preLoaderRoute: typeof StopUsingPhoneWhileStudyingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/study-accountability': {
       id: '/study-accountability'
       path: '/study-accountability'
@@ -862,6 +883,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StandardFocusRoute: StandardFocusRoute,
+  StopUsingPhoneWhileStudyingRoute: StopUsingPhoneWhileStudyingRoute,
   StudyAccountabilityRoute: StudyAccountabilityRoute,
   StudyTrackerRoute: StudyTrackerRoute,
   SuccessRoute: SuccessRoute,
