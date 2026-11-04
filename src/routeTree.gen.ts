@@ -20,6 +20,7 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as FailedRouteImport } from './routes/failed'
 import { Route as FocusClassRouteImport } from './routes/focus-class'
 import { Route as FocusTimerRouteImport } from './routes/focus-timer'
+import { Route as ForestAlternativeRouteImport } from './routes/forest-alternative'
 import { Route as GroupStudyRouteImport } from './routes/group-study'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
@@ -100,6 +101,11 @@ const FocusClassRoute = FocusClassRouteImport.update({
 const FocusTimerRoute = FocusTimerRouteImport.update({
   id: '/focus-timer',
   path: '/focus-timer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForestAlternativeRoute = ForestAlternativeRouteImport.update({
+  id: '/forest-alternative',
+  path: '/forest-alternative',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GroupStudyRoute = GroupStudyRouteImport.update({
@@ -245,6 +251,7 @@ export interface FileRoutesByFullPath {
   '/failed': typeof FailedRoute
   '/focus-class': typeof FocusClassRoute
   '/focus-timer': typeof FocusTimerRoute
+  '/forest-alternative': typeof ForestAlternativeRoute
   '/group-study': typeof GroupStudyRoute
   '/history': typeof HistoryRoute
   '/how-it-works': typeof HowItWorksRoute
@@ -284,6 +291,7 @@ export interface FileRoutesByTo {
   '/failed': typeof FailedRoute
   '/focus-class': typeof FocusClassRoute
   '/focus-timer': typeof FocusTimerRoute
+  '/forest-alternative': typeof ForestAlternativeRoute
   '/group-study': typeof GroupStudyRoute
   '/history': typeof HistoryRoute
   '/how-it-works': typeof HowItWorksRoute
@@ -324,6 +332,7 @@ export interface FileRoutesById {
   '/failed': typeof FailedRoute
   '/focus-class': typeof FocusClassRoute
   '/focus-timer': typeof FocusTimerRoute
+  '/forest-alternative': typeof ForestAlternativeRoute
   '/group-study': typeof GroupStudyRoute
   '/history': typeof HistoryRoute
   '/how-it-works': typeof HowItWorksRoute
@@ -365,6 +374,7 @@ export interface FileRouteTypes {
     | '/failed'
     | '/focus-class'
     | '/focus-timer'
+    | '/forest-alternative'
     | '/group-study'
     | '/history'
     | '/how-it-works'
@@ -404,6 +414,7 @@ export interface FileRouteTypes {
     | '/failed'
     | '/focus-class'
     | '/focus-timer'
+    | '/forest-alternative'
     | '/group-study'
     | '/history'
     | '/how-it-works'
@@ -443,6 +454,7 @@ export interface FileRouteTypes {
     | '/failed'
     | '/focus-class'
     | '/focus-timer'
+    | '/forest-alternative'
     | '/group-study'
     | '/history'
     | '/how-it-works'
@@ -483,6 +495,7 @@ export interface RootRouteChildren {
   FailedRoute: typeof FailedRoute
   FocusClassRoute: typeof FocusClassRoute
   FocusTimerRoute: typeof FocusTimerRoute
+  ForestAlternativeRoute: typeof ForestAlternativeRoute
   GroupStudyRoute: typeof GroupStudyRoute
   HistoryRoute: typeof HistoryRoute
   HowItWorksRoute: typeof HowItWorksRoute
@@ -588,6 +601,13 @@ declare module '@tanstack/react-router' {
       path: '/focus-timer'
       fullPath: '/focus-timer'
       preLoaderRoute: typeof FocusTimerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forest-alternative': {
+      id: '/forest-alternative'
+      path: '/forest-alternative'
+      fullPath: '/forest-alternative'
+      preLoaderRoute: typeof ForestAlternativeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/group-study': {
@@ -787,6 +807,7 @@ const rootRouteChildren: RootRouteChildren = {
   FailedRoute: FailedRoute,
   FocusClassRoute: FocusClassRoute,
   FocusTimerRoute: FocusTimerRoute,
+  ForestAlternativeRoute: ForestAlternativeRoute,
   GroupStudyRoute: GroupStudyRoute,
   HistoryRoute: HistoryRoute,
   HowItWorksRoute: HowItWorksRoute,

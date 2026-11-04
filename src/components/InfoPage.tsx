@@ -1,3 +1,4 @@
+import type React from "react";
 import { Link } from "@tanstack/react-router";
 import type { LucideIcon } from "lucide-react";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
@@ -24,6 +25,7 @@ export interface InfoPageProps {
   notes?: string[];
   closing: { heading: string; body: string; label: string; to: string };
   related?: { label: string; to: string }[];
+  extra?: React.ReactNode;
 }
 
 export function InfoPage({
@@ -40,6 +42,7 @@ export function InfoPage({
   notes,
   closing,
   related,
+  extra,
 }: InfoPageProps) {
   return (
     <MobileShell>
@@ -127,6 +130,7 @@ export function InfoPage({
           </>
         ) : null}
 
+        {extra}
         <div className="mt-8 rounded-3xl border border-hairline bg-card p-6 text-center shadow-soft">
           <h2 className="font-display text-lg font-semibold">{closing.heading}</h2>
           <p className="mt-2 text-sm text-muted-foreground">{closing.body}</p>

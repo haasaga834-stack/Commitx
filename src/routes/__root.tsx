@@ -231,6 +231,7 @@ const PUBLIC_PATHS = [
   "/success",
   "/failed",
   "/focus-class",
+  "/forest-alternative",
   "/auth",
   "/privacy",
   "/privacy-policy",
