@@ -41,6 +41,8 @@ public class AppLimitsService extends Service {
     private String limitsJson;
     private String usageDay;
     private String lastForeground;
+    /** Packages with an activity currently resumed (not paused/stopped), by resume time. */
+    private final java.util.LinkedHashMap<String, Long> resumedNow = new java.util.LinkedHashMap<>();
     private long lastEventQuery;
     private long lastUsageRefresh;
     private volatile boolean destroyed;
@@ -166,12 +168,21 @@ public class AppLimitsService extends Service {
     }
 
     private void applyCover(String fg) {
+        // A limited app stays covered while any of its activities is still
+        // resumed. A half swipe / recents peek resumes the launcher briefly but
+        // never pauses the app, so it must not lift the block.
         String blockedNow = fg != null && exhausted.contains(fg) ? fg : null;
+        if (blockedNow == null) {
+            for (String pkg : resumedNow.keySet()) {
+                if (exhausted.contains(pkg)) { blockedNow = pkg; break; }
+            }
+        }
+        final String covered = blockedNow;
         long endsAt = AppLimitsStore.endOfToday();
         handler.post(() -> {
             if (destroyed || overlay == null) return;
-            if (blockedNow != null) overlay.show(blockedNow, endsAt);
-            else if (AppLimitsPolicy.shouldHide(fg, blockedNow)) overlay.hide();
+            if (covered != null) overlay.show(covered, endsAt);
+            else if (AppLimitsPolicy.shouldHide(fg, null)) overlay.hide();
         });
     }
 
@@ -216,7 +227,7 @@ public class AppLimitsService extends Service {
             if (usm == null) return null;
             long end = System.currentTimeMillis();
             long start = lastEventQuery == 0L || end < lastEventQuery
-                    ? end - 60_000L : Math.max(end - 60_000L, lastEventQuery - 1000L);
+                    ? end - 10 * 60_000L : Math.max(end - 60_000L, lastEventQuery - 1000L);
             UsageEvents events = usm.queryEvents(start, end);
             if (events == null) return lastForeground;
             lastEventQuery = end;
@@ -227,7 +238,19 @@ public class AppLimitsService extends Service {
                 boolean resumed = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
                         ? type == UsageEvents.Event.ACTIVITY_RESUMED
                         : type == UsageEvents.Event.MOVE_TO_FOREGROUND;
-                if (resumed) lastForeground = event.getPackageName();
+                boolean left = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+                        ? (type == UsageEvents.Event.ACTIVITY_PAUSED
+                                || type == UsageEvents.Event.ACTIVITY_STOPPED)
+                        : type == UsageEvents.Event.MOVE_TO_BACKGROUND;
+                String pkg = event.getPackageName();
+                if (pkg == null) continue;
+                if (resumed) {
+                    lastForeground = pkg;
+                    resumedNow.remove(pkg);
+                    resumedNow.put(pkg, event.getTimeStamp());
+                } else if (left) {
+                    resumedNow.remove(pkg);
+                }
             }
             return lastForeground;
         } catch (Throwable t) {
