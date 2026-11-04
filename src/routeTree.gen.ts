@@ -41,6 +41,7 @@ import { Route as SupportRouteImport } from './routes/support'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as VerifiedFocusRouteImport } from './routes/verified-focus'
 import { Route as WalletRouteImport } from './routes/wallet'
+import { Route as YptAlternativeRouteImport } from './routes/ypt-alternative'
 import { Route as BuddyCodeRouteImport } from './routes/buddy.$code'
 import { Route as GroupIndexRouteImport } from './routes/group.index'
 import { Route as GroupIdRouteImport } from './routes/group.$id'
@@ -208,6 +209,11 @@ const WalletRoute = WalletRouteImport.update({
   path: '/wallet',
   getParentRoute: () => rootRouteImport,
 } as any)
+const YptAlternativeRoute = YptAlternativeRouteImport.update({
+  id: '/ypt-alternative',
+  path: '/ypt-alternative',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BuddyCodeRoute = BuddyCodeRouteImport.update({
   id: '/buddy/$code',
   path: '/buddy/$code',
@@ -272,6 +278,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/verified-focus': typeof VerifiedFocusRoute
   '/wallet': typeof WalletRoute
+  '/ypt-alternative': typeof YptAlternativeRoute
   '/buddy/$code': typeof BuddyCodeRoute
   '/group/$id': typeof GroupIdRoute
   '/r/$code': typeof RCodeRoute
@@ -312,6 +319,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/verified-focus': typeof VerifiedFocusRoute
   '/wallet': typeof WalletRoute
+  '/ypt-alternative': typeof YptAlternativeRoute
   '/buddy/$code': typeof BuddyCodeRoute
   '/group/$id': typeof GroupIdRoute
   '/r/$code': typeof RCodeRoute
@@ -353,6 +361,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/verified-focus': typeof VerifiedFocusRoute
   '/wallet': typeof WalletRoute
+  '/ypt-alternative': typeof YptAlternativeRoute
   '/buddy/$code': typeof BuddyCodeRoute
   '/group/$id': typeof GroupIdRoute
   '/r/$code': typeof RCodeRoute
@@ -395,6 +404,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/verified-focus'
     | '/wallet'
+    | '/ypt-alternative'
     | '/buddy/$code'
     | '/group/$id'
     | '/r/$code'
@@ -435,6 +445,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/verified-focus'
     | '/wallet'
+    | '/ypt-alternative'
     | '/buddy/$code'
     | '/group/$id'
     | '/r/$code'
@@ -475,6 +486,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/verified-focus'
     | '/wallet'
+    | '/ypt-alternative'
     | '/buddy/$code'
     | '/group/$id'
     | '/r/$code'
@@ -516,6 +528,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   VerifiedFocusRoute: typeof VerifiedFocusRoute
   WalletRoute: typeof WalletRoute
+  YptAlternativeRoute: typeof YptAlternativeRoute
   BuddyCodeRoute: typeof BuddyCodeRoute
   GroupIdRoute: typeof GroupIdRoute
   RCodeRoute: typeof RCodeRoute
@@ -750,6 +763,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WalletRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ypt-alternative': {
+      id: '/ypt-alternative'
+      path: '/ypt-alternative'
+      fullPath: '/ypt-alternative'
+      preLoaderRoute: typeof YptAlternativeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/buddy/$code': {
       id: '/buddy/$code'
       path: '/buddy/$code'
@@ -828,6 +848,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   VerifiedFocusRoute: VerifiedFocusRoute,
   WalletRoute: WalletRoute,
+  YptAlternativeRoute: YptAlternativeRoute,
   BuddyCodeRoute: BuddyCodeRoute,
   GroupIdRoute: GroupIdRoute,
   RCodeRoute: RCodeRoute,
