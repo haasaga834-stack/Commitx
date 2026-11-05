@@ -1204,7 +1204,7 @@ body.cx-app-theme .cx-phone-home-shell > div:not(.cx-home-atmosphere) { position
 body.cx-app-theme .cx-phone-home-shell .cx-home {
   min-height: calc(100dvh - var(--home-nav-height) - var(--home-nav-bottom));
   gap: 32px;
-  padding: max(28px, env(safe-area-inset-top, 0px)) 18px var(--home-nav-gap);
+  padding: max(48px, calc(env(safe-area-inset-top, 0px) + 16px)) 18px var(--home-nav-gap);
 }
 body.cx-app-theme .cx-phone-home-shell .cx-home * { letter-spacing: 0; }
 body.cx-app-theme .cx-phone-home-shell .cx-home-actions { display: flex; flex-direction: column; gap: 14px; margin-top: auto; }
@@ -1267,7 +1267,7 @@ body.cx-app-theme .cx-phone-home-shell nav.fixed svg { width: 21px; height: 21px
   body.cx-app-theme .cx-phone-home-shell .cx-home-group-title { font-size: 16px; }
 }
 @media (max-height: 660px) {
-  body.cx-app-theme .cx-phone-home-shell .cx-home { gap: 24px; padding-top: max(18px, env(safe-area-inset-top, 0px)); }
+  body.cx-app-theme .cx-phone-home-shell .cx-home { gap: 24px; padding-top: max(42px, calc(env(safe-area-inset-top, 0px) + 12px)); }
   body.cx-app-theme .cx-phone-home-shell .cx-home-actions { gap: 9px; }
 }
 
