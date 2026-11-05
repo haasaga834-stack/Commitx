@@ -27,7 +27,7 @@ export function markWidgetInvited(userId: string) {
 }
 
 export function syncStudyWidget(userId: string | null) {
-  try { window.CommitXAndroid?.syncStudyWidget?.(JSON.stringify({ userId, day: todayKey(), minutes: userId ? stats(getState().sessions).todayMinutes : 0, goalMinutes: getDailyGoalHours() * 60, todos: userId ? getTodos() : [] })); } catch {}
+  try { window.CommitXAndroid?.syncStudyWidget?.(JSON.stringify({ userId, day: todayKey(), minutes: userId ? stats(getState().sessions).todayMinutes : 0, streak: userId ? stats(getState().sessions).streak : 0, goalMinutes: getDailyGoalHours() * 60, todos: userId ? getTodos() : [] })); } catch {}
 }
 
 export function requestStudyWidget() {
