@@ -87,57 +87,16 @@ final class ScreenTimeDetails {
         Map<String, Long> out = new HashMap<>();
         UsageStatsManager usm = (UsageStatsManager) ctx.getSystemService(Context.USAGE_STATS_SERVICE);
         if (usm == null || end <= start) return out;
-        UsageEvents events = usm.queryEvents(start, end);
+        // Reconstruct carry-in before midnight; attribute only clipped in-day slices.
+        UsageEvents events = usm.queryEvents(Math.max(0L, start - 7 * 86_400_000L), end);
         if (events == null) return out;
-        UsageEvents.Event e = new UsageEvents.Event();
-        String cur = null;
-        long from = 0L;
-        boolean off = false;
+        UsageTimeline timeline = new UsageTimeline(start, end, hourly, hourBase);
+        UsageEvents.Event event = new UsageEvents.Event();
         while (events.hasNextEvent()) {
-            events.getNextEvent(e);
-            int type = e.getEventType();
-            long ts = Math.min(end, Math.max(start, e.getTimeStamp()));
-            String pkg = e.getPackageName();
-            if (type == 17 || type == 15) {
-                if (cur != null) add(out, hourly, hourBase, cur, from, ts);
-                cur = null;
-                off = true;
-                continue;
-            }
-            if (type == 16 || type == 18) { off = false; continue; }
-            if (pkg == null) continue;
-            if (type == UsageEvents.Event.MOVE_TO_FOREGROUND) {
-                off = false;
-                if (cur != null) add(out, hourly, hourBase, cur, from, ts);
-                cur = pkg;
-                from = ts;
-            } else if (type == UsageEvents.Event.MOVE_TO_BACKGROUND) {
-                if (cur != null && cur.equals(pkg)) {
-                    add(out, hourly, hourBase, cur, from, ts);
-                    cur = null;
-                }
-            }
+            events.getNextEvent(event);
+            timeline.event(event.getEventType(), event.getPackageName(), event.getTimeStamp());
         }
-        if (cur != null && !off) add(out, hourly, hourBase, cur, from, end);
-        return out;
-    }
-
-    private static void add(Map<String, Long> out, long[] hourly, long hourBase,
-                            String pkg, long from, long to) {
-        long ms = Math.max(0L, to - from);
-        if (ms == 0) return;
-        Long prev = out.get(pkg);
-        out.put(pkg, (prev == null ? 0L : prev) + ms);
-        if (hourly == null) return;
-        long t = from;
-        while (t < to) {
-            int h = (int) ((t - hourBase) / 3600000L);
-            if (h < 0 || h >= hourly.length) break;
-            long bucketEnd = hourBase + (h + 1) * 3600000L;
-            long slice = Math.min(to, bucketEnd) - t;
-            hourly[h] += slice;
-            t += slice;
-        }
+        return timeline.finish();
     }
 
     private static long dayStart(int daysAgo) {
