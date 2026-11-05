@@ -521,6 +521,24 @@ export function todayKey(d = new Date()) {
   ).padStart(2, "0")}`;
 }
 
+const CARRY_KEY = "commitx-todos-carry-v1";
+
+function readCarryOver(): TodoItem[] {
+  try { return JSON.parse(localStorage.getItem(CARRY_KEY) || "[]") as TodoItem[]; } catch { return []; }
+}
+
+/** Unfinished to-dos from earlier days; finished ones simply vanish. */
+export function getCarryOverTodos(): TodoItem[] {
+  if (typeof window === "undefined") return [];
+  getTodos();
+  const today = todayKey();
+  return readCarryOver().filter((t) => t.day !== today);
+}
+
+export function clearCarryOverTodos() {
+  try { localStorage.removeItem(CARRY_KEY); } catch {}
+}
+
 const todoListeners = new Set<() => void>();
 let todoCache: TodoItem[] | null = null;
 
@@ -530,6 +548,12 @@ function readTodos(): TodoItem[] {
     const raw = localStorage.getItem(TODO_KEY);
     const all = raw ? (JSON.parse(raw) as TodoItem[]) : [];
     const today = todayKey();
+    // Keep earlier days' unfinished items for the morning carry-over prompt.
+    const leftover = all.filter((t) => t.day !== today && !t.done);
+    if (leftover.length) {
+      const prev = readCarryOver().filter((p) => !leftover.some((l) => l.id === p.id));
+      localStorage.setItem(CARRY_KEY, JSON.stringify([...prev, ...leftover].slice(-20)));
+    }
     return all.filter((t) => t.day === today);
   } catch {
     return [];
