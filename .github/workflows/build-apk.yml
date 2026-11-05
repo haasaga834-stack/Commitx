@@ -107,10 +107,10 @@ jobs:
           bun run build
           SRC="$(find dist .output -type d -name assets -path '*client*' 2>/dev/null | head -n1 || true)"
           [ -n "$SRC" ] || SRC="$(find dist -maxdepth 2 -type d -name assets 2>/dev/null | head -n1 || true)"
-          rm -rf android/app/src/main/assets/web
+          # Keep committed media (sounds/images) already in assets/web.
           # Never copy an empty/invalid path: "$SRC"/. would expand to the runner root.
           if [ -z "$SRC" ] || [ ! -d "$SRC" ] || [ "$SRC" = "/" ]; then
-            echo "No web assets directory found; building without bundled files."
+            echo "No web build found; using committed bundled media only."
             exit 0
           fi
           DEST=android/app/src/main/assets/web/assets
