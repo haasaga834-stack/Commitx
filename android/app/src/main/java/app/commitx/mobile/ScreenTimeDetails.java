@@ -42,6 +42,7 @@ final class ScreenTimeDetails {
     private static volatile String cachedJson;
     private static volatile long cachedAt;
     private static boolean refreshing;
+    private static final Map<Long, String> carryPackages = new HashMap<>();
 
     /** Runs slow screen-time work (e.g. the daily notification) off the UI/bridge threads. */
     static void runInBackground(Runnable task) {
@@ -87,10 +88,28 @@ final class ScreenTimeDetails {
         Map<String, Long> out = new HashMap<>();
         UsageStatsManager usm = (UsageStatsManager) ctx.getSystemService(Context.USAGE_STATS_SERVICE);
         if (usm == null || end <= start) return out;
-        // Reconstruct carry-in before midnight; attribute only clipped in-day slices.
-        UsageEvents events = usm.queryEvents(Math.max(0L, start - 7 * 86_400_000L), end);
+        // Cache carry-in once per day rather than walking a week every five seconds.
+        String carry;
+        synchronized (carryPackages) {
+            if (!carryPackages.containsKey(start)) {
+                UsageTimeline before = new UsageTimeline(start, start, null, 0);
+                UsageEvents history = usm.queryEvents(Math.max(0L, start - 7 * 86_400_000L), start);
+                if (history != null) {
+                    UsageEvents.Event prior = new UsageEvents.Event();
+                    while (history.hasNextEvent()) {
+                        history.getNextEvent(prior);
+                        before.event(prior.getEventType(), prior.getPackageName(), prior.getTimeStamp());
+                    }
+                    if (carryPackages.size() >= 10) carryPackages.clear();
+                    carryPackages.put(start, before.currentPackage());
+                }
+            }
+            carry = carryPackages.get(start);
+        }
+        UsageEvents events = usm.queryEvents(start, end);
         if (events == null) return out;
         UsageTimeline timeline = new UsageTimeline(start, end, hourly, hourBase);
+        if (carry != null) timeline.event(1, carry, start);
         UsageEvents.Event event = new UsageEvents.Event();
         while (events.hasNextEvent()) {
             events.getNextEvent(event);

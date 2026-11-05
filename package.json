@@ -105,6 +105,7 @@
     "source-map-js": "1.2.2",
     "browserslist": "4.29.5",
     "seroval": "1.7.7",
+    "zod": "4.6.7",
     "baseline-browser-mapping": "2.11.35"
   },
   "pnpm": {

@@ -112,11 +112,11 @@ final class ScreenTimeTracker {
     static String toJson(Context ctx) {
         JSONObject o = new JSONObject();
         try {
-            int[] t = totals(ctx, true);
+            JSONObject details = new JSONObject(ScreenTimeDetails.cachedJson(ctx));
             o.put("supported", supported());
-            o.put("granted", t != null);
-            o.put("commitxMinutes", t == null ? 0 : t[0]);
-            o.put("otherMinutes", t == null ? 0 : t[1]);
+            o.put("granted", hasPermission(ctx));
+            o.put("commitxMinutes", details.optInt("commitxMinutes", 0));
+            o.put("otherMinutes", details.optInt("otherMinutes", 0));
             o.put("limitMinutes", limitMinutes(ctx));
             o.put("day", dayKey());
         } catch (Throwable ignored) {}

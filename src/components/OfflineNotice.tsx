@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { CloudOff, Wifi } from "lucide-react";
+import { CloudOff, Wifi, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 import {
   isOnline,
@@ -51,28 +52,22 @@ export function OfflineNotice() {
   return (
     <>
       {showOffline ? (
-        <div className="pointer-events-none fixed inset-0 z-[70] flex items-end justify-center bg-foreground/10 px-5 pb-8 sm:items-center sm:pb-0">
+        <div className="pointer-events-none fixed inset-x-0 top-4 z-[70] flex justify-center px-4">
           <div
             role="status"
-            className="pointer-events-auto w-full max-w-sm animate-[offline-in_260ms_ease-out] rounded-3xl border border-hairline bg-card p-6 text-center shadow-2xl"
+            className="pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-lg border border-hairline bg-card p-3 shadow-soft"
           >
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-muted">
-              <CloudOff className="h-6 w-6 text-muted-foreground" />
+            <CloudOff className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-medium text-foreground">Offline · changes saved on this device</p>
             </div>
-            <h2 className="mt-4 text-base font-semibold text-foreground">
-              You're Offline
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              Some functions may not be available without a network connection.
-              Please connect to the internet to use all CommitX features.
-            </p>
-            <button
+            <Button variant="ghost" size="icon" aria-label="Dismiss offline notice"
               type="button"
               onClick={() => setShowOffline(false)}
-              className="mt-5 inline-flex w-full items-center justify-center rounded-2xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground"
+              className="h-7 w-7 shrink-0"
             >
-              Got it
-            </button>
+              <X className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       ) : null}

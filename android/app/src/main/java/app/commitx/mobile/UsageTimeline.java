@@ -24,6 +24,7 @@ final class UsageTimeline {
     }
 
     Map<String, Long> finish() { close(end); current = null; return totals; }
+    String currentPackage() { return current; }
 
     private void close(long to) {
         if (current == null) return;
