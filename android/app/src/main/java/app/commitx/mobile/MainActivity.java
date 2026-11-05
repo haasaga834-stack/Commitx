@@ -384,7 +384,8 @@ public class MainActivity extends Activity {
                 l = insets.getSystemWindowInsetLeft(); t = insets.getSystemWindowInsetTop();
                 r = insets.getSystemWindowInsetRight(); b = insets.getSystemWindowInsetBottom();
             }
-            v.setPadding(l, t, r, b);
+            // Top stays edge-to-edge so each page's own background fills behind the status bar.
+            v.setPadding(l, 0, r, b);
             return Build.VERSION.SDK_INT >= 30
                     ? android.view.WindowInsets.CONSUMED
                     : insets.consumeSystemWindowInsets();
@@ -676,7 +677,7 @@ public class MainActivity extends Activity {
             releaseSplashPlayer();
         }).start();
         // Return the system bars to the app's normal light style alongside the fade.
-        getWindow().setStatusBarColor(Color.parseColor("#F8F9F6"));
+        getWindow().setStatusBarColor(Color.TRANSPARENT);
         getWindow().setNavigationBarColor(Color.parseColor("#F8F9F6"));
         if (rootLayout != null) rootLayout.setBackgroundColor(Color.parseColor("#F8F9F6"));
         getWindow().getDecorView().setSystemUiVisibility(
