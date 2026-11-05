@@ -122,10 +122,9 @@ async function replayPlannerWrites(uid: string, generation: number) {
   if (!isOnline() || !(await hasLiveSession(uid))) return false;
   for (const item of readPlannerWrites(uid)) {
     if (cloudUserId !== uid || identityGeneration !== generation) return false;
-    const query = supabase.from(item.table);
-    const result = item.remove
-      ? await query.delete().eq("id", String(item.row.id)).eq("user_id", uid)
-      : await query.upsert({ ...item.row, user_id: uid } as never,
+    const result = item.remove && item.table !== "user_settings"
+      ? await supabase.from(item.table).delete().eq("id", String(item.row.id)).eq("user_id", uid)
+      : await supabase.from(item.table).upsert({ ...item.row, user_id: uid } as never,
           { onConflict: item.table === "user_settings" ? "user_id" : "id" });
     if (result.error) throw result.error;
     ackPlannerWrite(uid, item.id);
