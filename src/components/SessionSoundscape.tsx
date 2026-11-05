@@ -1,4 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import rainUrl from "@/assets/sounds/rain.mp3";
+import rainSoftUrl from "@/assets/sounds/rain-soft.mp3";
+import streamUrl from "@/assets/sounds/stream.mp3";
+import forestUrl from "@/assets/sounds/forest.mp3";
 import { Headphones, Volume2, VolumeX, X } from "lucide-react";
 
 /**
@@ -6,10 +10,11 @@ import { Headphones, Volume2, VolumeX, X } from "lucide-react";
  * Silent by default; only plays after the user picks a sound.
  * A compressor + makeup gain keeps sounds clearly audible on phone speakers.
  */
-type SoundId = "rain" | "forest" | "library" | "fire" | "stream";
+type SoundId = "rain" | "lightrain" | "forest" | "library" | "fire" | "stream";
 
 const SOUNDS: { id: SoundId; label: string; emoji: string }[] = [
   { id: "rain", label: "Rain", emoji: "🌧️" },
+  { id: "lightrain", label: "Light rain", emoji: "🌦️" },
   { id: "forest", label: "Forest", emoji: "🌲" },
   { id: "library", label: "White noise", emoji: "📖" },
   { id: "fire", label: "Campfire", emoji: "🔥" },
@@ -37,6 +42,56 @@ function noiseBuffer(ctx: AudioContext, kind: "white" | "pink" | "brown") {
     }
   }
   return buf;
+}
+
+/** Real nature recordings (public domain / CC0, Wikimedia Commons), bundled in the app. */
+const RECORDED: Partial<Record<SoundId, string>> = {
+  rain: rainUrl,
+  lightrain: rainSoftUrl,
+  stream: streamUrl,
+  forest: forestUrl,
+};
+const decoded = new Map<string, Promise<AudioBuffer>>();
+function loadRecording(ctx: AudioContext, url: string) {
+  let p = decoded.get(url);
+  if (!p) {
+    p = fetch(url)
+      .then((r) => {
+        if (!r.ok) throw new Error("sound unavailable");
+        return r.arrayBuffer();
+      })
+      .then((b) => ctx.decodeAudioData(b));
+    p.catch(() => decoded.delete(url));
+    decoded.set(url, p);
+  }
+  return p;
+}
+
+/** Plays a real recording on a seamless loop; falls back to the generated sound if it can't load. */
+function buildRecorded(ctx: AudioContext, id: SoundId, url: string, out: AudioNode): () => void {
+  let stopped = false;
+  let stopInner: () => void = () => {};
+  loadRecording(ctx, url)
+    .then((buf) => {
+      if (stopped) return;
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.loop = true;
+      const g = ctx.createGain();
+      g.gain.value = 0.9;
+      src.connect(g).connect(out);
+      src.start();
+      stopInner = () => {
+        try { src.stop(); } catch { /* already stopped */ }
+      };
+    })
+    .catch(() => {
+      if (!stopped) stopInner = build(ctx, id === "lightrain" ? "rain" : id, out);
+    });
+  return () => {
+    stopped = true;
+    stopInner();
+  };
 }
 
 type Engine = { ctx: AudioContext; master: GainNode; stop: () => void };
@@ -159,7 +214,8 @@ export function SessionSoundscape({ paused }: { paused: boolean }) {
     setSound(id);
     if (id && e) {
       void e.ctx.resume();
-      e.stop = build(e.ctx, id, e.master);
+      const url = RECORDED[id];
+      e.stop = url ? buildRecorded(e.ctx, id, url, e.master) : build(e.ctx, id, e.master);
     }
   };
 
