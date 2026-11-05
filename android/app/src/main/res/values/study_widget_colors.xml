@@ -1,9 +1,15 @@
 <resources>
-    <color name="widget_glass">#CF222428</color>
+    <color name="widget_glass">#EE15171D</color>
+    <color name="widget_glass_end">#E61D2027</color>
     <color name="widget_text">#FAF8F2</color>
-    <color name="widget_muted">#BDBAB3</color>
-    <color name="widget_orange">#E5E2DA</color>
-    <color name="widget_yellow">#FFD96A</color>
-    <color name="widget_track">#33FAF8F2</color>
-    <color name="widget_border">#44FAF8F2</color>
+    <color name="widget_muted">#9C9A94</color>
+    <color name="widget_orange">#FFC94D</color>
+    <color name="widget_yellow">#FFC94D</color>
+    <color name="widget_amber">#FF9F1C</color>
+    <color name="widget_on_amber">#1A1408</color>
+    <color name="widget_track">#26FAF8F2</color>
+    <color name="widget_border">#66FFC94D</color>
+    <color name="widget_divider">#1FFAF8F2</color>
+    <color name="widget_pill_fill">#1AFFC94D</color>
+    <color name="widget_pill_stroke">#55FFC94D</color>
 </resources>
