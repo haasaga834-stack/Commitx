@@ -1,5 +1,6 @@
 import { getDailyGoalHours, getTodos, todayKey } from './planner';
 import { getState, stats } from './commitx-store';
+import { challengeProgress, getChallenge } from './challenge';
 import { supabase } from '@/integrations/supabase/client';
 
 const localKey = (userId: string) => `commitx-widget-invited:${userId}`;
@@ -27,10 +28,17 @@ export function markWidgetInvited(userId: string) {
 }
 
 export function syncStudyWidget(userId: string | null) {
-  try { window.CommitXAndroid?.syncStudyWidget?.(JSON.stringify({ userId, day: todayKey(), minutes: userId ? stats(getState().sessions).todayMinutes : 0, streak: userId ? stats(getState().sessions).streak : 0, goalMinutes: getDailyGoalHours() * 60, todos: userId ? getTodos() : [] })); } catch {}
+  try { window.CommitXAndroid?.syncStudyWidget?.(JSON.stringify({ userId, day: todayKey(), minutes: userId ? stats(getState().sessions).todayMinutes : 0, streak: userId ? stats(getState().sessions).streak : 0, goalMinutes: getDailyGoalHours() * 60, challengeDay: userId ? challengeDayFor(userId) : 0, todos: userId ? getTodos() : [] })); } catch {}
 }
 
 export function requestStudyWidget() {
   // True means the launcher supports a pin request, not that the user accepted it.
   try { return window.CommitXAndroid?.requestStudyWidget?.() ?? false; } catch { return false; }
+}
+
+function challengeDayFor(userId: string) {
+  const rec = getChallenge(userId);
+  if (!rec) return 0;
+  const p = challengeProgress(rec, getState().sessions);
+  return p.status === 'active' ? p.day : 0;
 }
