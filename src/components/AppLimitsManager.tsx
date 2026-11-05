@@ -59,9 +59,9 @@ export function AppLimitsManager({ onClose, onSaved }: { onClose: () => void; on
   );
 
   const [gateMsg, setGateMsg] = useState<string | null>(null);
-  const confirmAllowed = () => {
-    if (!bridgeLive()) {
-      window.setTimeout(confirmAllowed, 300);
+  const confirmAllowed = (attempt = 0) => {
+    if (!bridgeLive() && attempt < 15) {
+      window.setTimeout(() => confirmAllowed(attempt + 1), 300);
       return;
     }
     const nowReady = appLimitsReady();
