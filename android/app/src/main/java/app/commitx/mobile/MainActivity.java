@@ -364,6 +364,26 @@ public class MainActivity extends Activity {
         root.addView(splashOverlay, new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         setContentView(root);
+        // targetSdk 35+ forces edge-to-edge: keep the app clear of the status bar and
+        // 3-button navigation bar by padding the root with the system bar insets.
+        root.setBackgroundColor(Color.parseColor("#050608"));
+        root.setOnApplyWindowInsetsListener((v, insets) -> {
+            int l, t, r, b;
+            if (Build.VERSION.SDK_INT >= 30) {
+                android.graphics.Insets bars = insets.getInsets(
+                        android.view.WindowInsets.Type.systemBars()
+                                | android.view.WindowInsets.Type.displayCutout());
+                l = bars.left; t = bars.top; r = bars.right; b = bars.bottom;
+            } else {
+                l = insets.getSystemWindowInsetLeft(); t = insets.getSystemWindowInsetTop();
+                r = insets.getSystemWindowInsetRight(); b = insets.getSystemWindowInsetBottom();
+            }
+            v.setPadding(l, t, r, b);
+            return Build.VERSION.SDK_INT >= 30
+                    ? android.view.WindowInsets.CONSUMED
+                    : insets.consumeSystemWindowInsets();
+        });
+        root.requestApplyInsets();
 
         webView.setBackgroundColor(Color.parseColor("#050608"));
         webView.loadUrl(startUrlFor(getIntent()));
@@ -652,6 +672,7 @@ public class MainActivity extends Activity {
         // Return the system bars to the app's normal light style alongside the fade.
         getWindow().setStatusBarColor(Color.parseColor("#F8F9F6"));
         getWindow().setNavigationBarColor(Color.parseColor("#F8F9F6"));
+        if (rootLayout != null) rootLayout.setBackgroundColor(Color.parseColor("#F8F9F6"));
         getWindow().getDecorView().setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
     }
