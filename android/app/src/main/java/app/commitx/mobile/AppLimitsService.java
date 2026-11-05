@@ -238,9 +238,13 @@ public class AppLimitsService extends Service {
                 boolean resumed = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
                         ? type == UsageEvents.Event.ACTIVITY_RESUMED
                         : type == UsageEvents.Event.MOVE_TO_FOREGROUND;
+                // Only a real STOP means the app left the screen. A small swipe-up /
+                // recents peek PAUSES the app (and resumes the launcher) without
+                // stopping it, then drops back into it with no new RESUMED event
+                // on some skins (Realme/ColorOS) — counting PAUSED as "left" let
+                // reels keep playing uncovered.
                 boolean left = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
-                        ? (type == UsageEvents.Event.ACTIVITY_PAUSED
-                                || type == UsageEvents.Event.ACTIVITY_STOPPED)
+                        ? type == UsageEvents.Event.ACTIVITY_STOPPED
                         : type == UsageEvents.Event.MOVE_TO_BACKGROUND;
                 String pkg = event.getPackageName();
                 if (pkg == null) continue;
