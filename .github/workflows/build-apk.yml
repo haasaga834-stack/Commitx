@@ -173,10 +173,10 @@ jobs:
           fi
           keytool -list -keystore "$COMMITX_KEYSTORE_PATH" -alias "$COMMITX_KEY_ALIAS" -storepass:env COMMITX_KEYSTORE_PASSWORD > /dev/null
           # Public certificate only (no private key): used for Play's upload-key reset form.
-          mkdir -p dist
+          mkdir -p release-out
           keytool -export -rfc -keystore "$COMMITX_KEYSTORE_PATH" -alias "$COMMITX_KEY_ALIAS" \
-            -storepass:env COMMITX_KEYSTORE_PASSWORD -file dist/upload_certificate.pem
-          keytool -printcert -file dist/upload_certificate.pem | grep -E 'SHA1|SHA256'
+            -storepass:env COMMITX_KEYSTORE_PASSWORD -file release-out/upload_certificate.pem
+          keytool -printcert -file release-out/upload_certificate.pem | grep -E 'SHA1|SHA256'
 
       - name: Build signed release APK and AAB
         working-directory: android
@@ -202,11 +202,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -eux
-          mkdir -p dist
-          cp android/app/build/outputs/apk/release/app-release.apk "dist/commitx-v${COMMITX_VERSION_NAME}.apk"
-          cp android/app/build/outputs/bundle/release/app-release.aab "dist/commitx-v${COMMITX_VERSION_NAME}.aab"
+          mkdir -p release-out
+          cp android/app/build/outputs/apk/release/app-release.apk "release-out/commitx-v${COMMITX_VERSION_NAME}.apk"
+          cp android/app/build/outputs/bundle/release/app-release.aab "release-out/commitx-v${COMMITX_VERSION_NAME}.aab"
           gh release delete latest-build --cleanup-tag -y --repo "${{ github.repository }}" || true
-          gh release create latest-build dist/* \
+          gh release create latest-build release-out/* \
             --repo "${{ github.repository }}" \
             --target "${{ github.sha }}" \
             --prerelease \
