@@ -784,9 +784,23 @@ public class MainActivity extends Activity {
         if (!openingLiveSession
                 && route != null
                 && !route.trim().isEmpty()
-                && webView != null
-                && canReloadForRoute()) {
-            webView.loadUrl(startUrlFor(intent));
+                && webView != null) {
+            final String current = webView.getUrl();
+            final Intent routeIntent = intent;
+            if (current != null && current.startsWith(START_URL)) {
+                // Page already running: switch screens in place. A full reload here
+                // restarted the app and briefly lost the bridge (false "missing
+                // permissions" and an empty limits list).
+                final String target = "/" + route.trim().replaceFirst("^/", "");
+                final String js = "(function(){try{if(window.CommitXNav&&window.CommitXNav.goTo&&window.CommitXAndroid){window.CommitXNav.goTo("
+                        + org.json.JSONObject.quote(target) + ");return 'ok';}}catch(e){}return 'no';})()";
+                webView.evaluateJavascript(js, value -> {
+                    if (value != null && value.contains("ok")) return;
+                    if (canReloadForRoute()) webView.loadUrl(startUrlFor(routeIntent));
+                });
+            } else if (canReloadForRoute()) {
+                webView.loadUrl(startUrlFor(intent));
+            }
         }
         String callback = oauthCallbackFrom(intent);
         if (callback != null) deliverOAuthCallback(callback);
