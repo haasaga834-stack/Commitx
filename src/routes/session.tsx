@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Hourglass } from "@/components/Hourglass";
 import { BreakIllustration } from "@/components/BreakIllustration";
 import { Button } from "@/components/ui/button";
+import { SessionSoundscape } from "@/components/SessionSoundscape";
 import { SessionScene } from "@/components/SessionScene";
 import { setState, coinLabel, coinsForMinutes, createLocalSessionId, getState, type Mode } from "@/lib/commitx-store";
 import {
@@ -1198,6 +1199,7 @@ function LiveSession() {
           <X className="h-5 w-5" strokeWidth={2.6} />
         </button>
       )}
+      <SessionSoundscape paused={onBreak} />
       <SessionScene
         theme={sessionTheme}
         progress={progress}
