@@ -1,9 +1,10 @@
 # Roadmap
 
 ## Version 5 (1.0.4) release audit
-- [ ] Audit Android startup, permissions, App Limits, Screen Time, offline use and back navigation; fix confirmed defects.
-- [ ] Audit core web screens and run regression tests plus signed-in mobile browser checks.
-- [ ] Check release configuration and security; prepare release notes and publish website fixes.
+- [x] Audit Android startup, permissions, App Limits, Screen Time, offline use and back navigation; fix confirmed defects; changed blocking/usage classes compile against SDK 36 with untouched integrations stubbed, 48 native assertions pass.
+- [x] Audit core web screens: 75 isolated regressions pass; signed-in phone screens, real-account offline task/reload/cloud acknowledgment and simulated late bridge recovery verified.
+- [x] Check Version 5/1.0.4 release configuration, add CI native tests, remove signing-key logging, resolve dependency advisories and prepare release notes in PLAY_VERSION_5_RELEASE_CHECK.md.
+- [ ] Publish audited website fixes — deployment requested after final checks.
 - [ ] Verify signed release build and physical-phone cold start, half-swipe blocking, offline/background use — requires GitHub signing/build access and a connected Android device.
 
 - [x] Small-phone / large-text Home fix checked signed-in at 340px (larger text) and 412px; website publish requested Nov 3.

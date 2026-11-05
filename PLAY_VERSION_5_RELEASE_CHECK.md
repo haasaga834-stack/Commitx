@@ -12,7 +12,7 @@
 - Production dependency advisories resolved; server-function CSRF protection added; signing-key logging removed from CI.
 
 ## Verification
-- Web regression files run separately with `bun run test` to prevent module-mock contamination.
+- 75 web regressions pass, run separately with `bun run test` to prevent module-mock contamination. Production dependency scan reports no known advisories.
 - 48 standalone native assertions cover limits, lifecycle retention, midnight carry-in, completion deadlines, countdown and motivation policy. CI now runs these before release compilation.
 - Changed App Limits/Screen Time classes compile against Android SDK 36 with untouched integration classes stubbed. This is **not** a full signed APK/AAB compilation.
 - Signed-in browser checks at 360 × 685: Planner, Profile, Analytics, Settings, Group, Screen Time and commitment setup load without redirects, horizontal overflow or page errors.
