@@ -410,6 +410,12 @@ function RootComponent() {
         const parent = nativeBackParent(navRouter.state.location.pathname);
         void navRouter.navigate({ to: parent });
       },
+      // In-page navigation for native deep links (no WebView reload).
+      goTo: (path: string) => {
+        const [p, q] = String(path || "/").split("?");
+        const search = Object.fromEntries(new URLSearchParams(q ?? ""));
+        void navRouter.navigate({ to: (p.startsWith("/") ? p : `/${p}`) as "/", search: search as never });
+      },
       closeTopModal: () => closeTopNativeModal(),
     };
   }, [navRouter]);
