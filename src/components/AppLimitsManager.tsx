@@ -93,6 +93,7 @@ export function AppLimitsManager({ onClose, onSaved }: { onClose: () => void; on
   const [perm, setPerm] = useState({ usage: true, overlay: true });
   useEffect(() => {
     let tries = 0;
+    let appTries = 0;
     let timer: number | undefined;
     const check = () => {
       if (document.visibilityState !== "visible") return;
@@ -101,6 +102,9 @@ export function AppLimitsManager({ onClose, onSaved }: { onClose: () => void; on
         return;
       }
       refresh();
+      const catalogue = shieldApps();
+      if (catalogue.length) setApps(catalogue);
+      else if (appTries++ < 8) timer = window.setTimeout(check, 500);
       const r = appLimitsReady();
       setReady(r);
       if (!r) setPerm({ usage: shieldHasUsageAccess(), overlay: shieldHasOverlayAccess() });
