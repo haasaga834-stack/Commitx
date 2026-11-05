@@ -26,7 +26,7 @@ import {
 type View = "invite" | "morning" | "result" | null;
 
 /** 21-Day Verified Challenge: invitation, daily morning plan, and result pop-ups. Never changes Home layout. */
-export function ChallengePopup() {
+export function ChallengePopup({ hidden = false }: { hidden?: boolean }) {
   const { user } = useAuth();
   const uid = user?.id ?? null;
   const { state, hydrated } = useAppState();
@@ -38,7 +38,8 @@ export function ChallengePopup() {
   const [draft, setDraft] = useState("");
 
   useEffect(() => {
-    if (!uid || !hydrated || !hasNativeBridge()) return;
+    // Wait until onboarding is finished so the invite isn't consumed underneath it.
+    if (!uid || !hydrated || hidden || !hasNativeBridge()) return;
     const t = window.setTimeout(() => {
       const rec = getChallenge(uid);
       setRecord(rec);
@@ -54,7 +55,7 @@ export function ChallengePopup() {
     return () => window.clearTimeout(t);
     // Evaluate once per sign-in, not on every session change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [uid, hydrated]);
+  }, [uid, hydrated, hidden]);
 
   // Let the user reopen the progress card from anywhere.
   useEffect(() => {
