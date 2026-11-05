@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ShieldCheck, Flame, BarChart3, Coins, Users, ListChecks } from "lucide-react";
+import { ShieldCheck, Flame, BarChart3, Coins, Users, ListChecks, BellRing, Smartphone } from "lucide-react";
 import { InfoPage } from "@/components/InfoPage";
 import { coinLabel, COINS_PER_HOUR } from "@/lib/commitx-store";
 
 const URL = "https://commitx.site/study-accountability";
 const TITLE = "Study Accountability App for Students | CommitX";
 const DESCRIPTION =
-  "CommitX adds accountability to studying: back each focus session with a commitment, keep a streak, study with friends, and see the hours you actually completed.";
+  "CommitX is a free study accountability app: stake Cx Coins on each focus session, block distracting apps, get roasted when you slack, study with friends and track honest hours.";
 
 export const Route = createFileRoute("/study-accountability")({
   head: () => ({
@@ -47,7 +47,7 @@ function StudyAccountabilityPage() {
   return (
     <InfoPage
       eyebrow="Study accountability"
-      title="Accountability that makes studying easier to start"
+      title="The study accountability app that makes quitting cost something"
       intro="Plenty of apps count your minutes. CommitX asks you to commit first — you put Cx Coins behind a session and get them back only when you finish it. Commit. Complete. Get it back."
       primaryCta={{ label: "Create a free account", to: "/auth" }}
       primaryNote="Free to use and runs entirely on Cx Coins, which have no cash value."
@@ -63,7 +63,19 @@ function StudyAccountabilityPage() {
           icon: ShieldCheck,
           title: "Verified focus for strict days",
           body:
-            "Verified sessions require Do Not Disturb and fail if you leave the app, so the session reflects focus you actually gave it.",
+            "On the website, Verified sessions fail if you leave the page. In the Android app, Focus Shield blocks the apps you pick until the timer ends.",
+        },
+        {
+          icon: Smartphone,
+          title: "Daily app limits",
+          body:
+            "Set daily limits for apps like Instagram or YouTube on Android. When the limit is used up, CommitX covers the app until midnight. Usage data stays on your phone.",
+        },
+        {
+          icon: BellRing,
+          title: "Accountability reminders",
+          body:
+            "Short, sarcastic roast notifications nudge you when you skip study or quit a session — an accountability partner that never forgets.",
         },
         {
           icon: Flame,
@@ -113,6 +125,8 @@ function StudyAccountabilityPage() {
         { label: "Focus timer", to: "/focus-timer" },
         { label: "Verified focus", to: "/verified-focus" },
         { label: "Study tracker", to: "/study-tracker" },
+        { label: "Stop using your phone while studying", to: "/stop-using-phone-while-studying" },
+        { label: "Study with friends online", to: "/study-with-friends-online" },
       ]}
     />
   );
