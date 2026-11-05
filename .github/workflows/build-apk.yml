@@ -119,6 +119,7 @@ jobs:
           # Keep only regular files (no device nodes, sockets or symlinks).
           find "$DEST" ! -type f ! -type d -delete || true
           du -sh "$DEST"
+          echo "Bundled $(find "$DEST" -type f | wc -l) website files into the app"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
