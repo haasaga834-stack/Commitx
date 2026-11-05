@@ -32,6 +32,7 @@ import { installBridgeRecovery, installChunkRecovery, isChunkLoadError, recoverF
 import { warmAppRoutes } from "../lib/warm-routes";
 import { AmbientNature } from "../components/AmbientNature";
 import { OfflineNotice } from "../components/OfflineNotice";
+import { ChallengePopup } from "../components/ChallengePopup";
 import { Onboarding } from "../components/Onboarding";
 import { useOnboarding } from "../lib/onboarding";
 import { NativeWelcome } from "../components/NativeWelcome";
@@ -475,6 +476,7 @@ function RootComponent() {
       <VerifiedRecovery />
       <ActiveSessionRestore />
       <StudyReminders />
+      <ChallengePopup />
       <AuthGate>
         <Outlet />
       </AuthGate>
