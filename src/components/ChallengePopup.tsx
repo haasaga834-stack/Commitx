@@ -1,3 +1,4 @@
+import finisherBadge from "@/assets/challenge-finisher-badge.png";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Check, Flame, Plus, X } from "lucide-react";
