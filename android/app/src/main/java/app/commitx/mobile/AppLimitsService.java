@@ -239,8 +239,9 @@ public class AppLimitsService extends Service {
                         : type == UsageEvents.Event.MOVE_TO_BACKGROUND;
                 String pkg = event.getPackageName();
                 if (pkg == null) continue;
-                String activity = pkg + ":" + (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
-                        ? String.valueOf(event.getInstanceId()) : String.valueOf(event.getClassName()));
+                // UsageEvents does not expose instance ids in the public SDK.
+                // Track activity classes, rather than removing an entire package on STOP.
+                String activity = pkg + ":" + String.valueOf(event.getClassName());
                 if (resumed) {
                     activityState.resume(pkg, activity);
                 } else if (left) {
