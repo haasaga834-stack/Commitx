@@ -328,6 +328,7 @@ function AuthGate({ children }: { children: ReactNode }) {
     <>
       {children}
       <StudyWidgetCoordinator userId={user?.id ?? null} onboarding={needsOnboarding} />
+      <ChallengePopup hidden={needsOnboarding || pathname === "/auth"} />
       <BuddyNotifier userId={user?.id ?? null} hidden={needsOnboarding || pathname === "/session" || pathname.startsWith("/group/")} />
       {user && pathname !== "/auth" && needsOnboarding ? (
         hasNativeBridge() ? (
@@ -476,7 +477,6 @@ function RootComponent() {
       <VerifiedRecovery />
       <ActiveSessionRestore />
       <StudyReminders />
-      <ChallengePopup />
       <AuthGate>
         <Outlet />
       </AuthGate>
