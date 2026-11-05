@@ -107,6 +107,23 @@ final class AppLimitsStore {
         }
     }
 
+    static java.util.Set<String> savedExhausted(Context ctx, String day) {
+        java.util.Set<String> out = new java.util.HashSet<>();
+        try {
+            String raw = prefs(ctx).getString("exhausted", "");
+            if (!raw.startsWith(day + "|")) return out;
+            for (String p : raw.substring(day.length() + 1).split(",")) if (!p.isEmpty()) out.add(p);
+        } catch (Throwable ignored) {}
+        return out;
+    }
+
+    static void saveExhausted(Context ctx, String day, java.util.Set<String> pkgs) {
+        try {
+            String v = day + "|" + android.text.TextUtils.join(",", pkgs);
+            if (!v.equals(prefs(ctx).getString("exhausted", ""))) prefs(ctx).edit().putString("exhausted", v).apply();
+        } catch (Throwable ignored) {}
+    }
+
     static long usageMillis(Map<String, Long> stats, String pkg) {
         if (stats == null) return -1L;
         Long ms = stats.get(pkg);
