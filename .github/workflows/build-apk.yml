@@ -105,12 +105,19 @@ jobs:
           set -eux
           bun install --frozen-lockfile || bun install
           bun run build
-          SRC="$(find dist .output -type d -name assets -path '*client*' 2>/dev/null | head -n1)"
-          [ -n "$SRC" ] || SRC="$(find dist -maxdepth 2 -type d -name assets | head -n1)"
-          DEST=android/app/src/main/assets/web/assets
+          SRC="$(find dist .output -type d -name assets -path '*client*' 2>/dev/null | head -n1 || true)"
+          [ -n "$SRC" ] || SRC="$(find dist -maxdepth 2 -type d -name assets 2>/dev/null | head -n1 || true)"
           rm -rf android/app/src/main/assets/web
+          # Never copy an empty/invalid path: "$SRC"/. would expand to the runner root.
+          if [ -z "$SRC" ] || [ ! -d "$SRC" ] || [ "$SRC" = "/" ]; then
+            echo "No web assets directory found; building without bundled files."
+            exit 0
+          fi
+          DEST=android/app/src/main/assets/web/assets
           mkdir -p "$DEST"
           cp -R "$SRC"/. "$DEST"/
+          # Keep only regular files (no device nodes, sockets or symlinks).
+          find "$DEST" ! -type f ! -type d -delete || true
           du -sh "$DEST"
 
       - name: Setup Gradle
