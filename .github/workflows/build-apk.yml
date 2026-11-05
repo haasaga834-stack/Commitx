@@ -98,6 +98,18 @@ jobs:
         with:
           gradle-version: 8.11.1
 
+      - name: Run native release regressions
+        run: |
+          set -eu
+          OUT="$RUNNER_TEMP/commitx-native-tests"
+          mkdir -p "$OUT"
+          javac -encoding UTF-8 -d "$OUT" \
+            android/app/src/main/java/app/commitx/mobile/{AppLimitsPolicy,AppActivityState,UsageTimeline,SessionCompletionPolicy,VerifiedCountdownClock,MotivationMessages}.java \
+            android/tests/{AppLimitsPolicyTest,AppActivityStateTest,UsageTimelineTest,SessionCompletionPolicyTest,VerifiedCountdownClockTest,MotivationMessagesTest}.java
+          for TEST in AppLimitsPolicyTest AppActivityStateTest UsageTimelineTest SessionCompletionPolicyTest VerifiedCountdownClockTest MotivationMessagesTest; do
+            java -cp "$OUT" "app.commitx.mobile.$TEST"
+          done
+
 
       # The Actions cache is kept only as a transition path for keys created
       # before COMMITX_KEYSTORE_BASE64 existed. Durable storage is the GitHub

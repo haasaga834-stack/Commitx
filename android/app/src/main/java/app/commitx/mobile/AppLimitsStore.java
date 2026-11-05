@@ -27,6 +27,7 @@ final class AppLimitsStore {
     private static volatile long cachedUsageAt;
     private static volatile long cachedDayStart;
     private static boolean refreshingUsage;
+    private static final Object refreshLock = new Object();
 
     private AppLimitsStore() {}
 
@@ -126,13 +127,13 @@ final class AppLimitsStore {
     static String toJson(Context ctx) {
         JSONObject all = limits(ctx);
         Map<String, Long> stats = cachedDayStart == startOfToday() ? cachedUsage : null;
-        synchronized (AppLimitsStore.class) {
+        synchronized (refreshLock) {
             if (!refreshingUsage && (stats == null || android.os.SystemClock.elapsedRealtime() - cachedUsageAt >= AppLimitsPolicy.USAGE_REFRESH_MS)) {
                 refreshingUsage = true;
                 Context app = ctx.getApplicationContext();
                 ScreenTimeDetails.runInBackground(() -> {
                     try { usageSnapshot(app); }
-                    finally { synchronized (AppLimitsStore.class) { refreshingUsage = false; } }
+                    finally { synchronized (refreshLock) { refreshingUsage = false; } }
                 });
             }
         }
