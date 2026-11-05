@@ -209,7 +209,7 @@ function Planner() {
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/25 backdrop-blur-sm sm:items-center">
-          <div className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-card p-6 shadow-lift sm:rounded-3xl">
+          <div className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-popover text-popover-foreground p-6 shadow-lift sm:rounded-3xl">
             <p className="text-xs uppercase tracking-widest text-muted-foreground">
               New study session
             </p>

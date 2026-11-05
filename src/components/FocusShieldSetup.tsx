@@ -154,7 +154,7 @@ export function FocusShieldSetup({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 backdrop-blur-sm sm:items-center">
-      <div className={cn("max-h-[92dvh] w-full max-w-md rounded-t-4xl bg-card p-6 pb-10 shadow-lift sm:rounded-4xl sm:pb-6", step === "apps" ? "flex h-[92dvh] flex-col overflow-hidden" : "overflow-y-auto")}>
+      <div className={cn("max-h-[92dvh] w-full max-w-md rounded-t-4xl bg-popover text-popover-foreground p-6 pb-10 shadow-lift sm:rounded-4xl sm:pb-6", step === "apps" ? "flex h-[92dvh] flex-col overflow-hidden" : "overflow-y-auto")}>
         {step === "intro" && (
           <div className="text-center">
             <span className="mx-auto inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-accent/15 text-primary">

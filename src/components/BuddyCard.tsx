@@ -122,7 +122,7 @@ export function BuddyCard() {
 
       {open && (
         <div className="fixed inset-0 z-[80] flex items-end justify-center bg-foreground/40 backdrop-blur-sm sm:items-center" onClick={() => setOpen(false)}>
-          <div className="relative w-full max-w-md rounded-t-4xl bg-card p-6 pb-10 text-center shadow-lift sm:rounded-4xl sm:pb-6" onClick={(e) => e.stopPropagation()}>
+          <div className="relative w-full max-w-md rounded-t-4xl bg-popover text-popover-foreground p-6 pb-10 text-center shadow-lift sm:rounded-4xl sm:pb-6" onClick={(e) => e.stopPropagation()}>
             <button type="button" aria-label="Close" onClick={() => setOpen(false)} className="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-full bg-secondary text-muted-foreground">
               <X className="h-4 w-4" />
             </button>

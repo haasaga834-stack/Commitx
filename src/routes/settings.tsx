@@ -239,7 +239,7 @@ function Settings() {
 
       {confirming && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-t-4xl bg-card p-5 pb-8 shadow-lift">
+          <div className="w-full max-w-md rounded-t-4xl bg-popover text-popover-foreground p-5 pb-8 shadow-lift">
             <h2 className="font-display text-lg font-semibold">Delete account?</h2>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               This permanently removes your profile, Cx Coins, session
