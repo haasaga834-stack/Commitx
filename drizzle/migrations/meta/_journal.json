@@ -218,6 +218,13 @@
       "when": 1793711918704,
       "tag": "0030_referral_upgrade",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1793907368028,
+      "tag": "0031_restrict_role_check_and_buddy_search",
+      "breakpoints": true
     }
   ]
 }
