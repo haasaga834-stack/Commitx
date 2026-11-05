@@ -118,8 +118,8 @@ export function ChallengePopup({ hidden = false }: { hidden?: boolean }) {
         {view === "morning" && progress && (
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-primary">Day {progress.day} of {CHALLENGE_DAYS}</p>
-            <DialogTitle className="mt-1 font-display text-xl">What will you finish today?</DialogTitle>
-            <DialogDescription className="mt-1 text-sm">{challengeRoast(progress)}</DialogDescription>
+            <DialogTitle className="mt-1 text-center font-display text-xl">What will you finish today?</DialogTitle>
+            <DialogDescription className="mt-1 text-center text-sm">{challengeRoast(progress)}</DialogDescription>
 
             <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted">
               <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
@@ -179,10 +179,10 @@ export function ChallengePopup({ hidden = false }: { hidden?: boolean }) {
             ) : (
               <span className="mb-3 text-5xl">💔</span>
             )}
-            <DialogTitle className="font-display text-xl">
+            <DialogTitle className="text-center font-display text-xl">
               {progress.status === "completed" ? "21-Day Finisher!" : "Challenge ended"}
             </DialogTitle>
-            <DialogDescription className="mt-2 text-sm">
+            <DialogDescription className="mt-2 text-center text-sm">
               {progress.status === "completed"
                 ? "You studied 3 Verified hours a day for 21 days. Absolute beast."
                 : "You missed the 3-hour Verified target more than once. Start again — this time, no excuses."}
