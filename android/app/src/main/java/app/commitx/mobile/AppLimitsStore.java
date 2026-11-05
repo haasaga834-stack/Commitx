@@ -23,6 +23,10 @@ final class AppLimitsStore {
     private static final String PREFS = "commitx_app_limits";
     private static final String KEY_LIMITS = "limits";       // JSON: pkg -> {type, minutes}
     private static final String KEY_NOTIFIED = "notified";   // JSON: "<day>|<pkg>|<pct>" -> true
+    private static volatile Map<String, Long> cachedUsage;
+    private static volatile long cachedUsageAt;
+    private static volatile long cachedDayStart;
+    private static boolean refreshingUsage;
 
     private AppLimitsStore() {}
 
@@ -86,12 +90,17 @@ final class AppLimitsStore {
      * timeline as the Screen Time page. Aggregated daily buckets are not
      * aligned to local midnight and carried yesterday's usage into today.
      */
-    static Map<String, Long> usageSnapshot(Context ctx) {
+    static synchronized Map<String, Long> usageSnapshot(Context ctx) {
         try {
             UsageStatsManager usm =
                     (UsageStatsManager) ctx.getSystemService(Context.USAGE_STATS_SERVICE);
             if (usm == null) return null;
-            return ScreenTimeDetails.usage(ctx, startOfToday(), System.currentTimeMillis(), null, 0L);
+            long start = startOfToday();
+            long now = android.os.SystemClock.elapsedRealtime();
+            if (cachedUsage != null && cachedDayStart == start && now - cachedUsageAt < AppLimitsPolicy.USAGE_REFRESH_MS) return cachedUsage;
+            Map<String, Long> usage = ScreenTimeDetails.usage(ctx, start, System.currentTimeMillis(), null, 0L);
+            cachedUsage = usage; cachedUsageAt = now; cachedDayStart = start;
+            return usage;
         } catch (Throwable t) {
             return null;
         }
@@ -116,7 +125,17 @@ final class AppLimitsStore {
     /** Limits with live usage, for the web layer: [{pkg,label,type,minutes,usedMinutes}]. */
     static String toJson(Context ctx) {
         JSONObject all = limits(ctx);
-        Map<String, Long> stats = usageSnapshot(ctx);
+        Map<String, Long> stats = cachedDayStart == startOfToday() ? cachedUsage : null;
+        synchronized (AppLimitsStore.class) {
+            if (!refreshingUsage && (stats == null || android.os.SystemClock.elapsedRealtime() - cachedUsageAt >= AppLimitsPolicy.USAGE_REFRESH_MS)) {
+                refreshingUsage = true;
+                Context app = ctx.getApplicationContext();
+                ScreenTimeDetails.runInBackground(() -> {
+                    try { usageSnapshot(app); }
+                    finally { synchronized (AppLimitsStore.class) { refreshingUsage = false; } }
+                });
+            }
+        }
         StringBuilder sb = new StringBuilder("[");
         boolean first = true;
         Iterator<String> keys = all.keys();
@@ -129,9 +148,9 @@ final class AppLimitsStore {
             int used = (int) (Math.max(0L, usageMillis(stats, pkg)) / 60000L);
             if (!first) sb.append(',');
             first = false;
-            sb.append("{\"pkg\":\"").append(pkg).append("\",")
-              .append("\"label\":\"").append(labelFor(ctx, pkg).replace("\"", "'")).append("\",")
-              .append("\"type\":\"").append(entry.optString("type", "time")).append("\",")
+            sb.append("{\"pkg\":").append(JSONObject.quote(pkg)).append(',')
+              .append("\"label\":").append(JSONObject.quote(labelFor(ctx, pkg))).append(',')
+              .append("\"type\":").append(JSONObject.quote(entry.optString("type", "time"))).append(',')
               .append("\"minutes\":").append(minutes).append(",")
               .append("\"usedMinutes\":").append(Math.max(0, used)).append('}');
         }
