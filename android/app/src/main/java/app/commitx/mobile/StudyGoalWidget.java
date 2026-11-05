@@ -58,8 +58,11 @@ public class StudyGoalWidget extends AppWidgetProvider {
             views.setTextViewText(R.id.widget_hours, h.substring(0, h.length() - 1));
             views.setTextViewText(R.id.widget_hours_goal, "of " + hoursText(goalMinutes));
             int streak = state.optInt("streak", 0);
-            views.setViewVisibility(R.id.widget_streak, streak > 0 ? View.VISIBLE : View.GONE);
-            views.setTextViewText(R.id.widget_streak, "\uD83D\uDD25 " + streak + (streak == 1 ? " day streak" : " day streak"));
+            int challengeDay = state.optInt("challengeDay", 0);
+            views.setViewVisibility(R.id.widget_streak, (streak > 0 || challengeDay > 0) ? View.VISIBLE : View.GONE);
+            views.setTextViewText(R.id.widget_streak, challengeDay > 0
+                    ? "\uD83D\uDD25 DAY " + challengeDay + "/21"
+                    : "\uD83D\uDD25 " + streak + " day streak");
             JSONArray todos = today ? state.optJSONArray("todos") : new JSONArray();
             int count = todos == null ? 0 : todos.length();
             int[] rows = {R.id.widget_row_0, R.id.widget_row_1, R.id.widget_row_2};

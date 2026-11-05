@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/compone
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/use-auth";
+import { syncStudyWidget } from "@/lib/study-widget";
 import { hasNativeBridge } from "@/lib/native-session";
 import { useAppState } from "@/lib/commitx-store";
 import { addTodo, clearCarryOverTodos, getCarryOverTodos, getTodos } from "@/lib/planner";
@@ -79,6 +80,7 @@ export function ChallengePopup() {
     if (!uid) return;
     startChallenge(uid);
     setRecord(getChallenge(uid));
+    syncStudyWidget(uid);
     openMorning();
   }
 
@@ -89,6 +91,7 @@ export function ChallengePopup() {
     for (const g of all) if (!existing.has(g.toLowerCase())) { addTodo(g); existing.add(g.toLowerCase()); }
     clearCarryOverTodos();
     markMorningDone(uid);
+    syncStudyWidget(uid);
     close();
   }
 
