@@ -1269,7 +1269,7 @@ function LiveSession() {
 
       {onBreak && (
         <div className="fixed inset-0 z-[70] flex items-end justify-center bg-background/90 px-4 pb-5 backdrop-blur-md sm:items-center sm:pb-0">
-          <div className="w-full max-w-sm animate-scale-in rounded-3xl border border-hairline bg-card px-6 py-5 text-center shadow-lift">
+          <div className="w-full max-w-sm animate-scale-in rounded-3xl border border-hairline bg-popover text-popover-foreground px-6 py-5 text-center shadow-lift">
             {phase === "recovery_break" ? (
               <>
                 <BreakIllustration />
@@ -1315,7 +1315,7 @@ function LiveSession() {
 
       {dndBlocked && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-background/95 px-6 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl bg-card p-6 text-center shadow-lift">
+          <div className="w-full max-w-md rounded-3xl bg-popover text-popover-foreground p-6 text-center shadow-lift">
             <BellOff className="mx-auto h-8 w-8 text-primary" />
             <p className="mt-4 font-display text-xl font-semibold">Do Not Disturb required</p>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -1339,7 +1339,7 @@ function LiveSession() {
 
       {confirmCancel && !isVerified && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/20 backdrop-blur-sm sm:items-center">
-          <div className="w-full max-w-md rounded-t-3xl bg-card p-6 shadow-lift sm:rounded-3xl">
+          <div className="w-full max-w-md rounded-t-3xl bg-popover text-popover-foreground p-6 shadow-lift sm:rounded-3xl">
             <p className="font-display text-xl font-semibold">Cancel session?</p>
             <p className="mt-2 text-sm text-muted-foreground">
               {value > 0

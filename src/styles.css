@@ -880,7 +880,7 @@ body.cx-app-theme {
   --foreground: oklch(0.98 0.006 240);
   --card: rgba(15, 23, 42, 0.70);
   --card-foreground: oklch(0.98 0.006 240);
-  --popover: oklch(0.21 0.028 250 / 0.97);
+  --popover: oklch(0.21 0.028 250);
   --popover-foreground: oklch(0.98 0.006 240);
   --primary: oklch(0.79 0.15 168);
   --primary-foreground: oklch(0.17 0.03 200);

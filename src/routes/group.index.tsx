@@ -533,7 +533,7 @@ function GroupIndex() {
       {/* Terms sheet — a friend must accept and commit before joining */}
       {terms && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 backdrop-blur-sm md:items-center md:p-8">
-          <div className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-4xl bg-card p-6 pb-10 shadow-lift md:rounded-4xl md:p-8">
+          <div className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-4xl bg-popover text-popover-foreground p-6 pb-10 shadow-lift md:rounded-4xl md:p-8">
             <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-accent/15 text-primary">
               <Users className="h-5 w-5" />
             </span>

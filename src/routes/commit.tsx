@@ -329,7 +329,7 @@ function Commit() {
   /* Verified session warning + DND gate — shared by both layouts. */
   const overlay = verifiedWarn ? (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 backdrop-blur-sm sm:items-center">
-      <div className="w-full max-w-md rounded-t-4xl bg-card p-6 pb-10 text-center shadow-lift sm:rounded-4xl sm:pb-6">
+      <div className="w-full max-w-md rounded-t-4xl bg-popover text-popover-foreground p-6 pb-10 text-center shadow-lift sm:rounded-4xl sm:pb-6">
         <span className="mx-auto inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-accent/15 text-primary">
           <ShieldCheck className="h-5 w-5" />
         </span>

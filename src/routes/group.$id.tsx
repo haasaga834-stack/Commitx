@@ -184,7 +184,7 @@ function GroupSessionWithDnd() {
       <GroupSession onNeedDnd={setNeedDnd} />
       {needDnd && dndOff && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-background/95 px-6 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-3xl bg-card p-6 text-center shadow-lift">
+          <div className="w-full max-w-sm rounded-3xl bg-popover text-popover-foreground p-6 text-center shadow-lift">
             <p className="font-display text-xl font-semibold">Do Not Disturb required</p>
             <p className="mt-2 text-sm text-muted-foreground">
               Group Verified sessions need DND on. Turn it on, then come back — we'll re-check automatically.
@@ -894,7 +894,7 @@ function GroupSession({ onNeedDnd }: { onNeedDnd?: (v: boolean) => void }) {
 
         {confirmLeave && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-8 backdrop-blur-sm">
-            <div className="w-full max-w-md rounded-4xl bg-card p-8 shadow-lift">
+            <div className="w-full max-w-md rounded-4xl bg-popover text-popover-foreground p-8 shadow-lift">
               <h2 className="font-display text-xl font-semibold">Leave the group?</h2>
               <p className="mt-2 text-sm text-muted-foreground">
                 Leaving before the shared timer finishes loses your {coinLabel(group.commit_value)}{" "}
@@ -971,7 +971,7 @@ function GroupSession({ onNeedDnd }: { onNeedDnd?: (v: boolean) => void }) {
 
       {confirmLeave && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-t-4xl bg-card p-6 pb-10 shadow-lift">
+          <div className="w-full max-w-md rounded-t-4xl bg-popover text-popover-foreground p-6 pb-10 shadow-lift">
             <h2 className="font-display text-xl font-semibold">Leave the group?</h2>
             <p className="mt-2 text-sm text-muted-foreground">
               Leaving before the shared timer finishes loses your {coinLabel(group.commit_value)}{" "}

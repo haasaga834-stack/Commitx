@@ -40,8 +40,8 @@ export function ThemePicker({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-end justify-center bg-foreground/40 backdrop-blur-sm sm:items-center sm:p-6">
-      <div className="w-full max-w-md rounded-t-[28px] bg-card p-5 shadow-lift sm:rounded-[28px] sm:p-7">
+    <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/70 backdrop-blur-md sm:items-center sm:p-6">
+      <div className="w-full max-w-md rounded-t-[28px] bg-popover text-popover-foreground p-5 shadow-lift sm:rounded-[28px] sm:p-7">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
