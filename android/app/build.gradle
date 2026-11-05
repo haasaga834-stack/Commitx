@@ -25,6 +25,10 @@ tasks.configureEach { task ->
 }
 
 android {
+    // Store bundled website files uncompressed so screens load instantly from the app.
+    androidResources {
+        noCompress += ['js', 'css', 'png', 'jpg', 'jpeg', 'webp', 'woff2', 'svg', 'json', 'html']
+    }
     namespace "app.commitx.mobile"
     compileSdk 36
 
