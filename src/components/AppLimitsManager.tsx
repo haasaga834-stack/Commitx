@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Check, X, Plus, Timer, Trash2, Clapperboard } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { PermissionTrustNote } from "@/components/PermissionTrustNote";
 import { cn } from "@/lib/utils";
 import { formatMinutes } from "@/lib/native-notifications";
 import { shieldApps, openPermissionPage, shieldHasUsageAccess, shieldHasOverlayAccess, type ShieldAppOption } from "@/lib/focus-shield";
@@ -202,6 +203,7 @@ export function AppLimitsManager({ onClose, onSaved }: { onClose: () => void; on
               App limits need Usage Access and "Display over other apps" so CommitX can see usage
               and cover an app once its limit is used up. Data stays on this device.
             </p>
+            <PermissionTrustNote />
             <div className="mt-4 grid gap-2">
               {!perm.usage && (
                 <Button onClick={() => { setManual(null); openPermissionPage("usage", () => setManual("usage")); }} className="h-11 rounded-full">

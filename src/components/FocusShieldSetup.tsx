@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Shield, ShieldCheck, Check, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { PermissionTrustNote } from "@/components/PermissionTrustNote";
 import { canConfirmShield, defaultShieldPackages } from "@/lib/focus-shield-defaults";
 import {
   FOCUS_SHIELD_GROUPS,
@@ -324,6 +325,7 @@ export function FocusShieldSetup({
               Focus Shield can only protect your session with your explicit permission.
               Nothing is blocked until both are granted.
             </p>
+            <PermissionTrustNote />
             {error && <p role="alert" className="mt-3 text-sm text-destructive">{error}</p>}
 
             <PermissionRow
