@@ -34,9 +34,11 @@ export function codeFromInstallReferrer(referrer: string | null | undefined): st
   }
 }
 
-export function referralShareMessage(link: string): string {
+/** Share text points straight at the Play listing; the code rides along via Install Referrer. */
+export function referralShareMessage(code: string): string {
   return (
     "Hey! I've been using CommitX to stay focused, study with friends and build better habits. " +
-    `Join using my referral link and get 100 extra CX Coins! Download CommitX here: ${link}`
+    `Download it from Google Play with my link and get 100 extra CX Coins: ${playStoreReferralUrl(code)}\n\n` +
+    `My referral code: ${code}`
   );
 }

@@ -59,7 +59,8 @@ export function ReferralCard() {
   async function share() {
     if (!link) return;
     const native = (window as unknown as { CommitXAndroid?: { shareText?: (t: string, m: string) => void } }).CommitXAndroid;
-    const message = referralShareMessage(link);
+    const code = link.slice(link.lastIndexOf("/") + 1);
+    const message = referralShareMessage(decodeURIComponent(code));
     const res = await shareInvite("Invite a friend to CommitX", message, "", {
       nativeShare: native?.shareText ? (t) => native.shareText?.(t, message) : undefined,
       webShare: !native && navigator.share ? () => navigator.share({ title: "Join CommitX", text: message }) : undefined,
