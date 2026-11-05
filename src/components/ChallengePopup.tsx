@@ -101,21 +101,17 @@ export function ChallengePopup({ hidden = false }: { hidden?: boolean }) {
 
   return (
     <Dialog open onOpenChange={(o) => { if (!o) { if (view === "morning" && uid) markMorningDone(uid); close(); } }}>
-      <DialogContent className="max-h-[88vh] max-w-sm overflow-y-auto rounded-3xl p-5">
+      <DialogContent className={`max-h-[85vh] w-[calc(100%-3rem)] overflow-y-auto rounded-3xl text-center ${view === "morning" ? "max-w-sm p-5" : "max-w-[300px] p-5"}`}>
         {view === "invite" && (
           <div className="flex flex-col items-center text-center">
-            <span className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-primary/15 text-primary"><Flame className="h-7 w-7" /></span>
-            <DialogTitle className="font-display text-xl">21-Day Verified Challenge</DialogTitle>
-            <DialogDescription className="mt-2 text-sm">
-              Study 3 hours every day for 21 days. Only Verified sessions count. Miss a day and the challenge ends — you get 1 Freeze Shield for emergencies.
+            <span className="mb-2 flex h-11 w-11 items-center justify-center rounded-full bg-primary/15 text-primary"><Flame className="h-5 w-5" /></span>
+            <DialogTitle className="text-center font-display text-lg">21-Day Challenge</DialogTitle>
+            <DialogDescription className="mt-1.5 text-center text-[13px] leading-snug">
+              3 Verified hours a day for 21 days. 1 Freeze Shield included.
             </DialogDescription>
-            <ul className="mt-4 w-full space-y-2 rounded-2xl bg-muted/50 p-3 text-left text-sm">
-              <li>🔥 Live day count on your home-screen widget</li>
-              <li>📝 Plan your goals every morning</li>
-              <li>🏅 Finisher badge on Day 21</li>
-            </ul>
-            <Button className="mt-5 w-full" size="lg" onClick={accept}>Accept the challenge</Button>
-            <Button variant="ghost" className="mt-1 w-full" onClick={close}>Maybe later</Button>
+            <p className="mt-3 text-center text-xs text-muted-foreground">🔥 Widget streak · 📝 Daily plan · 🏅 Badge</p>
+            <Button className="mt-4 w-full" onClick={accept}>Accept the challenge</Button>
+            <Button variant="ghost" size="sm" className="mt-1 w-full" onClick={close}>Maybe later</Button>
           </div>
         )}
 
