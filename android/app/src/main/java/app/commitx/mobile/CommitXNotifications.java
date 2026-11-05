@@ -299,9 +299,12 @@ final class CommitXNotifications {
 
     /** Persistent, silent summary of today's device screen time; tap opens /screen-time. */
     static void showScreenTimeDaily(Context ctx) {
+        showScreenTimeDaily(ctx, ScreenTimeTracker.totals(ctx, true));
+    }
+
+    static void showScreenTimeDaily(Context ctx, int[] t) {
         NotificationManager nm = manager(ctx);
         if (nm == null) return;
-        int[] t = ScreenTimeTracker.totals(ctx, true);
         if (t == null) {
             nm.cancel(ID_SCREEN_TIME_DAILY);
             return;

@@ -40,9 +40,7 @@ public class AppLimitsService extends Service {
     private final Set<String> exhausted = new HashSet<>();
     private String limitsJson;
     private String usageDay;
-    private String lastForeground;
-    /** Packages with an activity currently resumed (not paused/stopped), by resume time. */
-    private final java.util.LinkedHashMap<String, Long> resumedNow = new java.util.LinkedHashMap<>();
+    private final AppActivityState activityState = new AppActivityState();
     private long lastEventQuery;
     private long lastUsageRefresh;
     private volatile boolean destroyed;
@@ -168,21 +166,13 @@ public class AppLimitsService extends Service {
     }
 
     private void applyCover(String fg) {
-        // A limited app stays covered while any of its activities is still
-        // resumed. A half swipe / recents peek resumes the launcher briefly but
-        // never pauses the app, so it must not lift the block.
-        String blockedNow = fg != null && exhausted.contains(fg) ? fg : null;
-        if (blockedNow == null) {
-            for (String pkg : resumedNow.keySet()) {
-                if (exhausted.contains(pkg)) { blockedNow = pkg; break; }
-            }
-        }
-        final String covered = blockedNow;
+        final String covered = activityState.blocked(exhausted, getPackageName());
+        final boolean confirmed = activityState.confirmed();
         long endsAt = AppLimitsStore.endOfToday();
         handler.post(() -> {
             if (destroyed || overlay == null) return;
             if (covered != null) overlay.show(covered, endsAt);
-            else if (AppLimitsPolicy.shouldHide(fg, null)) overlay.hide();
+            else if (confirmed) overlay.hide();
         });
     }
 
@@ -227,9 +217,10 @@ public class AppLimitsService extends Service {
             if (usm == null) return null;
             long end = System.currentTimeMillis();
             long start = lastEventQuery == 0L || end < lastEventQuery
-                    ? end - 10 * 60_000L : Math.max(end - 60_000L, lastEventQuery - 1000L);
+                    ? Math.max(0L, ScreenTimeTracker.startOfToday() - 7 * 86_400_000L)
+                    : Math.max(end - 60_000L, lastEventQuery - 1000L);
             UsageEvents events = usm.queryEvents(start, end);
-            if (events == null) return lastForeground;
+            if (events == null) return activityState.foreground();
             lastEventQuery = end;
             UsageEvents.Event event = new UsageEvents.Event();
             while (events != null && events.hasNextEvent()) {
@@ -248,15 +239,16 @@ public class AppLimitsService extends Service {
                         : type == UsageEvents.Event.MOVE_TO_BACKGROUND;
                 String pkg = event.getPackageName();
                 if (pkg == null) continue;
+                // UsageEvents does not expose instance ids in the public SDK.
+                // Track activity classes, rather than removing an entire package on STOP.
+                String activity = pkg + ":" + String.valueOf(event.getClassName());
                 if (resumed) {
-                    lastForeground = pkg;
-                    resumedNow.remove(pkg);
-                    resumedNow.put(pkg, event.getTimeStamp());
+                    activityState.resume(pkg, activity);
                 } else if (left) {
-                    resumedNow.remove(pkg);
+                    activityState.stop(pkg, activity);
                 }
             }
-            return lastForeground;
+            return activityState.foreground();
         } catch (Throwable t) {
             return null;
         }

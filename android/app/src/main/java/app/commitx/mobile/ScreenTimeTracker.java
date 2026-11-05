@@ -72,95 +72,13 @@ final class ScreenTimeTracker {
             long end = System.currentTimeMillis();
             String self = ctx.getPackageName();
 
-            // Single-foreground timeline: Android only ever has one app in the
-            // foreground, so we walk today's events in order and attribute each
-            // slice of wall-clock time to exactly one package. This makes the
-            // day start at 0:00 and grow strictly with real usage, and makes it
-            // impossible for the total to exceed the time elapsed since midnight.
-            long own = 0L;
+            Map<String, Long> usage = ScreenTimeDetails.usage(ctx, start, end, null, 0);
+            long own = usage.getOrDefault(self, 0L);
             long other = 0L;
-            boolean sawEvents = false;
-            String currentPkg = null;
-            long currentFrom = 0L;
-            boolean screenOff = false;
-
-            android.app.usage.UsageEvents events = usm.queryEvents(start, end);
-            if (events != null) {
-                android.app.usage.UsageEvents.Event e = new android.app.usage.UsageEvents.Event();
-                while (events.hasNextEvent()) {
-                    events.getNextEvent(e);
-                    int type = e.getEventType();
-                    long ts = Math.min(end, Math.max(start, e.getTimeStamp()));
-                    String pkg = e.getPackageName();
-
-                    // Screen off / keyguard: stop counting until something resumes.
-                    if (type == 17 /* SCREEN_NON_INTERACTIVE */ || type == 15 /* KEYGUARD_SHOWN */) {
-                        if (currentPkg != null) {
-                            long ms = Math.max(0L, ts - currentFrom);
-                            if (self.equals(currentPkg)) own += ms; else other += ms;
-                            currentPkg = null;
-                        }
-                        screenOff = true;
-                        continue;
-                    }
-                    if (type == 16 /* SCREEN_INTERACTIVE */ || type == 18 /* KEYGUARD_HIDDEN */) {
-                        screenOff = false;
-                        continue;
-                    }
-
-                    if (pkg == null) continue;
-
-                    if (type == android.app.usage.UsageEvents.Event.MOVE_TO_FOREGROUND) {
-                        sawEvents = true;
-                        screenOff = false;
-                        if (currentPkg != null) {
-                            long ms = Math.max(0L, ts - currentFrom);
-                            if (self.equals(currentPkg)) own += ms; else other += ms;
-                        }
-                        currentPkg = pkg;
-                        currentFrom = ts;
-                    } else if (type == android.app.usage.UsageEvents.Event.MOVE_TO_BACKGROUND) {
-                        sawEvents = true;
-                        // Only close the interval we actually opened today; a
-                        // stray background event with no matching foreground is
-                        // ignored instead of being billed from midnight.
-                        if (currentPkg != null && currentPkg.equals(pkg)) {
-                            long ms = Math.max(0L, ts - currentFrom);
-                            if (self.equals(pkg)) own += ms; else other += ms;
-                            currentPkg = null;
-                        }
-                    }
-                }
-                // Whatever is still in the foreground right now counts up to "now".
-                if (currentPkg != null && !screenOff) {
-                    long ms = Math.max(0L, end - currentFrom);
-                    if (self.equals(currentPkg)) own += ms; else other += ms;
-                }
+            for (Map.Entry<String, Long> entry : usage.entrySet()) {
+                if (!self.equals(entry.getKey())) other += entry.getValue();
             }
-
             long elapsed = Math.max(0L, end - start);
-
-            if (!sawEvents) {
-                Map<String, UsageStats> stats = usm.queryAndAggregateUsageStats(start, end);
-                if (stats == null || stats.isEmpty()) return null;
-                own = 0L;
-                other = 0L;
-                for (Map.Entry<String, UsageStats> en : stats.entrySet()) {
-                    UsageStats s = en.getValue();
-                    if (s == null) continue;
-                    long ms = Math.min(elapsed, s.getTotalTimeInForeground());
-                    if (ms <= 0) continue;
-                    if (self.equals(en.getKey())) own += ms;
-                    else other += ms;
-                }
-                // Aggregated stats can double-count overlapping windows; scale the
-                // pair down so the combined total never beats the clock.
-                long total = own + other;
-                if (total > elapsed && total > 0) {
-                    own = own * elapsed / total;
-                    other = other * elapsed / total;
-                }
-            }
 
             // Final safety net: never report more than today's wall clock, and
             // never let the pair combined beat the time elapsed since midnight.
@@ -194,11 +112,11 @@ final class ScreenTimeTracker {
     static String toJson(Context ctx) {
         JSONObject o = new JSONObject();
         try {
-            int[] t = totals(ctx, true);
+            JSONObject details = new JSONObject(ScreenTimeDetails.cachedJson(ctx));
             o.put("supported", supported());
-            o.put("granted", t != null);
-            o.put("commitxMinutes", t == null ? 0 : t[0]);
-            o.put("otherMinutes", t == null ? 0 : t[1]);
+            o.put("granted", hasPermission(ctx));
+            o.put("commitxMinutes", details.optInt("commitxMinutes", 0));
+            o.put("otherMinutes", details.optInt("otherMinutes", 0));
             o.put("limitMinutes", limitMinutes(ctx));
             o.put("day", dayKey());
         } catch (Throwable ignored) {}
@@ -231,9 +149,12 @@ final class ScreenTimeTracker {
 
     /** Notifies at most once per day when the limit for other apps is passed. */
     static void checkLimit(Context ctx) {
+        checkLimit(ctx, totals(ctx, true));
+    }
+
+    static void checkLimit(Context ctx, int[] t) {
         int limit = limitMinutes(ctx);
         if (limit <= 0) return;
-        int[] t = totals(ctx, true);
         if (t == null) return;
         if (t[1] < limit) return;
         String today = dayKey();

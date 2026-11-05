@@ -42,6 +42,7 @@ final class ScreenTimeDetails {
     private static volatile String cachedJson;
     private static volatile long cachedAt;
     private static boolean refreshing;
+    private static final Map<Long, String> carryPackages = new HashMap<>();
 
     /** Runs slow screen-time work (e.g. the daily notification) off the UI/bridge threads. */
     static void runInBackground(Runnable task) {
@@ -87,57 +88,34 @@ final class ScreenTimeDetails {
         Map<String, Long> out = new HashMap<>();
         UsageStatsManager usm = (UsageStatsManager) ctx.getSystemService(Context.USAGE_STATS_SERVICE);
         if (usm == null || end <= start) return out;
-        UsageEvents events = usm.queryEvents(start, end);
-        if (events == null) return out;
-        UsageEvents.Event e = new UsageEvents.Event();
-        String cur = null;
-        long from = 0L;
-        boolean off = false;
-        while (events.hasNextEvent()) {
-            events.getNextEvent(e);
-            int type = e.getEventType();
-            long ts = Math.min(end, Math.max(start, e.getTimeStamp()));
-            String pkg = e.getPackageName();
-            if (type == 17 || type == 15) {
-                if (cur != null) add(out, hourly, hourBase, cur, from, ts);
-                cur = null;
-                off = true;
-                continue;
-            }
-            if (type == 16 || type == 18) { off = false; continue; }
-            if (pkg == null) continue;
-            if (type == UsageEvents.Event.MOVE_TO_FOREGROUND) {
-                off = false;
-                if (cur != null) add(out, hourly, hourBase, cur, from, ts);
-                cur = pkg;
-                from = ts;
-            } else if (type == UsageEvents.Event.MOVE_TO_BACKGROUND) {
-                if (cur != null && cur.equals(pkg)) {
-                    add(out, hourly, hourBase, cur, from, ts);
-                    cur = null;
+        // Cache carry-in once per day rather than walking a week every five seconds.
+        String carry;
+        synchronized (carryPackages) {
+            if (!carryPackages.containsKey(start)) {
+                UsageTimeline before = new UsageTimeline(start, start, null, 0);
+                UsageEvents history = usm.queryEvents(Math.max(0L, start - 7 * 86_400_000L), start);
+                if (history != null) {
+                    UsageEvents.Event prior = new UsageEvents.Event();
+                    while (history.hasNextEvent()) {
+                        history.getNextEvent(prior);
+                        before.event(prior.getEventType(), prior.getPackageName(), prior.getTimeStamp());
+                    }
+                    if (carryPackages.size() >= 10) carryPackages.clear();
+                    carryPackages.put(start, before.currentPackage());
                 }
             }
+            carry = carryPackages.get(start);
         }
-        if (cur != null && !off) add(out, hourly, hourBase, cur, from, end);
-        return out;
-    }
-
-    private static void add(Map<String, Long> out, long[] hourly, long hourBase,
-                            String pkg, long from, long to) {
-        long ms = Math.max(0L, to - from);
-        if (ms == 0) return;
-        Long prev = out.get(pkg);
-        out.put(pkg, (prev == null ? 0L : prev) + ms);
-        if (hourly == null) return;
-        long t = from;
-        while (t < to) {
-            int h = (int) ((t - hourBase) / 3600000L);
-            if (h < 0 || h >= hourly.length) break;
-            long bucketEnd = hourBase + (h + 1) * 3600000L;
-            long slice = Math.min(to, bucketEnd) - t;
-            hourly[h] += slice;
-            t += slice;
+        UsageEvents events = usm.queryEvents(start, end);
+        if (events == null) return out;
+        UsageTimeline timeline = new UsageTimeline(start, end, hourly, hourBase);
+        if (carry != null) timeline.event(1, carry, start);
+        UsageEvents.Event event = new UsageEvents.Event();
+        while (events.hasNextEvent()) {
+            events.getNextEvent(event);
+            timeline.event(event.getEventType(), event.getPackageName(), event.getTimeStamp());
         }
+        return timeline.finish();
     }
 
     private static long dayStart(int daysAgo) {

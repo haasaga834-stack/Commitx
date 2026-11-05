@@ -12,14 +12,20 @@ public class ScreenTimeReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         if (intent == null) return;
         String action = intent.getAction();
-        if (Intent.ACTION_BOOT_COMPLETED.equals(action)) {
-            ScreenTimeTracker.scheduleChecks(context);
-            CommitXNotifications.showScreenTimeDaily(context);
-            AppLimitsService.startIfNeeded(context);
-            return;
-        }
-        if (!ACTION_CHECK.equals(action)) return;
-        CommitXNotifications.showScreenTimeDaily(context);
-        ScreenTimeTracker.checkLimit(context);
+        boolean boot = Intent.ACTION_BOOT_COMPLETED.equals(action);
+        if (!boot && !ACTION_CHECK.equals(action)) return;
+        PendingResult pending = goAsync();
+        Context app = context.getApplicationContext();
+        ScreenTimeDetails.runInBackground(() -> {
+            try {
+                if (boot) {
+                    ScreenTimeTracker.scheduleChecks(app);
+                    AppLimitsService.startIfNeeded(app);
+                }
+                int[] totals = ScreenTimeTracker.totals(app, true);
+                CommitXNotifications.showScreenTimeDaily(app, totals);
+                if (!boot) ScreenTimeTracker.checkLimit(app, totals);
+            } finally { pending.finish(); }
+        });
     }
 }

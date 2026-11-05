@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { syncTodoNotification, syncStudyPlanReminders } from "@/lib/native-notifications";
 import { isOnline, onReconnect, startConnectivityWatch } from "./connectivity";
 import { hasLiveSession } from "./session-guard";
+import { ackPlannerWrite, queuePlannerWrite, readPlannerWrites, type PlannerWrite } from "./planner-outbox";
 
 export type Repeat = "daily" | "weekly" | "monthly";
 export type Priority = "high" | "medium" | "low";
@@ -42,7 +43,9 @@ const NOTIFIED_KEY = "commitx-planner-notified-v1";
  * ------------------------------------------------------------------------ */
 
 let cloudUserId: string | null = null;
-let pendingCloudPush = false;
+let identityGeneration = 0;
+let syncWorker: Promise<void> | null = null;
+let retryTimer: ReturnType<typeof setTimeout> | null = null;
 let stopReconnect: (() => void) | null = null;
 
 function newId() {
@@ -108,43 +111,46 @@ function toRow(row: StudyPlan, userId: string) {
   };
 }
 
-async function pushPlannerToCloud(userId: string) {
-  if (!isOnline() || !(await hasLiveSession(userId))) {
-    pendingCloudPush = true;
-    return;
+function queueWrite(table: PlannerWrite["table"], row: Record<string, unknown>, remove = false) {
+  const uid = cloudUserId;
+  if (!uid) return;
+  queuePlannerWrite(uid, { id: newId(), table, row, remove });
+  void reconcilePlanner(uid);
+}
+
+async function replayPlannerWrites(uid: string, generation: number) {
+  if (!isOnline() || !(await hasLiveSession(uid))) return false;
+  for (const item of readPlannerWrites(uid)) {
+    if (cloudUserId !== uid || identityGeneration !== generation) return false;
+    const result = item.remove && item.table !== "user_settings"
+      ? await supabase.from(item.table).delete().eq("id", String(item.row.id)).eq("user_id", uid)
+      : await supabase.from(item.table).upsert({ ...item.row, user_id: uid } as never,
+          { onConflict: item.table === "user_settings" ? "user_id" : "id" });
+    if (result.error) throw result.error;
+    ackPlannerWrite(uid, item.id);
   }
-  const plans = getPlans();
-  const todos = getTodos();
-  const today = todayKey();
-  const { error: deletePlanError } = await supabase
-    .from("study_plans")
-    .delete()
-    .eq("user_id", userId);
-  if (deletePlanError) throw deletePlanError;
-  if (plans.length > 0) {
-    const { error } = await supabase
-      .from("study_plans")
-      .insert(plans.map((plan) => toRow(plan, userId)));
-    if (error) throw error;
-  }
-  const { error: deleteTodoError } = await supabase
-    .from("todos")
-    .delete()
-    .eq("user_id", userId)
-    .eq("day", today);
-  if (deleteTodoError) throw deleteTodoError;
-  if (todos.length > 0) {
-    const { error } = await supabase.from("todos").insert(
-      todos.map((item) => ({
-        id: item.id,
-        user_id: userId,
-        text: item.text,
-        done: item.done,
-        day: item.day,
-      })),
-    );
-    if (error) throw error;
-  }
+  return cloudUserId === uid && identityGeneration === generation && !readPlannerWrites(uid).length;
+}
+
+export function reconcilePlanner(uid: string): Promise<void> {
+  if (syncWorker) return syncWorker;
+  if (!isOnline() || cloudUserId !== uid) return Promise.resolve();
+  const generation = identityGeneration;
+  syncWorker = (async () => {
+    try {
+      if (await replayPlannerWrites(uid, generation)) await pullPlannerFromCloud(uid);
+    } catch {
+      // Leave every unacknowledged write durable and retry without another user edit.
+    } finally {
+      syncWorker = null;
+      if (retryTimer) clearTimeout(retryTimer);
+      const current = cloudUserId;
+      if (current && isOnline() && (current !== uid || readPlannerWrites(current).length)) {
+        retryTimer = setTimeout(() => { retryTimer = null; void reconcilePlanner(current); }, 3000);
+      }
+    }
+  })();
+  return syncWorker;
 }
 
 export function addPlan(plan: Omit<StudyPlan, "id" | "createdAt">) {
@@ -160,28 +166,13 @@ export function addPlan(plan: Omit<StudyPlan, "id" | "createdAt">) {
   if (duplicate) {
     const merged: StudyPlan = { ...duplicate, ...plan };
     write(getPlans().map((p) => (p.id === merged.id ? merged : p)));
-    if (cloudUserId && isOnline()) {
-      void supabase
-        .from("study_plans")
-        .upsert(toRow(merged, cloudUserId), { onConflict: "id" })
-        .then(({ error }) => {
-          if (error) pendingCloudPush = true;
-        });
-    } else if (cloudUserId) {
-      pendingCloudPush = true;
-    }
+    queueWrite("study_plans", toRow(merged, cloudUserId ?? ""));
     return merged;
   }
 
   const row: StudyPlan = { ...plan, id: newId(), createdAt: Date.now() };
   write([...getPlans(), row]);
-  if (cloudUserId && isOnline()) {
-    void supabase.from("study_plans").insert(toRow(row, cloudUserId)).then(({ error }) => {
-      if (error) pendingCloudPush = true;
-    });
-  } else if (cloudUserId) {
-    pendingCloudPush = true;
-  }
+  queueWrite("study_plans", toRow(row, cloudUserId ?? ""));
   return row;
 }
 
@@ -200,27 +191,14 @@ export async function savePrimaryPlan(
     : { ...plan, id: newId(), createdAt: Date.now() };
 
   write(existing ? getPlans().map((p) => (p.id === row.id ? row : p)) : [...getPlans(), row]);
-  if (cloudUserId && isOnline()) {
-    const { error } = await supabase
-      .from("study_plans")
-      .upsert(toRow(row, cloudUserId), { onConflict: "id" });
-    if (error) pendingCloudPush = true;
-  } else if (cloudUserId) {
-    pendingCloudPush = true;
-  }
+  queueWrite("study_plans", toRow(row, cloudUserId ?? ""));
   return row;
 }
 
 
 export function removePlan(id: string) {
   write(getPlans().filter((p) => p.id !== id));
-  if (cloudUserId && isOnline()) {
-    void supabase.from("study_plans").delete().eq("id", id).then(({ error }) => {
-      if (error) pendingCloudPush = true;
-    });
-  } else if (cloudUserId) {
-    pendingCloudPush = true;
-  }
+  queueWrite("study_plans", { id }, true);
 }
 
 export function usePlans() {
@@ -469,18 +447,7 @@ export function getRemindersEnabled() {
 }
 
 async function upsertSettings(patch: Record<string, unknown>) {
-  if (!cloudUserId) return;
-  const uid = cloudUserId;
-  if (!isOnline() || !(await hasLiveSession(uid))) {
-    pendingCloudPush = true;
-    return;
-  }
-  try {
-    const { error } = await supabase
-      .from("user_settings")
-      .upsert({ user_id: uid, ...patch }, { onConflict: "user_id" });
-    if (error) pendingCloudPush = true;
-  } catch {}
+  queueWrite("user_settings", patch);
 }
 
 /** Persist the theme choice with the rest of the user's cloud settings. */
@@ -598,35 +565,14 @@ export function addTodo(text: string) {
   if (!t) return;
   const item: TodoItem = { id: newId(), text: t, done: false, day: todayKey() };
   writeTodos([...getTodos(), item]);
-  if (cloudUserId && isOnline()) {
-    void supabase
-      .from("todos")
-      .insert({
-        id: item.id,
-        user_id: cloudUserId,
-        text: item.text,
-        done: false,
-        day: item.day,
-      })
-      .then(({ error }) => {
-        if (error) pendingCloudPush = true;
-      });
-  } else if (cloudUserId) {
-    pendingCloudPush = true;
-  }
+  queueWrite("todos", { ...item });
 }
 
 export function toggleTodo(id: string) {
   const next = getTodos().map((t) => (t.id === id ? { ...t, done: !t.done } : t));
   writeTodos(next);
   const updated = next.find((t) => t.id === id);
-  if (cloudUserId && updated && isOnline()) {
-    void supabase.from("todos").update({ done: updated.done }).eq("id", id).then(({ error }) => {
-      if (error) pendingCloudPush = true;
-    });
-  } else if (cloudUserId) {
-    pendingCloudPush = true;
-  }
+  if (updated) queueWrite("todos", { ...updated });
 }
 
 /** Marks a to-do done; never un-completes it. Returns true if it changed. */
@@ -639,13 +585,7 @@ export function completeTodo(id: string): boolean {
 
 export function removeTodo(id: string) {
   writeTodos(getTodos().filter((t) => t.id !== id));
-  if (cloudUserId && isOnline()) {
-    void supabase.from("todos").delete().eq("id", id).then(({ error }) => {
-      if (error) pendingCloudPush = true;
-    });
-  } else if (cloudUserId) {
-    pendingCloudPush = true;
-  }
+  queueWrite("todos", { id }, true);
 }
 
 export function useTodos() {
@@ -680,7 +620,8 @@ export function useTodos() {
 
 /** Pull plans, today's to-dos and settings from the cloud. */
 export async function pullPlannerFromCloud(userId: string) {
-  if (!isOnline()) return null;
+  const generation = identityGeneration;
+  if (!isOnline() || cloudUserId !== userId || readPlannerWrites(userId).length) return null;
   if (!(await hasLiveSession(userId))) return null;
   const today = todayKey();
   const [plansRes, todosRes, settingsRes] = await Promise.all([
@@ -696,6 +637,7 @@ export async function pullPlannerFromCloud(userId: string) {
     throw plansRes.error ?? todosRes.error ?? settingsRes.error;
   }
 
+  if (cloudUserId !== userId || generation !== identityGeneration || readPlannerWrites(userId).length) return null;
   const plans = plansRes.data;
   const todos = todosRes.data;
   const settings = settingsRes.data;
@@ -747,27 +689,42 @@ export async function pullPlannerFromCloud(userId: string) {
 
 /** Attach/detach the signed-in user. Called from useAuth. */
 export function setPlannerUser(userId: string | null) {
-  cloudUserId = userId;
+  if (cloudUserId !== userId) {
+    identityGeneration++;
+    // Save presentation mirrors per owner before replacing shared compatibility keys.
+    if (typeof window !== "undefined") {
+      if (cloudUserId) saveOwnerMirror(cloudUserId);
+      const priorOwner = localStorage.getItem("commitx-planner-owner");
+      if (userId && priorOwner !== userId) {
+        const saved = localStorage.getItem(`commitx-planner-mirror:${userId}`);
+        const values = saved ? JSON.parse(saved) as Record<string, string> : {};
+        for (const key of [KEY, TODO_KEY, GOAL_KEY, WEEKLY_GOAL_KEY]) {
+          if (values[key] !== undefined) localStorage.setItem(key, values[key]);
+          else localStorage.removeItem(key);
+        }
+      }
+      if (userId) localStorage.setItem("commitx-planner-owner", userId);
+    }
+    cloudUserId = userId;
+    cache = read(); todoCache = readTodos(); goalCache = readGoal(); weeklyCache = readWeeklyGoal();
+    listeners.forEach(l => l()); todoListeners.forEach(l => l()); goalListeners.forEach(l => l()); weeklyListeners.forEach(l => l());
+  }
+  watchTodoChanges(userId);
   if (!userId) return;
   startConnectivityWatch();
-  if (!stopReconnect) {
-    stopReconnect = onReconnect(() => {
-      const uid = cloudUserId;
-      if (!uid) return;
-      const shouldPush = pendingCloudPush;
-      pendingCloudPush = false;
-      const task = shouldPush ? pushPlannerToCloud(uid) : Promise.resolve();
-      void task
-        .then(() => pullPlannerFromCloud(uid))
-        .catch(() => {
-          pendingCloudPush = true;
-        });
-    });
+  if (!stopReconnect) stopReconnect = onReconnect(() => {
+    if (cloudUserId) void reconcilePlanner(cloudUserId);
+  });
+  void reconcilePlanner(userId);
+}
+
+function saveOwnerMirror(uid: string) {
+  const values: Record<string, string> = {};
+  for (const key of [KEY, TODO_KEY, GOAL_KEY, WEEKLY_GOAL_KEY]) {
+    const value = localStorage.getItem(key);
+    if (value !== null) values[key] = value;
   }
-  if (!isOnline()) return;
-  watchTodoChanges(userId);
-  if (!isOnline()) return;
-  void pullPlannerFromCloud(userId).catch(() => {});
+  localStorage.setItem(`commitx-planner-mirror:${uid}`, JSON.stringify(values));
 }
 
 // Live to-do changes from other devices/website refresh the list (and widget) at once.
@@ -785,7 +742,7 @@ function watchTodoChanges(userId: string | null) {
     .on("postgres_changes", { event: "*", schema: "public", table: "todos", filter: `user_id=eq.${userId}` }, () => {
       if (todoPullTimer) clearTimeout(todoPullTimer);
       todoPullTimer = setTimeout(() => {
-        if (cloudUserId === userId && !pendingCloudPush) void pullPlannerFromCloud(userId).catch(() => {});
+        if (cloudUserId === userId && !readPlannerWrites(userId).length) void pullPlannerFromCloud(userId).catch(() => {});
       }, 400);
     })
     .subscribe();
@@ -793,17 +750,22 @@ function watchTodoChanges(userId: string | null) {
 
 /** Clear local mirrors (sign-out / account deletion). */
 export function clearPlannerLocal() {
+  if (cloudUserId && typeof window !== "undefined") saveOwnerMirror(cloudUserId);
+  identityGeneration++;
   cloudUserId = null;
   watchTodoChanges(null);
-  pendingCloudPush = false;
+  if (retryTimer) clearTimeout(retryTimer);
+  retryTimer = null;
   if (stopReconnect) stopReconnect();
   stopReconnect = null;
   write([]);
   writeTodos([]);
   writeGoalLocal(DEFAULT_DAILY_GOAL_HOURS);
+  writeWeeklyGoalLocal(DEFAULT_WEEKLY_GOAL_HOURS);
   if (typeof window !== "undefined") {
     try {
       localStorage.removeItem(NOTIFIED_KEY);
+      localStorage.removeItem("commitx-planner-owner");
     } catch {}
   }
 }

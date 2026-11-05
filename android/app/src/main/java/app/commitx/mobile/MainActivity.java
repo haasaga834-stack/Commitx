@@ -163,7 +163,8 @@ public class MainActivity extends Activity {
         fetchInstallReferrerOnce();
         CommitXNotifications.ensureChannels(this);
         ScreenTimeTracker.scheduleChecks(this);
-        CommitXNotifications.showScreenTimeDaily(this);
+        final Context notificationContext = getApplicationContext();
+        ScreenTimeDetails.runInBackground(() -> CommitXNotifications.showScreenTimeDaily(notificationContext));
         PlanStore.scheduleAll(this);
         MotivationStore.reconcile(this);
         CommitXNotifications.showTodos(this);
@@ -366,6 +367,7 @@ public class MainActivity extends Activity {
 
         webView.setBackgroundColor(Color.parseColor("#050608"));
         webView.loadUrl(startUrlFor(getIntent()));
+        if (!hasInternet()) watchForReconnect();
         // Weak mobile data can stall the fresh download for 30s+. If the page itself
         // has not arrived after 5s, open the saved copy of the app instead. A page
         // that has arrived and is booting (only slow images/analytics pending) is

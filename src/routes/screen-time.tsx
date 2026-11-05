@@ -3,6 +3,8 @@ import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, Smartphone, Timer } from "lucide-react";
 import { MobileShell } from "@/components/BottomNav";
 import { AppLimitsManager } from "@/components/AppLimitsManager";
+import { Button } from "@/components/ui/button";
+import { hasNativeBridge } from "@/lib/native-session";
 import { appLimitsAvailable } from "@/lib/app-limits";
 import {
   formatMinutes,
@@ -37,6 +39,7 @@ function ScreenTimePage() {
   // Show the last good breakdown instantly (also offline / while the native
   // side is still computing), then swap in fresh data when it is ready.
   const refresh = useCallback(() => {
+    setNative(isNativeApp() || hasNativeBridge());
     const fresh = readScreenTimeDetails();
     if (fresh && !fresh.loading) {
       try {
@@ -56,7 +59,6 @@ function ScreenTimePage() {
   }, []);
 
   useEffect(() => {
-    setNative(isNativeApp());
     refresh();
     // Quick retries for the first seconds (bridge/worker warming up), then every minute.
     const quick = [400, 1200, 2500, 5000].map((ms) => window.setTimeout(refresh, ms));
@@ -100,12 +102,12 @@ function ScreenTimePage() {
                 stays on this device and is never uploaded.
               </p>
             </div>
-            <button
+            <Button
               onClick={openUsageAccessSettings}
               className="mt-4 w-full rounded-2xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground"
             >
               Allow usage access
-            </button>
+            </Button>
           </div>
         ) : data?.loading ? (
           <Notice text="Loading your screen time…" />
@@ -114,7 +116,7 @@ function ScreenTimePage() {
         ) : null}
 
         {native && appLimitsAvailable() && (
-          <button
+          <Button variant="ghost"
             onClick={() => setLimitsOpen(true)}
             className="mt-4 flex w-full items-center gap-3 rounded-3xl bg-card p-4 text-left shadow-soft transition-transform active:scale-[0.98]"
           >
@@ -127,7 +129,7 @@ function ScreenTimePage() {
                 Daily time or Reels/Shorts limits per app
               </span>
             </span>
-          </button>
+          </Button>
         )}
         {limitsOpen && <AppLimitsManager onClose={() => setLimitsOpen(false)} />}
       </div>
@@ -167,7 +169,7 @@ function Stats({
     <>
       <div className="mt-6 flex rounded-full bg-secondary p-1 text-xs font-medium">
         {(["day", "week"] as const).map((t) => (
-          <button
+          <Button variant="ghost"
             key={t}
             onClick={() => setTab(t)}
             className={
@@ -176,7 +178,7 @@ function Stats({
             }
           >
             {t === "day" ? "Today" : "This week"}
-          </button>
+          </Button>
         ))}
       </div>
 
