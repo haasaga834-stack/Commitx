@@ -11,6 +11,9 @@
 
 Subdirectories have their own AGENTS.md (see android/AGENTS.md) — read it before changing files there.
 
+- Planner edits use an account-scoped durable ordered outbox with owner-generation guards and per-owner mirrors; acknowledge only successful writes before pulling, because offline restarts and late account responses must not erase tasks or goals.
+- Run web regression files in isolated Bun processes via `bun run test`, because module mocks otherwise contaminate unrelated suites.
+
 - Android Google auth uses one serialized native chooser/token exchange; no skip flags or browser detours, because they stranded Play users. Eagerly import its adapter on Auth so module downloads cannot stall before the timeout. Website OAuth stays independent.
 
 - Buddy invites use native/browser sharing with clipboard fallback; never open messaging sites in WebView popups, which fail on custom schemes.

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { isOnline, onReconnect } from "./connectivity";
 
 const localKey = (uid: string) => `commitx-onboarding-v1:${uid}`;
 
@@ -17,6 +18,14 @@ function writeLocal(uid: string) {
   } catch {}
 }
 
+const pendingKey = (uid: string) => `commitx-onboarding-pending:${uid}`;
+async function syncCompletion(uid: string) {
+  if (!isOnline() || localStorage.getItem(pendingKey(uid)) !== "1") return;
+  const { data, error } = await supabase.from("profiles")
+    .update({ onboarding_completed: true }).eq("id", uid).select("id");
+  if (!error && data?.some(row => row.id === uid)) localStorage.removeItem(pendingKey(uid));
+}
+
 /**
  * First-time onboarding state, persisted on the user's profile row
  * (`profiles.onboarding_completed`) with a localStorage mirror so the story
@@ -24,6 +33,15 @@ function writeLocal(uid: string) {
  */
 export function useOnboarding(userId: string | null) {
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
+
+  useEffect(() => {
+    if (!userId) return;
+    const retry = () => { void syncCompletion(userId).catch(() => {}); };
+    retry();
+    const stop = onReconnect(retry);
+    const timer = window.setInterval(retry, 30_000);
+    return () => { stop(); window.clearInterval(timer); };
+  }, [userId]);
 
   useEffect(() => {
     if (!userId) {
@@ -56,10 +74,8 @@ export function useOnboarding(userId: string | null) {
     if (!userId) return;
     writeLocal(userId);
     try {
-      await supabase
-        .from("profiles")
-        .update({ onboarding_completed: true })
-        .eq("id", userId);
+      localStorage.setItem(pendingKey(userId), "1");
+      await syncCompletion(userId);
     } catch {}
   }, [userId]);
 
