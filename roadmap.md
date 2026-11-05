@@ -1,5 +1,11 @@
 # Roadmap
 
+## Version 5 (1.0.4) release audit
+- [ ] Audit Android startup, permissions, App Limits, Screen Time, offline use and back navigation; fix confirmed defects.
+- [ ] Audit core web screens and run regression tests plus signed-in mobile browser checks.
+- [ ] Check release configuration and security; prepare release notes and publish website fixes.
+- [ ] Verify signed release build and physical-phone cold start, half-swipe blocking, offline/background use — requires GitHub signing/build access and a connected Android device.
+
 - [x] Small-phone / large-text Home fix checked signed-in at 340px (larger text) and 412px; website publish requested Nov 3.
 - [x] Offline-first launch: Android opens the saved app copy without internet, offline screen only if nothing saved, fresh loading restored on reconnect without reloading a running timer.
 - [ ] Verify Airplane-mode launch and solo session sync on a phone — needs the Version 4 build.
