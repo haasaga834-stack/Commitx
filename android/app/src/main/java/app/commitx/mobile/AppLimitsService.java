@@ -113,6 +113,13 @@ public class AppLimitsService extends Service {
     }
 
     @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        // Some OEMs stop services when CommitX is swiped from recents; restart.
+        startIfNeeded(getApplicationContext());
+        super.onTaskRemoved(rootIntent);
+    }
+
+    @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
@@ -124,7 +131,11 @@ public class AppLimitsService extends Service {
             String day = AppLimitsStore.dayKey();
             boolean changed = !day.equals(usageDay) || !raw.equals(limitsJson);
             if (changed) {
+                // Keep today's last known exhausted apps blocked until fresh usage
+                // arrives, so a restarted watcher never opens a gap.
+                boolean newDay = !day.equals(usageDay);
                 exhausted.clear();
+                if (newDay || usageDay == null) exhausted.addAll(AppLimitsStore.savedExhausted(this, day));
                 usageDay = day;
                 limitsJson = raw;
             }
@@ -160,6 +171,7 @@ public class AppLimitsService extends Service {
             }
             exhausted.clear();
             exhausted.addAll(refreshed);
+            AppLimitsStore.saveExhausted(this, day, refreshed);
             // Query again after aggregation in case the user switched meanwhile.
             applyCover(foregroundPackage());
         } catch (Throwable ignored) {}

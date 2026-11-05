@@ -20,8 +20,9 @@ public class ScreenTimeReceiver extends BroadcastReceiver {
             try {
                 if (boot) {
                     ScreenTimeTracker.scheduleChecks(app);
-                    AppLimitsService.startIfNeeded(app);
                 }
+                // Revive the limits watcher if the phone stopped it in the background.
+                AppLimitsService.startIfNeeded(app);
                 int[] totals = ScreenTimeTracker.totals(app, true);
                 CommitXNotifications.showScreenTimeDaily(app, totals);
                 if (!boot) ScreenTimeTracker.checkLimit(app, totals);
