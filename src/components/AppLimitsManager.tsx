@@ -31,10 +31,16 @@ export function AppLimitsManager({ onClose, onSaved }: { onClose: () => void; on
   const [picked, setPicked] = useState<ShieldAppOption | null>(null);
   const [type, setType] = useState<"time" | "reels">("time");
   const [value, setValue] = useState<number>(60);
-  const [ready, setReady] = useState(appLimitsReady());
+  // While the native bridge is still attaching (right after the app resumes),
+  // every check reads false. Never show the permission gate on that.
+  const bridgeLive = () => typeof window !== "undefined" && !!window.CommitXAndroid;
+  const [ready, setReady] = useState(() => appLimitsReady() || !bridgeLive());
   const [manual, setManual] = useState<"usage" | "overlay" | null>(null);
 
-  const refresh = () => setLimits(readAppLimits());
+  const refresh = () => {
+    if (!bridgeLive()) return; // keep the last known list instead of blanking it
+    setLimits(readAppLimits());
+  };
 
   // Android Back steps back inside the dialog, then closes it (never exits the app).
   const viewRef = useRef(view);
@@ -54,6 +60,10 @@ export function AppLimitsManager({ onClose, onSaved }: { onClose: () => void; on
 
   const [gateMsg, setGateMsg] = useState<string | null>(null);
   const confirmAllowed = () => {
+    if (!bridgeLive()) {
+      window.setTimeout(confirmAllowed, 300);
+      return;
+    }
     const nowReady = appLimitsReady();
     setReady(nowReady);
     if (nowReady) { setGateMsg(null); return; }
@@ -82,8 +92,15 @@ export function AppLimitsManager({ onClose, onSaved }: { onClose: () => void; on
   // picker and configure views are unreachable until both permissions hold.
   const [perm, setPerm] = useState({ usage: true, overlay: true });
   useEffect(() => {
+    let tries = 0;
+    let timer: number | undefined;
     const check = () => {
       if (document.visibilityState !== "visible") return;
+      if (!bridgeLive()) {
+        if (tries++ < 20) timer = window.setTimeout(check, 250);
+        return;
+      }
+      refresh();
       const r = appLimitsReady();
       setReady(r);
       if (!r) setPerm({ usage: shieldHasUsageAccess(), overlay: shieldHasOverlayAccess() });
@@ -93,7 +110,10 @@ export function AppLimitsManager({ onClose, onSaved }: { onClose: () => void; on
     document.addEventListener("visibilitychange", check);
     // No timed polling: slow synchronous native checks blocked button taps.
     // Returning from Android settings fires visibility/focus, which re-checks.
+    window.addEventListener("commitx:permissions-changed", check);
     return () => {
+      if (timer) window.clearTimeout(timer);
+      window.removeEventListener("commitx:permissions-changed", check);
       window.removeEventListener("focus", check);
       document.removeEventListener("visibilitychange", check);
     };
