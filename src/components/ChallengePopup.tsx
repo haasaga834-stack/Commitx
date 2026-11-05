@@ -1,3 +1,4 @@
+import finisherBadge from "@/assets/challenge-finisher-badge.png";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Check, Flame, Plus, X } from "lucide-react";
@@ -177,7 +178,11 @@ export function ChallengePopup({ hidden = false }: { hidden?: boolean }) {
 
         {view === "result" && progress && (
           <div className="flex flex-col items-center text-center">
-            <span className="mb-3 text-5xl">{progress.status === "completed" ? "🏅" : "💔"}</span>
+            {progress.status === "completed" ? (
+              <img src={finisherBadge} alt="21-Day Finisher badge" width={144} height={144} className="mb-3 h-36 w-36 object-contain" />
+            ) : (
+              <span className="mb-3 text-5xl">💔</span>
+            )}
             <DialogTitle className="font-display text-xl">
               {progress.status === "completed" ? "21-Day Finisher!" : "Challenge ended"}
             </DialogTitle>

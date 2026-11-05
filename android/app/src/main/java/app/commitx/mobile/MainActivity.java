@@ -295,6 +295,12 @@ public class MainActivity extends Activity {
             }
 
             @Override
+            public android.webkit.WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                android.webkit.WebResourceResponse bundled = bundledWebAsset(request);
+                return bundled != null ? bundled : super.shouldInterceptRequest(view, request);
+            }
+
+            @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 return handleNavigation(view, request == null ? null : request.getUrl());
             }
@@ -1229,6 +1235,41 @@ public class MainActivity extends Activity {
         return "commitx.site".equalsIgnoreCase(host) || "www.commitx.site".equalsIgnoreCase(host)
                 || "commitx.lovable.app".equalsIgnoreCase(host)
                 || "id-preview--1384a4d2-7b53-476d-badb-4dfc999cef26.lovable.app".equalsIgnoreCase(host);
+    }
+
+    /**
+     * Serves content-hashed website files (/assets/*) packaged inside the APK.
+     * Hashed names are immutable, so a packaged copy is identical to the server's;
+     * any file not packaged falls through to the normal network/cache load.
+     */
+    private android.webkit.WebResourceResponse bundledWebAsset(WebResourceRequest request) {
+        try {
+            if (request == null || !"GET".equalsIgnoreCase(request.getMethod())) return null;
+            Uri uri = request.getUrl();
+            if (!isCommitXUrl(uri)) return null;
+            String path = uri.getPath();
+            if (path == null || !path.startsWith("/assets/") || path.contains("..")) return null;
+            java.io.InputStream in = getAssets().open("web" + path);
+            String ext = android.webkit.MimeTypeMap.getFileExtensionFromUrl(path);
+            String mime;
+            if ("js".equals(ext) || "mjs".equals(ext)) mime = "text/javascript";
+            else if ("css".equals(ext)) mime = "text/css";
+            else if ("woff2".equals(ext)) mime = "font/woff2";
+            else if ("svg".equals(ext)) mime = "image/svg+xml";
+            else {
+                mime = ext == null ? null : android.webkit.MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext);
+                if (mime == null) mime = "application/octet-stream";
+            }
+            android.webkit.WebResourceResponse res = new android.webkit.WebResourceResponse(
+                    mime, mime.startsWith("text/") ? "utf-8" : null, in);
+            java.util.Map<String, String> headers = new java.util.HashMap<>();
+            headers.put("Cache-Control", "public, max-age=31536000, immutable");
+            headers.put("Access-Control-Allow-Origin", "*");
+            res.setResponseHeaders(headers);
+            return res;
+        } catch (Throwable notPackaged) {
+            return null;
+        }
     }
 
     private boolean isCommitXUrl(Uri uri) {
