@@ -210,7 +210,7 @@ export function AppLimitsManager({ onClose, onSaved }: { onClose: () => void; on
                 </Button>
               )}
               {manual && <ManualSteps kind={manual} />}
-              <Button onClick={confirmAllowed} variant="ghost" className="h-11 rounded-full">
+              <Button onClick={() => confirmAllowed()} variant="ghost" className="h-11 rounded-full">
                 I've allowed both
               </Button>
               {gateMsg && (
