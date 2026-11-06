@@ -1,6 +1,7 @@
 import { getDailyGoalHours, getTodos, todayKey } from './planner';
 import { getState, stats } from './commitx-store';
 import { challengeProgress, getChallenge } from './challenge';
+import { readRestorableActiveSession } from './verified-mode';
 import { supabase } from '@/integrations/supabase/client';
 
 const localKey = (userId: string) => `commitx-widget-invited:${userId}`;
@@ -28,7 +29,7 @@ export function markWidgetInvited(userId: string) {
 }
 
 export function syncStudyWidget(userId: string | null) {
-  try { window.CommitXAndroid?.syncStudyWidget?.(JSON.stringify({ userId, day: todayKey(), minutes: userId ? stats(getState().sessions).todayMinutes : 0, streak: userId ? stats(getState().sessions).streak : 0, goalMinutes: getDailyGoalHours() * 60, challengeDay: userId ? challengeDayFor(userId) : 0, todos: userId ? getTodos() : [] })); } catch {}
+  try { window.CommitXAndroid?.syncStudyWidget?.(JSON.stringify({ userId, day: todayKey(), minutes: userId ? stats(getState().sessions).todayMinutes : 0, streak: userId ? stats(getState().sessions).streak : 0, goalMinutes: getDailyGoalHours() * 60, challengeDay: userId ? challengeDayFor(userId) : 0, todos: userId ? getTodos() : [], ...liveSession(userId) })); } catch {}
 }
 
 export function requestStudyWidget() {
@@ -41,4 +42,16 @@ function challengeDayFor(userId: string) {
   if (!rec) return 0;
   const p = challengeProgress(rec, getState().sessions);
   return p.status === 'active' ? p.day : 0;
+}
+
+/** Live session projection for the widget; presentation only, never settles anything. */
+export function liveSession(userId: string | null) {
+  if (!userId) return {};
+  try {
+    const s = readRestorableActiveSession();
+    if (!s || typeof s.startedAt !== 'number') return {};
+    const endMs = s.startedAt + s.duration * 60000;
+    if (endMs <= Date.now()) return {};
+    return { sessionStartMs: s.startedAt, sessionEndMs: endMs, sessionGoal: s.goal };
+  } catch { return {}; }
 }

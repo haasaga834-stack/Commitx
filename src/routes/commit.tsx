@@ -124,6 +124,15 @@ function Commit() {
   }, []);
 
 
+  // A session is already running: never offer a second setup, go back to the live timer.
+  useEffect(() => {
+    const live = readRestorableActiveSession();
+    if (live && typeof live.startedAt === "number" && live.startedAt + live.duration * 60000 > Date.now()) {
+      void navigate({ to: "/session", search: { goal: live.goal, duration: live.duration,
+        value: live.value, mode: live.mode, theme: live.theme }, replace: true });
+    }
+  }, []);
+
   const native = hasNativeBridge();
   const dndCheckable = canCheckDnd();
 
