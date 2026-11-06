@@ -97,6 +97,7 @@ export function writeActiveVerifiedSession(session: ActiveVerifiedSession) {
       ACTIVE_VERIFIED_SESSION_KEY,
       JSON.stringify({ ...session, id: session.id ?? (readActiveVerifiedSession()?.startedAt === session.startedAt ? readActiveVerifiedSession()?.id : undefined) ?? createLocalSessionId(), lastLifecycleAt: Date.now() }),
     );
+    window.dispatchEvent(new Event("commitx:active-session"));
   } catch {}
 }
 
@@ -104,6 +105,7 @@ export function clearActiveVerifiedSession() {
   if (!canUseStorage()) return;
   try {
     window.localStorage.removeItem(ACTIVE_VERIFIED_SESSION_KEY);
+    window.dispatchEvent(new Event("commitx:active-session"));
   } catch {}
 }
 

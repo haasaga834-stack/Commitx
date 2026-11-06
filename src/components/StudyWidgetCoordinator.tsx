@@ -18,7 +18,9 @@ export function StudyWidgetCoordinator({ userId, onboarding }: { userId: string 
     const timer = setInterval(reconcile, 15000);
     window.addEventListener('online', reconcile);
     window.addEventListener('focus', reconcile);
-    return () => { stop(); clearInterval(timer); window.removeEventListener('online', reconcile); window.removeEventListener('focus', reconcile); };
+    const onSession = () => syncStudyWidget(userId);
+    window.addEventListener('commitx:active-session', onSession);
+    return () => { stop(); clearInterval(timer); window.removeEventListener('online', reconcile); window.removeEventListener('focus', reconcile); window.removeEventListener('commitx:active-session', onSession); };
   }, [userId]);
   useEffect(() => {
     if (!hasNativeBridge() || !hydrated) return;
