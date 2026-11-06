@@ -15,6 +15,15 @@ import org.json.JSONObject;
 /** Small, movable launcher widget. The launcher owns placement, size and blur support. */
 public class StudyGoalWidget extends AppWidgetProvider {
     private static final String TOGGLE = "app.commitx.mobile.WIDGET_TOGGLE";
+    private static final String REFRESH = "app.commitx.mobile.WIDGET_LIVE_REFRESH";
+    /** Inexact minute tick so the live countdown keeps moving while CommitX is in the background. */
+    private static void scheduleRefresh(Context ctx, long at) {
+        try {
+            android.app.AlarmManager am = (android.app.AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+            PendingIntent pi = PendingIntent.getBroadcast(ctx, 1602, new Intent(ctx, StudyGoalWidget.class).setAction(REFRESH), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            if (am != null) am.set(android.app.AlarmManager.RTC, at, pi);
+        } catch (Exception ignored) {}
+    }
     /** Whole hours stay plain ("2h"); partial hours keep one decimal ("2.5h"). */
     private static String hoursText(int minutes) {
         float hours = minutes / 60f;
@@ -34,6 +43,8 @@ public class StudyGoalWidget extends AppWidgetProvider {
                 StudyWidgetStore.toggle(ctx, id);
                 MainActivity.notifyWidgetChanged();
             }
+        } else if (REFRESH.equals(intent.getAction())) {
+            updateAll(ctx);
         } else if (Intent.ACTION_DATE_CHANGED.equals(intent.getAction()) || Intent.ACTION_TIME_CHANGED.equals(intent.getAction()) || Intent.ACTION_TIMEZONE_CHANGED.equals(intent.getAction()) || Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) updateAll(ctx);
     }
     private static void update(Context ctx, AppWidgetManager manager, int id) {
@@ -46,17 +57,31 @@ public class StudyGoalWidget extends AppWidgetProvider {
             int width = Math.max(opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 300),
                     opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, 0));
             RemoteViews views = new RemoteViews(ctx.getPackageName(), width < 200 ? R.layout.study_widget_stacked : R.layout.study_widget);
-            Intent open = new Intent(ctx, MainActivity.class).putExtra(MainActivity.EXTRA_ROUTE, "planner").addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            PendingIntent tap = PendingIntent.getActivity(ctx, 1600, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            long now = System.currentTimeMillis();
+            long liveStart = state.optLong("sessionStartMs", 0), liveEnd = state.optLong("sessionEndMs", 0);
+            boolean live = liveEnd > now && liveStart > 0 && liveStart < liveEnd;
+            Intent open = new Intent(ctx, MainActivity.class).putExtra(MainActivity.EXTRA_ROUTE, live ? "session" : "planner").addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            PendingIntent tap = PendingIntent.getActivity(ctx, live ? 1601 : 1600, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
             views.setOnClickPendingIntent(R.id.widget_root, tap);
             views.setOnClickPendingIntent(R.id.widget_more, tap);
             int minutes = today ? state.optInt("minutes", 0) : 0;
             int goalMinutes = today ? state.optInt("goalMinutes", 0) : 0;
             int progress = goalMinutes > 0 ? Math.min(1000, Math.round(1000f * minutes / goalMinutes)) : 0;
-            views.setProgressBar(R.id.widget_ring, 1000, progress, false);
-            String h = hoursText(minutes);
-            views.setTextViewText(R.id.widget_hours, h.substring(0, h.length() - 1));
-            views.setTextViewText(R.id.widget_hours_goal, "of " + hoursText(goalMinutes));
+            if (live) {
+                int liveProgress = (int) Math.min(1000, Math.max(0, 1000L * (now - liveStart) / (liveEnd - liveStart)));
+                long left = Math.max(1, (liveEnd - now + 59999) / 60000);
+                views.setProgressBar(R.id.widget_ring, 1000, liveProgress, false);
+                views.setTextViewText(R.id.widget_hours, String.valueOf(left));
+                views.setTextViewText(R.id.widget_hours_label, "MIN LEFT");
+                views.setTextViewText(R.id.widget_hours_goal, "\u25CF LIVE");
+                scheduleRefresh(ctx, Math.min(liveEnd + 1000, now + 60000));
+            } else {
+                views.setProgressBar(R.id.widget_ring, 1000, progress, false);
+                String h = hoursText(minutes);
+                views.setTextViewText(R.id.widget_hours, h.substring(0, h.length() - 1));
+                views.setTextViewText(R.id.widget_hours_label, "HRS");
+                views.setTextViewText(R.id.widget_hours_goal, "of " + hoursText(goalMinutes));
+            }
             int streak = state.optInt("streak", 0);
             int challengeDay = state.optInt("challengeDay", 0);
             views.setViewVisibility(R.id.widget_streak, (streak > 0 || challengeDay > 0) ? View.VISIBLE : View.GONE);
