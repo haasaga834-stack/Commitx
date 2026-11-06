@@ -128,7 +128,8 @@ function Commit() {
   useEffect(() => {
     const live = readRestorableActiveSession();
     if (live && typeof live.startedAt === "number" && live.startedAt + live.duration * 60000 > Date.now()) {
-      navigate({ to: "/session", replace: true });
+      void navigate({ to: "/session", search: { goal: live.goal, duration: live.duration,
+        value: live.value, mode: live.mode, theme: live.theme }, replace: true });
     }
   }, []);
 
