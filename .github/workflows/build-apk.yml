@@ -26,8 +26,8 @@ env:
   # Bump COMMITX_VERSION_CODE by 1 before every new upload — Play rejects an
   # upload whose version code is not higher than the last one it received.
   # Version 5 release: startup/bridge recovery, App Limits and navigation fixes.
-  COMMITX_VERSION_CODE: "6"
-  COMMITX_VERSION_NAME: "1.0.5"
+  COMMITX_VERSION_CODE: "7"
+  COMMITX_VERSION_NAME: "1.0.6"
 
 jobs:
   build-apk:
