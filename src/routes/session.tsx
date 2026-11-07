@@ -17,6 +17,7 @@ import {
   readRestorableActiveSession,
   writeActiveVerifiedSession,
   RECOVERY_BREAK_MS,
+  canCancelBeforeFocus,
   wellnessBreakAtMs,
   wellnessBreaksApply,
   type SessionPhase,
@@ -72,7 +73,7 @@ import { accountabilityEnded } from "@/lib/accountability";
 import { flushPendingSessions } from "@/lib/cloud-sync";
 import { recoverSessionProgress } from "@/lib/session-recovery";
 import { BuddyCam } from "@/components/BuddyCam";
-import { getFocusTodos } from "@/lib/focus-todo";
+import { clearFocusTodo, getFocusTodos } from "@/lib/focus-todo";
 
 declare global {
   interface Window {
@@ -353,6 +354,7 @@ function LiveSession() {
     if (typeof window === "undefined" || !isVerified) return false;
     return canCheckDnd() && isDndEnabled() === false;
   });
+  const [dndCanCancel, setDndCanCancel] = useState(false);
 
   // Only a *live* session for the exact same commitment may be restored. A
   // stale record (older than 6h of wall clock, already past its duration, or
@@ -611,6 +613,7 @@ function LiveSession() {
   // Keep the stored session in sync from the very first render.
   useEffect(() => {
     if (dndBlocked) {
+      setDndCanCancel(canCancelBeforeFocus(elapsedNow()));
       pauseTimer("dnd_required");
       return;
     }
@@ -618,6 +621,31 @@ function LiveSession() {
     evaluateRef.current();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  /**
+   * Cancel from the DND gate before any focus ran: discard the ticket and the
+   * reserved claim so /commit no longer resumes this session, with no penalty.
+   */
+  const cancelBeforeFocus = useCallback(() => {
+    if (doneRef.current) return;
+    if (!canCancelBeforeFocus(elapsedNow())) return;
+    doneRef.current = true;
+    runningSinceRef.current = null;
+    const ticketId = readActiveVerifiedSession()?.id;
+    if (user && ticketId) clearFocusTodo(user.id, ticketId);
+    clearActiveVerifiedSession();
+    setNativeSessionLock(false);
+    setNativeVerifiedModeActive(false);
+    hideSessionProgress();
+    stopShield();
+    setShieldOn(false);
+    clearShieldPlan();
+    releaseSessionDnd();
+    cancelWellnessSounds(wellnessSessionKey);
+    void releaseActiveDbSession();
+    log("DND Gate Cancelled");
+    navigate({ to: "/commit", replace: true });
+  }, [elapsedNow, navigate, user, wellnessSessionKey]);
 
   // Poll DND while blocked so returning from settings unblocks automatically.
   useEffect(() => {
@@ -1329,12 +1357,18 @@ function LiveSession() {
             >
               Open Settings
             </button>
-            <button
-              onClick={() => navigate({ to: "/commit" })}
-              className="mt-3 w-full rounded-full border border-hairline bg-background px-6 py-3 text-sm font-medium"
-            >
-              Cancel
-            </button>
+            {dndCanCancel ? (
+              <button
+                onClick={cancelBeforeFocus}
+                className="mt-3 w-full rounded-full border border-hairline bg-background px-6 py-3 text-sm font-medium"
+              >
+                Cancel
+              </button>
+            ) : (
+              <p className="mt-4 text-xs text-muted-foreground">
+                Your session is paused. Turn on Do Not Disturb to continue.
+              </p>
+            )}
           </div>
         </div>
       )}

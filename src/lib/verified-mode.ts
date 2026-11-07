@@ -18,6 +18,16 @@ export type VerifiedFailureReason =
 /** Persisted session phase — timestamps remain the source of truth. */
 export type SessionPhase = "focus" | "recovery_break" | "awaiting_confirmation";
 
+/**
+ * A Verified session stopped by the Do Not Disturb gate before any real focus
+ * was banked may be cancelled without penalty; once focus has run it is a
+ * locked commitment and can only continue after DND is turned on.
+ */
+export const DND_CANCEL_GRACE_MS = 60 * 1000;
+export function canCancelBeforeFocus(focusedMs: number) {
+  return focusedMs < DND_CANCEL_GRACE_MS;
+}
+
 /** One mandatory halfway break for commitments longer than two hours. */
 export const RECOVERY_BREAK_MS = 5 * 60 * 1000;
 
