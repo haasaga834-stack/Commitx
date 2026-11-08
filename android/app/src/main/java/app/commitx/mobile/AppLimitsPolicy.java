@@ -19,6 +19,28 @@ final class AppLimitsPolicy {
                 || now - lastRefresh >= USAGE_REFRESH_MS;
     }
 
+    /** "30m daily limit", "1h 30m daily limit" or "60 reels daily limit" (reels are stored as ~30s each). */
+    static String formatLimit(int minutes, String type) {
+        if (minutes <= 0) return "";
+        if ("reels".equals(type)) return (minutes * 2) + " reels daily limit";
+        int h = minutes / 60;
+        int m = minutes % 60;
+        String amount = h == 0 ? m + "m" : (m == 0 ? h + "h" : h + "h " + m + "m");
+        return amount + " daily limit";
+    }
+
+    /** Live countdown to the midnight reset: "3h 14m 05s", "14m 05s" or "05s". */
+    static String formatResetIn(long remainingMs) {
+        long total = Math.max(0L, remainingMs) / 1000L;
+        long h = total / 3600L;
+        long m = (total % 3600L) / 60L;
+        long s = total % 60L;
+        String ss = (s < 10 ? "0" : "") + s + "s";
+        if (h > 0) return h + "h " + (m < 10 ? "0" : "") + m + "m " + ss;
+        if (m > 0) return m + "m " + ss;
+        return ss;
+    }
+
     static boolean shouldHide(String foreground, String coveredPackage) {
         return foreground != null && !foreground.equals(coveredPackage);
     }

@@ -74,6 +74,17 @@ final class AppLimitsStore {
         } catch (Throwable ignored) {}
     }
 
+    /** Short description of the saved limit for the block screen, e.g. "30m daily limit". */
+    static String limitSummary(Context ctx, String pkg) {
+        try {
+            JSONObject entry = limits(ctx).optJSONObject(pkg);
+            if (entry == null) return "";
+            return AppLimitsPolicy.formatLimit(entry.optInt("minutes", 0), entry.optString("type", "time"));
+        } catch (Throwable t) {
+            return "";
+        }
+    }
+
     static void removeLimit(Context ctx, String pkg) {
         try {
             JSONObject all = limits(ctx);

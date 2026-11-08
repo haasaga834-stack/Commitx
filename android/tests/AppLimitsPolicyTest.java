@@ -24,6 +24,17 @@ public final class AppLimitsPolicyTest {
         equal(AppLimitsPolicy.shouldHide(null, "com.instagram.android"), false);
         equal(AppLimitsPolicy.shouldHide("com.instagram.android", "com.instagram.android"), false);
         equal(AppLimitsPolicy.shouldHide("app.commitx.mobile", "com.instagram.android"), true);
-        System.out.println("13 native App Limits assertions passed");
+        // Block screen shows the saved limit; reels are stored as ~30s each.
+        equal(AppLimitsPolicy.formatLimit(30, "time"), "30m daily limit");
+        equal(AppLimitsPolicy.formatLimit(60, "time"), "1h daily limit");
+        equal(AppLimitsPolicy.formatLimit(90, "time"), "1h 30m daily limit");
+        equal(AppLimitsPolicy.formatLimit(15, "reels"), "30 reels daily limit");
+        equal(AppLimitsPolicy.formatLimit(0, "time"), "");
+        // Midnight reset countdown ticks every second and never goes negative.
+        equal(AppLimitsPolicy.formatResetIn((3 * 3600 + 14 * 60 + 5) * 1000L), "3h 14m 05s");
+        equal(AppLimitsPolicy.formatResetIn((2 * 3600 + 5 * 60) * 1000L), "2h 05m 00s");
+        equal(AppLimitsPolicy.formatResetIn((14 * 60 + 5) * 1000L + 999L), "14m 05s");
+        equal(AppLimitsPolicy.formatResetIn(-5000L), "00s");
+        System.out.println("23 native App Limits assertions passed");
     }
 }

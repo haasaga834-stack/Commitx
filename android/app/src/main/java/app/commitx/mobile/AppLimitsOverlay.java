@@ -12,14 +12,14 @@ import android.view.WindowManager;
 
 /**
  * CommitX reminder shown on top of an app whose daily limit is used up.
- * Same presentation as the Focus Shield reminder; the blocked app is never
+ * Shows the app icon, saved limit and a live midnight countdown; the blocked app is never
  * modified, hidden or removed. The block lifts automatically at midnight.
  */
 final class AppLimitsOverlay {
     private final Context ctx;
     private final Handler handler = new Handler(Looper.getMainLooper());
 
-    private View root;
+    private AppLimitsReminderView root;
     private long endsAt;
 
     AppLimitsOverlay(Context ctx) {
@@ -37,8 +37,9 @@ final class AppLimitsOverlay {
             WindowManager wm = (WindowManager) ctx.getSystemService(Context.WINDOW_SERVICE);
             if (wm == null) return;
 
-            FocusShieldReminderView view = new FocusShieldReminderView(ctx,
-                    AppLimitsStore.labelFor(ctx, blockedPackage), "Back tomorrow", v -> {
+            AppLimitsReminderView view = new AppLimitsReminderView(ctx, blockedPackage,
+                    AppLimitsStore.labelFor(ctx, blockedPackage),
+                    AppLimitsStore.limitSummary(ctx, blockedPackage), v -> {
                 try {
                     ctx.startActivity(new Intent(ctx, MainActivity.class)
                             .setAction(Intent.ACTION_MAIN)
@@ -50,7 +51,8 @@ final class AppLimitsOverlay {
                     // Keep protecting the limited app until the worker confirms
                     // CommitX (or another app) resumed. No timed bypass window.
                 } catch (Throwable ignored) {}
-            }, true);
+            });
+            view.setResetRemaining(endsAt - System.currentTimeMillis());
 
             int type = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                     ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
@@ -91,7 +93,10 @@ final class AppLimitsOverlay {
                 hide();
                 return;
             }
-            handler.postDelayed(this, 1000L);
+            long now = System.currentTimeMillis();
+            root.setResetRemaining(endsAt - now);
+            // Align to the next whole second so the countdown ticks evenly.
+            handler.postDelayed(this, 1000L - (now % 1000L));
         }
     };
 }
