@@ -1190,16 +1190,20 @@ body.cx-app-theme .cx-phone-home-shell > div:not(.cx-home-atmosphere) { position
 .cx-home-atmosphere { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
 .cx-home-panorama { width: 100%; height: 100%; object-fit: cover; object-position: center; }
 .cx-home-scenic-wash { position: absolute; inset: 0; background: linear-gradient(to bottom, color-mix(in oklch, var(--background) 12%, transparent), transparent 50%, color-mix(in oklch, var(--home-hero-shade) 12%, transparent)), var(--home-sky-wash); }
-.cx-home-bird { position: absolute; left: -12%; width: 30px; color: var(--home-bird); filter: drop-shadow(0 0 3px var(--home-bird-glow)); opacity: 0.65; animation: cx-bird-flight 32s linear infinite; }
+.cx-home-bird { position: absolute; left: -12%; width: 30px; color: var(--home-bird); filter: drop-shadow(0 0 3px var(--home-bird-glow)); opacity: 0.65; animation: cx-bird-flight-a 34s cubic-bezier(.45,.05,.55,.95) infinite; will-change: transform; }
 .cx-home-bird-0 { top: 18%; animation-delay: -9s; }
-.cx-home-bird-1 { top: 27%; width: 22px; animation-duration: 39s; animation-delay: -25s; }
-.cx-home-bird-2 { top: 40%; width: 27px; animation-duration: 46s; animation-delay: -15s; }
-.cx-home-bird-3 { top: 58%; width: 18px; animation-duration: 36s; animation-delay: -31s; }
-.cx-home-bird-shape { width: 100%; animation: cx-wing-glide 2.2s ease-in-out infinite; }
+.cx-home-bird-0 .cx-home-bird-shape { animation-duration: 1.9s; }
+.cx-home-bird-1 { top: 27%; width: 22px; animation-name: cx-bird-flight-b; animation-duration: 41s; animation-delay: -25s; }
+.cx-home-bird-1 .cx-home-bird-shape { animation-duration: 1.4s; animation-delay: -.6s; }
+.cx-home-bird-2 { top: 40%; width: 27px; animation-name: cx-bird-flight-c; animation-duration: 47s; animation-delay: -15s; }
+.cx-home-bird-2 .cx-home-bird-shape { animation-duration: 2.4s; animation-delay: -1.1s; }
+.cx-home-bird-3 { top: 58%; width: 18px; animation-name: cx-bird-flight-d; animation-duration: 37s; animation-delay: -31s; }
+.cx-home-bird-3 .cx-home-bird-shape { animation-duration: 1.2s; animation-delay: -.3s; }
+.cx-home-bird-shape { width: 100%; transform-origin: center 60%; animation: cx-wing-glide 2.2s ease-in-out infinite; }
 .cx-home-perched { position: absolute; width: 29px; height: 24px; right: 23px; top: -23px; color: var(--home-bird); filter: drop-shadow(0 0 3px var(--home-bird-glow)); transform-origin: bottom center; animation: cx-bird-perch 8s ease-in-out infinite; pointer-events: none; }
 .cx-home-paused .cx-home-bird, .cx-home-paused .cx-home-bird-shape { animation-play-state: paused; }
 @keyframes cx-bird-flight { 0% { transform: translate3d(-30px, 8px, 0); } 50% { transform: translate3d(55vw, -16px, 0); } 100% { transform: translate3d(120vw, 8px, 0); } }
-@keyframes cx-wing-glide { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.5); } }
+@keyframes cx-wing-glide { 0%, 100% { transform: scaleY(1); } 18% { transform: scaleY(0.35); } 34% { transform: scaleY(1); } 50% { transform: scaleY(0.45); } 64%, 92% { transform: scaleY(0.9); } }
 @keyframes cx-bird-perch { 0%, 85%, 100% { transform: rotate(0); } 90% { transform: rotate(5deg); } 95% { transform: rotate(-3deg); } }
 body.cx-app-theme .cx-phone-home-shell .cx-home {
   min-height: calc(100dvh - var(--home-nav-height) - var(--home-nav-bottom));
