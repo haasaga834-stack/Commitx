@@ -1,4 +1,6 @@
 import { nativeBackParent } from "@/lib/native-back";
+import { isAllowedDuringSession } from "@/lib/session-deeplink";
+import { toast } from "sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { accountabilityAppOpened } from "@/lib/accountability";
 import { usePresenceTracker } from "@/lib/presence";
@@ -414,6 +416,27 @@ function RootComponent() {
       },
       // In-page navigation for native deep links (no WebView reload).
       goTo: (path: string) => {
+        // A notification/widget tap must never pull a student off a live timer.
+        const live = readRestorableActiveSession();
+        if (live && !isAllowedDuringSession(String(path || "/"))) {
+          toast("No way out — finish your session 💪", {
+            description: "Your commitment is locked in until the timer ends.",
+          });
+          if (navRouter.state.location.pathname !== "/session") {
+            void navRouter.navigate({
+              to: "/session",
+              search: {
+                goal: live.goal,
+                duration: live.duration,
+                value: live.value,
+                mode: live.mode,
+                ...(live.theme ? { theme: live.theme } : {}),
+              } as never,
+              replace: true,
+            });
+          }
+          return;
+        }
         const [p, q] = String(path || "/").split("?");
         const search = Object.fromEntries(new URLSearchParams(q ?? ""));
         void navRouter.navigate({ to: (p.startsWith("/") ? p : `/${p}`) as "/", search: search as never });
