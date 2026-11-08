@@ -13,12 +13,16 @@ describe("21-day challenge", () => {
     expect(p.todayMinutes).toBe(120);
     expect(p.days[0].met).toBe(false);
   });
-  it("one missed day uses the freeze, a second fails", () => {
-    const ok = challengeProgress({ startDay: "2026-11-01" }, [s("2026-11-02", 180)], "2026-11-03");
+  it("any missed day fails the challenge", () => {
+    const missedDay1 = challengeProgress({ startDay: "2026-11-01" }, [], "2026-11-02");
+    expect(missedDay1.status).toBe("failed");
+    const short = challengeProgress({ startDay: "2026-11-01" }, [s("2026-11-01", 179)], "2026-11-02");
+    expect(short.status).toBe("failed");
+  });
+  it("meeting 3 Verified hours keeps it active", () => {
+    const ok = challengeProgress({ startDay: "2026-11-01" }, [s("2026-11-01", 180)], "2026-11-02");
     expect(ok.status).toBe("active");
-    expect(ok.freezesUsed).toBe(1);
-    const bad = challengeProgress({ startDay: "2026-11-01" }, [], "2026-11-03");
-    expect(bad.status).toBe("failed");
+    expect(ok.day).toBe(2);
   });
   it("is day 3 on the third day", () => {
     expect(challengeProgress({ startDay: "2026-11-01" }, [], "2026-11-03").day).toBe(3);

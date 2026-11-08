@@ -14,6 +14,7 @@ import {
   CHALLENGE_DAYS,
   CHALLENGE_DAILY_MINUTES,
   challengeProgress,
+  challengeFailRoast,
   challengeRoast,
   endChallenge,
   getChallenge,
@@ -46,6 +47,7 @@ export function ChallengePopup({ hidden = false }: { hidden?: boolean }) {
       setRecord(rec);
       if (rec) {
         const p = challengeProgress(rec, state.sessions);
+        if (p.status === "failed") return failNow(rec);
         if (p.status !== "active") return setView("result");
         if (!morningDone(uid)) openMorning();
       } else if (!inviteSeenToday(uid)) {
@@ -63,6 +65,27 @@ export function ChallengePopup({ hidden = false }: { hidden?: boolean }) {
     const open = () => uid && (getChallenge(uid) ? (setRecord(getChallenge(uid)), openMorning()) : setView("invite"));
     window.addEventListener("commitx:open-challenge", open);
     return () => window.removeEventListener("commitx:open-challenge", open);
+  });
+
+  // A missed day ends the challenge immediately: roast, then it vanishes.
+  const [failText, setFailText] = useState<string | null>(null);
+  function failNow(rec: NonNullable<ReturnType<typeof getChallenge>>) {
+    if (!uid) return;
+    setFailText(challengeFailRoast(challengeProgress(rec, state.sessions)));
+    endChallenge(uid);
+    setRecord(null);
+    syncStudyWidget(uid);
+    setView("result");
+  }
+  useEffect(() => {
+    if (!uid || !hasNativeBridge()) return;
+    const check = () => {
+      const rec = getChallenge(uid);
+      if (rec && challengeProgress(rec, state.sessions).status === "failed") failNow(rec);
+    };
+    const id = window.setInterval(check, 60_000);
+    document.addEventListener("visibilitychange", check);
+    return () => { window.clearInterval(id); document.removeEventListener("visibilitychange", check); };
   });
 
   function openMorning() {
@@ -107,7 +130,7 @@ export function ChallengePopup({ hidden = false }: { hidden?: boolean }) {
             <span className="mb-2 flex h-11 w-11 items-center justify-center rounded-full bg-primary/15 text-primary"><Flame className="h-5 w-5" /></span>
             <DialogTitle className="text-center font-display text-lg">21-Day Challenge</DialogTitle>
             <DialogDescription className="mt-1.5 text-center text-[13px] leading-snug">
-              3 Verified hours a day for 21 days. 1 Freeze Shield included.
+              3 Verified hours every day for 21 days. Miss one day and it’s over.
             </DialogDescription>
             <p className="mt-3 text-center text-xs text-muted-foreground">🔥 Widget streak · 📝 Daily plan · 🏅 Badge</p>
             <Button className="mt-4 w-full" onClick={accept}>Accept the challenge</Button>
@@ -172,25 +195,25 @@ export function ChallengePopup({ hidden = false }: { hidden?: boolean }) {
           </div>
         )}
 
-        {view === "result" && progress && (
+        {view === "result" && (progress || failText) && (
           <div className="flex flex-col items-center text-center">
-            {progress.status === "completed" ? (
+            {!failText && progress?.status === "completed" ? (
               <img src={finisherBadge} alt="21-Day Finisher badge" width={144} height={144} className="mb-3 h-36 w-36 object-contain" />
             ) : (
               <span className="mb-3 text-5xl">💔</span>
             )}
             <DialogTitle className="text-center font-display text-xl">
-              {progress.status === "completed" ? "21-Day Finisher!" : "Challenge ended"}
+              {!failText && progress?.status === "completed" ? "21-Day Finisher!" : "Challenge failed"}
             </DialogTitle>
             <DialogDescription className="mt-2 text-center text-sm">
-              {progress.status === "completed"
+              {!failText && progress?.status === "completed"
                 ? "You studied 3 Verified hours a day for 21 days. Absolute beast."
-                : "You missed the 3-hour Verified target more than once. Start again — this time, no excuses."}
+                : failText ?? "You missed the 3-hour Verified target. Start again — this time, no excuses."}
             </DialogDescription>
-            <Button className="mt-5 w-full" size="lg" onClick={() => { endChallenge(uid); startChallenge(uid); setRecord(getChallenge(uid)); openMorning(); }}>
+            <Button className="mt-5 w-full" size="lg" onClick={() => { endChallenge(uid); startChallenge(uid); setFailText(null); setRecord(getChallenge(uid)); syncStudyWidget(uid); openMorning(); }}>
               Start a new 21 days
             </Button>
-            <Button variant="ghost" className="mt-1 w-full" onClick={() => { endChallenge(uid); setRecord(null); close(); }}>Not now</Button>
+            <Button variant="ghost" className="mt-1 w-full" onClick={() => { endChallenge(uid); setFailText(null); setRecord(null); close(); }}>Not now</Button>
           </div>
         )}
       </DialogContent>

@@ -385,7 +385,7 @@ public class AccountabilityEngine extends BroadcastReceiver {
         if (nm != null) nm.cancel(NOTIFICATION_ID);
     }
 
-    private static PendingIntent openRoute(Context c, String route) {
+    static PendingIntent openRoute(Context c, String route) {
         Intent intent = new Intent(c, MainActivity.class);
         intent.setAction(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -397,7 +397,7 @@ public class AccountabilityEngine extends BroadcastReceiver {
     }
 
     /** High importance = heads-up banner when the OS and user allow it. */
-    private static void ensureChannel(Context c) {
+    static void ensureChannel(Context c) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
         NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm == null) return;

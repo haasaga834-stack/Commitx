@@ -4,7 +4,8 @@ import { todayKey } from "./planner";
 /** 21-Day Challenge rules: only completed Verified sessions count. */
 export const CHALLENGE_DAYS = 21;
 export const CHALLENGE_DAILY_MINUTES = 180;
-export const CHALLENGE_FREEZES = 1;
+/** No Freeze Shield: any day below the target ends the challenge. */
+export const CHALLENGE_FREEZES = 0;
 
 export interface ChallengeRecord {
   /** Local YYYY-MM-DD the challenge started (Day 1). */
@@ -77,6 +78,15 @@ export function challengeProgress(
     days,
     freezesUsed,
   };
+}
+
+/** Roast shown the moment a missed day ends the challenge. */
+export function challengeFailRoast(p: ChallengeProgress) {
+  const missed = p.days.find((d) => !d.met && !d.frozen && d.key < todayKey());
+  const dayNo = missed ? p.days.indexOf(missed) + 1 : p.day;
+  const m = missed?.minutes ?? 0;
+  const done = m <= 0 ? "0 minutes" : `${Math.floor(m / 60)}h ${m % 60}m`;
+  return `Day ${dayNo}/21: ${done} of 3h. Challenge over. Your phone won.`;
 }
 
 /** Short roast for the current state of today's quota. */

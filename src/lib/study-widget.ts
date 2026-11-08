@@ -29,12 +29,17 @@ export function markWidgetInvited(userId: string) {
 }
 
 export function syncStudyWidget(userId: string | null) {
-  try { window.CommitXAndroid?.syncStudyWidget?.(JSON.stringify({ userId, day: todayKey(), minutes: userId ? stats(getState().sessions).todayMinutes : 0, streak: userId ? stats(getState().sessions).streak : 0, goalMinutes: getDailyGoalHours() * 60, challengeDay: userId ? challengeDayFor(userId) : 0, todos: userId ? getTodos() : [], ...liveSession(userId) })); } catch {}
+  try { window.CommitXAndroid?.syncStudyWidget?.(JSON.stringify({ userId, day: todayKey(), minutes: userId ? stats(getState().sessions).todayMinutes : 0, streak: userId ? stats(getState().sessions).streak : 0, goalMinutes: getDailyGoalHours() * 60, challengeDay: userId ? challengeDayFor(userId) : 0, challengeMinutes: userId ? challengeMinutesFor(userId) : 0, todos: userId ? getTodos() : [], ...liveSession(userId) })); } catch {}
 }
 
 export function requestStudyWidget() {
   // True means the launcher supports a pin request, not that the user accepted it.
   try { return window.CommitXAndroid?.requestStudyWidget?.() ?? false; } catch { return false; }
+}
+
+function challengeMinutesFor(userId: string) {
+  const rec = getChallenge(userId);
+  return rec ? challengeProgress(rec, getState().sessions).todayMinutes : 0;
 }
 
 function challengeDayFor(userId: string) {

@@ -38,7 +38,11 @@ final class StudyWidgetStore {
             }
             prefs(ctx).edit().putString("state", next.toString()).apply();
             StudyGoalWidget.updateAll(ctx);
+            ChallengeReceiver.arm(ctx);
         } catch (Exception ignored) {}
+    }
+    static synchronized void replace(Context ctx, JSONObject state) {
+        prefs(ctx).edit().putString("state", state.toString()).apply();
     }
     static synchronized void toggle(Context ctx, String id) {
         try {
