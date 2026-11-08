@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, Smartphone, Timer } from "lucide-react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { ArrowLeft, ChevronRight, Smartphone, Timer } from "lucide-react";
 import { MobileShell } from "@/components/BottomNav";
 import { AppLimitsManager } from "@/components/AppLimitsManager";
 import { Button } from "@/components/ui/button";
@@ -112,25 +112,32 @@ function ScreenTimePage() {
         ) : data?.loading ? (
           <Notice text="Loading your screen time…" />
         ) : data ? (
-          <Stats data={data} tab={tab} setTab={setTab} />
+          <Stats
+            data={data}
+            tab={tab}
+            setTab={setTab}
+            limitsCard={
+              native && appLimitsAvailable() ? (
+                <button
+                  type="button"
+                  onClick={() => setLimitsOpen(true)}
+                  className="mt-4 flex w-full items-center gap-3 rounded-3xl bg-card px-4 py-3.5 text-left shadow-soft transition-transform active:scale-[0.98]"
+                >
+                  <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-secondary text-primary">
+                    <Timer className="h-5 w-5" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-semibold leading-tight">Manage App Limits</span>
+                    <span className="mt-0.5 block truncate text-xs text-muted-foreground">
+                      Daily time or Reels/Shorts limits
+                    </span>
+                  </span>
+                  <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" />
+                </button>
+              ) : null
+            }
+          />
         ) : null}
-
-        {native && appLimitsAvailable() && (
-          <Button variant="ghost"
-            onClick={() => setLimitsOpen(true)}
-            className="mt-4 flex w-full items-center gap-3 rounded-3xl bg-card p-4 text-left shadow-soft transition-transform active:scale-[0.98]"
-          >
-            <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-secondary text-primary">
-              <Timer className="h-4 w-4" />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-sm font-medium">Manage App Limits</span>
-              <span className="block text-xs text-muted-foreground">
-                Daily time or Reels/Shorts limits per app
-              </span>
-            </span>
-          </Button>
-        )}
         {limitsOpen && <AppLimitsManager onClose={() => setLimitsOpen(false)} />}
       </div>
     </MobileShell>
@@ -147,10 +154,12 @@ function Stats({
   data,
   tab,
   setTab,
+  limitsCard,
 }: {
   data: ScreenTimeDetails;
   tab: "day" | "week";
   setTab: (t: "day" | "week") => void;
+  limitsCard?: ReactNode;
 }) {
   const weekTotal = data.week.reduce((s, d) => s + d.minutes, 0);
   const weekAvg = data.week.length ? Math.round(weekTotal / data.week.length) : 0;
@@ -215,6 +224,8 @@ function Stats({
         <Tile label="CommitX" value={data.commitxMinutes} />
         <Tile label="Other apps" value={data.otherMinutes} />
       </div>
+
+      {limitsCard}
 
       <p className="mt-8 text-xs uppercase tracking-widest text-muted-foreground">Apps today</p>
       <div className="mt-3 rounded-3xl bg-card p-2 shadow-soft">
