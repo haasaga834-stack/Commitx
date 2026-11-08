@@ -21,7 +21,7 @@ public class StudyGoalWidget extends AppWidgetProvider {
         try {
             android.app.AlarmManager am = (android.app.AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
             PendingIntent pi = PendingIntent.getBroadcast(ctx, 1602, new Intent(ctx, StudyGoalWidget.class).setAction(REFRESH), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-            if (am != null) am.set(android.app.AlarmManager.RTC, at, pi);
+            if (am != null) am.setWindow(android.app.AlarmManager.RTC, at, 2000, pi);
         } catch (Exception ignored) {}
     }
     /** Whole hours stay plain ("2h"); partial hours keep one decimal ("2.5h"). */
@@ -73,12 +73,15 @@ public class StudyGoalWidget extends AppWidgetProvider {
                 // Per-second countdown is drawn by the launcher itself (no wakeups).
                 views.setViewVisibility(R.id.widget_hours, View.GONE);
                 views.setViewVisibility(R.id.widget_timer, View.VISIBLE);
-                views.setChronometer(R.id.widget_timer, android.os.SystemClock.elapsedRealtime() + (liveEnd - now), null, true);
+                // Snap the base to whole seconds so refreshes never make the digits jump.
+                long remaining = ((liveEnd - System.currentTimeMillis()) / 1000L) * 1000L;
+                views.setChronometer(R.id.widget_timer, android.os.SystemClock.elapsedRealtime() + remaining, null, true);
                 views.setChronometerCountDown(R.id.widget_timer, true);
                 views.setTextViewText(R.id.widget_hours_label, "LEFT");
                 views.setTextViewText(R.id.widget_hours_goal, "\u25CF LIVE");
                 views.setViewVisibility(R.id.widget_quick, View.GONE);
-                scheduleRefresh(ctx, Math.min(liveEnd + 1000, now + 60000));
+                // Ring moves every 15s while the screen is on (non-waking alarm).
+                scheduleRefresh(ctx, Math.min(liveEnd + 1000, now + 15000));
             } else {
                 views.setChronometer(R.id.widget_timer, android.os.SystemClock.elapsedRealtime(), null, false);
                 views.setViewVisibility(R.id.widget_timer, View.GONE);
