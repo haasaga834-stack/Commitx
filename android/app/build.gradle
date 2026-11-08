@@ -37,8 +37,8 @@ android {
         minSdk 24
         targetSdk 36
 
-        versionCode Integer.parseInt(System.getenv("COMMITX_VERSION_CODE") ?: "7")
-        versionName System.getenv("COMMITX_VERSION_NAME") ?: "1.0.6"
+        versionCode Integer.parseInt(System.getenv("COMMITX_VERSION_CODE") ?: "8")
+        versionName System.getenv("COMMITX_VERSION_NAME") ?: "1.0.7"
         resourceConfigurations += ["en"]
         resValue "string", "google_web_client_id", googleWebClientId
     }
