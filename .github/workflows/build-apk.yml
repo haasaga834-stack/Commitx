@@ -42,7 +42,19 @@ jobs:
       - name: Show commit being built
         run: git log -1 --pretty='%H %ci %s'
 
-      - name: Setup Java
+      # The runner already ships JDK 17. Using it avoids the Java download,
+      # which intermittently failed with "Unexpected HTTP response: 504".
+      - name: Use preinstalled Java 17
+        id: java_local
+        continue-on-error: true
+        run: |
+          set -eu
+          [ -n "${JAVA_HOME_17_X64:-}" ] && [ -x "$JAVA_HOME_17_X64/bin/java" ]
+          echo "JAVA_HOME=$JAVA_HOME_17_X64" >> "$GITHUB_ENV"
+          echo "$JAVA_HOME_17_X64/bin" >> "$GITHUB_PATH"
+
+      - name: Setup Java (fallback download)
+        if: steps.java_local.outcome != 'success'
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -96,7 +108,15 @@ jobs:
       # Package the website's content-hashed files into the APK so screens open
       # instantly and offline on first launch. Non-fatal: the app still works
       # from the network if this step can't produce files.
+      # Downloads can hit temporary GitHub 504s; retry once before giving up.
       - name: Setup Bun
+        id: bun1
+        continue-on-error: true
+        uses: oven-sh/setup-bun@v2
+
+      - name: Setup Bun (retry)
+        if: steps.bun1.outcome != 'success'
+        continue-on-error: true
         uses: oven-sh/setup-bun@v2
 
       - name: Bundle website files into the app
@@ -122,9 +142,22 @@ jobs:
           echo "Bundled $(find "$DEST" -type f | wc -l) website files into the app"
 
       - name: Setup Gradle
+        id: gradle1
+        continue-on-error: true
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 8.11.1
+
+      - name: Wait before retrying Gradle setup
+        if: steps.gradle1.outcome != 'success'
+        run: sleep 30
+
+      - name: Setup Gradle (retry)
+        if: steps.gradle1.outcome != 'success'
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.11.1
+          cache-disabled: true
 
       - name: Run native release regressions
         run: |
@@ -143,6 +176,7 @@ jobs:
       # before COMMITX_KEYSTORE_BASE64 existed. Durable storage is the GitHub
       # secret below; a cache is not key storage.
       - name: Restore APK signing identity (legacy cache)
+        continue-on-error: true
         uses: actions/cache@v4
         with:
           path: android/app/commitx.keystore
