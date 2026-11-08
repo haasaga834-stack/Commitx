@@ -69,13 +69,23 @@ public class StudyGoalWidget extends AppWidgetProvider {
             int progress = goalMinutes > 0 ? Math.min(1000, Math.round(1000f * minutes / goalMinutes)) : 0;
             if (live) {
                 int liveProgress = (int) Math.min(1000, Math.max(0, 1000L * (now - liveStart) / (liveEnd - liveStart)));
-                long left = Math.max(1, (liveEnd - now + 59999) / 60000);
                 views.setProgressBar(R.id.widget_ring, 1000, liveProgress, false);
-                views.setTextViewText(R.id.widget_hours, String.valueOf(left));
-                views.setTextViewText(R.id.widget_hours_label, "MIN LEFT");
+                // Per-second countdown is drawn by the launcher itself (no wakeups).
+                views.setViewVisibility(R.id.widget_hours, View.GONE);
+                views.setViewVisibility(R.id.widget_timer, View.VISIBLE);
+                views.setChronometer(R.id.widget_timer, android.os.SystemClock.elapsedRealtime() + (liveEnd - now), null, true);
+                views.setChronometerCountDown(R.id.widget_timer, true);
+                views.setTextViewText(R.id.widget_hours_label, "LEFT");
                 views.setTextViewText(R.id.widget_hours_goal, "\u25CF LIVE");
+                views.setViewVisibility(R.id.widget_quick, View.GONE);
                 scheduleRefresh(ctx, Math.min(liveEnd + 1000, now + 60000));
             } else {
+                views.setChronometer(R.id.widget_timer, android.os.SystemClock.elapsedRealtime(), null, false);
+                views.setViewVisibility(R.id.widget_timer, View.GONE);
+                views.setViewVisibility(R.id.widget_hours, View.VISIBLE);
+                views.setViewVisibility(R.id.widget_quick, View.VISIBLE);
+                Intent quick = new Intent(ctx, MainActivity.class).putExtra(MainActivity.EXTRA_ROUTE, "commit?mode=verified&duration=30&quick=1").addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                views.setOnClickPendingIntent(R.id.widget_quick, PendingIntent.getActivity(ctx, 1603, quick, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
                 views.setProgressBar(R.id.widget_ring, 1000, progress, false);
                 String h = hoursText(minutes);
                 views.setTextViewText(R.id.widget_hours, h.substring(0, h.length() - 1));

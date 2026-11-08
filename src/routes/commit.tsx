@@ -28,8 +28,9 @@ import type { SessionThemeId } from "@/lib/session-themes";
 import { actionErrorMessage } from "@/lib/connectivity";
 import { useAuth } from "@/lib/use-auth";
 import { FocusShieldSetup, type FocusShieldResult } from "@/components/FocusShieldSetup";
-import { writeShieldPlan, clearShieldPlan, shieldSupported, shieldHasUsageAccess, shieldHasOverlayAccess } from "@/lib/focus-shield";
-import { canConfirmShield } from "@/lib/focus-shield-defaults";
+import { writeShieldPlan, clearShieldPlan, shieldApps, preloadShieldApps, shieldSupported, shieldHasUsageAccess, shieldHasOverlayAccess } from "@/lib/focus-shield";
+import { canConfirmShield, quickStartShieldPackages, WIDGET_QUICK_MINUTES } from "@/lib/focus-shield-defaults";
+import { DEFAULT_SESSION_THEME, readLastTheme } from "@/lib/session-themes";
 
 
 const commitSearch = z.object({
@@ -39,6 +40,8 @@ const commitSearch = z.object({
   mode: z.enum(["standard", "verified"]).optional(),
   duration: z.coerce.number().min(15).max(360).optional(),
   todo: z.string().optional(),
+  /** "1" when launched from the home-screen widget's 30-minute Verified start. */
+  quick: z.coerce.number().optional(),
 });
 
 export const Route = createFileRoute("/commit")({
@@ -68,7 +71,8 @@ function fmtDuration(min: number) {
 function Commit() {
   const navigate = useNavigate();
   const isTablet = useIsTablet();
-  const { plan: fromPlan, mode: fromMode, duration: fromDuration, todo: todoId } = Route.useSearch();
+  const { plan: fromPlan, mode: fromMode, duration: fromDuration, todo: todoId, quick } = Route.useSearch();
+  const quickStart = quick === 1;
   const usePlanDuration = fromPlan === 1;
   const { state, hydrated } = useAppState();
   const { user, loading: authLoading } = useAuth();
@@ -84,7 +88,7 @@ function Commit() {
     setGoal("Custom"); setCustomGoal(focusedTodo.text);
   }, [focusedTodo?.id]);
   const [rawValue, setValue] = useState(MIN_COMMIT);
-  const [mode, setMode] = useState<"standard" | "verified">(fromMode ?? "standard");
+  const [mode, setMode] = useState<"standard" | "verified">(quickStart ? "verified" : fromMode ?? "standard");
   const [confirmVerified, setConfirmVerified] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [verifiedWarn, setVerifiedWarn] = useState(false);
@@ -106,7 +110,7 @@ function Commit() {
   // The study plan is the single source of truth for commitment time.
   const nextPlan = useMemo(() => upcomingPlan(plans), [plans]);
   const planDuration = nextPlan?.plan.durationMinutes ?? 0;
-  const [pickedDuration, setPickedDuration] = useState(fromDuration ?? 60);
+  const [pickedDuration, setPickedDuration] = useState(quickStart ? WIDGET_QUICK_MINUTES : fromDuration ?? 60);
   const duration = usePlanDuration ? planDuration : pickedDuration;
 
   // Accountability: leaving the commit screen without starting counts as an
@@ -327,6 +331,41 @@ function Commit() {
   }
 
 
+
+  // Widget quick start: a fixed 30-minute Verified session with the default
+  // blocked apps, started without any setup screens. Missing permissions or
+  // DND fall back to the normal Verified gates.
+  const quickFired = useRef(false);
+  const [quickReady, setQuickReady] = useState(false);
+  useEffect(() => {
+    if (!quickStart || quickFired.current || !hydrated || authLoading || !native) return;
+    quickFired.current = true;
+    preloadShieldApps();
+    let tries = 0;
+    const attempt = () => {
+      const apps = shieldApps();
+      if (!apps.length && tries++ < 15) { window.setTimeout(attempt, 200); return; }
+      const packages = quickStartShieldPackages(apps);
+      const labels = apps.filter((a) => packages.includes(a.pkg)).map((a) => a.label);
+      setPickedDuration(WIDGET_QUICK_MINUTES);
+      setMode("verified");
+      setConfirmVerified(true);
+      if (!canConfirmShield(shieldSupported(), shieldHasUsageAccess(), shieldHasOverlayAccess(), packages)) {
+        setShieldPlan({ enabled: false, packages, labels });
+        setShieldOpen(true);
+        return;
+      }
+      setShieldPlan({ enabled: true, packages, labels });
+      setQuickReady(true);
+    };
+    attempt();
+  }, [quickStart, hydrated, authLoading, native]);
+  useEffect(() => {
+    if (!quickReady) return;
+    setQuickReady(false);
+    if (!isDndEnabled()) { setDndOn(false); setVerifiedWarn(true); return; }
+    void startWithTheme(readLastTheme() ?? DEFAULT_SESSION_THEME);
+  }, [quickReady]);
 
   function clampValue(next: number) {
     const n = Math.round(next);

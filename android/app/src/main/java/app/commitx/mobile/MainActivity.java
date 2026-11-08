@@ -752,7 +752,20 @@ public class MainActivity extends Activity {
         return code.length() >= 4 && code.length() <= 32 ? code : null;
     }
 
+    /** Widget 30-minute Verified start: switch DND on up front when access exists. */
+    private void prepareWidgetQuickStart(Intent intent) {
+        String route = intent == null ? null : intent.getStringExtra(EXTRA_ROUTE);
+        if (route == null || !route.contains("quick=1")) return;
+        try {
+            if (SessionDnd.hasAccess(this) && !SessionDnd.isOn(this)) {
+                SessionDnd.arm(this);
+                SessionDnd.enableNow(this);
+            }
+        } catch (Throwable ignored) {}
+    }
+
     private String startUrlFor(Intent intent) {
+        prepareWidgetQuickStart(intent);
         String ref = referralCodeFrom(intent);
         if (ref != null) return START_URL + "auth?ref=" + ref;
         String route = intent == null ? null : intent.getStringExtra(EXTRA_ROUTE);
@@ -799,6 +812,7 @@ public class MainActivity extends Activity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
+        prepareWidgetQuickStart(intent);
         String referral = referralCodeFrom(intent);
         if (referral != null && webView != null) {
             webView.loadUrl(startUrlFor(intent));

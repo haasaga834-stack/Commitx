@@ -38,3 +38,10 @@ export function defaultShieldPackages(apps: { pkg: string; defaultBlocked?: bool
 export function canConfirmShield(supported: boolean, usage: boolean, overlay: boolean, packages: string[]): boolean {
   return supported && usage && overlay && packages.length > 0;
 }
+/** Widget quick start is always a fixed 30-minute Verified commitment. */
+export const WIDGET_QUICK_MINUTES = 30;
+
+/** Widget quick start blocks the same default apps Verified setup preselects. */
+export function quickStartShieldPackages(apps: { pkg: string; defaultBlocked?: boolean }[]): string[] {
+  return defaultShieldPackages(apps);
+}
