@@ -29,6 +29,13 @@ final class AppLimitsReminderView extends LinearLayout {
         setOrientation(VERTICAL);
         setBackgroundColor(color(R.color.shield_background));
         setPadding(dp(24), dp(52), dp(24), dp(32));
+        // The window now draws behind the status bar; keep content clear of it.
+        setOnApplyWindowInsetsListener((v, insets) -> {
+            int top = insets.getSystemWindowInsetTop();
+            int bottom = insets.getSystemWindowInsetBottom();
+            v.setPadding(dp(24), top + dp(36), dp(24), bottom + dp(24));
+            return insets;
+        });
 
         // Status pill pinned at the top.
         TextView pill = text("\uD83D\uDD12  COMMITX  \u2022  DAILY LIMIT REACHED", 11, R.color.shield_primary, true);

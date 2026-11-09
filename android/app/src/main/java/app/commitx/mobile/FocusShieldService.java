@@ -121,7 +121,7 @@ public class FocusShieldService extends Service {
                     ? new Notification.Builder(this, CHANNEL)
                     : new Notification.Builder(this);
             Notification notification = b
-                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setSmallIcon(R.drawable.ic_verified_countdown)
                     .setContentTitle(getString(R.string.focus_shield_on))
                     .setContentText(getString(R.string.focus_shield_running))
                     .setOngoing(true)

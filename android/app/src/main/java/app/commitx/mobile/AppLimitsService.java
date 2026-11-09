@@ -207,7 +207,7 @@ public class AppLimitsService extends Service {
                     ? new Notification.Builder(this, CHANNEL)
                     : new Notification.Builder(this);
             Notification notification = b
-                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setSmallIcon(R.drawable.ic_verified_countdown)
                     .setContentTitle("App limits on")
                     .setContentText("CommitX is watching your daily app limits")
                     .setOngoing(true)

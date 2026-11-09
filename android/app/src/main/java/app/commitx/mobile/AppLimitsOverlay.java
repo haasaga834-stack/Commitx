@@ -65,6 +65,16 @@ final class AppLimitsOverlay {
                             | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
                     PixelFormat.OPAQUE);
             lp.gravity = Gravity.CENTER;
+            // Draw behind the status bar / cutout so the dark screen runs edge to
+            // edge instead of leaving a tinted strip behind the clock.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                lp.layoutInDisplayCutoutMode = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+                        ? WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+                        : WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                lp.setFitInsetsTypes(0);
+            }
             wm.addView(view, lp);
             root = view;
             handler.post(tick);
