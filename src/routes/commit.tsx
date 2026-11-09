@@ -11,7 +11,15 @@ import {
   MIN_COMMIT,
   MAX_COMMIT,
 } from "@/lib/commitx-store";
-import { canCheckDnd, hasNativeBridge, isDndEnabled, openDndSettings } from "@/lib/native-session";
+import {
+  canCheckDnd,
+  enableSessionDnd,
+  hasDndAccess,
+  hasNativeBridge,
+  isDndEnabled,
+  openDndSettings,
+  releaseSessionDnd,
+} from "@/lib/native-session";
 import { DurationWheel } from "@/components/DurationWheel";
 import { CommitTablet } from "@/components/CommitTablet";
 import { useIsTablet } from "@/lib/use-tablet";
@@ -233,13 +241,20 @@ function Commit() {
       return true;
     };
     if (resumeExisting()) return;
+    // A widget quick start that stops here must not leave the phone silenced
+    // (older app builds switched DND on before this page loaded).
+    const abortQuickDnd = () => {
+      if (quickStart && !startedCommitRef.current) releaseSessionDnd();
+    };
     if (!validate()) {
+      abortQuickDnd();
       setThemeOpen(false);
       return;
     }
     if (mode === "verified" && hasNativeBridge() && (!shieldPlan.enabled || !canConfirmShield(
       shieldSupported(), shieldHasUsageAccess(), shieldHasOverlayAccess(), shieldPlan.packages,
     ))) {
+      abortQuickDnd();
       setThemeOpen(false);
       setError("Turn on Focus Shield and grant both permissions before starting Verified.");
       setShieldOpen(true);
@@ -268,17 +283,21 @@ function Commit() {
         mode,
       });
       if (!claim.ok) {
+        abortQuickDnd();
         setError(
           "You already have an active session running. Finish or end it before starting a new one.",
         );
         return;
       }
 
-      // Final DND check immediately before the timer starts.
+      // Final DND check immediately before the timer starts. A widget quick
+      // start switches DND on only now, once the session is secured.
       if (mode === "verified") {
-        const liveDnd = isDndEnabled();
+        let liveDnd = isDndEnabled();
+        if (quickStart && native && liveDnd !== true && enableSessionDnd()) liveDnd = isDndEnabled();
         setDndOn(liveDnd);
         if (native && liveDnd !== true) {
+          abortQuickDnd();
           await releaseActiveDbSession();
           setConfirmVerified(false);
           setVerifiedWarn(true);
@@ -322,6 +341,7 @@ function Commit() {
         } as Record<string, string>,
       });
     } catch (e) {
+      abortQuickDnd();
       setError(actionErrorMessage(e, "Could not start the commitment."));
     } finally {
       startInFlight.current = false;
@@ -351,6 +371,8 @@ function Commit() {
       setMode("verified");
       setConfirmVerified(true);
       if (!canConfirmShield(shieldSupported(), shieldHasUsageAccess(), shieldHasOverlayAccess(), packages)) {
+        // Setup needed first: don't keep the phone silenced meanwhile.
+        releaseSessionDnd();
         setShieldPlan({ enabled: false, packages, labels });
         setShieldOpen(true);
         return;
@@ -363,7 +385,9 @@ function Commit() {
   useEffect(() => {
     if (!quickReady) return;
     setQuickReady(false);
-    if (!isDndEnabled()) { setDndOn(false); setVerifiedWarn(true); return; }
+    // DND is switched on after the session claim succeeds; without access the
+    // normal Verified DND gate asks for it.
+    if (!isDndEnabled() && !hasDndAccess()) { setDndOn(false); setVerifiedWarn(true); return; }
     void startWithTheme(readLastTheme() ?? DEFAULT_SESSION_THEME);
   }, [quickReady]);
 

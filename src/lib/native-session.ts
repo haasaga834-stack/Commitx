@@ -17,6 +17,8 @@ declare global {
       openDndSettings?: () => void;
       canCheckDnd?: () => boolean;
       releaseSessionDnd?: () => void;
+      hasDndAccess?: () => boolean;
+      enableSessionDnd?: () => boolean;
       /* Notification permission */
       notificationsEnabled?: () => boolean;
       requestNotificationPermission?: () => void;
@@ -151,6 +153,27 @@ export function releaseSessionDnd() {
   try {
     window.CommitXAndroid?.releaseSessionDnd?.();
   } catch {}
+}
+
+/** True when CommitX can switch Do Not Disturb itself (older apps: false). */
+export function hasDndAccess(): boolean {
+  try {
+    return Boolean(window.CommitXAndroid?.hasDndAccess?.());
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Switches DND on for a session that has already been claimed, without ever
+ * opening settings. Native remembers to switch it off when the session ends.
+ */
+export function enableSessionDnd(): boolean {
+  try {
+    return Boolean(window.CommitXAndroid?.enableSessionDnd?.());
+  } catch {
+    return false;
+  }
 }
 
 export function openDndSettings() {
