@@ -9,7 +9,7 @@ import { useAuth } from "@/lib/use-auth";
 import { syncStudyWidget } from "@/lib/study-widget";
 import { hasNativeBridge } from "@/lib/native-session";
 import { useAppState } from "@/lib/commitx-store";
-import { addTodo, clearCarryOverTodos, getCarryOverTodos, getTodos } from "@/lib/planner";
+import { addTodo, clearCarryOverTodos, getCarryOverTodos, getTodos, todayKey } from "@/lib/planner";
 import {
   CHALLENGE_DAYS,
   CHALLENGE_DAILY_MINUTES,
@@ -90,7 +90,11 @@ export function ChallengePopup({ hidden = false }: { hidden?: boolean }) {
 
   function openMorning() {
     const today = getTodos().map((t) => t.text.toLowerCase());
-    setCarry(getCarryOverTodos().filter((t) => !today.includes(t.text.toLowerCase())).map((t) => ({ id: t.id, text: t.text, keep: true })));
+    // Only yesterday's unfinished items, never an ever-growing backlog.
+    const y = new Date(); y.setDate(y.getDate() - 1);
+    const yKey = todayKey(y);
+    const seen = new Set<string>();
+    setCarry(getCarryOverTodos().filter((t) => t.day === yKey && !today.includes(t.text.toLowerCase()) && !seen.has(t.text.toLowerCase()) && seen.add(t.text.toLowerCase())).slice(0, 5).map((t) => ({ id: t.id, text: t.text, keep: true })));
     setGoals([]);
     setDraft("");
     setView("morning");
@@ -104,6 +108,7 @@ export function ChallengePopup({ hidden = false }: { hidden?: boolean }) {
   function accept() {
     if (!uid) return;
     startChallenge(uid);
+    clearCarryOverTodos(); // a fresh challenge starts with a clean plan
     setRecord(getChallenge(uid));
     syncStudyWidget(uid);
     openMorning();
@@ -210,7 +215,7 @@ export function ChallengePopup({ hidden = false }: { hidden?: boolean }) {
                 ? "You studied 3 Verified hours a day for 21 days. Absolute beast."
                 : failText ?? "You missed the 3-hour Verified target. Start again — this time, no excuses."}
             </DialogDescription>
-            <Button className="mt-5 w-full" size="lg" onClick={() => { endChallenge(uid); startChallenge(uid); setFailText(null); setRecord(getChallenge(uid)); syncStudyWidget(uid); openMorning(); }}>
+            <Button className="mt-5 w-full" size="lg" onClick={() => { endChallenge(uid); startChallenge(uid); clearCarryOverTodos(); setFailText(null); setRecord(getChallenge(uid)); syncStudyWidget(uid); openMorning(); }}>
               Start a new 21 days
             </Button>
             <Button variant="ghost" className="mt-1 w-full" onClick={() => { endChallenge(uid); setFailText(null); setRecord(null); close(); }}>Not now</Button>
